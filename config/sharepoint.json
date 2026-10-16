@@ -1,5 +1,0 @@
-{
-  "clientId": "",
-  "tenantId": "",
-  "scopes": ["Files.Read.All", "Sites.Read.All"]
-}
