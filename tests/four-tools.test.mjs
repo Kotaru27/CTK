@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Blob} from 'node:buffer';
 globalThis.document={getElementById:()=>null};
+globalThis.CTKSharePoint={isSharePoint:()=>false};
 const {default:ad}=await import('../src/js/tools/ad-downloader.js');
 const {default:links}=await import('../src/js/tools/link-gen.js');
 const {default:stills}=await import('../src/js/tools/video-stills.js');

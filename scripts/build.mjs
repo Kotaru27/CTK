@@ -15,7 +15,11 @@ for(const [owner,filepath] of Object.entries(cfg.cssPaths)){
 const css=manifest.map(({id,owner})=>{if(!(id in cache[owner]))throw Error(`CSS section missing ${owner}/${id}`);return cache[owner][id]}).join('');
 const expectedCss=baseline.match(/<style>([\s\S]*?)<\/style>/)?.[1];if(css!==expectedCss)throw Error('CSS bytes differ from verified source');
 const toolJS=cfg.jsToolPaths.map(file=>{const s=read(file);const m=s.match(/^\/\*[^\n]*\*\/\nexport default \{\n([\s\S]*?)\n\};\n$/);if(!m)throw Error('Unexpected tool module structure: '+file);return m[1]}).join('');
-const main=read('src/js/core/prelude.js')+toolJS+read('src/js/core/post-tools.js')+read('src/js/tools/video-downloads.js')+read('src/js/core/initialize.js');
+const graphConfig=JSON.parse(read('config/sharepoint.json'));
+if(graphConfig.clientId && !/^[a-f0-9-]{36}$/i.test(graphConfig.clientId)) throw Error('Invalid Entra clientId');
+if(graphConfig.tenantId && !/^[a-f0-9-]{36}$/i.test(graphConfig.tenantId)) throw Error('Invalid Entra tenantId');
+const graph= 'const CTK_PUBLIC_SHAREPOINT_CONFIG = ' + JSON.stringify(graphConfig) + ';\n' + read('src/js/core/sharepoint-graph.js');
+const main=graph+'\n'+read('src/js/core/prelude.js')+toolJS+read('src/js/core/post-tools.js')+read('src/js/tools/video-downloads.js')+read('src/js/core/initialize.js');
 const originals=[...baseline.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g)].filter(m=>!m[1].includes('src='));
 if(originals.length!==5)throw Error('Unexpected number of original scripts');
 // The original baseline stays immutable for output/visual comparison.

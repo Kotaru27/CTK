@@ -6,13 +6,29 @@ export default {
           adTypeMap: {},
           entries: [],
           _downloadBusy: false,
-          _nativeRequests: null,
-          _nativeAvailable: null,
-          _nativeProbe: null,
           init() {
-            this.setupNativeBridge();
-            // Warm up the helper handshake without delaying the interface.
-            void this.nativeAvailable();
+            // Microsoft Graph runs in the GitHub Pages site itself; no extension required.
+            if (CTKSharePoint.configured()) {
+              const area = document.getElementById('adlinksDlHeaderControls') || document.getElementById('adDlSummaryBar');
+              if (area && !document.getElementById('adDlConnectMicrosoft')) {
+                const connect = document.createElement('button');
+                connect.id = 'adDlConnectMicrosoft';
+                connect.type = 'button';
+                connect.className = 'liquid-btn';
+                connect.textContent = 'Connect Microsoft';
+                connect.onclick = async () => {
+                  try {await CTKSharePoint.signIn();} catch(error) {this.status(error.message,true);}
+                };
+                area.appendChild(connect);
+              }
+            }
+            void CTKSharePoint.finishSignIn().then(() => {
+              const connect=document.getElementById('adDlConnectMicrosoft');
+              if (connect && CTKSharePoint.authenticated()) {connect.textContent='Microsoft connected';connect.disabled=true;}
+              if(CTKSharePoint.startupMessage) this.status(CTKSharePoint.startupMessage, !CTKSharePoint.authenticated());
+              else if (CTKSharePoint.configured() && !CTKSharePoint.authenticated())
+                this.status('SharePoint media: Connect Microsoft before importing the Excel file.');
+            });
             document.getElementById("adDlInput").addEventListener("change", (e) => {
               const file = e.target.files[0];
               document.getElementById("adDlFileNameDisplay").innerText = file ? file.name : "Upload Excel";
@@ -179,7 +195,7 @@ export default {
             document.getElementById("adDlCountText").innerText = `${this.entries.length} valid ads`;
             document.getElementById("adDlEmptyState").style.display = "none";
             this.updateBulkButton();
-            this.status(`${this.entries.length} ready · ${skipped} invalid rows skipped · ${inferred} extensions inferred. Chrome helper enables one-click download for cross-origin files.`);
+            this.status(`${this.entries.length} ready · ${skipped} invalid rows skipped · ${inferred} extensions inferred.${this.entries.some(e=>CTKSharePoint.isSharePoint(e.url)) ? (CTKSharePoint.authenticated() ? ' Microsoft connected.' : CTKSharePoint.configured() ? ' Connect Microsoft before downloading SharePoint assets.' : ' SharePoint downloads require site-owner Microsoft Entra configuration.') : ''}`);
           },
           updateBulkButton() {
             const btn = document.getElementById("adDlBulkButton");
@@ -190,6 +206,10 @@ export default {
             const mime = String(blob.type || "").split(";")[0].toLowerCase();
             const types = {"video/mp4":"mp4","video/webm":"webm","video/quicktime":"mov","audio/mpeg":"mp3","audio/mp4":"m4a","audio/wav":"wav","image/jpeg":"jpg","image/png":"png","image/webp":"webp","image/gif":"gif","image/svg+xml":"svg","application/pdf":"pdf","application/zip":"zip"};
             // Content sniffing is safer than a category-based extension guess.
+            // Reject SharePoint player/login pages even when servers label them binary.
+            const sniff=new TextDecoder().decode(new Uint8Array(signature).slice(0,200)).trimStart().toLowerCase();
+            if (/^(?:<!doctype html|<html\b|\{\s*"(?:error|code)"\s*:)/.test(sniff) || mime === "text/html" || mime === "application/json")
+              throw Error("The source returned a web page (HTML preview/login) instead of the media file.");
             const ascii=(a,b)=>String.fromCharCode(...Array.from(signature).slice(a,b));
             if(ascii(0,4)==="%PDF")return ".pdf";
             if(signature[0]===0x89&&ascii(1,4)==="PNG")return ".png";
@@ -201,61 +221,26 @@ export default {
             if(ascii(0,3)==="ID3")return ".mp3";
             if(signature[0]===0x50&&signature[1]===0x4b&&signature[2]===0x03&&signature[3]===0x04)return ".zip";
             if (types[mime]) return "." + types[mime];
-            if (mime === "text/html" || mime === "application/json") throw Error("The link returned a web page/error instead of a media file");
+
             if (hint.confidence === "high") return hint.ext;
             if (hint.confidence === "inferred" && mime.startsWith("audio/") && hint.ext === ".mp3") return hint.ext;
             if (hint.confidence === "inferred" && mime.startsWith("video/") && hint.ext === ".mp4") return hint.ext;
             if (hint.confidence === "inferred" && mime.startsWith("image/") && hint.ext === ".jpg") return hint.ext;
             return ".bin";
           },
-          // Chrome's download API, available through the optional CTK Native Downloader
-          // extension, is the only browser-only route to reliably rename cross-origin
-          // downloads without fetching their bytes into this page. A hidden popup
-          // cannot bypass cross-origin restrictions or save files silently.
-          setupNativeBridge() {
-            if (this._nativeRequests || typeof window === "undefined") return;
-            this._nativeRequests = new Map();
-            window.addEventListener("message", (event) => {
-              if (event.source !== window || event.data?.channel !== "CTK_NATIVE_DOWNLOAD_RESULT") return;
-              const item = this._nativeRequests.get(event.data.id);
-              if (!item) return;
-              clearTimeout(item.timer);
-              this._nativeRequests.delete(event.data.id);
-              if (event.data.ok) item.resolve(event.data);
-              else item.reject(new Error(String(event.data.error || "Native download failed")));
-            });
-          },
-          requestNative(action, entry = null, timeout = 950) {
-            this.setupNativeBridge();
-            if (!this._nativeRequests || typeof window === "undefined" || typeof window.postMessage !== "function") return Promise.reject(new Error("Chrome download helper unavailable"));
-            const id = `ctk-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-            return new Promise((resolve, reject) => {
-              const timer = setTimeout(() => {
-                this._nativeRequests.delete(id);
-                reject(new Error("Chrome download helper unavailable"));
-              }, timeout);
-              this._nativeRequests.set(id, {resolve,reject,timer});
-              window.postMessage({channel:"CTK_NATIVE_DOWNLOAD_REQUEST",id,action,
-                url:entry?.url, filename:entry ? entry.displayName + (entry.ext || "") : undefined}, "*");
-            });
-          },
-          async nativeAvailable() {
-            if (this._nativeAvailable === true) return true;
-            if (this._nativeProbe) return this._nativeProbe;
-            this._nativeProbe = this.requestNative("ping",null,1800).then(() => {
-              this._nativeAvailable = true; return true;
-            }, () => { this._nativeAvailable = false; return false; }).finally(() => {this._nativeProbe = null;});
-            return this._nativeProbe;
-          },
-          async nativeDownload(entry) {
-            if (!await this.nativeAvailable()) throw new Error("Chrome download helper unavailable");
-            return this.requestNative("download",entry,15000);
-          },
           async getAsset(entry, signal) {
+            if (CTKSharePoint.isSharePoint(entry.url)) {
+              if (!CTKSharePoint.configured()) throw Error('This GitHub Pages site needs Microsoft Entra configuration to download protected SharePoint media.');
+              if (!CTKSharePoint.authenticated()) throw Error('Select Connect Microsoft before downloading. SharePoint requires your account permission.');
+              const result = await CTKSharePoint.getAsset(entry);
+              const bytes = new Uint8Array(await result.blob.slice(0,256).arrayBuffer());
+              const determined = this.guessType(result.blob, {ext:result.ext || entry.ext,confidence:result.ext ? 'high' : entry.confidence},bytes);
+              return {blob:result.blob,name:entry.displayName + (result.ext || determined)};
+            }
             const response = await fetch(entry.url, {mode:"cors", credentials:"omit", redirect:"follow", signal});
             if (!response.ok) throw Error(`HTTP ${response.status}`);
             const size = Number(response.headers.get("content-length")) || 0;
-            if (size > 100 * 1024 * 1024) throw Error("File exceeds 100 MB safety limit");
+            if (size > 350 * 1024 * 1024) throw Error("File exceeds 350 MB browser memory safety limit");
             let blob;
             if (response.body?.getReader) {
               // Prevent unbounded allocations even when the server omits Content-Length.
@@ -266,15 +251,15 @@ export default {
                   const {done,value}=await reader.read();
                   if (done) break;
                   bytes+=value.byteLength;
-                  if (bytes>100*1024*1024) {await reader.cancel();throw Error("File exceeds 100 MB safety limit");}
+                  if (bytes>350*1024*1024) {await reader.cancel();throw Error("File exceeds 350 MB browser memory safety limit");}
                   chunks.push(value);
                 }
               } finally {reader.releaseLock();}
               blob=new Blob(chunks,{type:response.headers.get("content-type")||"application/octet-stream"});
             } else {blob=await response.blob();}
             if (!blob.size) throw Error("Empty download");
-            if (blob.size > 100 * 1024 * 1024) throw Error("File exceeds 100 MB safety limit");
-            const bytes=new Uint8Array(await blob.slice(0,24).arrayBuffer());
+            if (blob.size > 350 * 1024 * 1024) throw Error("File exceeds 350 MB browser memory safety limit");
+            const bytes=new Uint8Array(await blob.slice(0,256).arrayBuffer());
             const ext=this.guessType(blob,entry,bytes);
             return {blob, name:entry.displayName + ext};
           },
@@ -301,45 +286,23 @@ export default {
             if (entry.downloadButton) entry.downloadButton.disabled = true;
             this.status(`Preparing ${entry.displayName}...`);
             try {
-              if (await this.nativeAvailable()) {
-                await this.nativeDownload(entry);
-                this.markDownloaded(entry);
-                this.status(`Download started: ${entry.displayName}${entry.ext || ""}. Chrome handles saving in the background.`);
-              } else {
-                const {blob,name} = await this.getAsset(entry);
-                this.saveBlob(blob,name);
-                this.markDownloaded(entry);
-                this.status(`Download started: ${name} (${(blob.size/1048576).toFixed(1)} MB).`);
-              }
-            } catch (error) {
-              const blocked = /Failed to fetch|CORS|NetworkError/i.test(String(error.message));
-              this.status(blocked
-                ? `${entry.displayName}: this server blocks direct browser downloads. Enable the optional CTK Native Downloader Chrome helper to download automatically with its formatted name (no popup).`
-                : `${entry.displayName}: download could not start (${error.message}).`,true);
-              if (entry.downloadButton) entry.downloadButton.disabled = false;
-            } finally {entry.inProgress = false;}
+              const {blob,name}=await this.getAsset(entry);
+              this.saveBlob(blob,name);
+              this.markDownloaded(entry);
+              this.status(`Download requested: ${name} (${(blob.size/1048576).toFixed(1)} MB).`);
+            } catch(error) {
+              const message=/Failed to fetch|CORS|NetworkError/i.test(error.message)
+                ? 'The host blocks browser access to media bytes. For protected SharePoint links, connect Microsoft. For other hosts, the media provider must enable CORS or supply a direct download endpoint.'
+                : error.message;
+              this.status(`${entry.displayName}: ${message}`,true);
+              if (entry.downloadButton) entry.downloadButton.disabled=false;
+            } finally {entry.inProgress=false;}
           },
           async downloadBulk() {
             if (this._downloadBusy) return;
             const selection = this.entries.filter(entry=>entry.selected && !entry.downloaded);
             if (!selection.length) return;
             if (selection.length > 250) { this.status("Select at most 250 files per batch.",true); return; }
-            if (await this.nativeAvailable()) {
-              this._downloadBusy = true; this.updateBulkButton();
-              let started=0, failed=0;
-              try {
-                // Downloads are queued deliberately to avoid Chrome's automatic
-                // multiple-download limit and uncontrolled simultaneous requests.
-                for (const entry of selection) {
-                  try {
-                    await this.nativeDownload(entry);
-                    this.markDownloaded(entry); started++;
-                  } catch (error) { failed++; console.warn("Download failed to start",entry.displayName,error); }
-                  this.status(`${started} file downloads started · ${failed} failed · ${selection.length - started - failed} remaining` ,failed>0);
-                }
-              } finally { this._downloadBusy=false; this.updateBulkButton(); }
-              return;
-            }
             if (typeof JSZip === "undefined") { this.status("ZIP library did not load.",true); return; }
             this._downloadBusy = true; this.updateBulkButton();
             const zip = new JSZip(); const successes = [], failures = [];
@@ -359,7 +322,7 @@ export default {
             try {
               await Promise.all(Array.from({length:Math.min(3,selection.length)},worker));
               if (!successes.length) {
-                this.status(`No ZIP assets accessible (${failures.length} blocked or invalid links). Install CTK Native Downloader for one-click downloads from servers that block browser CORS.`,true);
+                this.status(`No ZIP assets accessible (${failures.length} blocked or invalid links). Connect Microsoft for SharePoint links; other hosts must allow cross-origin access.`,true);
                 return;
               }
               this.status(`Creating ZIP for ${successes.length} assets...`);
