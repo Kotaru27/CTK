@@ -6086,7 +6086,7 @@ const CTKSharePoint = (() => {
     if (typeof raw !== 'string' || !raw || raw.length > 8192) return null;
     let path = raw;
     try { path = decodeURIComponent(path); } catch { return null; }
-    if (path.includes('\u0000') || path.includes('\\') || path.includes('?') || path.includes('#')) return null;
+    if (path.includes('\u0000') || path.includes('\\') || path.includes('?')) return null;
     // Reject traversal and SharePoint UI/player URLs: only a real library path is downloadable.
     if (!/^\/(?:sites|teams)\/[^/]+\/.+/i.test(path) ||
         path.split('/').some(s => s === '.' || s === '..') ||
