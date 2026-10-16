@@ -1,0 +1,18 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
+const rd=s=>fs.readFileSync(path.join(root,s),'utf8');
+const a=rd('source/baseline.html'), b=rd('index.html');
+const ids=s=>[...s.replace(/<script\b[^>]*>[\s\S]*?<\/script>/g,'').matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]).sort();
+const getRoutes=s=>[...s.matchAll(/<button\b[^>]*class="[^"]*home-card[^>]*"[^>]*onclick="([^"]+)"/g)].map(m=>m[1]);
+const beforeIds=ids(a),afterIds=ids(b);
+if(JSON.stringify(beforeIds)!==JSON.stringify(afterIds))throw Error('DOM element IDs changed');
+const beforeRoutes=getRoutes(a),afterRoutes=getRoutes(b);
+if(beforeRoutes.length!==8||JSON.stringify(beforeRoutes)!==JSON.stringify(afterRoutes))throw Error('Homepage routes changed');
+if(!b.includes('./dist/css/app.css')||!b.includes('./dist/js/app.js'))throw Error('Missing built assets');
+const scripts=s=>[...s.matchAll(/<script\b[^>]*src="([^"]+)"/g)].map(m=>m[1]);
+const ext=scripts(a),ext2=scripts(b).filter(x=>!x.startsWith('./dist/'));
+if(JSON.stringify(ext)!==JSON.stringify(ext2))throw Error('External script dependency order changed');
+if(rd('dist/creative-tools-standalone.html')!==a)throw Error('Standalone is not byte-for-byte identical');
+console.log(`Verified: ${beforeIds.length} IDs, ${beforeRoutes.length} homepage links, ${ext.length} external dependencies, exact CSS and JS assembly.`);

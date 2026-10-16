@@ -1,0 +1,38 @@
+/* Creative Tools CSS module: link-gen. Sections reassembled in original cascade order. */
+/* CTK_RUN_0196_START */
+#adlinksTabContentGen .adgen-studio{display:grid!important;grid-template-columns:minmax(305px,390px) minmax(0,1fr)!important;align-items:stretch!important;width:100%;height:100%!important;max-height:100%;gap:0!important;overflow:hidden!important;}
+#adlinksTabContentGen .adgen-studio-input{width:auto!important;min-width:0!important;min-height:0!important;height:100%!important;max-height:none!important;display:flex!important;flex-direction:column!important;padding:28px!important;gap:0!important;border-right:1px solid var(--studio-border)!important;background:var(--studio-side)!important;overflow:auto!important;}
+.adgen-intro{margin-bottom:26px}.adgen-intro h2{font:500 clamp(29px,2.8vw,43px)/1.05 var(--font-display,Georgia,serif);letter-spacing:-.05em;color:var(--studio-title);margin:16px 0 13px;}.adgen-intro p{font-size:13px;max-width:280px;color:var(--studio-muted);line-height:1.7;}
+#adlinksGenHeaderControls.adgen-source-controls{flex-direction:column!important;align-items:stretch!important;gap:11px!important;width:100%;margin-bottom:22px!important;}
+
+/* CTK_RUN_0196_END */
+
+/* CTK_RUN_0198_START */
+#adlinksTabContentGen .adgen-studio-input .glass-panel{background:transparent!important;border:0!important;padding:0!important;box-shadow:none!important;margin:0 0 14px!important;}
+#adlinksTabContentGen .adgen-studio-input .label-header{color:var(--studio-title)!important;font-size:12px!important;font-weight:700!important;letter-spacing:0!important;}
+
+/* CTK_RUN_0198_END */
+
+/* CTK_RUN_0200_START */
+#adlinksTabContentGen .adgen-studio-input button[onclick*="generate"]{margin:0!important;min-height:48px!important;background:var(--studio-accent)!important;color:var(--studio-accent-on)!important;border-color:transparent!important;border-radius:8px!important;font-size:13px!important;font-weight:700!important;}
+#adlinksTabContentGen .adgen-studio-results{min-width:0!important;width:100%!important;display:flex!important;flex-direction:column!important;gap:14px!important;padding:26px!important;overflow:auto!important;background:var(--studio-stage)!important;}
+.adgen-output-intro{margin-bottom:2px}.adgen-output-intro h3{font:500 31px/1.1 var(--font-display,Georgia,serif);letter-spacing:-.05em;margin:9px 0 7px;color:var(--studio-title)}.adgen-output-intro p{margin:0;color:var(--studio-muted);font-size:12px;}
+#adlinksTabContentGen .adgen-output-card{background:var(--studio-panel)!important;border:1px solid var(--studio-border)!important;border-radius:12px!important;padding:18px!important;box-shadow:none!important;min-width:0!important;display:flex!important;flex-direction:column!important;flex:1 1 0!important;min-height:210px!important;}
+#adlinksTabContentGen .adgen-output-card .label-header{font-size:12px!important;color:var(--studio-title)!important;letter-spacing:0!important;text-transform:none!important;}
+#adlinksTabContentGen .adgen-output-card textarea{flex:1!important;min-height:130px!important;max-height:none!important;resize:vertical!important;background:var(--studio-field)!important;border:1px solid var(--studio-border)!important;border-radius:8px!important;padding:15px!important;color:var(--studio-text)!important;font:12px/1.75 var(--font-mono,monospace)!important;}
+#adlinksTabContentGen .adgen-output-card button{height:33px!important;font:700 11px var(--font,sans-serif)!important;border-radius:7px!important;padding:0 15px!important;background:var(--studio-raised)!important;color:var(--studio-title)!important;border:1px solid var(--studio-border)!important;}
+
+/* CTK_RUN_0200_END */
+
+/* CTK_RUN_0210_START */
+#section-adlinks #adlinksTabContentGen .right-panel.adgen-studio-results{display:flex!important;flex-direction:column!important;flex-wrap:nowrap!important;grid-template-columns:none!important;align-content:stretch!important;align-items:stretch!important;justify-content:flex-start!important;background:var(--studio-stage)!important;}
+#section-adlinks #adlinksTabContentGen .right-panel.adgen-studio-results>.adgen-output-card{display:flex!important;position:static!important;flex:1 0 200px!important;align-self:stretch!important;width:100%!important;max-width:none!important;margin:0!important;}
+#section-adlinks #adlinksTabContentGen .right-panel.adgen-studio-results>.adgen-output-intro{flex:0 0 auto!important;width:100%!important;}
+#adlinksTabContentGen .adgen-studio-input>div:last-child{position:sticky;bottom:-28px;z-index:2;background:var(--studio-side);padding:14px 0 0;border-top:1px solid var(--studio-border);}
+
+/* CTK_RUN_0210_END */
+
+/* CTK_RUN_0215_START */
+#adlinksTabContentGen .adgen-studio-input button[onclick*="generate"]:hover,#adlinksTabContentGen .adgen-studio-input button[onclick*="generate"]:focus-visible,#adlinksTabContentGen .adgen-studio-input button[onclick*="generate"]:active{background:var(--studio-accent)!important;color:var(--studio-accent-on)!important;filter:brightness(1.04)!important;box-shadow:none!important;transform:none!important;}
+
+/* CTK_RUN_0215_END */

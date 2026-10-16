@@ -1,0 +1,32 @@
+{
+  "cssPaths": {
+    "shared": "src/css/shared.css",
+    "logo-resizer": "src/css/tools/logo-resizer.css",
+    "pdf-to-image": "src/css/tools/pdf-to-image.css",
+    "image-splitter": "src/css/tools/image-splitter.css",
+    "video-stills": "src/css/tools/video-stills.css",
+    "storyboard": "src/css/tools/storyboard.css",
+    "link-gen": "src/css/tools/link-gen.css",
+    "ad-downloader": "src/css/tools/ad-downloader.css",
+    "video-downloads": "src/css/tools/video-downloads.css"
+  },
+  "jsToolPaths": [
+    "src/js/tools/logo-resizer.js",
+    "src/js/tools/pdf-to-image.js",
+    "src/js/tools/image-splitter.js",
+    "src/js/tools/storyboard.js",
+    "src/js/tools/storyboard-fit.js",
+    "src/js/tools/video-stills.js",
+    "src/js/tools/storyboard-filmstrip.js",
+    "src/js/tools/link-gen.js",
+    "src/js/tools/ad-downloader.js"
+  ],
+  "presentation": [
+    "src/js/presentation/home-interactions.js",
+    "src/js/presentation/vector-icons.js",
+    "src/js/presentation/video-downloads-presentation.js",
+    "src/js/presentation/pdf-to-image-presentation.js"
+  ],
+  "cssSourceLength": 314640,
+  "mainSourceLength": 243594
+}

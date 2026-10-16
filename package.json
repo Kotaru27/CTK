@@ -1,0 +1,12 @@
+{
+  "name": "creative-tools-suite",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Lossless modularized Creative Tools Suite; no UI or processing changes",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node scripts/build.mjs && node --check dist/js/app.js && node --check dist/js/home-interactions.js && node --check dist/js/vector-icons.js && node --check dist/js/video-downloads-presentation.js && node --check dist/js/pdf-to-image-presentation.js && node scripts/verify.mjs",
+    "dev": "node scripts/dev.mjs"
+  }
+}

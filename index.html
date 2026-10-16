@@ -1,0 +1,1669 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Creative Tools Suite</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="Toolkit%20logo.png" rel="icon" type="image/png"/>
+<link href="manifest.json" rel="manifest">
+<link crossorigin="anonymous" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Syne:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<script crossorigin="anonymous" src="https://cdnjs.cloudflare.com/ajax/libs/pica/9.0.1/pica.min.js"></script>
+<script crossorigin="anonymous" src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script crossorigin="anonymous" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script crossorigin="anonymous" src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script crossorigin="anonymous" src="https://unpkg.com/lucide@latest"></script>
+<script crossorigin="anonymous" src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<link rel="stylesheet" href="./dist/css/app.css">
+<link crossorigin="anonymous" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;display=swap" rel="stylesheet"/>
+</link></head>
+<body>
+<header class="header">
+<div class="brand-title" onclick="UI.showHome()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();UI.showHome()}" role="button" style="cursor: pointer" tabindex="0">
+<span class="material-symbols-rounded brand-icon">deployed_code</span>
+<span class="brand-text" id="brandText">CREATIVE TOOLS SUITE</span>
+</div>
+<button aria-label="Toggle light and dark appearance" id="themeToggleBtn" onclick="UI.toggleTheme()" title="Toggle appearance">
+<span class="material-symbols-rounded" id="themeMoonIcon" style="font-size: 14px;">dark_mode</span>
+<span class="toggle-track">
+<span class="toggle-thumb"></span>
+</span>
+<span class="material-symbols-rounded" id="themeSunIcon" style="font-size: 14px;">light_mode</span>
+</button>
+</header>
+<div class="main-layout">
+<nav class="nav-sidebar collapsed" id="mainSidebar">
+<button class="nav-item nav-toggle" onclick="document.getElementById('mainSidebar').classList.toggle('collapsed')" title="Toggle sidebar">
+<span class="material-symbols-rounded nav-toggle-icon-expanded">left_panel_close</span>
+<span class="material-symbols-rounded nav-toggle-icon-collapsed">left_panel_open</span>
+<span class="nav-item-text">Collapse</span>
+</button>
+<button class="nav-item" id="nav-logo" onclick="UI.openTool('section-logo')" title="Logo Resizer">
+<span class="material-symbols-rounded">image</span><span class="nav-item-text">Logo Resizer</span>
+</button>
+<button class="nav-item" id="nav-pdf-image" onclick="UI.openTool('section-pdf','convert')" title="PDF to Image">
+<span class="material-symbols-rounded">picture_as_pdf</span><span class="nav-item-text">PDF to Image</span>
+</button>
+<button class="nav-item" id="nav-pdf-split" onclick="UI.openTool('section-pdf','split')" title="Image Splitter">
+<span class="material-symbols-rounded">content_cut</span><span class="nav-item-text">Image Splitter</span>
+</button>
+<button class="nav-item" id="nav-stills-video" onclick="UI.openTool('section-stills-boards','video')" title="Video Stills">
+<span class="material-symbols-rounded">movie</span><span class="nav-item-text">Video Stills</span>
+</button>
+<button class="nav-item" id="nav-stills-story" onclick="UI.openTool('section-stills-boards','story')" title="Storyboard &amp; Filmstrip">
+<span class="material-symbols-rounded">view_timeline</span><span class="nav-item-text">Storyboard</span>
+</button>
+<button class="nav-item" id="nav-adlinks-gen" onclick="UI.openTool('section-adlinks','gen')" title="Link Gen">
+<span class="material-symbols-rounded">link</span><span class="nav-item-text">Link Gen</span>
+</button>
+<button class="nav-item" id="nav-adlinks-dl" onclick="UI.openTool('section-adlinks','downloader')" title="Ad Link Downloader">
+<span class="material-symbols-rounded">download</span><span class="nav-item-text">Ad Link Downloader</span>
+</button>
+<button class="nav-item" id="nav-yt-helper" onclick="UI.openTool('section-yt-helper')" title="Video Downloads">
+<span class="material-symbols-rounded">video_library</span><span class="nav-item-text">Video Downloads</span>
+</button>
+</nav>
+<div class="view-container">
+<div id="view-home">
+<div class="home-layout combined-home-layout">
+<div class="home-wordmark">
+<div class="home-copy">
+<span class="home-eyebrow">Edition 01 / Creative Tools Suite</span>
+<h1 class="home-heading">Make space for <em>better work.</em></h1>
+<p class="home-summary">A considered collection of practical tools for everything you create, refine and deliver. Pick a workspace. Make it yours.</p>
+</div>
+<div aria-hidden="true" class="home-art">
+<div class="home-art-frame"></div>
+<div class="home-art-pane"><span></span><span></span><span></span></div>
+<div class="home-art-chip">✦ &nbsp; MADE TO CREATE</div>
+</div>
+</div>
+<div class="home-grid combined-home-grid" id="homeContent">
+<button class="home-card home-item tool-logo" onclick="UI.openTool('section-logo')" aria-label="Open Logo Workspace">
+<div class="home-card-top"><span class="home-card-num">01</span><span class="home-card-go" aria-hidden="true">↗</span></div>
+<div class="home-card-art art-logo" aria-hidden="true">
+  <div class="mark-paper mark-back"><span class="mark-tiny">64</span><svg viewBox="0 0 80 80"><path d="M40 12 65 26v28L40 68 15 54V26Z"/><path d="M40 12v56M15 26l50 28M65 26 15 54"/></svg></div>
+  <div class="mark-paper mark-front"><span class="mark-tiny">512 × 512</span><svg viewBox="0 0 80 80"><path d="M40 12 65 26v28L40 68 15 54V26Z"/><path d="M40 12v56M15 26l50 28M65 26 15 54"/></svg></div>
+  <div class="mark-paper mark-small"><svg viewBox="0 0 80 80"><path d="M40 12 65 26v28L40 68 15 54V26Z"/><path d="M40 12v56M15 26l50 28M65 26 15 54"/></svg></div>
+</div>
+<h2 class="home-card-title">Logo Workspace</h2>
+<p class="home-card-desc">Resize, brand and export.</p>
+</button>
+<button class="home-card home-item tool-pdf" onclick="UI.openTool('section-pdf','convert')" aria-label="Open PDF to Image">
+<div class="home-card-top"><span class="home-card-num">02</span><span class="home-card-go" aria-hidden="true">↗</span></div>
+<div class="home-card-art art-pdf" aria-hidden="true">
+  <div class="pdf-paper pdf-under"></div><div class="pdf-paper pdf-main"><b>PDF</b><i></i><i></i><i class="short"></i><span class="pdf-abstract"><em></em><em></em></span></div>
+  <span class="pdf-motion">→</span><div class="pdf-export"><div class="pdf-export-image"><span></span></div><small>PNG</small></div>
+</div>
+<h2 class="home-card-title">PDF to Image</h2>
+<p class="home-card-desc">Convert pages to images.</p>
+</button>
+<button class="home-card home-item tool-split" onclick="UI.openTool('section-pdf','split')" aria-label="Open Image Splitter">
+<div class="home-card-top"><span class="home-card-num">03</span><span class="home-card-go" aria-hidden="true">↗</span></div>
+<div class="home-card-art art-split" aria-hidden="true"><div class="split-picture"><i class="split-orb"></i><span class="split-mountain mountain-left"></span><span class="split-mountain mountain-right"></span></div><div class="split-lines split-h1"></div><div class="split-lines split-h2"></div><div class="split-lines split-v1"></div><div class="split-lines split-v2"></div><span class="split-coord">3 × 3</span></div>
+<h2 class="home-card-title">Image Splitter</h2>
+<p class="home-card-desc">Split images into a grid.</p>
+</button>
+<button class="home-card home-item tool-stills" onclick="UI.openTool('section-stills-boards','video')" aria-label="Open Video Stills">
+<div class="home-card-top"><span class="home-card-num">04</span><span class="home-card-go" aria-hidden="true">↗</span></div>
+<div class="home-card-art art-stills" aria-hidden="true"><div class="stills-reel"><div class="film-perfs"></div><div class="stills-frames"><span class="stills-frame frame-one"><i></i></span><span class="stills-frame frame-two"><i></i></span><span class="stills-frame frame-three"><i></i></span><span class="stills-frame frame-four"><i></i></span></div><div class="film-perfs"></div></div><div class="stills-playhead"><span></span></div></div>
+<h2 class="home-card-title">Video Stills</h2>
+<p class="home-card-desc">Extract the best frames.</p>
+</button>
+<button class="home-card home-item tool-story" onclick="UI.openTool('section-stills-boards','story')" aria-label="Open Storyboard">
+<div class="home-card-top"><span class="home-card-num">05</span><span class="home-card-go" aria-hidden="true">↗</span></div>
+<div class="home-card-art art-story" aria-hidden="true"><div class="story-sheet"><div class="story-heading"><i></i><i></i></div><div class="story-panels"><span class="story-panel panel-a"><span></span></span><span class="story-panel panel-b"><span></span></span><span class="story-panel panel-c"><span></span></span></div><div class="story-copy"><i></i><i></i><i></i></div></div><span class="story-pin">03 / 03</span></div>
+<h2 class="home-card-title">Storyboard</h2>
+<p class="home-card-desc">Boards &amp; filmstrips.</p>
+</button>
+<button class="home-card home-item tool-links" onclick="UI.openTool('section-adlinks','gen')" aria-label="Open Link Gen">
+<div class="home-card-top"><span class="home-card-num">06</span><span class="home-card-go" aria-hidden="true">↗</span></div>
+<div class="home-card-art art-links" aria-hidden="true"><div class="link-string"><span class="link-root">https://</span><b>campaign</b><span class="link-sub">/asset</span><span class="link-cursor"></span></div><div class="link-fork"><span class="fork-path fork-a"></span><span class="fork-path fork-b"></span><span class="fork-path fork-c"></span></div><div class="link-tags"><span>01</span><span>02</span><span>03</span></div></div>
+<h2 class="home-card-title">Link Gen</h2>
+<p class="home-card-desc">Build ad URLs.</p>
+</button>
+<button class="home-card home-item tool-ads" onclick="UI.openTool('section-adlinks','downloader')" aria-label="Open Ad Downloader">
+<div class="home-card-top"><span class="home-card-num">07</span><span class="home-card-go" aria-hidden="true">↗</span></div>
+<div class="home-card-art art-ads" aria-hidden="true"><div class="ad-sheet"><div class="ad-sheet-head"><span class="sheet-name">ASSET LIST</span><span class="sheet-xls">XLSX</span></div><div class="ad-table"><div><span>01</span><i></i><b></b></div><div><span>02</span><i></i><b></b></div><div><span>03</span><i></i><b></b></div></div></div><span class="ad-export-mark">↓</span></div>
+<h2 class="home-card-title">Ad Downloader</h2>
+<p class="home-card-desc">Extract links from Excel.</p>
+</button>
+<button class="home-card home-item tool-video" onclick="UI.openTool('section-yt-helper')" aria-label="Open Video Downloads">
+<div class="home-card-top"><span class="home-card-num">08</span><span class="home-card-go" aria-hidden="true">↗</span></div>
+<div class="home-card-art art-video" aria-hidden="true"><div class="video-poster"><i class="video-orbit"></i><i class="video-triangle"></i><div class="video-progress"><i></i></div></div><div class="video-command"><span>›</span><b>download</b><span class="video-caret"></span></div></div>
+<h2 class="home-card-title">Video Downloads</h2>
+<p class="home-card-desc">Create video download commands.</p>
+</button>
+</div>
+</div>
+</div>
+<div id="view-app">
+<div class="tool-section" id="section-logo">
+<div class="tool-header">
+<span class="material-symbols-rounded tool-icon">image</span>
+<h2 style="flex: 1">Logo Resizer</h2>
+<div class="drop-zone" id="dropZone" style="padding: 5px 10px; border-width: 1px; display: flex; align-items: center; gap: 10px; height: 40px; border-radius: 0;">
+<label class="liquid-btn active-mode" style="height: 30px; font-size: 0.85rem; padding: 0 10px;"><input accept="image/*,.pptx,.xlsx,.xlsm" hidden="" id="logoInput" multiple="" type="file"/><span class="material-symbols-rounded" style="font-size: 14px;">upload</span> Upload</label>
+<div class="meta" style="font-size: 0.6rem; color: var(--text-muted);">Images, PPTX, XLSX</div>
+</div>
+<div data-guide="Bundles every processed logo into a single .zip file and downloads it.">
+<button class="liquid-btn active-mode" disabled="" id="exportAllBtn" style="height: 40px; font-size: 0.85rem; padding: 0 15px;">
+<span class="material-symbols-rounded" style="font-size: 14px;">download</span> Download Zip
+                </button>
+</div>
+<div data-guide="Clears every uploaded image and resets all settings back to default.">
+<button class="liquid-btn icon-only danger-btn" id="clearLogoBtn" style="width: 28px; height: 28px; padding: 0; display: flex; align-items: center; justify-content: center; margin-right: 10px; border-width: 0;">
+<span class="material-symbols-rounded" style="font-size: 14px;">delete</span>
+</button>
+</div>
+<button class="liquid-btn icon-only" onclick="Tools.Logo.openLinkGen()" title="Generate HTML Links">
+<span class="material-symbols-rounded" style="font-size: 18px;">link</span>
+</button>
+</div>
+<div class="editor-layout">
+<div class="sidebar-panel">
+<div class="progress-container glass-panel" id="logoProgress">
+<div class="progress-text">
+<span id="logoStatusText">Extracting...</span>
+</div>
+</div>
+<div id="logoControls" style="display: flex; flex-direction: column; gap: 25px">
+<div class="glass-panel control-group">
+<span class="label-header">Text Settings</span>
+<div data-guide="Sets the typeface used for the text overlay on every logo card.">
+<select class="liquid-input persist-val" id="globalFontFamily" style="margin-bottom: 10px">
+<option value="Arial">Arial</option>
+<option value="Century Gothic">Century Gothic (Body)</option>
+<option value="Calibri">Calibri</option>
+<option value="Comic Sans MS">Comic Sans MS</option>
+<option value="Courier New">Courier New (Fixed)</option>
+<option value="Georgia">Georgia (Serif)</option>
+<option value="Impact">Impact (Heavy)</option>
+<option value="Lucida Console">Lucida Console</option>
+<option value="Palatino Linotype">
+                          Palatino Linotype
+                        </option>
+<option value="Segoe UI">Segoe UI</option>
+<option value="Tahoma">Tahoma</option>
+<option value="Times New Roman">Times New Roman</option>
+<option value="Trebuchet MS">Trebuchet MS</option>
+<option value="Verdana">Verdana</option>
+<option value="sans-serif">Default Sans</option>
+</select>
+</div>
+<div style="display: flex; gap: 10px; align-items: center">
+<div data-guide="Sets the text size in pixels. Leave blank to auto-size based on the image." style="flex: 1">
+<input class="liquid-input persist-val" id="fontSizeInput" placeholder="Font Size (px)" style="width: 100%" type="number"/>
+</div>
+<div data-guide="Picks the color of the overlay text drawn on top of each logo." style="
+                          display: flex;
+                          flex-direction: column;
+                          align-items: center;
+                          justify-content: center;
+                          background: rgba(255, 255, 255, 0.03);
+                          border: 1px solid rgba(255, 255, 255, 0.08);
+                          border-radius: 0;
+                          height: 40px;
+                          width: 40px;
+                          padding: 2px;
+                        ">
+<input class="persist-val" id="fontColorPicker" style="
+                            border: none;
+                            height: 100%;
+                            width: 100%;
+                            cursor: pointer;
+                            padding: 0;
+                            border-radius: 0;
+                            background: transparent;
+                          " title="Font Color" type="color" value="#000000"/>
+</div>
+</div>
+<div style="
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        flex-wrap: wrap;
+                        gap: 10px;
+                        margin-top: 5px;
+                      ">
+<label data-guide="Toggles bold font weight for the overlay text." style="
+                          display: flex;
+                          gap: 10px;
+                          font-size: 0.95rem;
+                          align-items: center;
+                        "><input class="toggle-switch small persist-chk" id="boldToggle" type="checkbox"/>
+                        Bold</label><label data-guide="Synchronizes the exported filename with the original filename." style="
+                          display: flex;
+                          gap: 10px;
+                          font-size: 0.95rem;
+                          align-items: center;
+                        "><input checked="" class="toggle-switch small persist-chk" id="syncFilenameToggle" type="checkbox"/>
+                        Sync Filename</label>
+</div>
+</div>
+<div class="glass-panel control-group">
+<span class="label-header">Layout Adjust</span>
+<div style="
+                        display: flex;
+                        flex-direction: column;
+                        gap: 5px;
+                        margin-bottom: 10px;
+                      ">
+<span class="label-header" style="font-size: 0.7rem; color: var(--text-muted)">Padding (0 - 150)</span>
+<div data-guide="Adds empty space around the image inside the export canvas, from 0 to 150px.">
+<input class="range-slider persist-val" id="globalPadding" max="150" min="0" style="width: 100%" type="range" value="0"/>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 5px">
+<span class="label-header" style="font-size: 0.7rem; color: var(--text-muted)">Vertical Offset (-50 to +50)</span>
+<div data-guide="Shifts the image vertically inside the canvas.">
+<input class="range-slider persist-val" id="globalImgPos" max="50" min="-50" style="width: 100%" type="range" value="0"/>
+</div>
+</div>
+</div>
+<div class="glass-panel control-group">
+<span class="label-header">Export Settings</span>
+<div class="tiny-row" data-guide="Sets the pixel dimensions every downloaded logo will be resized to.">
+<input class="liquid-input" id="exportWidth" placeholder="W" type="number" value=""/><input class="liquid-input" id="exportHeight" placeholder="H" type="number" value=""/>
+</div>
+<div data-guide="Select the image format for the exported logos." style="margin-top: 10px">
+<select class="liquid-input persist-val" id="exportFormat" style="width: 100%">
+<option value="png">PNG (.png)</option>
+<option value="jpeg">JPG (.jpg)</option>
+</select>
+</div>
+<div class="actions-group">
+</div>
+</div>
+</div>
+</div>
+<div class="canvas-grid" id="logoGrid">
+<div class="empty-state-msg" data-guide="The workspace is empty. Drop images here to begin." id="logoEmpty">
+<span class="material-symbols-rounded" style="color: var(--text-muted);  font-size: 50px;">image</span>
+<p>No images selected</p>
+<div class="logo-empty-layout">
+<div class="logo-empty-copy">
+<span class="logo-empty-eyebrow">YOUR WORK, READY TO SCALE</span>
+<h3 class="logo-empty-headline">Every mark.<br/>Exactly right.</h3>
+<p class="logo-empty-description">Bring in your logos or source documents. Set the output size once, fine-tune each asset, and export the complete collection.</p>
+<label class="logo-empty-upload" for="logoInput"><span aria-hidden="true" class="material-symbols-rounded" style="font-size:18px">add</span>Add your artwork</label>
+<span class="logo-empty-note">PNG · JPG · SVG · PPTX · XLSX   /   MULTIPLE FILES</span>
+</div>
+<div aria-hidden="true" class="logo-empty-art">
+<div class="logo-art-sheet art-sheet-back"></div>
+<div class="logo-art-sheet art-sheet-mid"></div>
+<div class="logo-art-sheet art-sheet-front"><strong>Ab.</strong><small>BRAND / 001</small></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Focus Panel (Collapsible) -->
+<div id="logoDetailOverlay" style="width: 420px; flex-shrink: 0; background: var(--m3-surface-container); border-left: 1px solid var(--border); display: none; flex-direction: column; height: 100%; overflow: hidden; border-radius: 0 var(--radius-lg) var(--radius-lg) 0; border: 1px solid var(--border);">
+<!-- 1. Header (Name & Close) -->
+<div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border); padding: 15px 20px; background: var(--m3-surface-container-high);">
+<div style="display: flex; flex-direction: column; gap: 4px; flex: 1;">
+<input class="liquid-input" id="logoDetailFname" placeholder="Filename" style="font-family: var(--font); font-size: 1.1rem; font-weight: 600; width: 100%; background: transparent; border: 1px solid transparent; padding: 0; height: auto; outline: none;"/>
+<span id="logoDetailIndex" style="font-size: 0.75rem; color: var(--text-muted);"></span>
+</div>
+<div aria-label="Navigate assets" class="lr-detail-nav" role="group"><button aria-label="Previous asset" onclick="Tools.Logo.goDetail(-1)" title="Previous asset" type="button"><span aria-hidden="true">←</span></button><button aria-label="Next asset" onclick="Tools.Logo.goDetail(1)" title="Next asset" type="button"><span aria-hidden="true">→</span></button></div>
+<button class="liquid-btn icon-only" data-guide="Close Focus Mode and return to the grid." id="logoDetailClose" style="margin-left: 10px; flex-shrink: 0; margin-top: -2px;">
+<span class="material-symbols-rounded">close</span>
+</button>
+</div>
+<div style="display: flex; flex-direction: column; overflow-y: auto; flex: 1;">
+<!-- 2. Logo Canvas (Preview) -->
+<div data-guide="Full-sized, pixel-accurate preview of what the exported logo will look like." style="position: relative; background: var(--bg-main); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: center; padding: 20px; min-height: auto; background-image: radial-gradient(var(--border) 1px, transparent 1px); background-size: 20px 20px;">
+<canvas id="logoDetailCanvas" style="max-width: 100%; max-height: 280px; border: 1px solid var(--border); box-shadow: none; border-radius: var(--radius); transition: transform 0.2s; background: #ffffff;"></canvas>
+<div style="position: absolute; bottom: 8px; width: 100%; text-align: center; font-size: 0.75rem; color: var(--text-muted); pointer-events: none; background: rgba(0,0,0,0.5); padding: 2px 8px; border-radius: 0; left: 50%; transform: translateX(-50%); display: inline-block;">
+                    Arrow Keys to navigate
+                  </div>
+</div>
+<!-- Controls Wrapper -->
+<div style="padding: 15px; display: flex; flex-direction: column; gap: 15px;">
+<!-- 3. Label Text & Font -->
+<div class="glass-panel control-group" data-guide="Add or update text displayed along with this specific logo." style="margin: 0; display: flex; flex-direction: column; gap: 8px;">
+<div style="display: flex; justify-content: space-between; align-items: center;">
+<span class="label-header" style="margin: 0;">Label Text</span>
+<div style="display: flex; align-items: center; gap: 8px;">
+<span style="font-size: 0.75rem; font-weight: bold; color: var(--text-muted);">Size:</span>
+<input class="liquid-input" id="logoDetailFontSize" placeholder="Auto" style="width: 70px; height: 26px; font-size: 0.8rem; padding: 2px 6px;" type="number"/>
+</div>
+</div>
+<textarea class="liquid-input" id="logoDetailText" placeholder="Overlay text..." rows="2" style="resize: vertical"></textarea>
+</div>
+<!-- 4. Padding & Offsets -->
+<div class="glass-panel control-group" style="margin: 0">
+<span class="label-header">Padding &amp; Offsets</span>
+<div style="display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px;">
+<div style="display: flex; justify-content: space-between; align-items: center;">
+<span class="label-header" style="font-size: 0.7rem; color: var(--text-muted);">Image Padding</span>
+<button id="logoDetailResetPadding" style="background: none; border: none; color: var(--text-muted); font-size: 0.7rem; cursor: pointer; padding: 0;">
+                          Reset to Global
+                        </button>
+</div>
+<input class="range-slider" id="logoDetailPaddingSlider" max="150" min="0" type="range" value="0"/>
+</div>
+<div style="display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px;">
+<span class="label-header" style="font-size: 0.7rem; color: var(--text-muted);">Image Y Offset</span>
+<input class="range-slider" id="logoDetailImgSlider" max="50" min="-50" type="range" value="0"/>
+</div>
+<div style="display: flex; flex-direction: column; gap: 5px;">
+<span class="label-header" style="font-size: 0.7rem; color: var(--text-muted);">Text Y Offset</span>
+<input class="range-slider" id="logoDetailTxtSlider" max="100" min="0" type="range" value="90"/>
+</div>
+</div>
+</div>
+</div>
+<!-- Stable inspector action bar: existing buttons and handlers, only relocated -->
+<div class="lr-detail-footer">
+<button class="liquid-btn active-mode" id="logoDetailDownload" style="flex: 1; justify-content: center; padding: 10px; font-size: 0.9rem;">
+<span class="material-symbols-rounded" style="font-size: 16px;">download</span> Save image
+                </button>
+<button class="liquid-btn danger-btn" id="logoDetailDelete" style="flex: 1; border: 1px solid var(--danger); justify-content: center; padding: 10px; font-size: 0.9rem;">
+<span class="material-symbols-rounded" style="font-size: 16px;">delete</span> Delete
+                </button>
+</div>
+</div>
+</div>
+</div>
+<div class="tool-section" id="section-pdf">
+<div class="tool-header pdf-tool-chrome">
+<span class="material-symbols-rounded tool-icon">picture_as_pdf</span>
+<h2 style="flex:1">PDF Tools</h2>
+<div id="convertHeaderControls" style="display:flex;gap:10px;align-items:center;"></div>
+
+</div>
+<div aria-label="PDF tools" id="tabRowPdf" role="tablist" style="
+                display: flex;
+                gap: 10px;
+                padding: 0 20px;
+                border-bottom: 1px solid var(--border);
+                margin-bottom: 20px;
+              ">
+<span data-guide="Switches to the mode that converts PDF pages into individual image files."><button aria-controls="pdfTabContentConvert" aria-selected="true" class="liquid-btn active-mode" id="pdfTabConvert" onclick="UI.switchPdfTab('convert')" role="tab">
+                  PDF to Image
+                </button></span>
+<span data-guide="Switches to the mode that cuts one image into a grid of smaller pieces."><button aria-controls="pdfTabContentSplit" aria-selected="false" class="liquid-btn" id="pdfTabSplit" onclick="UI.switchPdfTab('split')" role="tab" tabindex="-1">
+                  Image Splitter
+                </button></span>
+</div>
+<div aria-labelledby="pdfTabConvert" id="pdfTabContentConvert" role="tabpanel">
+<div class="pdf-workbench">
+<aside class="pdf-setup-panel">
+<div class="pdf-side-identity">
+<span class="pdf-eyebrow">WORKSPACE / 02</span>
+<div aria-hidden="true" class="pdf-brandmark"><span>PDF</span><span class="pdf-brand-arrow">↗</span></div>
+<h2>Make every page<br/><em>an image.</em></h2>
+<p>Convert whole documents into high-quality, ready-to-use image files.</p>
+</div>
+<div class="pdf-side-settings">
+<div class="pdf-section-heading"><span class="pdf-step">01</span><span>Source documents</span></div>
+<div class="pdf-drop-surface">
+<div class="drop-zone" id="pdfDropZone" style="padding: 5px 10px; border-width: 1px; display: flex; align-items: center; gap: 10px; height: 40px; border-radius: 0;">
+<label class="liquid-btn active-mode" style="height: 30px; font-size: 0.85rem; padding: 0 10px;"><input accept="application/pdf" hidden="" id="pdfInput" multiple="" type="file"/><span class="material-symbols-rounded" style="font-size: 14px;">upload</span> Add PDF Files</label>
+</div>
+<span class="pdf-drop-hint">or drop your PDFs here</span>
+</div>
+<div class="pdf-separator"></div>
+<div class="pdf-section-heading"><span class="pdf-step">02</span><span>Image format</span></div>
+<label class="pdf-format-label" for="pdfFormat">Output format</label>
+<div class="pdf-format-select-wrap"><select class="liquid-input persist-val" id="pdfFormat">
+<option value="image/png">PNG</option>
+<option value="image/jpeg">JPG</option>
+</select><span aria-hidden="true">⌄</span></div>
+<p class="pdf-format-note">PNG for lossless detail · JPG for smaller files.</p>
+</div>
+<div class="pdf-side-bottom">
+<div class="pdf-local-mark"><span class="pdf-local-dot"></span><div><strong>Processed in your browser</strong><small>Your documents stay on your device.</small></div></div>
+<button class="liquid-btn icon-only danger-btn" id="clearPdfBtn" style="width: 28px; height: 28px; padding: 0; display: flex; align-items: center; justify-content: center; margin-right: 10px; border-width: 0;">
+<span class="material-symbols-rounded" style="font-size: 14px;">delete</span>
+</button>
+</div>
+</aside>
+<div class="pdf-output-column">
+<div class="pdf-output-head">
+<div>
+<span class="pdf-eyebrow">DOCUMENT / EXPORT STUDIO</span>
+<h3>Output library<span id="pdfDocCount">0 documents</span></h3>
+</div>
+<button aria-label="Download all converted PDF pages as a ZIP archive" class="pdf-download-all" disabled="" id="pdfDownloadAllBtn" type="button"><span class="material-symbols-rounded">download</span><span class="pdf-download-label">Download all</span><span class="pdf-download-counter" id="pdfExportCount">0</span></button>
+</div>
+<div class="pdf-work-status">
+<span class="pdf-status-led"></span><span id="pdfWorkStatus">Ready for documents</span>
+<span aria-hidden="true" class="pdf-status-separator"></span>
+<span id="pdfPageCount">0 pages converted</span>
+</div>
+<button class="liquid-btn" id="cancelPdfBtn" style="display: none;">Cancel Processing</button>
+<div class="progress-container glass-panel" id="pdfProgress" style="flex: 1; margin-top: 0; padding: 15px;">
+<div class="progress-text">
+<span id="pdfStatusText">Initializing...</span><span id="pdfStatusPercent">0%</span>
+</div>
+<div class="progress-bar-bg" style="margin-bottom: 0; margin-top: 8px;">
+<div class="progress-bar-fill" id="pdfProgressBar"></div>
+</div>
+</div>
+<div class="pdf-output-stage">
+<div class="pdf-stage-topline"><span>CONVERTED DOCUMENTS</span><span id="pdfStageMeta">EMPTY LIBRARY</span></div>
+<div class="pdf-output-scroller">
+<div class="right-panel pdf-results-panel">
+<div class="pdf-stacks-container" id="pdfStacksContainer">
+<div class="empty-state-msg pdf-welcome" data-guide="No PDFs loaded. Upload files to reveal pages." id="pdfEmptyState">
+<div aria-hidden="true" class="pdf-paper-art"><div class="pdf-paper-page pdf-paper-back"><span class="pdf-art-dots"></span><span class="pdf-art-line"></span></div><div class="pdf-paper-page pdf-paper-front"><span class="pdf-art-sun"></span><span class="pdf-art-horizon"></span><span class="pdf-art-horizon two"></span></div><span class="pdf-art-number">01 / 03</span></div>
+<div class="pdf-empty-copy"><span class="pdf-empty-kicker">YOUR NEXT PROJECT STARTS HERE</span><h3>From pages<br/>to pixels.</h3><p>Bring in a PDF. Every page becomes a crisp image you can review and save.</p><label class="pdf-empty-cta" for="pdfInput"><span class="material-symbols-rounded">add</span> Choose a PDF</label><span class="pdf-empty-suffix">MULTIPLE FILES SUPPORTED</span></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="pdf-output-foot"><span>PDF → PNG / JPG</span><span>Choose a document to inspect its pages and download selected images.</span></div>
+</div>
+</div>
+</div>
+<div aria-labelledby="pdfTabSplit" id="pdfTabContentSplit" role="tabpanel" style="display: none">
+<div class="editor-layout split-studio"><aside class="split-studio-setup"><div class="split-studio-identity"><span class="edition-kicker">WORKSPACE / 03  ·  IMAGE SPLITTER</span><h2>Cut with precision.</h2><p>Turn a single image into an ordered grid of export-ready pieces.</p></div><div class="edition-rule-label">01 / IMPORT &amp; CONFIGURE</div><div class="split-studio-controls" id="splitHeaderControls" style="display: none; gap: 10px; align-items: center;">
+<div class="drop-zone" id="splitDropZone" style="padding: 5px 10px; border-width: 1px; display: flex; align-items: center; gap: 10px; height: 40px; border-radius: 0;">
+<label class="liquid-btn active-mode" style="height: 30px; font-size: 0.85rem; padding: 0 10px;"><input accept="image/*" hidden="" id="splitInput" multiple="" type="file"/><span class="material-symbols-rounded" style="font-size: 14px;">upload</span> Add Images</label>
+</div>
+<div>
+<input class="liquid-input persist-val" id="splitCols" max="50" min="1" placeholder="Cols" style="width: 80px; height: 40px; font-size: 0.85rem; padding: 0 10px;" title="Number of columns" type="number" value="2"/>
+</div>
+<div>
+<button class="liquid-btn" disabled="" id="triggerSplitBtn" style="height: 40px; font-size: 0.85rem; padding: 0 15px;">
+<span class="material-symbols-rounded" style="font-size: 14px;">content_cut</span> Split Images
+                  </button>
+</div>
+<div>
+<button class="liquid-btn active-mode" disabled="" id="downloadSplitBtn" style="height: 40px; font-size: 0.85rem; padding: 0 15px;">
+<span class="material-symbols-rounded" style="font-size: 14px;">download</span> Download Zip
+                  </button>
+</div>
+<div>
+<button class="liquid-btn icon-only danger-btn" id="clearSplitBtn" style="width: 28px; height: 28px; padding: 0; display: flex; align-items: center; justify-content: center; margin-right: 10px; border-width: 0;">
+<span class="material-symbols-rounded" style="font-size: 14px;">delete</span>
+</button>
+</div>
+</div><div class="split-studio-hint"><span class="edition-kicker">PRIVATE BY DESIGN</span><p>Images are processed in your browser. Choose your column count and export the cut pieces as a ZIP.</p></div></aside><section class="split-studio-output"><header class="split-studio-output-head"><div><span class="edition-kicker">OUTPUT / CUT SHEET</span><h3>Your split images</h3></div><span class="split-studio-meta">ORDERED FOR EXPORT</span></header><div class="split-studio-canvas"><div class="canvas-grid" id="splitGrid">
+<div class="empty-state-msg" data-guide="No image to split. Upload an image to start cutting." id="splitEmpty"><div class="split-artwork"><span aria-hidden="true" class="split-art-tile"></span><span aria-hidden="true" class="split-art-tile"></span><span aria-hidden="true" class="split-art-tile"></span><span aria-hidden="true" class="split-art-tile"></span><span aria-hidden="true" class="split-art-tile"></span><span aria-hidden="true" class="split-art-tile"></span></div><span class="edition-kicker">NO IMAGES YET</span><h3>One image. Many pieces.</h3><p>Add an image on the left to preview your new grid and download its pieces.</p></div>
+</div></div><div class="split-studio-foot"><span>IMAGE → GRID → ZIP</span><span>Original order preserved in exported parts.</span></div></section></div>
+</div>
+</div>
+<div class="tool-section" id="section-stills-boards">
+<div class="tool-header">
+<span class="material-symbols-rounded tool-icon" id="stillsToolIcon">movie</span>
+<h2 id="stillsToolTitle" style="flex: 1">Stills &amp; Boards</h2>
+<div id="storySubModeToggle" style="display: none; align-items: center; gap: 4px; background: var(--bg-input); padding: 3px; border: 1px solid var(--border); margin-right: 12px;">
+<button class="liquid-btn active-mode" id="subModeBtnBoard" onclick="UI.switchStorySubMode('story')" style="height: 30px; font-size: 0.8rem; padding: 0 12px; display: flex; align-items: center; gap: 6px; border: none;" title="Switch to Grid Board layout" type="button">
+<span class="material-symbols-rounded" style="font-size: 15px;">grid_view</span> Grid Board
+                </button>
+<button class="liquid-btn" id="subModeBtnFilmstrip" onclick="UI.switchStorySubMode('filmstrip')" style="height: 30px; font-size: 0.8rem; padding: 0 12px; display: flex; align-items: center; gap: 6px; border: none;" title="Switch to Filmstrip layout" type="button">
+<span class="material-symbols-rounded" style="font-size: 15px;">theaters</span> Filmstrip
+                </button>
+<button class="liquid-btn" id="subModeBtnFit" onclick="UI.switchStorySubMode('fit')" style="height: 30px; font-size: 0.8rem; padding: 0 12px; display: flex; align-items: center; gap: 6px; border: none;" title="Create the three-circle Fit to Platform layout" type="button">
+<span class="material-symbols-rounded" style="font-size: 15px;">adjust</span> Fit to Platform
+                </button>
+</div>
+<div id="videoHeaderControls" style="display: flex; gap: 10px; align-items: center;">
+<div class="drop-zone" id="stillsDropZone" style="padding: 5px 10px; border-width: 1px; display: flex; align-items: center; gap: 10px; height: 40px; border-radius: 0;">
+<label class="liquid-btn active-mode" style="height: 30px; font-size: 0.85rem; padding: 0 10px;"><input accept="video/*" hidden="" id="stillsInput" multiple="" type="file"/><span class="material-symbols-rounded" style="font-size: 14px;">videocam</span> Add Videos</label>
+</div>
+<div>
+<button class="liquid-btn active-mode" disabled="" id="downloadStillsBtn" style="height: 40px; font-size: 0.85rem; padding: 0 15px;">
+<span class="material-symbols-rounded" style="font-size: 14px;">download</span> Download All
+                  </button>
+</div>
+<div>
+<button class="liquid-btn icon-only danger-btn" id="clearStillsBtn" style="width: 28px; height: 28px; padding: 0; display: flex; align-items: center; justify-content: center; margin-right: 10px; border-width: 0;">
+<span class="material-symbols-rounded" style="font-size: 14px;">delete</span>
+</button>
+</div>
+<div style="display: none;">
+<input checked="" id="stillsGenAll" type="checkbox"/>
+<input id="stillsGenStory" type="checkbox"/>
+<select id="stillsStoryGrid">
+<option value="4">2x2</option>
+<option value="6">3x2</option>
+<option value="9">3x3</option>
+</select>
+</div>
+</div>
+<div id="storyHeaderControls" style="display: none; gap: 10px; align-items: center;">
+<div class="drop-zone" id="storyDropZone" style="padding: 5px 10px; border-width: 1px; display: flex; align-items: center; gap: 10px; height: 40px; border-radius: 0;">
+<label class="liquid-btn active-mode" style="height: 30px; font-size: 0.85rem; padding: 0 10px;"><input accept="image/*,video/*" hidden="" id="storyInput" multiple="" type="file"/><span class="material-symbols-rounded" style="font-size: 14px;">upload</span> Add Assets</label>
+</div>
+<div>
+<button class="liquid-btn active-mode" id="downloadStoryBtn" style="height: 40px; font-size: 0.85rem; padding: 0 15px;">
+<span class="material-symbols-rounded" style="font-size: 14px;">download</span> Save JPG
+                  </button>
+</div>
+<div>
+<button class="liquid-btn" id="downloadAllStoryBtn" style="height: 40px; font-size: 0.85rem; padding: 0 15px;">
+<span class="material-symbols-rounded" style="font-size: 14px;">archive</span> Download All
+                  </button>
+</div>
+<div>
+<button class="liquid-btn icon-only danger-btn" id="clearStoryBtn" style="width: 28px; height: 28px; padding: 0; display: flex; align-items: center; justify-content: center; margin-right: 10px; border-width: 0;" title="Clear Board">
+<span class="material-symbols-rounded" style="font-size: 14px;">delete</span>
+</button>
+</div>
+</div>
+<div id="filmstripHeaderControls" style="display: none; gap: 10px; align-items: center;">
+<div class="drop-zone" id="filmstripDropZone" style="padding: 5px 10px; border-width: 1px; display: flex; align-items: center; gap: 10px; height: 40px; border-radius: 0;">
+<label class="liquid-btn active-mode" style="height: 30px; font-size: 0.85rem; padding: 0 10px;"><input accept="image/*,video/*" hidden="" id="filmstripInput" multiple="" type="file"/><span class="material-symbols-rounded" style="font-size: 14px;">upload</span> Add Stills</label>
+</div>
+<div>
+<button class="liquid-btn active-mode" id="downloadFilmstripJpgBtn" style="height: 40px; font-size: 0.85rem; padding: 0 15px;">
+<span class="material-symbols-rounded" style="font-size: 14px;">download</span> Save JPG
+                  </button>
+</div>
+<div>
+<button class="liquid-btn" id="downloadFilmstripPngBtn" style="height: 40px; font-size: 0.85rem; padding: 0 15px;">
+<span class="material-symbols-rounded" style="font-size: 14px;">image</span> Save PNG
+                  </button>
+</div>
+<div>
+<button class="liquid-btn icon-only danger-btn" id="clearFilmstripBtn" style="width: 28px; height: 28px; padding: 0; display: flex; align-items: center; justify-content: center; margin-right: 10px; border-width: 0;" title="Clear Filmstrip">
+<span class="material-symbols-rounded" style="font-size: 14px;">delete</span>
+</button>
+</div>
+</div>
+<div id="fitHeaderControls" style="display: none; gap: 8px; align-items: center; flex-wrap: wrap;">
+<label class="liquid-btn active-mode" style="cursor:pointer;" title="Upload a single storyboard image">
+<input accept="image/*" hidden="" id="fitUploadInput" type="file"/>
+<span class="material-symbols-rounded">upload</span> Upload Storyboard
+                </label>
+<button class="liquid-btn" id="fitUseBoardBtn" title="Use the current Grid Board without modifying it" type="button">
+<span class="material-symbols-rounded">grid_view</span> Use Current Board
+                </button>
+<button class="liquid-btn active-mode" disabled="" id="fitExportPngBtn" type="button">
+<span class="material-symbols-rounded">download</span> Save PNG
+                </button>
+<button class="liquid-btn" disabled="" id="fitExportJpgBtn" type="button">Save JPG</button>
+</div>
+</div>
+<div aria-label="Stills and boards" id="tabRowStills" role="tablist" style="
+                display: flex;
+                gap: 10px;
+                padding: 0 20px;
+                border-bottom: 1px solid var(--border);
+                margin-bottom: 20px;
+              ">
+<span data-guide="Switches to the mode that automatically extracts thumbnails from video files."><button aria-controls="stillsTabContentVideo" aria-selected="true" class="liquid-btn active-mode" id="stillsTabVideo" onclick="UI.switchStillsTab('video')" role="tab">
+                  Video Stills
+                </button></span>
+<span data-guide="Switches to Storyboard to arrange images into boards or filmstrips."><button aria-controls="stillsTabContentStory" aria-selected="false" class="liquid-btn" id="stillsTabStory" onclick="UI.switchStillsTab('story')" role="tab" tabindex="-1">
+                  Storyboard
+                </button></span>
+</div>
+<div aria-labelledby="stillsTabStory" id="stillsTabContentStory" role="tabpanel" style="display: none">
+<div class="editor-layout">
+<div class="sidebar-panel">
+<div id="storyBoardControls" style="display: flex; flex-direction: column; height: 100%;">
+<div class="glass-panel" style="margin-bottom: 25px">
+<div id="storyProjectTabs" style="
+                          display: flex;
+                          flex-wrap: wrap;
+                          gap: 8px;
+                          margin-bottom: 15px;
+                        "></div>
+<div data-guide="Creates a fresh storyboard project.">
+<button class="liquid-btn" onclick="Tools.Story.addNewProject()" style="width: 100%; height: 36px; font-size: 0.85rem">
+                          + New Board
+                        </button>
+</div>
+</div>
+<div class="glass-panel control-group" style="margin-bottom: 25px;">
+<span class="label-header">Board Settings</span>
+<div class="dense-grid-3">
+<div>
+<span class="label-header">Cols</span>
+<div data-guide="Forces the board to have a specific number of columns. Leave at Auto to calculate mathematically.">
+<input class="liquid-input persist-val" id="storyCols" placeholder="Auto" type="number" value="0"/>
+</div>
+</div>
+<div>
+<span class="label-header">Res</span>
+<div>
+<label data-guide="When disabled, switches to Manual mode allowing you to force a specific width." style="height: 32px; font-size: 0.85rem; display: flex; gap: 8px; align-items: center; margin: 0;">
+<input checked="" class="toggle-switch small persist-chk" id="storyAutoWidth" type="checkbox"/>
+                              Auto
+                            </label>
+</div>
+</div>
+<div id="storyWidthContainer" style="display: none">
+<span class="label-header">Width</span>
+<div>
+<input class="liquid-input persist-val" id="storyWidth" type="number" value="1920"/>
+</div>
+</div>
+</div>
+<div style="display: none;">
+<span class="label-header">Fit</span>
+<div>
+<select class="liquid-input persist-val" id="storyFitMode">
+<option value="cover">Cover</option>
+<option value="contain">Contain</option>
+</select>
+</div>
+<span class="label-header">BG Color</span>
+<div>
+<input class="liquid-input persist-val" id="storyBgColor" type="color" value="#ffffff"/>
+</div>
+<span class="label-header">Gap</span>
+<div>
+<input class="liquid-input persist-val" id="storyGap" type="number" value="0"/>
+</div>
+</div>
+</div>
+<div class="glass-panel control-group" style="flex: 1; display: flex; flex-direction: column;">
+<span class="label-header">Board Actions</span>
+<input class="liquid-input" id="storyNameInput" placeholder="Board Name" style="margin-bottom: 15px;" type="text" value="Board_1"/>
+<span class="label-header">Added Assets</span>
+<div style="flex: 1; overflow-y: auto; padding-right: 5px;">
+<div id="storyFileList" style="display: flex; flex-direction: column; gap: 8px;"></div>
+</div>
+<button class="liquid-btn" onclick="UI.sendStoryToFilmstrip()" style="width: 100%; height: 32px; font-size: 0.8rem; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 6px;" title="Open and lay out current board stills in Filmstrip" type="button"><span class="material-symbols-rounded" style="font-size: 15px;">theaters</span> View in Filmstrip</button>
+<button id="generateStoryBtn" style="display: none;">Render</button>
+</div>
+</div>
+</div>
+<div class="story-center-panel">
+<div id="storyBoardPreviewArea" style="width: 100%; height: 100%">
+<div id="storyPreview" style="position: relative; width: 100%; height: 100%">
+<span class="text-muted">Preview</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div aria-labelledby="stillsTabVideo" class="vs-stills-only" id="stillsTabContentVideo" role="tabpanel">
+<div class="vs-main-stage">
+<div class="vs-stage-intro">
+<div class="vs-intro-copy">
+<div class="vs-overline"><span class="vs-status-dot"></span> AUTOMATIC FRAME EXTRACTION <span class="vs-intro-rule"></span> STILLS / 01</div>
+<h3>Find the <em>right frame.</em></h3>
+<p>Import a video. Review the extracted moments. Save the stills you need.</p>
+</div>
+<div aria-hidden="true" class="vs-intro-mark"><span>01</span><span>02</span><span>03</span><span>04</span></div>
+</div>
+<div class="vs-collection-header">
+<div><span class="vs-collection-kicker">YOUR WORKSPACE</span><h4>Frame collections</h4></div>
+<span class="vs-collection-hint">OPEN A COLLECTION TO REVIEW &amp; EXPORT <span aria-hidden="true">↗</span></span>
+</div>
+<div class="vs-collection-body">
+<div class="vs-empty-hero">
+<div aria-hidden="true" class="vs-empty-motif"><span></span><span></span><span></span></div>
+<h4>Start with a video.</h4>
+<p>We'll extract the stills automatically. No settings, no extra steps.</p>
+<label class="vs-empty-cta" for="stillsInput"><span class="material-symbols-rounded">add</span> Import video <span aria-hidden="true">↗</span></label>
+<span class="vs-empty-footnote">LOCAL PROCESSING <span aria-hidden="true">·</span> NO UPLOAD TO A SERVER</span>
+</div>
+<div class="pdf-stacks-container" id="stillsStacksContainer">
+<div class="empty-state-msg" data-guide="No videos loaded. Upload videos to extract stills." id="stillsEmpty" style="width: 100%">
+<span class="material-symbols-rounded">movie</span><p>No videos</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div aria-labelledby="stillsTabFilmstrip" id="stillsTabContentFilmstrip" role="tabpanel" style="display: none">
+<div class="editor-layout">
+<div class="sidebar-panel">
+<div style="display: flex; flex-direction: column; height: 100%;">
+<div class="glass-panel" style="margin-bottom: 20px">
+<div class="field-group" style="margin-bottom: 0;">
+<span class="label-header">Filmstrip Title</span>
+<input class="liquid-input" id="filmstripTitleInput" placeholder="Filmstrip_1" style="font-family: var(--font-mono); font-size: 0.85rem;" value="Filmstrip_1"/>
+</div>
+</div>
+<div class="glass-panel" style="flex: 1; display: flex; flex-direction: column; min-height: 200px; margin-bottom: 20px; overflow: hidden;">
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+<span class="label-header" style="margin-bottom: 0;">Loaded Stills (<span id="filmstripCountBadge">0</span>)</span>
+<div style="display: flex; gap: 6px;">
+<button class="liquid-btn" onclick="Tools.Filmstrip.sortAscendingAndRefresh()" style="padding: 2px 8px; font-size: 0.72rem; height: 24px; display: inline-flex; align-items: center; gap: 3px;" title="Sort stills ascending by name" type="button"><span class="material-symbols-rounded" style="font-size: 13px;">sort_by_alpha</span> Sort Asc</button>
+<button class="liquid-btn" onclick="UI.sendFilmstripToStory()" style="padding: 2px 8px; font-size: 0.72rem; height: 24px;" title="Send stills to Grid Board" type="button">Send to Board</button>
+<button class="liquid-btn danger-btn" id="filmstripClearListBtn" style="padding: 2px 8px; font-size: 0.72rem; height: 24px;">Clear</button>
+</div>
+</div>
+<div id="filmstripFileList" style="
+                          flex: 1;
+                          overflow-y: auto;
+                          display: flex;
+                          flex-direction: column;
+                          gap: 6px;
+                          max-height: 220px;
+                        ">
+<div class="empty-state-msg" id="filmstripEmptyMsg" style="padding: 20px 10px;">
+<span class="material-symbols-rounded" style="font-size: 32px; color: var(--text-muted);">theaters</span>
+<p style="font-size: 0.8rem; margin: 6px 0 0;">Upload stills to place into the filmstrip</p>
+</div>
+</div>
+</div>
+<div class="glass-panel" style="display: flex; flex-direction: column; gap: 12px;">
+<span class="label-header" style="margin-bottom: 2px;">Strip Configuration</span>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+<div class="field-group" style="margin-bottom: 0;">
+<span class="label-header">Strip Rows</span>
+<select class="liquid-input" id="filmstripRowsSelect">
+<option value="1">1 Strip</option>
+<option value="2">2 Strips</option>
+<option selected="" value="3">3 Strips (Default)</option>
+<option value="4">4 Strips</option>
+<option value="5">5 Strips</option>
+</select>
+</div>
+<div class="field-group" style="margin-bottom: 0;">
+<span class="label-header">Per Row</span>
+<select class="liquid-input" id="filmstripFramesPerRowSelect">
+<option selected="" value="0">Auto Distribute</option>
+<option value="2">2 Frames</option>
+<option value="3">3 Frames</option>
+<option value="4">4 Frames</option>
+<option value="5">5 Frames</option>
+<option value="6">6 Frames</option>
+</select>
+</div>
+</div>
+<!-- Hidden configurations: Frame Fit, Frame Gap, Row Gap, Film Base, Background, Frame Numbers -->
+<div style="display: none;">
+<select id="filmstripFitModeSelect">
+<option selected="" value="cover">Cover (Fill)</option>
+<option value="contain">Contain (Fit)</option>
+</select>
+<input class="liquid-input" id="filmstripGapInput" max="30" min="0" type="number" value="9"/>
+<input class="liquid-input" id="filmstripRowGapInput" max="60" min="0" type="number" value="19"/>
+<input id="filmstripFilmColorInput" type="color" value="#CBCBCB"/>
+<span id="filmstripFilmColorLabel">#CBCBCB</span>
+<input id="filmstripBgColorInput" type="color" value="#FFFFFF"/>
+<span id="filmstripBgColorLabel">#FFFFFF</span>
+<input id="filmstripNumbersCheckbox" type="checkbox"/>
+<button id="renderFilmstripBtn"></button>
+</div>
+</div>
+</div>
+</div>
+<div class="canvas-panel" style="padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 500px; overflow: auto; background: var(--bg-canvas);">
+<div id="filmstripCanvasContainer" style="
+                      max-width: 100%;
+                      max-height: 100%;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      cursor: pointer;
+                    " title="Click to view full size in lightbox"></div>
+</div>
+</div>
+</div>
+<div aria-label="Fit to Platform preset" id="stillsTabContentFit" role="tabpanel" style="display: none">
+<div class="editor-layout fit-editor-layout">
+<aside class="sidebar-panel fit-controls">
+<div class="glass-panel control-group">
+<span class="label-header">Storyboard Source</span>
+<div class="fit-source-status" id="fitSourceStatus" role="status">No storyboard selected. Upload an image or use the current Grid Board.</div>
+<button class="liquid-btn danger-btn" id="fitClearSourceBtn" style="width:100%" type="button">Remove Source Image</button>
+</div>
+<div class="glass-panel control-group">
+<label class="label-header" for="fitStatement">Statement · Shown in all 3 circles</label>
+<textarea class="liquid-input" id="fitStatement" maxlength="400" placeholder="Enter the statement to repeat in all three circles..." rows="6">le uniche cose a cui dovrai rinunciare sono i problemi di stomaco.</textarea>
+<span class="fit-help">The statement automatically wraps to stay inside each blue circle. Long text is reduced in size.</span>
+</div>
+<div class="glass-panel control-group" hidden="" id="fitImageTypography" style="display:none">
+<span class="label-header">Image &amp; Typography</span>
+<label class="label-header" for="fitImageFit">Storyboard image fitting</label>
+<select class="liquid-input" id="fitImageFit">
+<option selected="" value="contain">Fit entire image (recommended)</option>
+<option value="cover">Fill circle (crop edges)</option>
+</select>
+<label class="label-header" for="fitImageSize">Image Size <span id="fitImageSizeValue">86%</span></label>
+<input class="range-slider" id="fitImageSize" max="98" min="60" type="range" value="86"/>
+<label class="label-header" for="fitFontSize">Maximum Text Size <span id="fitFontSizeValue">20 px</span></label>
+<input class="range-slider" id="fitFontSize" max="24" min="12" type="range" value="20"/>
+<label class="label-header" for="fitResolution">Output Resolution</label>
+<select class="liquid-input" id="fitResolution">
+<option value="1">Original · 1033 × 195 px</option>
+<option value="2">2× · 2066 × 390 px</option>
+<option selected="" value="3">3× · 3099 × 585 px</option>
+</select>
+<button class="liquid-btn" id="fitResetBtn" type="button">Reset Preset Settings</button>
+</div>
+</aside>
+<div class="fit-preview-panel">
+<div class="fit-preview-heading">
+<div>
+<strong>FIT TO PLATFORM / LIVE PREVIEW</strong>
+<div class="fit-help">Exact reference geometry · 3 progressively overlapping circle pairs</div>
+</div>
+<span class="meta" id="fitDimensions">3099 × 585</span>
+</div>
+<div class="fit-canvas-surface" id="fitCanvasSurface" title="Three-circle storyboard preview">
+<canvas aria-label="Three pairs of overlapping storyboard and statement circles" height="585" id="fitCanvas" role="img" width="3099"></canvas>
+</div>
+<p aria-live="polite" class="fit-render-status" id="fitRenderStatus" role="status">Add a storyboard image to enable downloads.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="tool-section" id="section-adlinks">
+<div class="tool-header">
+<span class="material-symbols-rounded tool-icon">link</span>
+<h2 style="flex: 1">Ad Links &amp; Downloader</h2>
+
+
+</div>
+<div aria-label="Ad links and downloader" id="tabRowAdlinks" role="tablist" style="
+                display: flex;
+                gap: 10px;
+                padding: 0 20px;
+                border-bottom: 1px solid var(--border);
+                margin-bottom: 20px;
+              ">
+<span data-guide="Switches to the tool that builds final URLs for standard and dynamic ads."><button aria-controls="adlinksTabContentGen" aria-selected="true" class="liquid-btn active-mode" id="adlinksTabGen" onclick="UI.switchAdlinksTab('gen')" role="tab">
+                  Link Gen
+                </button></span>
+<span data-guide="Switches to the tool that extracts bucket parameters from a Forsta Excel file."><button aria-controls="adlinksTabContentDownloader" aria-selected="false" class="liquid-btn" id="adlinksTabDownloader" onclick="UI.switchAdlinksTab('downloader')" role="tab" tabindex="-1">
+                  Downloader
+                </button></span>
+</div>
+<div aria-labelledby="adlinksTabGen" id="adlinksTabContentGen" role="tabpanel">
+<div class="editor-layout adgen-studio">
+<div class="sidebar-panel adgen-studio-input"><div class="adgen-intro"><span class="edition-kicker">LINK ENGINE / 01</span><h2>Build your links.</h2><p>Turn campaign filenames into the exposure and storyboard URLs you need.</p></div><div class="edition-rule-label">02 / DESTINATION</div><div class="adgen-source-controls" id="adlinksGenHeaderControls" style="display: flex; gap: 10px; align-items: center;">
+<div style="display: flex; gap: 6px; align-items: center;">
+<span class="label-header" style="margin-bottom: 0;">Server:</span>
+<select class="liquid-input persist-val" id="alg-server" style="height: 32px; padding: 0 10px; width: 130px;">
+<option value="aldi">ALDI Blob</option>
+<option value="s3">S3 Media</option>
+</select>
+</div>
+<div style="display: flex; gap: 6px; align-items: center;">
+<span class="label-header" style="margin-bottom: 0;">Path:</span>
+<input class="liquid-input persist-val" id="alg-folder" placeholder="Folder/Path" style="height: 32px; width: 200px;"/>
+</div>
+</div><div class="edition-rule-label">01 / INPUT</div>
+<div class="glass-panel control-group">
+<span class="label-header" style="
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                      ">Filenames
+                      <span style="
+                          font-weight: normal;
+                          font-size: 10px;
+                          display: flex;
+                          align-items: center;
+                          gap: 4px;
+                          opacity: 0.8;
+                          text-transform: none;
+                        "><span style="opacity: 0.8">Old</span><input class="persist-val toggle-switch small" id="alg-mode-toggle" type="checkbox"/><span style="opacity: 0.8">New</span></span></span><textarea class="liquid-input terminal-input" id="alg-input" placeholder="Paste ad filenames, one per line…" style="min-height: 200px"></textarea>
+</div>
+<div data-guide="Processes the inputs and outputs fully formatted URLs in the panels.">
+<button class="liquid-btn active-mode" onclick="Tools.AdLinkGen.generate()" style="width: 100%">
+                      Generate
+                    </button>
+</div>
+</div>
+<div class="right-panel adgen-studio-results" style="
+                    display: flex;
+                    flex-direction: column;
+                    gap: var(--spacing);
+                  "><div class="adgen-output-intro"><span class="edition-kicker">GENERATED OUTPUT</span><h3>Ready to use.</h3><p>Generate once, then copy either output into your workflow.</p></div>
+<div class="glass-panel control-group adgen-output-card">
+<div style="display: flex; justify-content: space-between">
+<span class="label-header">Ad Exposure</span><button class="liquid-btn" onclick="Tools.AdLinkGen.copy('alg-out-ads', this)" style="height: 24px; font-size: 0.7rem">
+                        Copy
+                      </button>
+</div>
+<textarea class="liquid-input terminal-input" id="alg-out-ads" placeholder="Generated exposure URLs will appear here." readonly="" style="min-height: 150px"></textarea>
+</div>
+<div class="glass-panel control-group adgen-output-card">
+<div style="display: flex; justify-content: space-between">
+<span class="label-header">Storyboard Code</span><button class="liquid-btn" onclick="Tools.AdLinkGen.copy('alg-out-story', this)" style="height: 24px; font-size: 0.7rem">
+                        Copy
+                      </button>
+</div>
+<textarea class="liquid-input terminal-input" id="alg-out-story" placeholder="Storyboard code will appear here." readonly="" style="min-height: 150px"></textarea>
+</div>
+</div>
+</div>
+</div>
+<div aria-labelledby="adlinksTabDownloader" class="ad-download-studio" id="adlinksTabContentDownloader" role="tabpanel">
+<div class="ad-download-inner" style="height: 100%; display: flex; flex-direction: column;"><div class="ad-download-top"><div class="ad-download-heading"><span class="edition-kicker">CAMPAIGN / DOWNLOAD MANAGER</span><h2>Your media, organized.</h2><p>Import a spreadsheet, review the extracted asset names, then copy what you need.</p></div><div class="ad-download-actions" id="adlinksDlHeaderControls" style="display: none; gap: 10px; align-items: center;">
+<div class="drop-zone" id="adDlDropZone" style="padding: 5px 10px; border-width: 1px; display: flex; align-items: center; gap: 10px; height: 40px; border-radius: 0;">
+<label class="liquid-btn active-mode" style="height: 30px; font-size: 0.85rem; padding: 0 10px;">
+<input accept=".xlsx,.xls" hidden="" id="adDlInput" type="file"/>
+<span class="material-symbols-rounded" style="font-size: 14px;">table_view</span>
+<span id="adDlFileNameDisplay" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;">Upload Excel</span>
+</label>
+</div>
+<div>
+<button class="liquid-btn" onclick="Tools.AdDownloader.copyAllNames(true)" style="height: 40px; font-size: 0.85rem; padding: 0 15px;">
+<span class="material-symbols-rounded" style="font-size: 14px;">content_copy</span> Copy Names
+                  </button>
+</div>
+<div>
+<button class="liquid-btn" onclick="Tools.AdDownloader.copyForstaScript()" style="height: 40px; font-size: 0.85rem; padding: 0 15px;">
+<span class="material-symbols-rounded" style="font-size: 14px;">code</span> Copy Script
+                  </button>
+</div>
+</div></div>
+<div class="ad-download-summary" id="adDlSummaryBar" style="display: none; margin-bottom: 15px;">
+<div class="badge" id="adDlCount" style="
+                      color: var(--text-main);
+                      font-size: 0.85rem;
+                      display: inline-flex;
+                      gap: 8px;
+                    ">
+<span class="material-symbols-rounded" style="color: var(--success)">check_circle</span>
+<span id="adDlCountText">0 Ads Detected</span>
+</div>
+</div>
+<div class="glass-panel ad-download-table" id="adDlTableContainer" style="
+                    display: none;
+                    flex: 1;
+                    overflow: auto;
+                    padding: 0;
+                  ">
+<table style="
+                        width: 100%;
+                        border-collapse: collapse;
+                        text-align: left;
+                        font-size: 0.85rem;
+                      ">
+<thead style="background: color-mix(in srgb, var(--accent) 16%, transparent)">
+<tr style="color: var(--text-muted)">
+<th style="
+                              padding: 16px;
+                              font-weight: normal;
+                              border-bottom: 1px solid var(--border);
+                            ">
+                            Ad No
+                          </th>
+<th style="
+                              padding: 16px;
+                              font-weight: normal;
+                              border-bottom: 1px solid var(--border);
+                            ">
+                            Generated Name
+                          </th>
+<th style="
+                              padding: 16px;
+                              text-align: right;
+                              font-weight: normal;
+                              border-bottom: 1px solid var(--border);
+                            ">
+                            Actions
+                          </th>
+</tr>
+</thead>
+<tbody id="adDlTableBody"></tbody>
+<tbody id="adDlDownloadedBody">
+<tr id="adDlDownloadedHeaderRow" style="display: none; background: color-mix(in srgb, var(--accent) 16%, transparent)">
+<td colspan="3" style="
+                              padding: 12px 16px;
+                              font-size: 0.75rem;
+                              text-transform: uppercase;
+                              letter-spacing: 1px;
+                              color: var(--text-muted);
+                            ">
+                            Downloaded Ads
+                          </td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="empty-state-msg glass-panel" id="adDlEmptyState" style="
+                      width: 100%;
+                      height: 100%;
+                      display: flex;
+                      flex-direction: column;
+                      align-items: center;
+                      justify-content: center;
+                    "><div class="ad-download-illustration"><div class="ad-download-illustration-row"><span></span><span></span><span></span></div><div class="ad-download-illustration-row"><span></span><span></span><span></span></div><div class="ad-download-illustration-row"><span></span><span></span><span></span></div><div class="ad-download-illustration-row"><span></span><span></span><span></span></div></div><span class="edition-kicker">WAITING FOR A WORKBOOK</span><h3>Start with your Excel file.</h3><p>Your campaign assets will appear here in an easy-to-scan table.</p></div>
+</div>
+</div>
+</div>
+<div class="tool-section" id="section-yt-helper">
+<div class="tool-header">
+<span class="material-symbols-rounded tool-icon">smart_display</span>
+<h2 style="flex: 1">Video Downloads</h2>
+</div>
+<div class="editor-layout yt-studio">
+<div class="sidebar-panel yt-studio-input"><div class="yt-studio-identity"><span class="edition-kicker">COMMAND STUDIO / 08</span><h2>Get the right file.</h2><p>Prepare a download command for your video without guessing formats or flags.</p></div><div class="edition-rule-label">01 / SOURCE LINK</div>
+<div class="glass-panel control-group" data-guide="Paste your YouTube video links here to fetch metadata and download options.">
+<span class="label-header">YouTube URL</span>
+<textarea class="liquid-input" id="ytUrlInput" onpaste="YouTubeHelperUI.handlePaste(event)" placeholder="Paste one or more video links…" rows="4"></textarea>
+<div data-guide="Analyzes the provided URL to discover available video and audio streams." style="margin-top: 10px">
+<button class="liquid-btn active-mode" onclick="YouTubeHelperUI.analyze()" style="width: 100%">
+<span class="material-symbols-rounded">search</span> Analyze
+                    </button>
+</div>
+</div>
+<div class="glass-panel control-group" id="ytResult" style="display: none; margin-top: 15px"></div>
+<div class="edition-rule-label">02 / SETUP COMMAND</div><div class="glass-panel control-group" style="
+                    margin-top: 15px;
+                    font-size: 0.8rem;
+                    color: var(--text-muted);
+                  ">
+<p style="margin: 0 0 8px">
+<strong>Step 1 - Install yt-dlp:</strong>
+</p>
+<code onclick="
+                      navigator.clipboard.writeText(
+                        'winget install yt-dlp.yt-dlp',
+                      );
+                      UI.showSuccess(this, 'Copied!');
+                    " style="
+                      background: rgba(255, 255, 255, 0.05);
+                      padding: 8px;
+                      border-radius: 0;
+                      display: block;
+                      font-size: 0.75rem;
+                      font-family: var(--font-mono);
+                      cursor: pointer;
+                    ">winget install yt-dlp.yt-dlp</code>
+</div>
+</div>
+<div class="right-panel yt-studio-results" style="
+                  display: flex;
+                  flex-direction: column;
+                  gap: var(--spacing);
+                ">
+<div class="glass-panel control-group yt-result-card" id="ytMetadataPanel" style="display: none">
+<span class="label-header">Video Info</span>
+<div id="ytMetadataContent"></div>
+</div>
+<div class="yt-empty-stage" id="ytEmptyStage"><span class="edition-kicker">OUTPUT / DOWNLOAD COMMANDS</span><h3>A clear path from link to file.</h3><p>Paste your link on the left, analyze it, and copy the command that matches your desired download.</p><div class="yt-stage-terminal"><div class="yt-terminal-bar"><span>TERMINAL PREVIEW</span><span>LOCAL COMMAND</span></div><div class="yt-terminal-command">&gt; yt-dlp  [your-video-url]</div><div class="yt-terminal-caption">Your generated commands appear here after analysis.</div></div><div class="yt-stage-steps"><div class="yt-stage-step"><span>01</span><div><strong>Add a link</strong><small>Paste the source URL</small></div></div><div class="yt-stage-step"><span>02</span><div><strong>Analyze</strong><small>Review available formats</small></div></div><div class="yt-stage-step"><span>03</span><div><strong>Copy</strong><small>Run the generated command</small></div></div></div></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div aria-label="Commands" aria-modal="true" class="overlay-fixed" id="commandPaletteOverlay" role="dialog" style="display: none; align-items: flex-start; padding-top: 10vh">
+<div style="
+          width: 100%;
+          max-width: 600px;
+          background: var(--bg-panel);
+          border: 1px solid var(--border);
+          border-radius: 0;
+          box-shadow: none;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+        ">
+<div style="
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+          ">
+<span class="material-symbols-rounded" style="color: var(--text-muted); margin-right: 15px font-size: 20px;">search</span>
+<input id="commandPaletteInput" placeholder="Search commands, tools, or actions..." style="
+              width: 100%;
+              background: transparent;
+              border: none;
+              outline: none;
+              font-size: 1.1rem;
+              color: var(--text-main);
+            " type="text"/>
+</div>
+<div id="commandPaletteList" style="max-height: 400px; overflow-y: auto; padding: 10px 0">
+<div class="cmd-item" onclick="
+              UI.openTool('section-logo');
+              UI.closeCommandPalette();
+            " style="
+              padding: 12px 20px;
+              cursor: pointer;
+              display: flex;
+              align-items: center;
+              gap: 15px;
+            ">
+<span class="material-symbols-rounded" style="color: var(--m3-on-surface-variant);  font-size: 18px;">image</span>
+<span style="flex: 1">Logo Resizer</span>
+<span style="
+                font-size: 0.75rem;
+                color: var(--text-muted);
+                background: var(--bg-input);
+                padding: 2px 6px;
+                border-radius: 0;
+              ">Tool</span>
+</div>
+<div class="cmd-item" onclick="
+              UI.openTool('section-pdf','convert');
+              UI.closeCommandPalette();
+            " style="
+              padding: 12px 20px;
+              cursor: pointer;
+              display: flex;
+              align-items: center;
+              gap: 15px;
+            ">
+<span class="material-symbols-rounded" style="color: var(--m3-on-surface-variant);  font-size: 18px;">description</span>
+<span style="flex: 1">PDF to Image</span>
+<span style="
+                font-size: 0.75rem;
+                color: var(--text-muted);
+                background: var(--bg-input);
+                padding: 2px 6px;
+                border-radius: 0;
+              ">Tool</span>
+</div>
+<div class="cmd-item" onclick="
+              UI.openTool('section-pdf','split');
+              UI.closeCommandPalette();
+            " style="
+              padding: 12px 20px;
+              cursor: pointer;
+              display: flex;
+              align-items: center;
+              gap: 15px;
+            ">
+<span class="material-symbols-rounded" style="color: var(--m3-on-surface-variant);  font-size: 18px;">crop</span>
+<span style="flex: 1">Image Splitter</span>
+<span style="
+                font-size: 0.75rem;
+                color: var(--text-muted);
+                background: var(--bg-input);
+                padding: 2px 6px;
+                border-radius: 0;
+              ">Tool</span>
+</div>
+<div class="cmd-item" onclick="
+              UI.openTool('section-stills-boards','video');
+              UI.closeCommandPalette();
+            " style="
+              padding: 12px 20px;
+              cursor: pointer;
+              display: flex;
+              align-items: center;
+              gap: 15px;
+            ">
+<span class="material-symbols-rounded" style="color: var(--m3-on-surface-variant);  font-size: 18px;">movie</span>
+<span style="flex: 1">Video Stills</span>
+<span style="
+                font-size: 0.75rem;
+                color: var(--text-muted);
+                background: var(--bg-input);
+                padding: 2px 6px;
+                border-radius: 0;
+              ">Tool</span>
+</div>
+<div class="cmd-item" onclick="
+              UI.openTool('section-stills-boards','story');
+              UI.closeCommandPalette();
+            " style="
+              padding: 12px 20px;
+              cursor: pointer;
+              display: flex;
+              align-items: center;
+              gap: 15px;
+            ">
+<span class="material-symbols-rounded" style="color: var(--m3-on-surface-variant);  font-size: 18px;">movie</span>
+<span style="flex: 1">Storyboard</span>
+<span style="
+                font-size: 0.75rem;
+                color: var(--text-muted);
+                background: var(--bg-input);
+                padding: 2px 6px;
+                border-radius: 0;
+              ">Tool</span>
+</div>
+<div class="cmd-item" onclick="
+              UI.openTool('section-adlinks','gen');
+              UI.closeCommandPalette();
+            " style="
+              padding: 12px 20px;
+              cursor: pointer;
+              display: flex;
+              align-items: center;
+              gap: 15px;
+            ">
+<span class="material-symbols-rounded" style="color: var(--m3-on-surface-variant);  font-size: 18px;">link</span>
+<span style="flex: 1">Link Gen</span>
+<span style="
+                font-size: 0.75rem;
+                color: var(--text-muted);
+                background: var(--bg-input);
+                padding: 2px 6px;
+                border-radius: 0;
+              ">Tool</span>
+</div>
+<div class="cmd-item" onclick="
+              UI.openTool('section-adlinks','downloader');
+              UI.closeCommandPalette();
+            " style="
+              padding: 12px 20px;
+              cursor: pointer;
+              display: flex;
+              align-items: center;
+              gap: 15px;
+            ">
+<span class="material-symbols-rounded" style="color: var(--m3-on-surface-variant);  font-size: 18px;">download</span>
+<span style="flex: 1">Ad Link Downloader</span>
+<span style="
+                font-size: 0.75rem;
+                color: var(--text-muted);
+                background: var(--bg-input);
+                padding: 2px 6px;
+                border-radius: 0;
+              ">Tool</span>
+</div>
+<div class="cmd-item" onclick="
+              UI.openTool('section-yt-helper');
+              UI.closeCommandPalette();
+            " style="
+              padding: 12px 20px;
+              cursor: pointer;
+              display: flex;
+              align-items: center;
+              gap: 15px;
+            ">
+<span class="material-symbols-rounded" style="color: var(--m3-on-surface-variant);  font-size: 18px;">smart_display</span>
+<span style="flex: 1">Video Downloads</span>
+<span style="
+                font-size: 0.75rem;
+                color: var(--text-muted);
+                background: var(--bg-input);
+                padding: 2px 6px;
+                border-radius: 0;
+              ">Tool</span>
+</div>
+<div class="cmd-item" onclick="
+              UI.showHome();
+              UI.closeCommandPalette();
+            " style="
+              padding: 12px 20px;
+              cursor: pointer;
+              display: flex;
+              align-items: center;
+              gap: 15px;
+            ">
+<span class="material-symbols-rounded" style="color: var(--text-muted);  font-size: 18px;">grid_view</span>
+<span style="flex: 1">Go to Home / Dashboard</span>
+<span style="
+                font-size: 0.75rem;
+                color: var(--text-muted);
+                background: var(--bg-input);
+                padding: 2px 6px;
+                border-radius: 0;
+              ">Navigation</span>
+</div>
+<div class="cmd-item" onclick="
+              UI.closeCommandPalette();
+              UI.openPresets();
+            " style="
+              padding: 12px 20px;
+              cursor: pointer;
+              display: flex;
+              align-items: center;
+              gap: 15px;
+            ">
+<span class="material-symbols-rounded" style="color: var(--accent);  font-size: 18px;">tune</span>
+<span style="flex: 1">Save Current as Preset</span>
+<span style="
+                font-size: 0.75rem;
+                color: var(--text-muted);
+                background: var(--bg-input);
+                padding: 2px 6px;
+                border-radius: 0;
+              ">Action</span>
+</div>
+</div>
+<div style="
+            padding: 10px 20px;
+            border-top: 1px solid var(--border);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            background: color-mix(in srgb, var(--accent) 16%, transparent);
+            display: flex;
+            justify-content: space-between;
+          ">
+<span>Use ↑↓ to navigate, ↵ to select</span>
+<span>ESC to close</span>
+</div>
+</div>
+</div>
+<div class="overlay-fixed" id="logoLinkGenOverlay">
+<div style="
+          background: var(--bg-panel);
+          border: 1px solid var(--border);
+          box-shadow: none;
+          max-width: 1000px;
+          width: 100%;
+          margin: auto;
+          display: flex;
+          flex-direction: column;
+          max-height: 90vh;
+        ">
+<div style="
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          ">
+<h2 style="
+              margin: 0;
+              font-family: var(--font);
+              font-size: 1rem;
+              color: var(--text-main);
+            ">
+            GENERATE LOGO LINKS
+          </h2>
+<button class="liquid-btn icon-only danger-btn" onclick="Tools.Logo.closeLinkGen()">
+<span class="material-symbols-rounded">close</span>
+</button>
+</div>
+<div style="padding: 20px; overflow-y: auto; flex: 1">
+<div style="
+              margin-bottom: 15px;
+              display: flex;
+              gap: 20px;
+              flex-wrap: wrap;
+            ">
+<div style="flex: 1; min-width: 200px">
+<label style="
+                  display: block;
+                  font-size: 0.8rem;
+                  font-weight: bold;
+                  color: var(--text-muted);
+                  margin-bottom: 5px;
+                ">Server Format</label>
+<div style="display: flex; gap: 10px; padding: 4px 0">
+<label class="liquid-btn active-mode" id="serverS3Lbl" style="
+                    cursor: pointer;
+                    flex: 1;
+                    justify-content: center;
+                    padding: 8px;
+                  ">
+<input checked="" name="logoLinkServer" onchange="
+                      document
+                        .getElementById('serverS3Lbl')
+                        .classList.add('active-mode');
+                      document
+                        .getElementById('serverAldiLbl')
+                        .classList.remove('active-mode');
+                    " style="display: none" type="radio" value="s3"/>
+                  S3 Media
+                </label>
+<label class="liquid-btn" id="serverAldiLbl" style="
+                    cursor: pointer;
+                    flex: 1;
+                    justify-content: center;
+                    padding: 8px;
+                  ">
+<input name="logoLinkServer" onchange="
+                      document
+                        .getElementById('serverAldiLbl')
+                        .classList.add('active-mode');
+                      document
+                        .getElementById('serverS3Lbl')
+                        .classList.remove('active-mode');
+                    " style="display: none" type="radio" value="aldi"/>
+                  Aldi Media
+                </label>
+</div>
+</div>
+<div style="flex: 2; min-width: 300px">
+<label style="
+                  display: block;
+                  font-size: 0.8rem;
+                  font-weight: bold;
+                  color: var(--text-muted);
+                  margin-bottom: 5px;
+                ">Folder Path</label>
+<input class="liquid-input" id="logoLinkFolder" placeholder="e.g. logos/2026/summer" style="width: 100%" type="text"/>
+</div>
+</div>
+<div style="margin-bottom: 15px; display: flex; gap: 20px">
+<div style="flex: 1">
+<label style="
+                  display: block;
+                  font-size: 0.8rem;
+                  font-weight: bold;
+                  color: var(--text-muted);
+                  margin-bottom: 5px;
+                ">Brand Names (one per line)</label>
+<textarea class="liquid-input" id="logoLinkBrands" placeholder="Brand A
+Brand B
+Brand C" rows="8" style="
+                  width: 100%;
+                  font-family: var(--font-mono);
+                  resize: vertical;
+                  padding: 10px;
+                "></textarea>
+</div>
+</div>
+<div style="margin-bottom: 0">
+<label style="
+                display: block;
+                font-size: 0.8rem;
+                font-weight: bold;
+                color: var(--text-muted);
+                margin-bottom: 5px;
+              ">Generated Links</label>
+<textarea class="liquid-input" id="logoLinkOutput" placeholder="Generated links will appear here..." readonly="" rows="8" style="
+                width: 100%;
+                font-family: var(--font-mono);
+                resize: vertical;
+                padding: 10px;
+                background: var(--bg-body);
+                color: var(--text-main);
+                white-space: nowrap;
+                overflow-x: auto;
+              " wrap="off"></textarea>
+</div>
+</div>
+<div style="
+            padding: 15px 20px;
+            border-top: 2px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-input);
+          ">
+<span id="logoLinkStatus" style="font-size: 0.85rem; color: var(--text-muted)"></span>
+<div style="display: flex; gap: 10px">
+<button class="liquid-btn" onclick="Tools.Logo.closeLinkGen()">
+              Cancel
+            </button>
+<button class="liquid-btn active-mode" id="logoLinkGenerateBtn" onclick="Tools.Logo.generateLinks()">
+              Generate
+            </button>
+<button class="liquid-btn" id="logoLinkCopyBtn" onclick="Tools.Logo.copyLinks()">
+              Copy HTML
+            </button>
+</div>
+</div>
+</div>
+</div>
+<div class="overlay-fixed" id="logoLinkWarningOverlay" style="z-index: 10001">
+<div style="
+          background: var(--bg-panel);
+          border: 1px solid var(--border);
+          box-shadow: none;
+          max-width: 400px;
+          width: 100%;
+          margin: auto;
+          display: flex;
+          flex-direction: column;
+        ">
+<div style="padding: 15px 20px; border-bottom: 1px solid var(--border)">
+<h2 style="
+              margin: 0;
+              font-family: var(--font);
+              font-size: 1rem;
+              color: var(--text-main);
+            ">
+            WARNING
+          </h2>
+</div>
+<div style="padding: 20px; color: var(--text-main); line-height: 1.5">
+          No logos are uploaded in the workspace.<br><br>
+          Do you want to proceed anyway? If you do, the generated links will use
+          the brand names (formatted) as the logo filenames.
+        </br></br></div>
+<div style="
+            padding: 15px 20px;
+            border-top: 2px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            background: var(--bg-input);
+          ">
+<button class="liquid-btn" onclick="
+              document
+                .getElementById('logoLinkWarningOverlay')
+                .classList.remove('active')
+            ">
+            Cancel
+          </button>
+<button class="liquid-btn danger-btn" onclick="
+              document
+                .getElementById('logoLinkWarningOverlay')
+                .classList.remove('active');
+              Tools.Logo.executeGenerateLinks(true);
+            ">
+            Proceed Anyway
+          </button>
+</div>
+</div>
+</div>
+<div class="overlay-fixed" id="pdfDetailOverlay">
+<div style="
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 20px;
+          border-bottom: 1px solid var(--border);
+          padding-bottom: 15px;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 15px;
+        ">
+<div>
+<h3 id="pdfOverlayTitle" style="
+              margin: 0;
+              font-family: var(--font);
+              font-size: 1.2rem;
+              font-weight: 400;
+              letter-spacing: -0.5px;
+            ">
+            Title
+          </h3>
+<span id="pdfOverlayCount" style="color: var(--text-muted)">0 Pages</span>
+</div>
+<div style="display: flex; gap: 12px; align-items: center">
+<label style="
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              cursor: pointer;
+            "><input class="toggle-switch small" id="pdfSelectAll" type="checkbox"/>
+            Select All (Ctrl+A)</label><button class="liquid-btn active-mode" id="pdfDownloadSelected">
+            Download Selected (Ctrl+S)</button><button class="liquid-btn danger-btn" onclick="Tools.Pdf.closeDetail()">
+<span class="material-symbols-rounded">close</span>
+</button>
+</div>
+</div>
+<div class="pdf-grid-view" id="pdfOverlayGrid"></div>
+</div>
+<div aria-labelledby="stillsOverlayTitle" aria-modal="true" class="overlay-fixed vs-contact-sheet" id="stillsDetailOverlay" role="dialog">
+<header class="vs-detail-topbar">
+<div class="vs-detail-identity">
+<span class="vs-overline">CONTACT SHEET <span class="vs-splitter">/</span> EXTRACTED STILLS</span>
+<div class="vs-identity-line"><h3 id="stillsOverlayTitle">Video</h3><span id="stillsOverlayCount">0 Frames</span></div>
+</div>
+<div class="vs-detail-tools">
+<label class="vs-select-all"><input class="toggle-switch small" id="stillsSelectAll" type="checkbox"/> Select all <span class="vs-shortcut">Ctrl+A</span></label>
+<button class="liquid-btn active-mode" id="stillsDownloadSelected"><span class="material-symbols-rounded">download</span> Download selected</button>
+<div class="vs-send-wrap"><button class="liquid-btn" id="stillsToBoardBtn"><span class="material-symbols-rounded">grid_view</span> Send to board</button><div id="stillsBoardMenu" style="position:absolute;top:calc(100% + 8px);right:0;min-width:240px;display:none;z-index:1200;"></div></div>
+<button aria-label="Close frame library" class="vs-close-btn" onclick="Tools.Stills.closeDetail()" type="button"><span class="material-symbols-rounded">close</span></button>
+</div>
+</header>
+<div class="vs-sheet-content">
+<section aria-label="Extracted still frames" class="vs-sheet-gallery">
+<div class="vs-gallery-bar"><span>01 / ALL FRAMES</span><span>CLICK TO PREVIEW <span aria-hidden="true">↗</span></span></div>
+<div id="stillsOverlayGrid"></div>
+</section>
+<aside aria-label="Selected still preview" class="vs-sheet-preview">
+<div class="vs-preview-label"><span>02 / INSPECT FRAME</span><span>PREVIEW</span></div>
+<div id="stillsOverlayPreview"><span>Select a still to preview</span></div>
+<div class="vs-preview-caption"><span class="vs-caption-dot"></span> ORIGINAL FRAME · READY TO EXPORT</div>
+</aside>
+</div>
+<footer class="vs-sheet-footer"><span>FRAME LIBRARY / LOCAL SESSION</span><span>SELECT FRAMES AND DOWNLOAD AS ZIP</span></footer>
+</div>
+<div class="overlay-fixed" id="lightbox" onclick="UI.closeLightbox()" style="align-items: center; justify-content: center">
+<img id="lightboxImg" style="
+          max-width: 90%;
+          max-height: 90%;
+          border: 1px solid var(--m3-outline-variant);
+        "/>
+</div>
+<div id="errorToast"></div>
+<!-- ============ In-app confirmation dialog ============ -->
+<div class="confirm-overlay" hidden="" id="confirmOverlay">
+<div aria-describedby="confirmBody" aria-labelledby="confirmTitle" aria-modal="true" class="confirm-dialog" id="confirmDialog" role="dialog">
+<div class="confirm-head">
+<span class="material-symbols-rounded confirm-icon">warning</span>
+<h3 id="confirmTitle">Are you sure?</h3>
+</div>
+<p class="confirm-body" id="confirmBody">This action cannot be undone.</p>
+<div class="confirm-actions">
+<button class="liquid-btn" id="confirmCancelBtn" type="button">Cancel</button>
+<button class="liquid-btn danger-btn" id="confirmOkBtn" type="button">Continue</button>
+</div>
+</div>
+</div>
+<!-- ============ Logo Dimension Overlay ============ -->
+<div class="confirm-overlay" hidden="" id="logoDimensionOverlay">
+<div aria-modal="true" class="confirm-dialog" role="dialog">
+<div class="confirm-head">
+<span class="material-symbols-rounded confirm-icon">crop</span>
+<h3>Set Logo Dimensions</h3>
+</div>
+<p class="confirm-body">Enter the target width and height for these logos before processing.</p>
+<div style="display: flex; gap: 15px; margin-bottom: 20px; padding: 0 20px;">
+<div style="flex: 1;">
+<label style="font-size: 0.8rem; color: var(--text-muted); font-weight: bold;">Width (px)</label>
+<input class="liquid-input" id="logoDimWidth" style="width: 100%;" type="number" value=""/>
+</div>
+<div style="flex: 1;">
+<label style="font-size: 0.8rem; color: var(--text-muted); font-weight: bold;">Height (px)</label>
+<input class="liquid-input" id="logoDimHeight" style="width: 100%;" type="number" value=""/>
+</div>
+</div>
+<div class="confirm-actions">
+<button class="liquid-btn" id="logoDimCancelBtn" type="button">Cancel</button>
+<button class="liquid-btn active-mode" id="logoDimOkBtn" type="button">Apply &amp; Process</button>
+</div>
+</div>
+</div>
+<!-- ============ Undo toast ============ -->
+<div aria-live="polite" class="undo-toast" hidden="" id="undoToast" role="alert">
+<span class="undo-toast-msg" id="undoToastMsg">Action done</span>
+<button class="undo-toast-btn" id="undoToastBtn" type="button">Undo</button>
+</div>
+<!-- ============ Presets overlay ============ -->
+<div class="presets-overlay" hidden="" id="presetsOverlay">
+<div aria-labelledby="presetsTitle" aria-modal="true" class="presets-dialog" role="dialog">
+<div class="presets-head">
+<span class="material-symbols-rounded presets-title-icon">tune</span>
+<h3 id="presetsTitle">Presets</h3>
+<button aria-label="Close" class="presets-close" id="presetsCloseBtn" type="button">×</button>
+</div>
+<p class="presets-sub" id="presetsSub">Save and reuse settings for the current tool.</p>
+<div class="presets-save-row">
+<input class="liquid-input" id="presetsNameInput" placeholder="Preset name (e.g. Instagram 1080)" type="text"/>
+<button class="liquid-btn active-mode" id="presetsSaveBtn" type="button">Save preset</button>
+</div>
+<div class="presets-list" id="presetsList"></div>
+<p class="presets-empty" id="presetsEmpty">No presets saved for this tool yet.</p>
+</div>
+</div>
+<script src="./dist/js/app.js"></script>
+<script src="./dist/js/home-interactions.js"></script>
+<script src="./dist/js/vector-icons.js"></script>
+<script src="./dist/js/video-downloads-presentation.js"></script>
+<script src="./dist/js/pdf-to-image-presentation.js"></script>
+</body>
+</html>

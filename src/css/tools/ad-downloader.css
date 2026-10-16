@@ -1,0 +1,26 @@
+/* Creative Tools CSS module: ad-downloader. Sections reassembled in original cascade order. */
+/* CTK_RUN_0202_START */
+#adlinksTabContentDownloader.ad-download-studio{min-height:0!important;height:100%!important;overflow:hidden!important;background:var(--studio-main)!important;}
+#adlinksTabContentDownloader .ad-download-inner{height:100%!important;min-height:0!important;display:flex!important;flex-direction:column!important;padding:0!important;overflow:hidden;}
+.ad-download-top{padding:28px 31px 21px;display:flex;justify-content:space-between;align-items:flex-end;gap:22px;border-bottom:1px solid var(--studio-border);flex-shrink:0;background:var(--studio-side);flex-wrap:wrap;}
+.ad-download-heading h2{font:500 clamp(28px,3vw,40px)/1.05 var(--font-display,Georgia,serif);letter-spacing:-.05em;color:var(--studio-title);margin:10px 0 10px;}.ad-download-heading p{font-size:13px;line-height:1.6;margin:0;color:var(--studio-muted);}
+#adlinksDlHeaderControls.ad-download-actions{gap:9px!important;flex-wrap:wrap!important;align-items:center!important;justify-content:flex-end;}
+#adlinksDlHeaderControls #adDlDropZone{border:0!important;background:transparent!important;padding:0!important;margin:0!important;width:auto!important;min-height:0!important;}
+
+/* CTK_RUN_0202_END */
+
+/* CTK_RUN_0204_START */
+#adlinksTabContentDownloader #adDlSummaryBar{margin:0!important;padding:11px 31px!important;border-bottom:1px solid var(--studio-border);background:var(--studio-main);}
+#adlinksTabContentDownloader #adDlCount{color:var(--studio-title)!important;font-size:12px!important;}
+#adlinksTabContentDownloader #adDlTableContainer{margin:18px 24px 20px!important;border:1px solid var(--studio-border)!important;border-radius:9px!important;background:var(--studio-panel)!important;min-height:0!important;box-shadow:none!important;}
+#adlinksTabContentDownloader #adDlTableContainer table{color:var(--studio-title)!important;font-size:12px!important;}
+#adlinksTabContentDownloader #adDlTableContainer thead{position:sticky;top:0;z-index:1;background:var(--studio-raised)!important;}
+#adlinksTabContentDownloader #adDlTableContainer th{color:var(--studio-muted)!important;text-transform:uppercase;letter-spacing:.12em;font:700 10px var(--font-mono,monospace)!important;border-color:var(--studio-border)!important;}
+#adlinksTabContentDownloader #adDlTableContainer td{border-bottom:1px solid var(--studio-border-soft)!important;padding:13px 16px!important;color:var(--studio-title)!important;}
+#adlinksTabContentDownloader #adDlTableContainer tbody tr:hover{background:var(--studio-hover)!important;}
+#adlinksTabContentDownloader #adDlEmptyState{flex:1!important;min-height:320px!important;height:auto!important;max-height:none!important;margin:18px 24px 20px!important;background:var(--studio-stage)!important;border:1px dashed var(--studio-border)!important;border-radius:10px!important;padding:30px!important;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;}
+#adDlEmptyState h3{font:500 clamp(25px,3vw,36px)/1.1 var(--font-display,Georgia,serif);letter-spacing:-.05em;color:var(--studio-title);margin:13px 0 9px;}#adDlEmptyState p{font-size:13px;line-height:1.65;color:var(--studio-muted);text-align:center;max-width:330px;margin:0;}
+.ad-download-illustration{width:250px;height:139px;background:var(--studio-panel);padding:15px;border-radius:9px;border:1px solid var(--studio-border);transform:rotate(-3deg);margin:0 auto 28px;display:flex;flex-direction:column;gap:10px;box-shadow:12px 14px 0 -3px var(--studio-raised);}
+.ad-download-illustration-row{display:grid;grid-template-columns:20px 1fr 32px;gap:10px;height:18px}.ad-download-illustration-row span{border-radius:3px;background:var(--studio-raised)}.ad-download-illustration-row span:nth-child(1){background:var(--studio-strong);opacity:.75}
+
+/* CTK_RUN_0204_END */
