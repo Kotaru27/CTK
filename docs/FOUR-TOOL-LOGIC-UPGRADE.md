@@ -1,3 +1,5 @@
+> **Superseded (historical):** The Chrome helper extension described below is no longer shipped. The extension-free GitHub Pages implementation is documented in [SHAREPOINT-GITHUB-PAGES.md](SHAREPOINT-GITHUB-PAGES.md).
+
 # Four-tool capability upgrade (review branch)
 
 **Scope only:** Video Stills, Storyboard (including Filmstrip), Link Gen, Ad Downloader. No Logo Resizer, Image Splitter, PDF to Image or Video Downloads algorithm changes in this pass. This branch builds on the unmerged engine-reliability PR #1; merge order matters.

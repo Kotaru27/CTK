@@ -1,3 +1,5 @@
+> **Superseded (historical):** The Chrome helper extension described below is no longer shipped. The extension-free GitHub Pages implementation is documented in [SHAREPOINT-GITHUB-PAGES.md](SHAREPOINT-GITHUB-PAGES.md).
+
 # Ad Downloader: native Chrome download path
 
 Problem: the prior CORS-dependent `fetch()` failed on the reported remote media link and provided an "Open source" fallback. Hidden popup windows do not solve CORS, control the source server's `Content-Disposition`, or suppress browser Save dialogs.
