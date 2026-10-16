@@ -49,7 +49,7 @@ export default {
             };
           },
           destroy() {
-            this.items.forEach((i) => URL.revokeObjectURL(i.url));
+            this.items.forEach((i) => Core.BlobRegistry.release(i.url));
             this.items = [];
             this.render();
           },
@@ -60,7 +60,7 @@ export default {
               this.items.push({
                 file,
                 img: null,
-                url: Core.BlobRegistry.create(file),
+                url: Core.BlobRegistry.create(file, "splitter"),
                 checked: true,
                 splitBlobs: [],
               }),

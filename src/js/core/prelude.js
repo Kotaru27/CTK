@@ -506,15 +506,29 @@
           },
         },
         BlobRegistry: {
+          // Keep the public urls array for legacy beforeunload handling.
           urls: [],
-          create(blob) {
+          owners: new Map(),
+          create(blob, owner = "shared") {
             const url = URL.createObjectURL(blob);
             this.urls.push(url);
+            this.owners.set(url, owner);
             return url;
           },
+          release(url) {
+            if (!this.owners.has(url)) return;
+            URL.revokeObjectURL(url);
+            this.owners.delete(url);
+            const index = this.urls.indexOf(url);
+            if (index !== -1) this.urls.splice(index, 1);
+          },
+          revokeOwner(owner) {
+            for (const [url, value] of this.owners) {
+              if (value === owner) this.release(url);
+            }
+          },
           revokeAll() {
-            this.urls.forEach((url) => URL.revokeObjectURL(url));
-            this.urls = [];
+            for (const url of [...this.urls]) this.release(url);
           },
         },
         AppState: {

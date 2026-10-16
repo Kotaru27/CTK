@@ -79,7 +79,7 @@ export default {
             this.addNewProject();
           },
           destroy() {
-            this.active.images.forEach((i) => URL.revokeObjectURL(i.img.src));
+            this.active.images.forEach((i) => Core.BlobRegistry.release(i.img.src));
             this.active.images = [];
             this.canvas = null;
             this.updateList();
@@ -167,6 +167,8 @@ export default {
               if (!ok) return;
               const idx = this.projects.findIndex((p) => p.id === id);
               if (idx < 0) return;
+              // Release only assets belonging to the deleted board.
+              this.projects[idx].images.forEach((item) => Core.BlobRegistry.release(item.img.src));
               this.projects.splice(idx, 1);
               if (this.projects.length === 0) this.addNewProject();
               else this.switchProject(this.projects[Math.max(0, idx - 1)].id);
@@ -183,7 +185,7 @@ export default {
                 }
               } else if (file.type.startsWith("image/")) {
                 img = new Image();
-                img.src = Core.BlobRegistry.create(file);
+                img.src = Core.BlobRegistry.create(file, "story");
                 await new Promise((resolve) => {
                   img.onload = resolve;
                   img.onerror = resolve;
@@ -191,6 +193,7 @@ export default {
               } else {
                 continue;
               }
+              if (!img) continue;
               this.active.images.push({ file, img });
             }
             this.saveSettings();
@@ -200,9 +203,12 @@ export default {
           getVideoFrame(file) {
             return new Promise((resolve) => {
               const video = document.createElement("video");
-              video.src = URL.createObjectURL(file);
+              const sourceUrl = URL.createObjectURL(file);
               video.muted = true;
-              video.currentTime = 1.0;
+              video.onloadedmetadata = () => {
+                video.currentTime = Math.min(1.0, Math.max(0, video.duration / 2));
+              };
+              video.src = sourceUrl;
               video.onseeked = () => {
                 const c = document.createElement("canvas");
                 c.width = video.videoWidth;
@@ -210,7 +216,22 @@ export default {
                 c.getContext("2d").drawImage(video, 0, 0);
                 const img = new Image();
                 img.src = c.toDataURL("image/jpeg");
-                img.onload = () => resolve(img);
+                img.onload = () => {
+                  URL.revokeObjectURL(sourceUrl);
+                  video.removeAttribute("src");
+                  video.load();
+                  resolve(img);
+                };
+                img.onerror = () => {
+                  URL.revokeObjectURL(sourceUrl);
+                  video.removeAttribute("src");
+                  video.load();
+                  resolve(null);
+                };
+              };
+              video.onerror = () => {
+                URL.revokeObjectURL(sourceUrl);
+                resolve(null);
               };
             });
           },
@@ -240,7 +261,7 @@ export default {
             if (row) items.push(row);
             if (this.canvas) items.push(this.canvas);
             const performRemove = () => {
-              URL.revokeObjectURL(this.active.images[idx].img.src);
+              Core.BlobRegistry.release(this.active.images[idx].img.src);
               this.active.images.splice(idx, 1);
               this.saveSettings();
               this.updateList();

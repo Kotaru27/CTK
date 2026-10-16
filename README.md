@@ -42,3 +42,7 @@ The build fails if any assembled original CSS/JS differs from `source/baseline.h
 ## Original dependencies
 
 CDNs are unchanged: Pica, PDF.js, JSZip, SheetJS, Lucide, Three.js, and Google Fonts. Paths such as `Toolkit%20logo.png` and `manifest.json` refer to original companion assets and will need copying from the original project if available; they are not embedded in the supplied HTML source.
+
+## Engine reliability/performance pass 1 (guarded)
+
+Changes address URL lifetime isolation, redundant preview encoding, repeated logo redraws, sequential extraction and cancellation safeguards. No UI design changes. Details and mandatory real-browser verification are in [docs/PERFORMANCE-UPGRADE.md](docs/PERFORMANCE-UPGRADE.md). The test suite also runs browser-mocked engine tests; it **does not** prove end-to-end export parity or a measured speedup.

@@ -107,6 +107,10 @@ export default {
             });
           },
           destroy() {
+            this._generation = (this._generation || 0) + 1;
+            this.queue = [];
+            this.closeDetail();
+            Core.BlobRegistry.revokeOwner("stills");
             this.collection = {};
             this.els.stacks.innerHTML = "";
             this.els.stacks.appendChild(this.els.empty);
@@ -120,38 +124,38 @@ export default {
             this.process();
           },
           async process() {
-            if (!this.queue.length) return;
+            if (this._processing || !this.queue.length) return;
+            this._processing = true;
+            const generation = this._generation || 0;
+            try {
             UI.toggleEmptyState(this.els.stacks, false);
 
             const genAllStills = this.els.xlBtn ? this.els.xlBtn.checked : true;
             const genStory = this.els.storyBtn ? this.els.storyBtn.checked : false;
             const storyFramesCount = this.els.storyGrid ? parseInt(this.els.storyGrid.value, 10) : 4;
 
-            for (let i = 0; i < this.queue.length; i++) {
+            while (this.queue.length && generation === (this._generation || 0)) {
+              const file = this.queue.shift();
+              let sourceUrl;
+              let vid;
               try {
-                const file = this.queue[i];
                 const name = file.name
                   .replace(/\.[^/.]+$/, "")
                   .replace(/\s+/g, "_");
-                const vid = document.createElement("video");
-                vid.src = Core.BlobRegistry.create(file);
+                vid = document.createElement("video");
                 vid.muted = true;
-                await new Promise((r) => {
-                  vid.onloadedmetadata = r;
-                  vid.onerror = r;
-                });
-
-                const id = `vid-${Date.now()}`;
-                this.collection[id] = { name: name, frames: [] };
-                vid.currentTime = 0.5;
-                await new Promise((r) => (vid.onseeked = r));
-
-                if (vid.duration < 1.0) {
-                  UI.showError(
-                    `Storyboard cannot be generated, file too small.`,
-                  );
+                sourceUrl = Core.BlobRegistry.create(file, "stills-temp");
+                await this.loadMetadata(vid, sourceUrl);
+                if (generation !== (this._generation || 0)) break;
+                if (!Number.isFinite(vid.duration) || vid.duration < 1.0) {
+                  UI.showError("Storyboard cannot be generated, file too small.");
                   continue;
                 }
+
+                const id = `vid-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+                this.collection[id] = { name: name, frames: [] };
+                await this.seekVideo(vid, 0.5);
+                if (generation !== (this._generation || 0)) break;
 
                 const stack = document.createElement("div");
                 stack.className = "pdf-stack-wrapper";
@@ -162,27 +166,33 @@ export default {
                 const totalFramesToExtract = Math.floor(vid.duration) || 1;
                 const interval = vid.duration / (totalFramesToExtract + 1);
                 let previewDataUrl = null;
+                const frameCanvas = document.createElement("canvas");
+                frameCanvas.width = vid.videoWidth;
+                frameCanvas.height = vid.videoHeight;
+                const frameCtx = frameCanvas.getContext("2d");
 
                 for (let f = 1; f <= totalFramesToExtract; f++) {
                   await new Promise((resolve) => setTimeout(resolve, 0));
-                  vid.currentTime = f * interval;
-                  await new Promise((r) => (vid.onseeked = r));
+                  await this.seekVideo(vid, f * interval);
+                  if (generation !== (this._generation || 0)) break;
+                  frameCtx.drawImage(vid, 0, 0);
 
-                  const c = document.createElement("canvas");
-                  c.width = vid.videoWidth;
-                  c.height = vid.videoHeight;
-                  c.getContext("2d").drawImage(vid, 0, 0);
-
-                  if (f === 1) {
-                    previewDataUrl = c.toDataURL("image/jpeg", 0.5);
+                  if (!genAllStills && f === 1) {
+                    previewDataUrl = frameCanvas.toDataURL("image/jpeg", 0.5);
                     stack.querySelector("img").src = previewDataUrl;
                   }
 
                   if (genAllStills) {
                     const blob = await new Promise((r) =>
-                      c.toBlob(r, "image/jpeg", 0.9),
+                      frameCanvas.toBlob(r, "image/jpeg", 0.9),
                     );
-                    const url = Core.BlobRegistry.create(blob);
+                    if (!blob) throw new Error("Could not encode video frame");
+                    if (generation !== (this._generation || 0)) break;
+                    const url = Core.BlobRegistry.create(blob, "stills");
+                    if (f === 1) {
+                      previewDataUrl = url;
+                      stack.querySelector("img").src = url;
+                    }
                     this.collection[id].frames.push({
                       num: f,
                       type: "still",
@@ -193,13 +203,14 @@ export default {
                   }
                 }
 
+                if (generation !== (this._generation || 0)) break;
                 if (genStory) {
                   const storyInterval = vid.duration / (storyFramesCount + 1);
 
                   let storyThumbs = [];
                   for (let f = 1; f <= storyFramesCount; f++) {
-                    vid.currentTime = f * storyInterval;
-                    await new Promise((r) => (vid.onseeked = r));
+                    await this.seekVideo(vid, f * storyInterval);
+                    if (generation !== (this._generation || 0)) break;
                     const tc = document.createElement("canvas");
                     tc.width = vid.videoWidth;
                     tc.height = vid.videoHeight;
@@ -207,6 +218,7 @@ export default {
                     storyThumbs.push(tc);
                   }
 
+                  if (generation !== (this._generation || 0)) break;
                   let cols = 2;
                   if (storyFramesCount === 6) {
                     cols = 3;
@@ -229,7 +241,9 @@ export default {
                   const compositeBlob = await new Promise((r) =>
                     compCanvas.toBlob(r, "image/jpeg", 0.95),
                   );
-                  const compUrl = Core.BlobRegistry.create(compositeBlob);
+                  if (!compositeBlob) throw new Error("Could not encode storyboard");
+                  if (generation !== (this._generation || 0)) break;
+                  const compUrl = Core.BlobRegistry.create(compositeBlob, "stills");
                   this.collection[id].frames.push({
                     num: "storyboard",
                     type: "storyboard",
@@ -244,11 +258,54 @@ export default {
                 stack.querySelector(".stack-count").innerText =
                   `${this.collection[id].frames.length} Items`;
               } catch (e) {
-                console.error(e);
+                if (generation === (this._generation || 0)) {
+                  console.error(e);
+                  UI.showError(`Could not extract video stills: ${e.message}`);
+                }
+              } finally {
+                if (vid) { vid.pause(); vid.removeAttribute("src"); vid.load(); }
+                if (sourceUrl) Core.BlobRegistry.release(sourceUrl);
               }
             }
-            this.queue = [];
-            this.els.dlBtn.disabled = false;
+            } finally {
+              this._processing = false;
+              this.els.dlBtn.disabled = !Object.values(this.collection).some(v => v.frames.length);
+              if (this.queue.length) this.process();
+            }
+          },
+          loadMetadata(video, url) {
+            return new Promise((resolve, reject) => {
+              const timeout = setTimeout(() => finish(new Error("Video metadata timed out")), 15000);
+              const finish = (err) => {
+                clearTimeout(timeout);
+                video.removeEventListener("loadedmetadata", onLoaded);
+                video.removeEventListener("error", onError);
+                err ? reject(err) : resolve();
+              };
+              const onLoaded = () => finish();
+              const onError = () => finish(new Error("Video could not be decoded"));
+              video.addEventListener("loadedmetadata", onLoaded, { once: true });
+              video.addEventListener("error", onError, { once: true });
+              video.src = url;
+            });
+          },
+          seekVideo(video, time) {
+            return new Promise((resolve, reject) => {
+              const target = Math.min(Math.max(time, 0), video.duration);
+              if (Math.abs(video.currentTime - target) < 0.000001 && video.readyState >= 2) return resolve();
+              const timeout = setTimeout(() => finish(new Error("Video seek timed out")), 15000);
+              const finish = (err) => {
+                clearTimeout(timeout);
+                video.removeEventListener("seeked", onSeeked);
+                video.removeEventListener("error", onError);
+                err ? reject(err) : resolve();
+              };
+              const onSeeked = () => finish();
+              const onError = () => finish(new Error("Video seek failed"));
+              video.addEventListener("seeked", onSeeked, { once: true });
+              video.addEventListener("error", onError, { once: true });
+              try { video.currentTime = target; } catch (err) { finish(err); }
+            });
           },
           openDetail(id) {
             this.closeBoardMenu();
@@ -445,7 +502,7 @@ export default {
             }
             for (const f of sel) {
               const img = new Image();
-              img.src = URL.createObjectURL(f.blob);
+              img.src = Core.BlobRegistry.create(f.blob, "story");
               await new Promise((res) => {
                 img.onload = res;
                 img.onerror = res;

@@ -14,5 +14,10 @@ if(!b.includes('./dist/css/app.css')||!b.includes('./dist/js/app.js'))throw Erro
 const scripts=s=>[...s.matchAll(/<script\b[^>]*src="([^"]+)"/g)].map(m=>m[1]);
 const ext=scripts(a),ext2=scripts(b).filter(x=>!x.startsWith('./dist/'));
 if(JSON.stringify(ext)!==JSON.stringify(ext2))throw Error('External script dependency order changed');
-if(rd('dist/creative-tools-standalone.html')!==a)throw Error('Standalone is not byte-for-byte identical');
-console.log(`Verified: ${beforeIds.length} IDs, ${beforeRoutes.length} homepage links, ${ext.length} external dependencies, exact CSS and JS assembly.`);
+const standalone=rd('dist/creative-tools-standalone.html');
+const originalMain=[...a.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g)].find(m=>!m[1].includes('src='))[2];
+const newMain=rd('dist/js/app.js');
+const restored=standalone.replace(`<script>${newMain}</script>`,`<script>${originalMain}</script>`);
+if(restored!==a)throw Error('Standalone changes HTML, CSS, or scripts outside the engine');
+if(!standalone.includes(`<script>${newMain}</script>`))throw Error('Standalone does not contain current engine');
+console.log(`Verified: ${beforeIds.length} IDs, ${beforeRoutes.length} homepage links, ${ext.length} external dependencies, unchanged CSS/presentation scripts and intentional engine upgrade.`);

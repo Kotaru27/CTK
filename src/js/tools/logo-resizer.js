@@ -177,7 +177,7 @@ export default {
             });
           },
           destroy() {
-            this.cards.forEach((c) => URL.revokeObjectURL(c.img.src));
+            this.cards.forEach((c) => Core.BlobRegistry.release(c.img.src));
             this.cards = [];
             this.els.grid.innerHTML = "";
             this.els.grid.appendChild(this.els.empty);
@@ -513,7 +513,7 @@ export default {
             const fnameLbl = card.querySelector(".card-fname-lbl");
             /* lucide.createIcons */
             const img = new Image();
-            img.src = Core.BlobRegistry.create(file);
+            img.src = Core.BlobRegistry.create(file, "logo");
             const obj = {
               file,
               img,
@@ -583,7 +583,7 @@ export default {
             const idx = this.cards.indexOf(obj);
             if (idx > -1) {
               obj.card.remove();
-              URL.revokeObjectURL(obj.img.src);
+              Core.BlobRegistry.release(obj.img.src);
               this.cards.splice(idx, 1);
               if (!this.cards.length) {
                 UI.toggleEmptyState(this.els.grid, true);
@@ -599,8 +599,12 @@ export default {
             }
           },
           draw(c) {
-            if (!c.img.complete) return;
+            if (!c.img.complete || c._drawQueued) return;
+            // Collapse repeated input events into a single render per card and frame.
+            c._drawQueued = true;
             requestAnimationFrame(() => {
+              c._drawQueued = false;
+              if (!this.cards.includes(c)) return;
               let tW = parseInt(this.els.width.value, 10);
               let tH = parseInt(this.els.height.value, 10);
               

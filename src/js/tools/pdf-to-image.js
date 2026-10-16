@@ -77,37 +77,62 @@ export default {
             });
           },
           destroy() {
+            if (this.abortCtrl) this.abortCtrl.abort();
+            this._pdfGeneration = (this._pdfGeneration || 0) + 1;
+            this._pendingPdfFiles = [];
             this.collection = {};
             this.els.stacks.innerHTML = "";
             this.els.stacks.appendChild(this.els.empty);
             UI.toggleEmptyState(this.els.stacks, true);
-            Core.BlobRegistry.revokeAll();
+            Core.BlobRegistry.revokeOwner("pdf");
           },
           async handleFiles(files) {
             const pdfFiles = files.filter((f) => f.type === "application/pdf");
+            if (this._pdfBusy) {
+              this._pendingPdfFiles = (this._pendingPdfFiles || []).concat(pdfFiles);
+              return;
+            }
+            this._pdfBusy = true;
+            const generation = this._pdfGeneration || 0;
             this._sourceFiles = pdfFiles.slice();
-            if (pdfFiles.length === 0)
+            if (pdfFiles.length === 0) {
+              this._pdfBusy = false;
               return UI.showError("Please upload valid PDF files.");
+            }
             UI.toggleEmptyState(this.els.stacks, false);
             this.els.progress.classList.add("active");
             this.els.cancelBtn.style.display = "inline-flex";
             this.abortCtrl = new AbortController();
             const signal = this.abortCtrl.signal;
             try {
-              for (const file of pdfFiles) {
-                if (signal.aborted) break;
+              const allFiles = pdfFiles;
+              for (let i = 0; i < allFiles.length; i++) {
+                const file = allFiles[i];
+                if (signal.aborted || generation !== (this._pdfGeneration || 0)) break;
                 await this.processSinglePdf(
                   file,
                   this.els.format.value,
                   signal,
                 );
+                if (!signal.aborted && this._pendingPdfFiles?.length) {
+                  allFiles.push(...this._pendingPdfFiles.splice(0));
+                }
               }
             } catch (e) {
               if (e.name !== "AbortError") UI.showError(e.message);
             } finally {
-              this.els.progress.classList.remove("active");
-              this.els.cancelBtn.style.display = "none";
-              this.abortCtrl = null;
+              this._pdfBusy = false;
+              const pending = this._pendingPdfFiles || [];
+              this._pendingPdfFiles = [];
+              // Files uploaded after Clear belong to the new generation.
+              if (pending.length && generation !== (this._pdfGeneration || 0)) {
+                queueMicrotask(() => this.handleFiles(pending));
+              }
+              if (generation === (this._pdfGeneration || 0)) {
+                this.els.progress.classList.remove("active");
+                this.els.cancelBtn.style.display = "none";
+              }
+              if (this.abortCtrl?.signal === signal) this.abortCtrl = null;
             }
           },
           async processSinglePdf(file, format, signal) {
@@ -117,6 +142,7 @@ export default {
             try {
               const arrayBuffer = await file.arrayBuffer();
               const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+              if (signal.aborted) throw new DOMException("Aborted", "AbortError");
               const stack = document.createElement("div");
               stack.className = "pdf-stack-wrapper";
               stack.innerHTML = `<div class="processing-pulse" style="width:100%; height:200px; background:var(--bg-input); display:flex; align-items:center; justify-content:center; color:var(--text-muted);">Processing...</div><div class="stack-meta"><div class="stack-title">${file.name}</div><div class="stack-count">0/${pdf.numPages}</div></div>`;
@@ -147,17 +173,19 @@ export default {
                   canvasContext: canvas.getContext("2d"),
                   viewport,
                 }).promise;
-                if (i === 1) {
-                  stack.querySelector("div").replaceWith(
-                    Object.assign(new Image(), {
-                      src: canvas.toDataURL(format, 0.5),
-                    }),
-                  );
-                }
+                if (signal.aborted) throw new DOMException("Aborted", "AbortError");
                 const blob = await new Promise((r) =>
                   canvas.toBlob(r, format, 0.9),
                 );
-                const url = Core.BlobRegistry.create(blob);
+                if (!blob) throw new Error("Failed to encode PDF page");
+                if (signal.aborted) throw new DOMException("Aborted", "AbortError");
+                const url = Core.BlobRegistry.create(blob, "pdf");
+                // Display the already-encoded page instead of encoding it twice.
+                if (i === 1) {
+                  stack.querySelector("div").replaceWith(
+                    Object.assign(new Image(), { src: url }),
+                  );
+                }
                 this.collection[pdfId].pages.push({
                   num: i,
                   blob,

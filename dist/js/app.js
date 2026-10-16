@@ -506,15 +506,29 @@
           },
         },
         BlobRegistry: {
+          // Keep the public urls array for legacy beforeunload handling.
           urls: [],
-          create(blob) {
+          owners: new Map(),
+          create(blob, owner = "shared") {
             const url = URL.createObjectURL(blob);
             this.urls.push(url);
+            this.owners.set(url, owner);
             return url;
           },
+          release(url) {
+            if (!this.owners.has(url)) return;
+            URL.revokeObjectURL(url);
+            this.owners.delete(url);
+            const index = this.urls.indexOf(url);
+            if (index !== -1) this.urls.splice(index, 1);
+          },
+          revokeOwner(owner) {
+            for (const [url, value] of this.owners) {
+              if (value === owner) this.release(url);
+            }
+          },
           revokeAll() {
-            this.urls.forEach((url) => URL.revokeObjectURL(url));
-            this.urls = [];
+            for (const url of [...this.urls]) this.release(url);
           },
         },
         AppState: {
@@ -1688,7 +1702,7 @@
             });
           },
           destroy() {
-            this.cards.forEach((c) => URL.revokeObjectURL(c.img.src));
+            this.cards.forEach((c) => Core.BlobRegistry.release(c.img.src));
             this.cards = [];
             this.els.grid.innerHTML = "";
             this.els.grid.appendChild(this.els.empty);
@@ -2024,7 +2038,7 @@
             const fnameLbl = card.querySelector(".card-fname-lbl");
             /* lucide.createIcons */
             const img = new Image();
-            img.src = Core.BlobRegistry.create(file);
+            img.src = Core.BlobRegistry.create(file, "logo");
             const obj = {
               file,
               img,
@@ -2094,7 +2108,7 @@
             const idx = this.cards.indexOf(obj);
             if (idx > -1) {
               obj.card.remove();
-              URL.revokeObjectURL(obj.img.src);
+              Core.BlobRegistry.release(obj.img.src);
               this.cards.splice(idx, 1);
               if (!this.cards.length) {
                 UI.toggleEmptyState(this.els.grid, true);
@@ -2110,8 +2124,12 @@
             }
           },
           draw(c) {
-            if (!c.img.complete) return;
+            if (!c.img.complete || c._drawQueued) return;
+            // Collapse repeated input events into a single render per card and frame.
+            c._drawQueued = true;
             requestAnimationFrame(() => {
+              c._drawQueued = false;
+              if (!this.cards.includes(c)) return;
               let tW = parseInt(this.els.width.value, 10);
               let tH = parseInt(this.els.height.value, 10);
               
@@ -2654,37 +2672,62 @@
             });
           },
           destroy() {
+            if (this.abortCtrl) this.abortCtrl.abort();
+            this._pdfGeneration = (this._pdfGeneration || 0) + 1;
+            this._pendingPdfFiles = [];
             this.collection = {};
             this.els.stacks.innerHTML = "";
             this.els.stacks.appendChild(this.els.empty);
             UI.toggleEmptyState(this.els.stacks, true);
-            Core.BlobRegistry.revokeAll();
+            Core.BlobRegistry.revokeOwner("pdf");
           },
           async handleFiles(files) {
             const pdfFiles = files.filter((f) => f.type === "application/pdf");
+            if (this._pdfBusy) {
+              this._pendingPdfFiles = (this._pendingPdfFiles || []).concat(pdfFiles);
+              return;
+            }
+            this._pdfBusy = true;
+            const generation = this._pdfGeneration || 0;
             this._sourceFiles = pdfFiles.slice();
-            if (pdfFiles.length === 0)
+            if (pdfFiles.length === 0) {
+              this._pdfBusy = false;
               return UI.showError("Please upload valid PDF files.");
+            }
             UI.toggleEmptyState(this.els.stacks, false);
             this.els.progress.classList.add("active");
             this.els.cancelBtn.style.display = "inline-flex";
             this.abortCtrl = new AbortController();
             const signal = this.abortCtrl.signal;
             try {
-              for (const file of pdfFiles) {
-                if (signal.aborted) break;
+              const allFiles = pdfFiles;
+              for (let i = 0; i < allFiles.length; i++) {
+                const file = allFiles[i];
+                if (signal.aborted || generation !== (this._pdfGeneration || 0)) break;
                 await this.processSinglePdf(
                   file,
                   this.els.format.value,
                   signal,
                 );
+                if (!signal.aborted && this._pendingPdfFiles?.length) {
+                  allFiles.push(...this._pendingPdfFiles.splice(0));
+                }
               }
             } catch (e) {
               if (e.name !== "AbortError") UI.showError(e.message);
             } finally {
-              this.els.progress.classList.remove("active");
-              this.els.cancelBtn.style.display = "none";
-              this.abortCtrl = null;
+              this._pdfBusy = false;
+              const pending = this._pendingPdfFiles || [];
+              this._pendingPdfFiles = [];
+              // Files uploaded after Clear belong to the new generation.
+              if (pending.length && generation !== (this._pdfGeneration || 0)) {
+                queueMicrotask(() => this.handleFiles(pending));
+              }
+              if (generation === (this._pdfGeneration || 0)) {
+                this.els.progress.classList.remove("active");
+                this.els.cancelBtn.style.display = "none";
+              }
+              if (this.abortCtrl?.signal === signal) this.abortCtrl = null;
             }
           },
           async processSinglePdf(file, format, signal) {
@@ -2694,6 +2737,7 @@
             try {
               const arrayBuffer = await file.arrayBuffer();
               const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+              if (signal.aborted) throw new DOMException("Aborted", "AbortError");
               const stack = document.createElement("div");
               stack.className = "pdf-stack-wrapper";
               stack.innerHTML = `<div class="processing-pulse" style="width:100%; height:200px; background:var(--bg-input); display:flex; align-items:center; justify-content:center; color:var(--text-muted);">Processing...</div><div class="stack-meta"><div class="stack-title">${file.name}</div><div class="stack-count">0/${pdf.numPages}</div></div>`;
@@ -2724,17 +2768,19 @@
                   canvasContext: canvas.getContext("2d"),
                   viewport,
                 }).promise;
-                if (i === 1) {
-                  stack.querySelector("div").replaceWith(
-                    Object.assign(new Image(), {
-                      src: canvas.toDataURL(format, 0.5),
-                    }),
-                  );
-                }
+                if (signal.aborted) throw new DOMException("Aborted", "AbortError");
                 const blob = await new Promise((r) =>
                   canvas.toBlob(r, format, 0.9),
                 );
-                const url = Core.BlobRegistry.create(blob);
+                if (!blob) throw new Error("Failed to encode PDF page");
+                if (signal.aborted) throw new DOMException("Aborted", "AbortError");
+                const url = Core.BlobRegistry.create(blob, "pdf");
+                // Display the already-encoded page instead of encoding it twice.
+                if (i === 1) {
+                  stack.querySelector("div").replaceWith(
+                    Object.assign(new Image(), { src: url }),
+                  );
+                }
                 this.collection[pdfId].pages.push({
                   num: i,
                   blob,
@@ -2837,7 +2883,7 @@
             };
           },
           destroy() {
-            this.items.forEach((i) => URL.revokeObjectURL(i.url));
+            this.items.forEach((i) => Core.BlobRegistry.release(i.url));
             this.items = [];
             this.render();
           },
@@ -2848,7 +2894,7 @@
               this.items.push({
                 file,
                 img: null,
-                url: Core.BlobRegistry.create(file),
+                url: Core.BlobRegistry.create(file, "splitter"),
                 checked: true,
                 splitBlobs: [],
               }),
@@ -3037,7 +3083,7 @@
             this.addNewProject();
           },
           destroy() {
-            this.active.images.forEach((i) => URL.revokeObjectURL(i.img.src));
+            this.active.images.forEach((i) => Core.BlobRegistry.release(i.img.src));
             this.active.images = [];
             this.canvas = null;
             this.updateList();
@@ -3125,6 +3171,8 @@
               if (!ok) return;
               const idx = this.projects.findIndex((p) => p.id === id);
               if (idx < 0) return;
+              // Release only assets belonging to the deleted board.
+              this.projects[idx].images.forEach((item) => Core.BlobRegistry.release(item.img.src));
               this.projects.splice(idx, 1);
               if (this.projects.length === 0) this.addNewProject();
               else this.switchProject(this.projects[Math.max(0, idx - 1)].id);
@@ -3141,7 +3189,7 @@
                 }
               } else if (file.type.startsWith("image/")) {
                 img = new Image();
-                img.src = Core.BlobRegistry.create(file);
+                img.src = Core.BlobRegistry.create(file, "story");
                 await new Promise((resolve) => {
                   img.onload = resolve;
                   img.onerror = resolve;
@@ -3149,6 +3197,7 @@
               } else {
                 continue;
               }
+              if (!img) continue;
               this.active.images.push({ file, img });
             }
             this.saveSettings();
@@ -3158,9 +3207,12 @@
           getVideoFrame(file) {
             return new Promise((resolve) => {
               const video = document.createElement("video");
-              video.src = URL.createObjectURL(file);
+              const sourceUrl = URL.createObjectURL(file);
               video.muted = true;
-              video.currentTime = 1.0;
+              video.onloadedmetadata = () => {
+                video.currentTime = Math.min(1.0, Math.max(0, video.duration / 2));
+              };
+              video.src = sourceUrl;
               video.onseeked = () => {
                 const c = document.createElement("canvas");
                 c.width = video.videoWidth;
@@ -3168,7 +3220,22 @@
                 c.getContext("2d").drawImage(video, 0, 0);
                 const img = new Image();
                 img.src = c.toDataURL("image/jpeg");
-                img.onload = () => resolve(img);
+                img.onload = () => {
+                  URL.revokeObjectURL(sourceUrl);
+                  video.removeAttribute("src");
+                  video.load();
+                  resolve(img);
+                };
+                img.onerror = () => {
+                  URL.revokeObjectURL(sourceUrl);
+                  video.removeAttribute("src");
+                  video.load();
+                  resolve(null);
+                };
+              };
+              video.onerror = () => {
+                URL.revokeObjectURL(sourceUrl);
+                resolve(null);
               };
             });
           },
@@ -3198,7 +3265,7 @@
             if (row) items.push(row);
             if (this.canvas) items.push(this.canvas);
             const performRemove = () => {
-              URL.revokeObjectURL(this.active.images[idx].img.src);
+              Core.BlobRegistry.release(this.active.images[idx].img.src);
               this.active.images.splice(idx, 1);
               this.saveSettings();
               this.updateList();
@@ -3666,6 +3733,10 @@
             });
           },
           destroy() {
+            this._generation = (this._generation || 0) + 1;
+            this.queue = [];
+            this.closeDetail();
+            Core.BlobRegistry.revokeOwner("stills");
             this.collection = {};
             this.els.stacks.innerHTML = "";
             this.els.stacks.appendChild(this.els.empty);
@@ -3679,38 +3750,38 @@
             this.process();
           },
           async process() {
-            if (!this.queue.length) return;
+            if (this._processing || !this.queue.length) return;
+            this._processing = true;
+            const generation = this._generation || 0;
+            try {
             UI.toggleEmptyState(this.els.stacks, false);
 
             const genAllStills = this.els.xlBtn ? this.els.xlBtn.checked : true;
             const genStory = this.els.storyBtn ? this.els.storyBtn.checked : false;
             const storyFramesCount = this.els.storyGrid ? parseInt(this.els.storyGrid.value, 10) : 4;
 
-            for (let i = 0; i < this.queue.length; i++) {
+            while (this.queue.length && generation === (this._generation || 0)) {
+              const file = this.queue.shift();
+              let sourceUrl;
+              let vid;
               try {
-                const file = this.queue[i];
                 const name = file.name
                   .replace(/\.[^/.]+$/, "")
                   .replace(/\s+/g, "_");
-                const vid = document.createElement("video");
-                vid.src = Core.BlobRegistry.create(file);
+                vid = document.createElement("video");
                 vid.muted = true;
-                await new Promise((r) => {
-                  vid.onloadedmetadata = r;
-                  vid.onerror = r;
-                });
-
-                const id = `vid-${Date.now()}`;
-                this.collection[id] = { name: name, frames: [] };
-                vid.currentTime = 0.5;
-                await new Promise((r) => (vid.onseeked = r));
-
-                if (vid.duration < 1.0) {
-                  UI.showError(
-                    `Storyboard cannot be generated, file too small.`,
-                  );
+                sourceUrl = Core.BlobRegistry.create(file, "stills-temp");
+                await this.loadMetadata(vid, sourceUrl);
+                if (generation !== (this._generation || 0)) break;
+                if (!Number.isFinite(vid.duration) || vid.duration < 1.0) {
+                  UI.showError("Storyboard cannot be generated, file too small.");
                   continue;
                 }
+
+                const id = `vid-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+                this.collection[id] = { name: name, frames: [] };
+                await this.seekVideo(vid, 0.5);
+                if (generation !== (this._generation || 0)) break;
 
                 const stack = document.createElement("div");
                 stack.className = "pdf-stack-wrapper";
@@ -3721,27 +3792,33 @@
                 const totalFramesToExtract = Math.floor(vid.duration) || 1;
                 const interval = vid.duration / (totalFramesToExtract + 1);
                 let previewDataUrl = null;
+                const frameCanvas = document.createElement("canvas");
+                frameCanvas.width = vid.videoWidth;
+                frameCanvas.height = vid.videoHeight;
+                const frameCtx = frameCanvas.getContext("2d");
 
                 for (let f = 1; f <= totalFramesToExtract; f++) {
                   await new Promise((resolve) => setTimeout(resolve, 0));
-                  vid.currentTime = f * interval;
-                  await new Promise((r) => (vid.onseeked = r));
+                  await this.seekVideo(vid, f * interval);
+                  if (generation !== (this._generation || 0)) break;
+                  frameCtx.drawImage(vid, 0, 0);
 
-                  const c = document.createElement("canvas");
-                  c.width = vid.videoWidth;
-                  c.height = vid.videoHeight;
-                  c.getContext("2d").drawImage(vid, 0, 0);
-
-                  if (f === 1) {
-                    previewDataUrl = c.toDataURL("image/jpeg", 0.5);
+                  if (!genAllStills && f === 1) {
+                    previewDataUrl = frameCanvas.toDataURL("image/jpeg", 0.5);
                     stack.querySelector("img").src = previewDataUrl;
                   }
 
                   if (genAllStills) {
                     const blob = await new Promise((r) =>
-                      c.toBlob(r, "image/jpeg", 0.9),
+                      frameCanvas.toBlob(r, "image/jpeg", 0.9),
                     );
-                    const url = Core.BlobRegistry.create(blob);
+                    if (!blob) throw new Error("Could not encode video frame");
+                    if (generation !== (this._generation || 0)) break;
+                    const url = Core.BlobRegistry.create(blob, "stills");
+                    if (f === 1) {
+                      previewDataUrl = url;
+                      stack.querySelector("img").src = url;
+                    }
                     this.collection[id].frames.push({
                       num: f,
                       type: "still",
@@ -3752,13 +3829,14 @@
                   }
                 }
 
+                if (generation !== (this._generation || 0)) break;
                 if (genStory) {
                   const storyInterval = vid.duration / (storyFramesCount + 1);
 
                   let storyThumbs = [];
                   for (let f = 1; f <= storyFramesCount; f++) {
-                    vid.currentTime = f * storyInterval;
-                    await new Promise((r) => (vid.onseeked = r));
+                    await this.seekVideo(vid, f * storyInterval);
+                    if (generation !== (this._generation || 0)) break;
                     const tc = document.createElement("canvas");
                     tc.width = vid.videoWidth;
                     tc.height = vid.videoHeight;
@@ -3766,6 +3844,7 @@
                     storyThumbs.push(tc);
                   }
 
+                  if (generation !== (this._generation || 0)) break;
                   let cols = 2;
                   if (storyFramesCount === 6) {
                     cols = 3;
@@ -3788,7 +3867,9 @@
                   const compositeBlob = await new Promise((r) =>
                     compCanvas.toBlob(r, "image/jpeg", 0.95),
                   );
-                  const compUrl = Core.BlobRegistry.create(compositeBlob);
+                  if (!compositeBlob) throw new Error("Could not encode storyboard");
+                  if (generation !== (this._generation || 0)) break;
+                  const compUrl = Core.BlobRegistry.create(compositeBlob, "stills");
                   this.collection[id].frames.push({
                     num: "storyboard",
                     type: "storyboard",
@@ -3803,11 +3884,54 @@
                 stack.querySelector(".stack-count").innerText =
                   `${this.collection[id].frames.length} Items`;
               } catch (e) {
-                console.error(e);
+                if (generation === (this._generation || 0)) {
+                  console.error(e);
+                  UI.showError(`Could not extract video stills: ${e.message}`);
+                }
+              } finally {
+                if (vid) { vid.pause(); vid.removeAttribute("src"); vid.load(); }
+                if (sourceUrl) Core.BlobRegistry.release(sourceUrl);
               }
             }
-            this.queue = [];
-            this.els.dlBtn.disabled = false;
+            } finally {
+              this._processing = false;
+              this.els.dlBtn.disabled = !Object.values(this.collection).some(v => v.frames.length);
+              if (this.queue.length) this.process();
+            }
+          },
+          loadMetadata(video, url) {
+            return new Promise((resolve, reject) => {
+              const timeout = setTimeout(() => finish(new Error("Video metadata timed out")), 15000);
+              const finish = (err) => {
+                clearTimeout(timeout);
+                video.removeEventListener("loadedmetadata", onLoaded);
+                video.removeEventListener("error", onError);
+                err ? reject(err) : resolve();
+              };
+              const onLoaded = () => finish();
+              const onError = () => finish(new Error("Video could not be decoded"));
+              video.addEventListener("loadedmetadata", onLoaded, { once: true });
+              video.addEventListener("error", onError, { once: true });
+              video.src = url;
+            });
+          },
+          seekVideo(video, time) {
+            return new Promise((resolve, reject) => {
+              const target = Math.min(Math.max(time, 0), video.duration);
+              if (Math.abs(video.currentTime - target) < 0.000001 && video.readyState >= 2) return resolve();
+              const timeout = setTimeout(() => finish(new Error("Video seek timed out")), 15000);
+              const finish = (err) => {
+                clearTimeout(timeout);
+                video.removeEventListener("seeked", onSeeked);
+                video.removeEventListener("error", onError);
+                err ? reject(err) : resolve();
+              };
+              const onSeeked = () => finish();
+              const onError = () => finish(new Error("Video seek failed"));
+              video.addEventListener("seeked", onSeeked, { once: true });
+              video.addEventListener("error", onError, { once: true });
+              try { video.currentTime = target; } catch (err) { finish(err); }
+            });
           },
           openDetail(id) {
             this.closeBoardMenu();
@@ -4004,7 +4128,7 @@
             }
             for (const f of sel) {
               const img = new Image();
-              img.src = URL.createObjectURL(f.blob);
+              img.src = Core.BlobRegistry.create(f.blob, "story");
               await new Promise((res) => {
                 img.onload = res;
                 img.onerror = res;
