@@ -7,28 +7,6 @@ export default {
           entries: [],
           _downloadBusy: false,
           init() {
-            // Microsoft Graph runs in the GitHub Pages site itself; no extension required.
-            if (CTKSharePoint.configured()) {
-              const area = document.getElementById('adlinksDlHeaderControls') || document.getElementById('adDlSummaryBar');
-              if (area && !document.getElementById('adDlConnectMicrosoft')) {
-                const connect = document.createElement('button');
-                connect.id = 'adDlConnectMicrosoft';
-                connect.type = 'button';
-                connect.className = 'liquid-btn';
-                connect.textContent = 'Connect Microsoft';
-                connect.onclick = async () => {
-                  try {await CTKSharePoint.signIn();} catch(error) {this.status(error.message,true);}
-                };
-                area.appendChild(connect);
-              }
-            }
-            void CTKSharePoint.finishSignIn().then(() => {
-              const connect=document.getElementById('adDlConnectMicrosoft');
-              if (connect && CTKSharePoint.authenticated()) {connect.textContent='Microsoft connected';connect.disabled=true;}
-              if(CTKSharePoint.startupMessage) this.status(CTKSharePoint.startupMessage, !CTKSharePoint.authenticated());
-              else if (CTKSharePoint.configured() && !CTKSharePoint.authenticated())
-                this.status('SharePoint media: Connect Microsoft before importing the Excel file.');
-            });
             document.getElementById("adDlInput").addEventListener("change", (e) => {
               const file = e.target.files[0];
               document.getElementById("adDlFileNameDisplay").innerText = file ? file.name : "Upload Excel";
@@ -195,7 +173,7 @@ export default {
             document.getElementById("adDlCountText").innerText = `${this.entries.length} valid ads`;
             document.getElementById("adDlEmptyState").style.display = "none";
             this.updateBulkButton();
-            this.status(`${this.entries.length} ready · ${skipped} invalid rows skipped · ${inferred} extensions inferred.${this.entries.some(e=>CTKSharePoint.isSharePoint(e.url)) ? (CTKSharePoint.authenticated() ? ' Microsoft connected.' : CTKSharePoint.configured() ? ' Connect Microsoft before downloading SharePoint assets.' : ' SharePoint downloads require site-owner Microsoft Entra configuration.') : ''}`);
+            this.status(`${this.entries.length} ready · ${skipped} invalid rows skipped · ${inferred} extensions inferred.${this.entries.some(e=>CTKSharePoint.isSharePoint(e.url)) ? ' SharePoint links use your existing browser session; original filenames may be used.' : ''}`);
           },
           updateBulkButton() {
             const btn = document.getElementById("adDlBulkButton");
@@ -230,12 +208,7 @@ export default {
           },
           async getAsset(entry, signal) {
             if (CTKSharePoint.isSharePoint(entry.url)) {
-              if (!CTKSharePoint.configured()) throw Error('This GitHub Pages site needs Microsoft Entra configuration to download protected SharePoint media.');
-              if (!CTKSharePoint.authenticated()) throw Error('Select Connect Microsoft before downloading. SharePoint requires your account permission.');
-              const result = await CTKSharePoint.getAsset(entry);
-              const bytes = new Uint8Array(await result.blob.slice(0,256).arrayBuffer());
-              const determined = this.guessType(result.blob, {ext:result.ext || entry.ext,confidence:result.ext ? 'high' : entry.confidence},bytes);
-              return {blob:result.blob,name:entry.displayName + (result.ext || determined)};
+              throw Error("Protected SharePoint files cannot be read into a browser ZIP without cross-origin access. Use the individual native Download button.");
             }
             const response = await fetch(entry.url, {mode:"cors", credentials:"omit", redirect:"follow", signal});
             if (!response.ok) throw Error(`HTTP ${response.status}`);
@@ -280,8 +253,30 @@ export default {
             }
             this.updateBulkButton();
           },
+          downloadSharePoint(entry) {
+            const target = CTKSharePoint.directUrl(entry.url);
+            if (!target) throw Error('This SharePoint link does not contain a file path. A direct file link or a stream.aspx?id= file path is required.');
+            // Same-tab navigation uses the user's existing SharePoint sign-in.
+            // An attachment response downloads; an unauthorized/error response may navigate away.
+            // No popup, extension, Graph token or CORS fetch is used.
+            const a = document.createElement('a');
+            a.href = target;
+            a.target = '_self';
+            a.rel = 'noreferrer';
+            document.body.appendChild(a);
+            try { a.click(); } finally { a.remove(); }
+            // A cross-origin navigation provides no observable save-completion event.
+            // Never move this row to Downloaded based only on a navigation request.
+            if (entry.downloadButton) entry.downloadButton.textContent = 'Download again';
+            this.status(`SharePoint download requested for ${entry.displayName}. Chrome will use the original SharePoint filename; completion cannot be confirmed here.`);
+          },
           async downloadFile(entry) {
             if (entry.downloaded || entry.inProgress) return;
+            if (CTKSharePoint.isSharePoint(entry.url)) {
+              try { this.downloadSharePoint(entry); }
+              catch (error) { this.status(`${entry.displayName}: ${error.message}`,true); }
+              return;
+            }
             entry.inProgress = true;
             if (entry.downloadButton) entry.downloadButton.disabled = true;
             this.status(`Preparing ${entry.displayName}...`);
@@ -292,7 +287,7 @@ export default {
               this.status(`Download requested: ${name} (${(blob.size/1048576).toFixed(1)} MB).`);
             } catch(error) {
               const message=/Failed to fetch|CORS|NetworkError/i.test(error.message)
-                ? 'The host blocks browser access to media bytes. For protected SharePoint links, connect Microsoft. For other hosts, the media provider must enable CORS or supply a direct download endpoint.'
+                ? 'The host blocks cross-origin media access. The provider must supply a downloadable endpoint or permit CORS for custom naming.'
                 : error.message;
               this.status(`${entry.displayName}: ${message}`,true);
               if (entry.downloadButton) entry.downloadButton.disabled=false;
@@ -302,6 +297,10 @@ export default {
             if (this._downloadBusy) return;
             const selection = this.entries.filter(entry=>entry.selected && !entry.downloaded);
             if (!selection.length) return;
+            if (selection.some(entry => CTKSharePoint.isSharePoint(entry.url))) {
+              this.status("SharePoint cannot be added to a client-side ZIP from GitHub Pages. Download SharePoint files individually with their native Download buttons. Other CORS-enabled files can still be zipped.",true);
+              return;
+            }
             if (selection.length > 250) { this.status("Select at most 250 files per batch.",true); return; }
             if (typeof JSZip === "undefined") { this.status("ZIP library did not load.",true); return; }
             this._downloadBusy = true; this.updateBulkButton();
@@ -322,7 +321,7 @@ export default {
             try {
               await Promise.all(Array.from({length:Math.min(3,selection.length)},worker));
               if (!successes.length) {
-                this.status(`No ZIP assets accessible (${failures.length} blocked or invalid links). Connect Microsoft for SharePoint links; other hosts must allow cross-origin access.`,true);
+                this.status(`No ZIP assets accessible (${failures.length} blocked or invalid links). Other hosts must allow cross-origin access.`,true);
                 return;
               }
               this.status(`Creating ZIP for ${successes.length} assets...`);

@@ -47,10 +47,14 @@ CDNs are unchanged: Pica, PDF.js, JSZip, SheetJS, Lucide, Three.js, and Google F
 
 Changes address URL lifetime isolation, redundant preview encoding, repeated logo redraws, sequential extraction and cancellation safeguards. No UI design changes. Details and mandatory real-browser verification are in [docs/PERFORMANCE-UPGRADE.md](docs/PERFORMANCE-UPGRADE.md). The test suite also runs browser-mocked engine tests; it **does not** prove end-to-end export parity or a measured speedup.
 
-## SharePoint download on GitHub Pages (no extension)
+## SharePoint download on GitHub Pages (no extension or Entra application)
 
-Ad Downloader uses Microsoft Graph **delegated user access** to obtain original file bytes and save them with the formatted ad filename. It supports SharePoint sharing URLs and `stream.aspx?id=...` paths. Public CORS-enabled media still uses the existing direct `fetch()` download. Bulk creates one ZIP for fetched assets. The SharePoint browser extension is **no longer used or shipped**.
+CTK attempts **native SharePoint browser downloads** for file-path-backed links
+using the user's existing authorized SharePoint session. No Microsoft Graph,
+client ID, tenant ID, user sign-in inside CTK, or extension is used.
 
-**One-time deployment prerequisite:** Register a Microsoft Entra *Single-page application*, enable the read-only delegated `Files.Read.All` and `Sites.Read.All` permissions subject to organization consent policy, and register your exact GitHub Pages redirect URL (for example `https://kotaru27.github.io/CTK/`). Put the **public** tenant ID and application client ID (never a client secret) into `config/sharepoint.json` and run `npm run build`; commit the updated built files. See [docs/SHAREPOINT-GITHUB-PAGES.md](docs/SHAREPOINT-GITHUB-PAGES.md).
-
-Employees sign in using Microsoft from the Ad Downloader interface. Each user needs existing permission to the documents being downloaded. Microsoft Graph and cross-origin media availability, organizational restrictions, and large-file limits may affect what can be downloaded; browser E2E and real tenant access are *not verified* by the mocked unit tests.
+**Limits:** Cross-origin response filenames cannot be overridden by GitHub Pages;
+SharePoint bulk ZIP is not possible without media bytes; opaque sharing links
+without a resolvable file path are unsupported. The browser's download result
+cannot be confirmed by the site. Other public CORS-enabled files keep formatted
+naming and ZIP downloads. See [docs/SHAREPOINT-GITHUB-PAGES.md](docs/SHAREPOINT-GITHUB-PAGES.md).
