@@ -27,6 +27,11 @@ test('SharePoint file paths with spaces, # and Unicode are handled through the U
   const preview='https://example.sharepoint.com/sites/DACH/_layouts/15/stream.aspx?id='+encodeURIComponent(file);
   assert.equal(new URL(sp.directUrl(preview)).searchParams.get('SourceUrl'),file);
 });
+test('SharePoint file path with # in folder name retains its literal segment',()=>{
+  const file='/sites/DACH/Shared Documents/#2026 Jan-Dec/QRE/ALDI Frische.mp4';
+  const preview='https://example.sharepoint.com/sites/DACH/_layouts/15/stream.aspx?id='+encodeURIComponent(file);
+  assert.equal(new URL(sp.directUrl(preview)).searchParams.get('SourceUrl'),file);
+});
 test('SharePoint :v:/r file links are converted to native download URL',()=>{
   const href='https://example.sharepoint.com/:v:/r/sites/DACH/Shared%20Documents/vid.mp4?csf=1&web=1';
   assert.equal(new URL(sp.directUrl(href)).searchParams.get('SourceUrl'),'/sites/DACH/Shared Documents/vid.mp4');
