@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "CTK Native Downloader",
+  "version": "1.0.0",
+  "description": "One-click named downloads for locally opened Creative Tools Suite. No source tabs or rename dialogs.",
+  "permissions": ["downloads"],
+  "host_permissions": ["http://*/*", "https://*/*"],
+  "background": {"service_worker": "background.js"},
+  "content_scripts": [{
+    "matches": ["file:///*", "http://localhost/*", "http://127.0.0.1/*"],
+    "js": ["bridge.js"],
+    "run_at": "document_idle"
+  }]
+}

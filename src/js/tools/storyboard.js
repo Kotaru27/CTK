@@ -50,16 +50,15 @@ export default {
               );
             });
             document.getElementById("generateStoryBtn").onclick = () => this.draw();
-            // Optional recommendation only; existing fit mode is unchanged until clicked.
-            const fit = document.getElementById("storyFitMode");
-            if (fit && !document.getElementById("storySmartFit")) {
-              const advice = document.createElement("button");
-              advice.type="button"; advice.id="storySmartFit"; advice.className="liquid-btn";
-              advice.textContent="Preserve full frames";
-              advice.title="Use Contain mode so mixed aspect-ratio images are never cropped";
-              advice.style.cssText="margin-top:7px; font-size:11px; padding:5px 9px;";
-              advice.onclick=()=> {fit.value="contain";this.saveSettings();this.draw();};
-              fit.insertAdjacentElement("afterend",advice);
+            // Keep Storyboard's established borderless presentation. The last
+            // capability pass introduced a separate fit recommendation control;
+            // restore the original controls without losing validation logic.
+            for (const id of ["storyPreview", "storyBoardPreviewArea"]) {
+              const area = document.getElementById(id);
+              if (area) {
+                area.style.setProperty("border", "0", "important");
+                area.style.setProperty("box-shadow", "none", "important");
+              }
             }
             document.getElementById("downloadStoryBtn").onclick = async () => {
               if (!this.canvas || !this.active?.images.length) return;
@@ -320,14 +319,6 @@ export default {
               UI.showError("Invalid storyboard dimensions. Reduce columns/gaps or choose a width between 64 and 8192.");
               return;
             }
-            const ratios=imgs.map(item=>(item.img.naturalWidth||item.img.width)/(item.img.naturalHeight||item.img.height));
-            const ratioSpread=Math.max(...ratios)/Math.min(...ratios);
-            const recommend=document.getElementById("storySmartFit");
-            if (recommend) {
-              const mixed=ratioSpread > 1.35 && s.fitMode === "cover";
-              recommend.textContent=mixed ? "Mixed ratios · preserve full frames" : "Preserve full frames";
-              recommend.title=mixed ? "Your sources have different shapes. Contain prevents cropping. Click to apply." : "Use Contain to preserve each full frame";
-            }
             let c;
             try {c = Core.AdaptiveRenderer.renderBoard(imgs, {
               cols: cols,
@@ -339,6 +330,8 @@ export default {
               fitMode: s.fitMode,
             });} catch(e) {UI.showError(`Storyboard could not render: ${e.message}`);return;}
             if (!c || !c.width || !c.height) {UI.showError("Storyboard renderer returned an empty canvas");return;}
+            c.style.setProperty("border", "0", "important");
+            c.style.setProperty("box-shadow", "none", "important");
             c.onclick = () => UI.openLightbox(c.toDataURL("image/jpeg", 0.95));
             this.canvas = c;
             this.els.preview.innerHTML = "";
@@ -346,7 +339,7 @@ export default {
             const badge = document.createElement("div");
             badge.innerHTML = `<span style="opacity:0.7">SIZE:</span> ${Math.round(c.width)} <span style="opacity:0.7">x</span> ${Math.round(c.height)}`;
             badge.style.cssText =
-              "position:absolute; top:20px; right:20px; background:var(--bg-panel); color:var(--text-main); padding:6px 10px; border-radius:0; font-size:1.2rem; font-family:var(--font); font-weight:600; border:1px solid var(--border); pointer-events:none; letter-spacing:1px; z-index:10; box-shadow: none;";
+              "position:absolute; top:20px; right:20px; background:var(--bg-panel); color:var(--text-main); padding:6px 10px; border-radius:0; font-size:1.2rem; font-family:var(--font); font-weight:600; border:0; pointer-events:none; letter-spacing:1px; z-index:10; box-shadow: none;";
             this.els.preview.appendChild(badge);
           },
           async downloadAll() {

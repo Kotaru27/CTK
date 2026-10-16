@@ -49,4 +49,10 @@ Changes address URL lifetime isolation, redundant preview encoding, repeated log
 
 ## Four-tool capabilities (review candidate)
 
-Video Stills has optional Smart frame selection, Storyboard/Filmstrip validate sources and exports, Link Gen validates and safely encodes filenames, and Ad Downloader supports direct named media downloads and selected ZIP batches where the remote host permits CORS. See [docs/FOUR-TOOL-LOGIC-UPGRADE.md](docs/FOUR-TOOL-LOGIC-UPGRADE.md) for the browser security limits, fallback behavior, and mandatory regression checks before merge.
+Video Stills has optional Smart frame selection, Storyboard/Filmstrip validate sources and exports, Link Gen validates and safely encodes filenames, and Ad Downloader supports Chrome-native background downloads using an optional extension and selected-file ZIPs when the media host allows CORS. No source popup or manual renaming is needed when the extension is enabled. See [optional/chrome-native-downloader/README.md](optional/chrome-native-downloader/README.md) for one-time installation and limitations; [docs/FOUR-TOOL-LOGIC-UPGRADE.md](docs/FOUR-TOOL-LOGIC-UPGRADE.md) documents the prior review candidate.
+
+## Fix: borderless Storyboard and Chrome-native ad downloads
+
+Storyboard's extra smart-fit suggestion has been removed; the preview and image canvas now suppress decorative borders/shadows, restoring the original visual presentation. The actual source validation/export protections remain.
+
+Ad Downloader no longer has an “Open source” button. For hosts that block the HTML page's CORS fetch (the reported `Failed to fetch`), a normal browser page cannot force a renamed file download via a hidden popup. The optional **CTK Native Downloader** extension instead calls Chrome's built-in Downloads API with the formatted filename and `saveAs:false`. See [installation instructions](optional/chrome-native-downloader/README.md). With the extension, **Download selected** queues multiple independent files; without it, the existing **ZIP** mode works only for fetchable hosts. For download completion and Chrome policy prompts, check Chrome Downloads.

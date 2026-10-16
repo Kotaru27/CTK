@@ -6,7 +6,13 @@ export default {
           adTypeMap: {},
           entries: [],
           _downloadBusy: false,
+          _nativeRequests: null,
+          _nativeAvailable: null,
+          _nativeProbe: null,
           init() {
+            this.setupNativeBridge();
+            // Warm up the helper handshake without delaying the interface.
+            void this.nativeAvailable();
             document.getElementById("adDlInput").addEventListener("change", (e) => {
               const file = e.target.files[0];
               document.getElementById("adDlFileNameDisplay").innerText = file ? file.name : "Upload Excel";
@@ -19,7 +25,7 @@ export default {
               btn.type = "button";
               btn.className = "liquid-btn active-mode";
               btn.style.cssText = "height:40px; padding:0 14px;";
-              btn.textContent = "Download selected ZIP";
+              btn.textContent = "Download selected";
               btn.disabled = true;
               btn.onclick = () => this.downloadBulk();
               header.appendChild(btn);
@@ -76,7 +82,7 @@ export default {
               const m = String(value).match(/\.([a-z0-9]{2,5})(?:$|[?#])/i);
               if (m && allowed.has(m[1].toLowerCase())) return {ext:"." + m[1].toLowerCase(),confidence:"high"};
             }
-            const t = String(type ?? "").toLowerCase();
+            const t = String(type ?? "").toLowerCase().replace(/[_-]+/g," ");
             if (/\b(radio|podcast|audio|sound)\b/.test(t)) return {ext:".mp3",confidence:"inferred"};
             if (/\b(tvc|video|ol[v]|cinema|film|reels|tv)\b/.test(t)) return {ext:".mp4",confidence:"inferred"};
             if (/\b(print|outdoor|ooh|image|photo|static|poster|banner|display)\b/.test(t)) return {ext:".jpg",confidence:"inferred"};
@@ -115,7 +121,7 @@ export default {
             Array.from(downloadedBody.children).filter(el => el !== downloadedHead).forEach(el => el.remove());
             downloadedHead.style.display = "none";
             const statusCell=downloadedHead.querySelector("td");
-            if (statusCell) statusCell.textContent="Download initiated";
+            if (statusCell) statusCell.textContent="Download started";
             this.entries = []; this.allNames = []; this.adTypeMap = {};
             const seen = new Set();
             let skipped = 0, inferred = 0;
@@ -163,10 +169,7 @@ export default {
               const download = document.createElement("button"); download.type = "button";
               download.className = "liquid-btn active-mode";
               download.textContent = "Download"; download.onclick = () => this.downloadFile(entry);
-              const open = document.createElement("button"); open.type = "button"; open.className = "liquid-btn";
-              open.textContent = "Open source"; open.title = "Fallback when the hosting server blocks browser downloads";
-              open.onclick = () => window.open(entry.url,"_blank","noopener,noreferrer");
-              actions.append(copy," ",download," ",open);
+              actions.append(copy," ",download);
               tr.append(numCell,nameCell,actions); entry.row = tr; entry.downloadButton = download;
               fragment.appendChild(tr);
             }
@@ -176,7 +179,7 @@ export default {
             document.getElementById("adDlCountText").innerText = `${this.entries.length} valid ads`;
             document.getElementById("adDlEmptyState").style.display = "none";
             this.updateBulkButton();
-            this.status(`${this.entries.length} ready · ${skipped} invalid rows skipped · ${inferred} extensions inferred. Download will verify response type.`);
+            this.status(`${this.entries.length} ready · ${skipped} invalid rows skipped · ${inferred} extensions inferred. Chrome helper enables one-click download for cross-origin files.`);
           },
           updateBulkButton() {
             const btn = document.getElementById("adDlBulkButton");
@@ -204,6 +207,49 @@ export default {
             if (hint.confidence === "inferred" && mime.startsWith("video/") && hint.ext === ".mp4") return hint.ext;
             if (hint.confidence === "inferred" && mime.startsWith("image/") && hint.ext === ".jpg") return hint.ext;
             return ".bin";
+          },
+          // Chrome's download API, available through the optional CTK Native Downloader
+          // extension, is the only browser-only route to reliably rename cross-origin
+          // downloads without fetching their bytes into this page. A hidden popup
+          // cannot bypass cross-origin restrictions or save files silently.
+          setupNativeBridge() {
+            if (this._nativeRequests || typeof window === "undefined") return;
+            this._nativeRequests = new Map();
+            window.addEventListener("message", (event) => {
+              if (event.source !== window || event.data?.channel !== "CTK_NATIVE_DOWNLOAD_RESULT") return;
+              const item = this._nativeRequests.get(event.data.id);
+              if (!item) return;
+              clearTimeout(item.timer);
+              this._nativeRequests.delete(event.data.id);
+              if (event.data.ok) item.resolve(event.data);
+              else item.reject(new Error(String(event.data.error || "Native download failed")));
+            });
+          },
+          requestNative(action, entry = null, timeout = 950) {
+            this.setupNativeBridge();
+            if (!this._nativeRequests || typeof window === "undefined" || typeof window.postMessage !== "function") return Promise.reject(new Error("Chrome download helper unavailable"));
+            const id = `ctk-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+            return new Promise((resolve, reject) => {
+              const timer = setTimeout(() => {
+                this._nativeRequests.delete(id);
+                reject(new Error("Chrome download helper unavailable"));
+              }, timeout);
+              this._nativeRequests.set(id, {resolve,reject,timer});
+              window.postMessage({channel:"CTK_NATIVE_DOWNLOAD_REQUEST",id,action,
+                url:entry?.url, filename:entry ? entry.displayName + (entry.ext || "") : undefined}, "*");
+            });
+          },
+          async nativeAvailable() {
+            if (this._nativeAvailable === true) return true;
+            if (this._nativeProbe) return this._nativeProbe;
+            this._nativeProbe = this.requestNative("ping",null,1800).then(() => {
+              this._nativeAvailable = true; return true;
+            }, () => { this._nativeAvailable = false; return false; }).finally(() => {this._nativeProbe = null;});
+            return this._nativeProbe;
+          },
+          async nativeDownload(entry) {
+            if (!await this.nativeAvailable()) throw new Error("Chrome download helper unavailable");
+            return this.requestNative("download",entry,15000);
           },
           async getAsset(entry, signal) {
             const response = await fetch(entry.url, {mode:"cors", credentials:"omit", redirect:"follow", signal});
@@ -251,23 +297,49 @@ export default {
           },
           async downloadFile(entry) {
             if (entry.downloaded || entry.inProgress) return;
-            entry.inProgress = true; entry.downloadButton.disabled = true;
-            this.status(`Downloading ${entry.displayName}...`);
+            entry.inProgress = true;
+            if (entry.downloadButton) entry.downloadButton.disabled = true;
+            this.status(`Preparing ${entry.displayName}...`);
             try {
-              const {blob,name} = await this.getAsset(entry);
-              this.saveBlob(blob, name);
-              this.markDownloaded(entry);
-              this.status(`Download requested: ${name} (${(blob.size/1048576).toFixed(1)} MB).`);
+              if (await this.nativeAvailable()) {
+                await this.nativeDownload(entry);
+                this.markDownloaded(entry);
+                this.status(`Download started: ${entry.displayName}${entry.ext || ""}. Chrome handles saving in the background.`);
+              } else {
+                const {blob,name} = await this.getAsset(entry);
+                this.saveBlob(blob,name);
+                this.markDownloaded(entry);
+                this.status(`Download started: ${name} (${(blob.size/1048576).toFixed(1)} MB).`);
+              }
             } catch (error) {
-              this.status(`${entry.displayName}: automatic download unavailable (${error.message}). The source may block CORS; use Open source to save manually.`,true);
-              entry.downloadButton.disabled = false;
+              const blocked = /Failed to fetch|CORS|NetworkError/i.test(String(error.message));
+              this.status(blocked
+                ? `${entry.displayName}: this server blocks direct browser downloads. Enable the optional CTK Native Downloader Chrome helper to download automatically with its formatted name (no popup).`
+                : `${entry.displayName}: download could not start (${error.message}).`,true);
+              if (entry.downloadButton) entry.downloadButton.disabled = false;
             } finally {entry.inProgress = false;}
           },
           async downloadBulk() {
             if (this._downloadBusy) return;
             const selection = this.entries.filter(entry=>entry.selected && !entry.downloaded);
             if (!selection.length) return;
-            if (selection.length > 250) { this.status("Select at most 250 files per ZIP.",true); return; }
+            if (selection.length > 250) { this.status("Select at most 250 files per batch.",true); return; }
+            if (await this.nativeAvailable()) {
+              this._downloadBusy = true; this.updateBulkButton();
+              let started=0, failed=0;
+              try {
+                // Downloads are queued deliberately to avoid Chrome's automatic
+                // multiple-download limit and uncontrolled simultaneous requests.
+                for (const entry of selection) {
+                  try {
+                    await this.nativeDownload(entry);
+                    this.markDownloaded(entry); started++;
+                  } catch (error) { failed++; console.warn("Download failed to start",entry.displayName,error); }
+                  this.status(`${started} file downloads started · ${failed} failed · ${selection.length - started - failed} remaining` ,failed>0);
+                }
+              } finally { this._downloadBusy=false; this.updateBulkButton(); }
+              return;
+            }
             if (typeof JSZip === "undefined") { this.status("ZIP library did not load.",true); return; }
             this._downloadBusy = true; this.updateBulkButton();
             const zip = new JSZip(); const successes = [], failures = [];
@@ -287,7 +359,7 @@ export default {
             try {
               await Promise.all(Array.from({length:Math.min(3,selection.length)},worker));
               if (!successes.length) {
-                this.status(`No files downloadable. ${failures.length} blocked or invalid links. Remote hosts must allow browser CORS.`,true);
+                this.status(`No ZIP assets accessible (${failures.length} blocked or invalid links). Install CTK Native Downloader for one-click downloads from servers that block browser CORS.`,true);
                 return;
               }
               this.status(`Creating ZIP for ${successes.length} assets...`);
@@ -349,7 +421,7 @@ export default {
             }
             alert("All " + this.allNames.length + " names copied!");
           },
-          // Legacy inline-handler compatibility; direct downloads no longer open popups.
+          // Legacy inline-handler compatibility: no popup is opened.
           downloadPopup(url, adNo, finalName) {
             const entry = this.entries.find(item => item.url === this.safeUrl(url) && item.no === String(adNo));
             if (entry) return this.downloadFile(entry);
