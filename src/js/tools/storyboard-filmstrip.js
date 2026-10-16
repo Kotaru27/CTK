@@ -110,95 +110,84 @@ export default {
             this.draw();
             UI.toast("Stills sorted in ascending order");
           },
-          handleFiles(files) {
-            const valid = files.filter(
-              (f) => f.type.startsWith("image/") || f.type.startsWith("video/"),
-            );
-            if (!valid.length) return;
-            valid.sort((a, b) =>
-              String(a.name || "").localeCompare(String(b.name || ""), undefined, {
-                numeric: true,
-                sensitivity: "base",
-              }),
-            );
-            let loaded = 0;
-            valid.forEach((file) => {
-              if (file.type.startsWith("video/")) {
-                const vid = document.createElement("video");
-                vid.src = URL.createObjectURL(file);
-                vid.muted = true;
-                vid.onloadedmetadata = () => {
-                  vid.currentTime = Math.min(1.0, vid.duration / 2);
-                };
-                vid.onseeked = () => {
-                  const c = document.createElement("canvas");
-                  c.width = vid.videoWidth;
-                  c.height = vid.videoHeight;
-                  c.getContext("2d").drawImage(vid, 0, 0);
-                  const img = new Image();
-                  img.onload = () => {
-                    this.images.push({
-                      id: `fs-${Date.now()}-${Math.random()}`,
-                      name: file.name,
-                      img,
-                    });
-                    loaded++;
-                    if (loaded === valid.length) {
-                      this.sortImagesAscending();
-                      this.updateList();
-                      this.draw();
-                    }
-                  };
-                  img.src = c.toDataURL("image/jpeg", 0.95);
-                  URL.revokeObjectURL(vid.src);
-                };
-              } else {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                  const img = new Image();
-                  img.onload = () => {
-                    this.images.push({
-                      id: `fs-${Date.now()}-${Math.random()}`,
-                      name: file.name,
-                      img,
-                    });
-                    loaded++;
-                    if (loaded === valid.length) {
-                      this.sortImagesAscending();
-                      this.updateList();
-                      this.draw();
-                    }
-                  };
-                  img.src = e.target.result;
-                };
-                reader.readAsDataURL(file);
-              }
-            });
+          validImage(img) {
+            return img && (img.naturalWidth || img.width)>0 && (img.naturalHeight || img.height)>0;
           },
-          addFromStills(stills) {
-            if (!stills || !stills.length) return;
-            let loaded = 0;
-            stills.forEach((still, idx) => {
-              const img = new Image();
-              img.onload = () => {
-                this.images.push({
-                  id: `fs-${Date.now()}-${Math.random()}`,
-                  name: still.name || `Still_${still.num !== undefined ? still.num : idx + 1}`,
-                  img,
-                });
-                loaded++;
-                if (loaded === stills.length) {
-                  this.sortImagesAscending();
-                  this.updateList();
-                  this.draw();
-                }
-              };
-              img.src = still.url;
+          async loadSource(file) {
+            if (!file || file.size > 100*1024*1024) throw Error("File too large or invalid");
+            if(file.type.startsWith("image/")) {
+              const url=Core.BlobRegistry.create(file,"filmstrip");
+              const img=new Image();
+              try {
+                await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=()=>reject(Error("Image could not be decoded"));img.src=url;});
+                if(!this.validImage(img))throw Error("Image dimensions unavailable");
+                return {img,owned:true};
+              }catch(error){Core.BlobRegistry.release(url);throw error;}
+            }
+            if(file.type.startsWith("video/")) {
+              const img=await new Promise((resolve,reject)=> {
+                const video=document.createElement("video");
+                const url=URL.createObjectURL(file);
+                let done=false;const timer=setTimeout(()=>finish(null),15000);
+                const finish=(image)=>{
+                  if(done)return;done=true;clearTimeout(timer);
+                  video.pause();video.removeAttribute("src");video.load();URL.revokeObjectURL(url);
+                  image?resolve(image):reject(Error("Video frame could not be extracted"));
+                };
+                video.muted=true;
+                video.onerror=()=>finish(null);
+                video.onloadedmetadata=()=>{
+                  if(!video.videoWidth || !video.videoHeight || !Number.isFinite(video.duration))return finish(null);
+                  try{video.currentTime=Math.min(1,video.duration/2);}catch{finish(null);}
+                };
+                video.onseeked=()=> {
+                  try{
+                    const c=document.createElement("canvas");c.width=video.videoWidth;c.height=video.videoHeight;
+                    c.getContext("2d").drawImage(video,0,0);
+                    const image=new Image();image.onload=()=>finish(image);image.onerror=()=>finish(null);
+                    image.src=c.toDataURL("image/jpeg",0.95);
+                  }catch{finish(null);}
+                };
+                video.src=url;
+              });
+              if(!this.validImage(img)) throw Error("Video frame dimensions unavailable");
+              return {img,owned:false};
+            }
+            throw Error("Unsupported format");
+          },
+          async handleFiles(files) {
+            const valid=files.filter(f=>f.type.startsWith("image/") || f.type.startsWith("video/"));
+            valid.sort((a,b)=>String(a.name).localeCompare(String(b.name),undefined,{numeric:true,sensitivity:"base"}));
+            let failed=0;
+            const results=await Promise.allSettled(valid.map(file=>this.loadSource(file)));
+            results.forEach((result,i)=>{
+              if(result.status==="fulfilled") {
+                this.images.push({id:`fs-${Date.now()}-${Math.random()}`,name:valid[i].name,...result.value});
+              }else {failed++;console.warn("Filmstrip rejected:",valid[i].name,result.reason);}
             });
+            if(failed)UI.showError(`${failed} invalid or unreadable filmstrip assets skipped.`);
+            this.sortImagesAscending();this.updateList();this.draw();
+          },
+          async addFromStills(stills) {
+            if(!stills?.length)return;
+            let failed=0;
+            const results=await Promise.allSettled(stills.map((still,idx)=>new Promise((resolve,reject)=>{
+              const img=new Image();
+              img.onload=()=>this.validImage(img)?resolve({
+                id:`fs-${Date.now()}-${Math.random()}`,
+                name:still.name||`Still_${still.num??idx+1}`,img,owned:false
+              }):reject(Error("Bad frame"));
+              img.onerror=()=>reject(Error("Frame URL unavailable"));
+              img.src=still.url;
+            })));
+            results.forEach(r=>{if(r.status==="fulfilled")this.images.push(r.value);else failed++;});
+            if(failed)UI.showError(`${failed} video still(s) could not be loaded.`);
+            this.sortImagesAscending();this.updateList();this.draw();
           },
           removeImage(index) {
             if (index >= 0 && index < this.images.length) {
-              this.images.splice(index, 1);
+              const item=this.images.splice(index,1)[0];
+              if (item.owned) Core.BlobRegistry.release(item.img.src);
               this.updateList();
               this.draw();
             }
@@ -224,13 +213,14 @@ export default {
             }
             this.images.forEach((item, index) => {
               const div = document.createElement("div");
+              const safeName=String(item.name||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
               div.style.cssText =
                 "display:flex; align-items:center; justify-content:space-between; padding:6px 10px; background:var(--bg-input); border:1px solid var(--border); font-size:0.8rem;";
               div.innerHTML = `
                 <div style="display:flex; align-items:center; gap:8px; overflow:hidden;">
                   <img src="${item.img.src}" style="width:28px; height:28px; object-fit:cover; flex-shrink:0; border:1px solid var(--border);">
                   <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--text-muted);">${String(index + 1).padStart(2, '0')}</span>
-                  <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:110px;" title="${item.name}">${item.name}</span>
+                  <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:110px;" title="${safeName}">${safeName}</span>
                 </div>
                 <div style="display:flex; gap:4px; flex-shrink:0;">
                   <button class="liquid-btn" style="padding:0 6px; height:24px; font-size:0.75rem;" title="Move Up" onclick="Tools.Filmstrip.moveImage(${index}, -1)">&uarr;</button>
@@ -243,6 +233,9 @@ export default {
           },
           draw() {
             if (!this.els.rows) return;
+            if (this.images.some(item=>!this.validImage(item.img))) {
+              UI.showError("One filmstrip source has no valid dimensions.");return;
+            }
             const s = {
               rows: parseInt(this.els.rows.value, 10) || 3,
               framesPerRow: parseInt(this.els.framesPerRow.value, 10) || 0,
@@ -255,8 +248,14 @@ export default {
               width: 1920,
             };
 
-            const canvas = Core.AdaptiveRenderer.renderFilmstrip(this.images, s);
-            if (!canvas) return;
+            if (s.rows < 1 || s.rows > 12 || s.framesPerRow < 0 || s.framesPerRow > 20 ||
+                s.frameGap < 0 || s.rowGap < 0 || s.rowGap > 200 || s.frameGap > 200) {
+              UI.showError("Invalid filmstrip layout. Reduce rows or spacing.");return;
+            }
+            let canvas;
+            try {canvas = Core.AdaptiveRenderer.renderFilmstrip(this.images, s);}
+            catch(error){UI.showError(`Filmstrip render failed: ${error.message}`);return;}
+            if (!canvas || !canvas.width || !canvas.height) return;
 
             this.canvas = canvas;
             if (this.els.container) {
@@ -272,17 +271,24 @@ export default {
             if (this.els.dlJpgBtn) this.els.dlJpgBtn.disabled = false;
             if (this.els.dlPngBtn) this.els.dlPngBtn.disabled = false;
           },
-          download(format = "jpeg") {
-            if (!this.canvas) return;
-            const ext = format === "png" ? "png" : "jpg";
-            const mime = format === "png" ? "image/png" : "image/jpeg";
-            const title = (this.els.title && this.els.title.value.trim()) || "Filmstrip";
-            const a = document.createElement("a");
-            a.href = this.canvas.toDataURL(mime, 0.95);
-            a.download = `${title}.${ext}`;
-            a.click();
+          async download(format = "jpeg") {
+            if (!this.canvas?.width || !this.canvas?.height || !this.images.length) return;
+            const ext=format==="png"?"png":"jpg";
+            const mime=format==="png"?"image/png":"image/jpeg";
+            const title=((this.els.title?.value.trim()||"Filmstrip").replace(/[^a-zA-Z0-9_-]/g,"_").slice(0,100))||"Filmstrip";
+            try {
+              const blob=await new Promise((resolve,reject)=>{
+                try{this.canvas.toBlob(resolve,mime,0.95);}catch(e){reject(e);}
+              });
+              if(!blob?.size)throw Error("The canvas could not be encoded");
+              const url=URL.createObjectURL(blob);
+              const a=document.createElement("a");a.href=url;a.download=`${title}.${ext}`;
+              document.body.appendChild(a);a.click();a.remove();
+              setTimeout(()=>URL.revokeObjectURL(url),60000);
+            }catch(error){UI.showError(`Filmstrip export failed: ${error.message}`);}
           },
           destroy() {
+            this.images.forEach(item=>{if(item.owned)Core.BlobRegistry.release(item.img.src);});
             this.images = [];
             this.updateList();
             this.draw();

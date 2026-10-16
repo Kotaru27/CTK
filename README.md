@@ -46,3 +46,7 @@ CDNs are unchanged: Pica, PDF.js, JSZip, SheetJS, Lucide, Three.js, and Google F
 ## Engine reliability/performance pass 1 (guarded)
 
 Changes address URL lifetime isolation, redundant preview encoding, repeated logo redraws, sequential extraction and cancellation safeguards. No UI design changes. Details and mandatory real-browser verification are in [docs/PERFORMANCE-UPGRADE.md](docs/PERFORMANCE-UPGRADE.md). The test suite also runs browser-mocked engine tests; it **does not** prove end-to-end export parity or a measured speedup.
+
+## Four-tool capabilities (review candidate)
+
+Video Stills has optional Smart frame selection, Storyboard/Filmstrip validate sources and exports, Link Gen validates and safely encodes filenames, and Ad Downloader supports direct named media downloads and selected ZIP batches where the remote host permits CORS. See [docs/FOUR-TOOL-LOGIC-UPGRADE.md](docs/FOUR-TOOL-LOGIC-UPGRADE.md) for the browser security limits, fallback behavior, and mandatory regression checks before merge.

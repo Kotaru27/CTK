@@ -9124,15 +9124,24 @@ Brand C" rows="8" style="
                 }, 150),
               );
             });
-            document.getElementById("generateStoryBtn").onclick = () =>
-              this.draw();
-            document.getElementById("downloadStoryBtn").onclick = () => {
-              if (this.canvas) {
-                const a = document.createElement("a");
-                a.href = this.canvas.toDataURL("image/jpeg", 0.95);
-                a.download = `${this.active.name}.jpg`;
-                a.click();
-              }
+            document.getElementById("generateStoryBtn").onclick = () => this.draw();
+            // Optional recommendation only; existing fit mode is unchanged until clicked.
+            const fit = document.getElementById("storyFitMode");
+            if (fit && !document.getElementById("storySmartFit")) {
+              const advice = document.createElement("button");
+              advice.type="button"; advice.id="storySmartFit"; advice.className="liquid-btn";
+              advice.textContent="Preserve full frames";
+              advice.title="Use Contain mode so mixed aspect-ratio images are never cropped";
+              advice.style.cssText="margin-top:7px; font-size:11px; padding:5px 9px;";
+              advice.onclick=()=> {fit.value="contain";this.saveSettings();this.draw();};
+              fit.insertAdjacentElement("afterend",advice);
+            }
+            document.getElementById("downloadStoryBtn").onclick = async () => {
+              if (!this.canvas || !this.active?.images.length) return;
+              try {
+                const blob = await this.encodeBoard(this.canvas);
+                this.saveBoardBlob(blob,`${this.safeExportName(this.active.name)}.jpg`);
+              } catch (e) { UI.showError(`Storyboard export failed: ${e.message}`); }
             };
             document.getElementById("downloadAllStoryBtn").onclick = () =>
               this.downloadAll();
@@ -9249,65 +9258,80 @@ Brand C" rows="8" style="
               else this.switchProject(this.projects[Math.max(0, idx - 1)].id);
             });
           },
+          safeExportName(name) {
+            return String(name || "Board").replace(/[^a-zA-Z0-9_-]/g,"_").slice(0,100) || "Board";
+          },
+          validateImage(img) {
+            return !!img && Number.isFinite(img.naturalWidth || img.width) &&
+              Number.isFinite(img.naturalHeight || img.height) &&
+              (img.naturalWidth || img.width)>0 && (img.naturalHeight || img.height)>0;
+          },
+          async encodeBoard(canvas) {
+            if (!canvas || canvas.width < 1 || canvas.height < 1) throw Error("No rendered board available");
+            const blob=await new Promise((resolve,reject)=> {
+              try {canvas.toBlob(resolve,"image/jpeg",0.95);} catch(e) {reject(e);}
+            });
+            if (!blob?.size) throw Error("Canvas returned no image data");
+            return blob;
+          },
+          saveBoardBlob(blob, name) {
+            const url=URL.createObjectURL(blob);
+            const a=document.createElement("a");a.href=url;a.download=name;
+            document.body.appendChild(a);a.click();a.remove();
+            setTimeout(()=>URL.revokeObjectURL(url),60000);
+          },
           async handleFiles(files) {
+            const project = this.active;
+            if (!project) return;
+            let rejected=0;
             for (const file of files) {
-              let img;
+              if (project.images.length >= 200) {rejected++;continue;}
+              if (!file || file.size > 100*1024*1024) {rejected++;continue;}
+              let img=null;
               if (file.type.startsWith("video/")) {
-                try {
-                  img = await this.getVideoFrame(file);
-                } catch (e) {
-                  continue;
-                }
+                img=await this.getVideoFrame(file);
               } else if (file.type.startsWith("image/")) {
-                img = new Image();
-                img.src = Core.BlobRegistry.create(file, "story");
-                await new Promise((resolve) => {
-                  img.onload = resolve;
-                  img.onerror = resolve;
-                });
-              } else {
-                continue;
-              }
-              if (!img) continue;
-              this.active.images.push({ file, img });
+                const url=Core.BlobRegistry.create(file,"story");
+                img=new Image();
+                try {
+                  await new Promise((resolve,reject)=> {
+                    img.onload=resolve; img.onerror=()=>reject(Error("Invalid image"));img.src=url;
+                  });
+                } catch { Core.BlobRegistry.release(url);img=null; }
+              } else { rejected++;continue; }
+              if (!this.validateImage(img)) {rejected++;continue; }
+              project.images.push({file,img});
             }
-            this.saveSettings();
-            this.updateList();
-            this.draw();
+            if (rejected) UI.showError(`${rejected} unsupported, damaged or oversized storyboard files skipped.`);
+            // An upload may have finished after the user switched boards.
+            if (this.active===project) {this.saveSettings();this.updateList();this.draw();}
           },
           getVideoFrame(file) {
-            return new Promise((resolve) => {
-              const video = document.createElement("video");
-              const sourceUrl = URL.createObjectURL(file);
-              video.muted = true;
-              video.onloadedmetadata = () => {
-                video.currentTime = Math.min(1.0, Math.max(0, video.duration / 2));
+            return new Promise(resolve=> {
+              const video=document.createElement("video");
+              const url=URL.createObjectURL(file);
+              video.muted=true;
+              let done=false;
+              const timeout=setTimeout(()=>finish(null),15000);
+              const finish=(img)=> {
+                if(done)return;done=true;clearTimeout(timeout);
+                video.pause();video.removeAttribute("src");video.load();URL.revokeObjectURL(url);
+                resolve(img);
               };
-              video.src = sourceUrl;
-              video.onseeked = () => {
-                const c = document.createElement("canvas");
-                c.width = video.videoWidth;
-                c.height = video.videoHeight;
-                c.getContext("2d").drawImage(video, 0, 0);
-                const img = new Image();
-                img.src = c.toDataURL("image/jpeg");
-                img.onload = () => {
-                  URL.revokeObjectURL(sourceUrl);
-                  video.removeAttribute("src");
-                  video.load();
-                  resolve(img);
-                };
-                img.onerror = () => {
-                  URL.revokeObjectURL(sourceUrl);
-                  video.removeAttribute("src");
-                  video.load();
-                  resolve(null);
-                };
+              video.onerror=()=>finish(null);
+              video.onloadedmetadata=()=> {
+                if(!Number.isFinite(video.duration) || !video.videoWidth || !video.videoHeight) return finish(null);
+                try {video.currentTime=Math.min(1,Math.max(0,video.duration/2));}catch{return finish(null);}
               };
-              video.onerror = () => {
-                URL.revokeObjectURL(sourceUrl);
-                resolve(null);
+              video.onseeked=()=> {
+                try {
+                  const c=document.createElement("canvas");c.width=video.videoWidth;c.height=video.videoHeight;
+                  c.getContext("2d").drawImage(video,0,0);
+                  const img=new Image();img.onload=()=>finish(img);img.onerror=()=>finish(null);
+                  img.src=c.toDataURL("image/jpeg");
+                }catch {finish(null);}
               };
+              video.src=url;
             });
           },
           updateList() {
@@ -9358,20 +9382,38 @@ Brand C" rows="8" style="
               return;
             }
             const imgs = this.active.images;
-            if (!imgs[0].img.complete) return;
+            if (imgs.some(item=>!this.validateImage(item.img) || item.img.complete===false)) {
+              UI.showError("A storyboard source is still loading or invalid. Remove it before exporting.");
+              return;
+            }
             const s = this.active.settings;
-
-            const c = Core.AdaptiveRenderer.renderBoard(imgs, {
-              cols: s.cols ? parseInt(s.cols) : 0,
+            const cols = Number(s.cols) || 0;
+            const gap = Number(s.gap) || 0;
+            const width = Number(s.width) || 1920;
+            if (cols < 0 || cols > 100 || gap < 0 || gap > 1000 ||
+                (!s.autoWidth && (width < 64 || width > 8192 || cols > 0 && width <= gap*(cols-1)+cols))) {
+              UI.showError("Invalid storyboard dimensions. Reduce columns/gaps or choose a width between 64 and 8192.");
+              return;
+            }
+            const ratios=imgs.map(item=>(item.img.naturalWidth||item.img.width)/(item.img.naturalHeight||item.img.height));
+            const ratioSpread=Math.max(...ratios)/Math.min(...ratios);
+            const recommend=document.getElementById("storySmartFit");
+            if (recommend) {
+              const mixed=ratioSpread > 1.35 && s.fitMode === "cover";
+              recommend.textContent=mixed ? "Mixed ratios · preserve full frames" : "Preserve full frames";
+              recommend.title=mixed ? "Your sources have different shapes. Contain prevents cropping. Click to apply." : "Use Contain to preserve each full frame";
+            }
+            let c;
+            try {c = Core.AdaptiveRenderer.renderBoard(imgs, {
+              cols: cols,
               rows: 0,
               autoWidth: s.autoWidth,
-              targetWidth: parseFloat(s.width) || 1920,
-              gap: s.gap ? parseInt(s.gap) : 0,
+              targetWidth: width,
+              gap: gap,
               bgColor: s.bgColor,
               fitMode: s.fitMode,
-            });
-
-            if (!c) return;
+            });} catch(e) {UI.showError(`Storyboard could not render: ${e.message}`);return;}
+            if (!c || !c.width || !c.height) {UI.showError("Storyboard renderer returned an empty canvas");return;}
             c.onclick = () => UI.openLightbox(c.toDataURL("image/jpeg", 0.95));
             this.canvas = c;
             this.els.preview.innerHTML = "";
@@ -9383,30 +9425,46 @@ Brand C" rows="8" style="
             this.els.preview.appendChild(badge);
           },
           async downloadAll() {
-            if (!this.projects.some((p) => p.images.length > 0)) return;
-            const btn = document.getElementById("downloadAllStoryBtn");
-            btn.innerText = "Processing...";
-            const zip = new JSZip();
-            const origId = this.active.id;
-            for (let i = 0; i < this.projects.length; i++) {
-              const p = this.projects[i];
-              if (p.images.length === 0) continue;
-              this.active = p;
-              this.draw();
-              if (this.canvas) {
-                const blob = await new Promise((r) =>
-                  this.canvas.toBlob(r, "image/jpeg", 0.95),
-                );
-                zip.file(`${p.name}.jpg`, blob);
+            if (!this.projects.some(p=>p.images.length)) return;
+            const btn=document.getElementById("downloadAllStoryBtn");
+            if (btn.disabled) return;
+            const oldLabel=btn.innerText;
+            const origId=this.active.id;
+            btn.disabled=true;btn.innerText="Preparing ZIP...";
+            const zip=new JSZip();
+            let succeeded=0,failed=0;
+            const usedNames=new Set();
+            try {
+              for (const p of this.projects) {
+                if (!p.images.length) continue;
+                this.active=p;
+                const previous=this.canvas;
+                this.canvas=null;
+                this.draw();
+                try {
+                  if (!this.canvas || this.canvas===previous) throw Error("Board did not render");
+                  const blob=await this.encodeBoard(this.canvas);
+                  const base=this.safeExportName(p.name);
+                  let name=base,counter=2;
+                  while(usedNames.has(name.toLowerCase()))name=`${base}_${counter++}`;
+                  usedNames.add(name.toLowerCase());
+                  zip.file(`${name}.jpg`,blob);
+                  succeeded++;
+                } catch(e) { failed++; console.warn("Skipped invalid storyboard:",p.name,e); }
               }
+              if (!succeeded) throw Error("No boards could be exported");
+              const content=await zip.generateAsync({type:"blob"});
+              if (!content.size) throw Error("Empty ZIP");
+              this.saveBoardBlob(content,"boards.zip");
+              if(failed)UI.showError(`${failed} invalid board(s) skipped; ${succeeded} exported.`);
+            } catch(e) {UI.showError(`Storyboard ZIP failed: ${e.message}`);}
+            finally {
+              // Do not use switchProject here: it would save the previous board's
+              // controls into whichever project was last rendered for the ZIP.
+              this.active=this.projects.find(p=>p.id===origId)||this.projects[0];
+              if(this.active){this.loadSettings();this.renderTabs();this.updateList();this.draw();}
+              btn.disabled=false;btn.innerText=oldLabel;
             }
-            this.switchProject(origId);
-            const content = await zip.generateAsync({ type: "blob" });
-            const a = document.createElement("a");
-            a.href = URL.createObjectURL(content);
-            a.download = "boards.zip";
-            a.click();
-            btn.innerText = "Download All (Zip)";
           },
         },
         FitToPlatform: {
@@ -9721,6 +9779,15 @@ Brand C" rows="8" style="
             boardMenu: document.getElementById("stillsBoardMenu"),
           },
           init() {
+            const controls = document.getElementById("videoHeaderControls");
+            if (controls && !document.getElementById("stillsSmartMode")) {
+              const label = document.createElement("label");
+              label.style.cssText = "display:inline-flex; gap:7px; align-items:center; font-size:12px; cursor:pointer; white-space:nowrap;";
+              label.title = "Optional: sample content and discard near-duplicate, blank or likely blurry frames. Normal extraction remains unchanged when off.";
+              const toggle = document.createElement("input"); toggle.type="checkbox"; toggle.id="stillsSmartMode";
+              label.append(toggle,document.createTextNode("Smart frame selection"));
+              controls.appendChild(label);
+            }
             Core.Utils.createDropZone(this.els.drop, (f) =>
               this.handleFiles(f),
             );
@@ -9820,6 +9887,32 @@ Brand C" rows="8" style="
             this.els.empty.innerHTML = `${this.queue.length} video(s) queued.`;
             this.process();
           },
+          frameFingerprint(video, scratch) {
+            const ctx = scratch.getContext("2d",{willReadFrequently:true});
+            ctx.drawImage(video,0,0,scratch.width,scratch.height);
+            const pixels = ctx.getImageData(0,0,scratch.width,scratch.height).data;
+            const values = new Float32Array(scratch.width*scratch.height);
+            let sum=0, square=0, edge=0;
+            for(let i=0;i<values.length;i++) {
+              const at=i*4;
+              const lum=(0.2126*pixels[at]+0.7152*pixels[at+1]+0.0722*pixels[at+2])/255;
+              values[i]=lum; sum+=lum; square+=lum*lum;
+              if(i%scratch.width) edge+=Math.abs(lum-values[i-1]);
+              if(i>=scratch.width) edge+=Math.abs(lum-values[i-scratch.width]);
+            }
+            const avg=sum/values.length;
+            const variance=Math.max(0,square/values.length-avg*avg);
+            const texture=edge/(values.length*2);
+            return {values, avg, variance, texture, quality:variance*0.45+texture*0.55};
+          },
+          acceptFrame(sample, previous) {
+            if(sample.avg<0.025 || sample.avg>0.975 || sample.variance<0.0004) return false;
+            if(sample.texture<0.008 && sample.variance<0.012) return false;
+            if(!previous) return true;
+            let diff=0;
+            for(let i=0;i<sample.values.length;i++) diff+=Math.abs(sample.values[i]-previous.values[i]);
+            return diff/sample.values.length >= 0.045;
+          },
           async process() {
             if (this._processing || !this.queue.length) return;
             this._processing = true;
@@ -9828,6 +9921,7 @@ Brand C" rows="8" style="
             UI.toggleEmptyState(this.els.stacks, false);
 
             const genAllStills = this.els.xlBtn ? this.els.xlBtn.checked : true;
+            const smartMode = !!document.getElementById("stillsSmartMode")?.checked;
             const genStory = this.els.storyBtn ? this.els.storyBtn.checked : false;
             const storyFramesCount = this.els.storyGrid ? parseInt(this.els.storyGrid.value, 10) : 4;
 
@@ -9860,9 +9954,14 @@ Brand C" rows="8" style="
                 stack.onclick = () => this.openDetail(id);
                 this.els.stacks.appendChild(stack);
 
-                const totalFramesToExtract = Math.floor(vid.duration) || 1;
+                // Smart mode caps the candidate scan; uniform mode uses the original cadence.
+                const totalFramesToExtract = smartMode ? Math.min(Math.floor(vid.duration) || 1,180) : (Math.floor(vid.duration) || 1);
                 const interval = vid.duration / (totalFramesToExtract + 1);
                 let previewDataUrl = null;
+                let lastAccepted = null, bestCandidate = null, bestQuality = -1, kept = 0, skipped = 0;
+                const sampleCanvas = smartMode ? document.createElement("canvas") : null;
+                if (sampleCanvas) {sampleCanvas.width = 48; sampleCanvas.height = 27;}
+                const fallbackCanvas = smartMode ? document.createElement("canvas") : null;
                 const frameCanvas = document.createElement("canvas");
                 frameCanvas.width = vid.videoWidth;
                 frameCanvas.height = vid.videoHeight;
@@ -9873,8 +9972,19 @@ Brand C" rows="8" style="
                   await this.seekVideo(vid, f * interval);
                   if (generation !== (this._generation || 0)) break;
                   frameCtx.drawImage(vid, 0, 0);
-
-                  if (!genAllStills && f === 1) {
+                  if (smartMode) {
+                    const sample = this.frameFingerprint(vid, sampleCanvas);
+                    if (sample.quality > bestQuality) {
+                      bestQuality=sample.quality; bestCandidate=f;
+                      fallbackCanvas.width=frameCanvas.width;
+                      fallbackCanvas.height=frameCanvas.height;
+                      fallbackCanvas.getContext("2d").drawImage(frameCanvas,0,0);
+                    }
+                    if (!this.acceptFrame(sample,lastAccepted)) {skipped++;continue;}
+                    lastAccepted=sample;
+                  }
+                  kept++;
+                  if (!genAllStills && !previewDataUrl) {
                     previewDataUrl = frameCanvas.toDataURL("image/jpeg", 0.5);
                     stack.querySelector("img").src = previewDataUrl;
                   }
@@ -9886,7 +9996,7 @@ Brand C" rows="8" style="
                     if (!blob) throw new Error("Could not encode video frame");
                     if (generation !== (this._generation || 0)) break;
                     const url = Core.BlobRegistry.create(blob, "stills");
-                    if (f === 1) {
+                    if (!previewDataUrl) {
                       previewDataUrl = url;
                       stack.querySelector("img").src = url;
                     }
@@ -9900,6 +10010,20 @@ Brand C" rows="8" style="
                   }
                 }
 
+                if (generation !== (this._generation || 0)) break;
+                // All candidates can be black/duplicate. Preserve one best candidate
+                // rather than reporting success with an empty collection.
+                if (smartMode && kept === 0 && bestCandidate !== null) {
+                  if (genAllStills) {
+                    const blob = await new Promise(r=>fallbackCanvas.toBlob(r,"image/jpeg",0.9));
+                    if (!blob) throw Error("Could not encode fallback frame");
+                    if (generation !== (this._generation || 0)) break;
+                    const url=Core.BlobRegistry.create(blob,"stills");
+                    this.collection[id].frames.push({num:bestCandidate,type:"still",blob,url,checked:true});
+                    stack.querySelector("img").src=url;
+                  } else { stack.querySelector("img").src=fallbackCanvas.toDataURL("image/jpeg",0.5); }
+                  kept=1;
+                }
                 if (generation !== (this._generation || 0)) break;
                 if (genStory) {
                   const storyInterval = vid.duration / (storyFramesCount + 1);
@@ -9952,8 +10076,9 @@ Brand C" rows="8" style="
                     stack.querySelector("img").src = compUrl;
                 }
 
-                stack.querySelector(".stack-count").innerText =
-                  `${this.collection[id].frames.length} Items`;
+                stack.querySelector(".stack-count").innerText = smartMode
+                  ? `${this.collection[id].frames.length} Items · ${skipped} skipped`
+                  : `${this.collection[id].frames.length} Items`;
               } catch (e) {
                 if (generation === (this._generation || 0)) {
                   console.error(e);
@@ -10388,95 +10513,84 @@ Brand C" rows="8" style="
             this.draw();
             UI.toast("Stills sorted in ascending order");
           },
-          handleFiles(files) {
-            const valid = files.filter(
-              (f) => f.type.startsWith("image/") || f.type.startsWith("video/"),
-            );
-            if (!valid.length) return;
-            valid.sort((a, b) =>
-              String(a.name || "").localeCompare(String(b.name || ""), undefined, {
-                numeric: true,
-                sensitivity: "base",
-              }),
-            );
-            let loaded = 0;
-            valid.forEach((file) => {
-              if (file.type.startsWith("video/")) {
-                const vid = document.createElement("video");
-                vid.src = URL.createObjectURL(file);
-                vid.muted = true;
-                vid.onloadedmetadata = () => {
-                  vid.currentTime = Math.min(1.0, vid.duration / 2);
-                };
-                vid.onseeked = () => {
-                  const c = document.createElement("canvas");
-                  c.width = vid.videoWidth;
-                  c.height = vid.videoHeight;
-                  c.getContext("2d").drawImage(vid, 0, 0);
-                  const img = new Image();
-                  img.onload = () => {
-                    this.images.push({
-                      id: `fs-${Date.now()}-${Math.random()}`,
-                      name: file.name,
-                      img,
-                    });
-                    loaded++;
-                    if (loaded === valid.length) {
-                      this.sortImagesAscending();
-                      this.updateList();
-                      this.draw();
-                    }
-                  };
-                  img.src = c.toDataURL("image/jpeg", 0.95);
-                  URL.revokeObjectURL(vid.src);
-                };
-              } else {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                  const img = new Image();
-                  img.onload = () => {
-                    this.images.push({
-                      id: `fs-${Date.now()}-${Math.random()}`,
-                      name: file.name,
-                      img,
-                    });
-                    loaded++;
-                    if (loaded === valid.length) {
-                      this.sortImagesAscending();
-                      this.updateList();
-                      this.draw();
-                    }
-                  };
-                  img.src = e.target.result;
-                };
-                reader.readAsDataURL(file);
-              }
-            });
+          validImage(img) {
+            return img && (img.naturalWidth || img.width)>0 && (img.naturalHeight || img.height)>0;
           },
-          addFromStills(stills) {
-            if (!stills || !stills.length) return;
-            let loaded = 0;
-            stills.forEach((still, idx) => {
-              const img = new Image();
-              img.onload = () => {
-                this.images.push({
-                  id: `fs-${Date.now()}-${Math.random()}`,
-                  name: still.name || `Still_${still.num !== undefined ? still.num : idx + 1}`,
-                  img,
-                });
-                loaded++;
-                if (loaded === stills.length) {
-                  this.sortImagesAscending();
-                  this.updateList();
-                  this.draw();
-                }
-              };
-              img.src = still.url;
+          async loadSource(file) {
+            if (!file || file.size > 100*1024*1024) throw Error("File too large or invalid");
+            if(file.type.startsWith("image/")) {
+              const url=Core.BlobRegistry.create(file,"filmstrip");
+              const img=new Image();
+              try {
+                await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=()=>reject(Error("Image could not be decoded"));img.src=url;});
+                if(!this.validImage(img))throw Error("Image dimensions unavailable");
+                return {img,owned:true};
+              }catch(error){Core.BlobRegistry.release(url);throw error;}
+            }
+            if(file.type.startsWith("video/")) {
+              const img=await new Promise((resolve,reject)=> {
+                const video=document.createElement("video");
+                const url=URL.createObjectURL(file);
+                let done=false;const timer=setTimeout(()=>finish(null),15000);
+                const finish=(image)=>{
+                  if(done)return;done=true;clearTimeout(timer);
+                  video.pause();video.removeAttribute("src");video.load();URL.revokeObjectURL(url);
+                  image?resolve(image):reject(Error("Video frame could not be extracted"));
+                };
+                video.muted=true;
+                video.onerror=()=>finish(null);
+                video.onloadedmetadata=()=>{
+                  if(!video.videoWidth || !video.videoHeight || !Number.isFinite(video.duration))return finish(null);
+                  try{video.currentTime=Math.min(1,video.duration/2);}catch{finish(null);}
+                };
+                video.onseeked=()=> {
+                  try{
+                    const c=document.createElement("canvas");c.width=video.videoWidth;c.height=video.videoHeight;
+                    c.getContext("2d").drawImage(video,0,0);
+                    const image=new Image();image.onload=()=>finish(image);image.onerror=()=>finish(null);
+                    image.src=c.toDataURL("image/jpeg",0.95);
+                  }catch{finish(null);}
+                };
+                video.src=url;
+              });
+              if(!this.validImage(img)) throw Error("Video frame dimensions unavailable");
+              return {img,owned:false};
+            }
+            throw Error("Unsupported format");
+          },
+          async handleFiles(files) {
+            const valid=files.filter(f=>f.type.startsWith("image/") || f.type.startsWith("video/"));
+            valid.sort((a,b)=>String(a.name).localeCompare(String(b.name),undefined,{numeric:true,sensitivity:"base"}));
+            let failed=0;
+            const results=await Promise.allSettled(valid.map(file=>this.loadSource(file)));
+            results.forEach((result,i)=>{
+              if(result.status==="fulfilled") {
+                this.images.push({id:`fs-${Date.now()}-${Math.random()}`,name:valid[i].name,...result.value});
+              }else {failed++;console.warn("Filmstrip rejected:",valid[i].name,result.reason);}
             });
+            if(failed)UI.showError(`${failed} invalid or unreadable filmstrip assets skipped.`);
+            this.sortImagesAscending();this.updateList();this.draw();
+          },
+          async addFromStills(stills) {
+            if(!stills?.length)return;
+            let failed=0;
+            const results=await Promise.allSettled(stills.map((still,idx)=>new Promise((resolve,reject)=>{
+              const img=new Image();
+              img.onload=()=>this.validImage(img)?resolve({
+                id:`fs-${Date.now()}-${Math.random()}`,
+                name:still.name||`Still_${still.num??idx+1}`,img,owned:false
+              }):reject(Error("Bad frame"));
+              img.onerror=()=>reject(Error("Frame URL unavailable"));
+              img.src=still.url;
+            })));
+            results.forEach(r=>{if(r.status==="fulfilled")this.images.push(r.value);else failed++;});
+            if(failed)UI.showError(`${failed} video still(s) could not be loaded.`);
+            this.sortImagesAscending();this.updateList();this.draw();
           },
           removeImage(index) {
             if (index >= 0 && index < this.images.length) {
-              this.images.splice(index, 1);
+              const item=this.images.splice(index,1)[0];
+              if (item.owned) Core.BlobRegistry.release(item.img.src);
               this.updateList();
               this.draw();
             }
@@ -10502,13 +10616,14 @@ Brand C" rows="8" style="
             }
             this.images.forEach((item, index) => {
               const div = document.createElement("div");
+              const safeName=String(item.name||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
               div.style.cssText =
                 "display:flex; align-items:center; justify-content:space-between; padding:6px 10px; background:var(--bg-input); border:1px solid var(--border); font-size:0.8rem;";
               div.innerHTML = `
                 <div style="display:flex; align-items:center; gap:8px; overflow:hidden;">
                   <img src="${item.img.src}" style="width:28px; height:28px; object-fit:cover; flex-shrink:0; border:1px solid var(--border);">
                   <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--text-muted);">${String(index + 1).padStart(2, '0')}</span>
-                  <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:110px;" title="${item.name}">${item.name}</span>
+                  <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:110px;" title="${safeName}">${safeName}</span>
                 </div>
                 <div style="display:flex; gap:4px; flex-shrink:0;">
                   <button class="liquid-btn" style="padding:0 6px; height:24px; font-size:0.75rem;" title="Move Up" onclick="Tools.Filmstrip.moveImage(${index}, -1)">&uarr;</button>
@@ -10521,6 +10636,9 @@ Brand C" rows="8" style="
           },
           draw() {
             if (!this.els.rows) return;
+            if (this.images.some(item=>!this.validImage(item.img))) {
+              UI.showError("One filmstrip source has no valid dimensions.");return;
+            }
             const s = {
               rows: parseInt(this.els.rows.value, 10) || 3,
               framesPerRow: parseInt(this.els.framesPerRow.value, 10) || 0,
@@ -10533,8 +10651,14 @@ Brand C" rows="8" style="
               width: 1920,
             };
 
-            const canvas = Core.AdaptiveRenderer.renderFilmstrip(this.images, s);
-            if (!canvas) return;
+            if (s.rows < 1 || s.rows > 12 || s.framesPerRow < 0 || s.framesPerRow > 20 ||
+                s.frameGap < 0 || s.rowGap < 0 || s.rowGap > 200 || s.frameGap > 200) {
+              UI.showError("Invalid filmstrip layout. Reduce rows or spacing.");return;
+            }
+            let canvas;
+            try {canvas = Core.AdaptiveRenderer.renderFilmstrip(this.images, s);}
+            catch(error){UI.showError(`Filmstrip render failed: ${error.message}`);return;}
+            if (!canvas || !canvas.width || !canvas.height) return;
 
             this.canvas = canvas;
             if (this.els.container) {
@@ -10550,17 +10674,24 @@ Brand C" rows="8" style="
             if (this.els.dlJpgBtn) this.els.dlJpgBtn.disabled = false;
             if (this.els.dlPngBtn) this.els.dlPngBtn.disabled = false;
           },
-          download(format = "jpeg") {
-            if (!this.canvas) return;
-            const ext = format === "png" ? "png" : "jpg";
-            const mime = format === "png" ? "image/png" : "image/jpeg";
-            const title = (this.els.title && this.els.title.value.trim()) || "Filmstrip";
-            const a = document.createElement("a");
-            a.href = this.canvas.toDataURL(mime, 0.95);
-            a.download = `${title}.${ext}`;
-            a.click();
+          async download(format = "jpeg") {
+            if (!this.canvas?.width || !this.canvas?.height || !this.images.length) return;
+            const ext=format==="png"?"png":"jpg";
+            const mime=format==="png"?"image/png":"image/jpeg";
+            const title=((this.els.title?.value.trim()||"Filmstrip").replace(/[^a-zA-Z0-9_-]/g,"_").slice(0,100))||"Filmstrip";
+            try {
+              const blob=await new Promise((resolve,reject)=>{
+                try{this.canvas.toBlob(resolve,mime,0.95);}catch(e){reject(e);}
+              });
+              if(!blob?.size)throw Error("The canvas could not be encoded");
+              const url=URL.createObjectURL(blob);
+              const a=document.createElement("a");a.href=url;a.download=`${title}.${ext}`;
+              document.body.appendChild(a);a.click();a.remove();
+              setTimeout(()=>URL.revokeObjectURL(url),60000);
+            }catch(error){UI.showError(`Filmstrip export failed: ${error.message}`);}
           },
           destroy() {
+            this.images.forEach(item=>{if(item.owned)Core.BlobRegistry.release(item.img.src);});
             this.images = [];
             this.updateList();
             this.draw();
@@ -10572,278 +10703,366 @@ Brand C" rows="8" style="
             s3: "https://s3media-ml-eu.surveycenter.com/",
           },
           normFolder(v) {
-            return (
-              v
-                .trim()
-                .replace(/\s+/g, "/")
-                .replace(/\/+/g, "/")
-                .replace(/^\/|\/$/g, "") + "/"
-            );
+            return String(v || "").trim().replace(/\s+/g,"/").replace(/\/+/g,"/").replace(/^\/|\/$/g,"") + "/";
+          },
+          encodePath(folder) {
+            const parts = String(folder).split("/").filter(Boolean);
+            if (parts.some(x=>x === "." || x === ".." || /[\u0000-\u001f]/.test(x))) throw Error("Folder contains an invalid path segment");
+            return parts.map(encodeURIComponent).join("/") + (parts.length ? "/" : "");
+          },
+          validateName(name) {
+            const cleaned = String(name).trim();
+            // Filenames, never arbitrary URLs or additional directory traversal.
+            if (!cleaned || /[\/\\\u0000-\u001f]/.test(cleaned) || cleaned === "." || cleaned === "..") return null;
+            const ext = cleaned.match(/\.([a-z0-9]+)$/i)?.[1]?.toLowerCase();
+            if (!["jpg","jpeg","png","mp4","mp3"].includes(ext)) return null;
+            return {cleaned,ext};
+          },
+          htmlAttr(value) {
+            return String(value).replace(/&/g,"&amp;").replace(/"/g,"&quot;")
+              .replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/'/g,"&#39;");
           },
           generate() {
             const server = document.getElementById("alg-server").value;
-            const modeNew = document.getElementById("alg-mode-toggle")
-              ? document.getElementById("alg-mode-toggle").checked
-              : false;
-            const folder = this.normFolder(
-              document.getElementById("alg-folder").value,
-            );
-            const lines = document
-              .getElementById("alg-input")
-              .value.split("\n")
-              .map((l) => l.trim())
-              .filter(Boolean);
-            let ads = [],
-              story = [];
-            lines.forEach((name) => {
-              const ext = name.split(".").pop().toLowerCase();
-              const url = this.base[server] + folder + name;
-              if (ext === "jpg" || ext === "png") {
-                ads.push(
-                  `<img src="${url}" class="zoomImage" style="max-width:80%">`,
-                );
-                story.push(
-                  `<img src="${url}" class="zoomImage" style="max-height:280px">`,
-                );
-              } else if (ext === "mp4") {
-                let outUrl = url;
-                if (modeNew) {
-                  outUrl = outUrl.replace(/^https:/, "").replace(/\.mp4$/i, "");
-                }
-                ads.push(outUrl);
-                story.push(
-                  `<img src="${this.base[server] + folder + name.replace(".mp4", ".jpg")}" class="zoomImage" style="max-height:280px">`,
-                );
-              } else if (ext === "mp3") {
+            const root = this.base[server];
+            const adsOut = document.getElementById("alg-out-ads");
+            const storyOut = document.getElementById("alg-out-story");
+            if (!root) {adsOut.value = storyOut.value = ""; UI.showError?.("Unknown storage server");return;}
+            const modeNew = !!document.getElementById("alg-mode-toggle")?.checked;
+            let folder;
+            try {folder=this.encodePath(this.normFolder(document.getElementById("alg-folder").value));}
+            catch(e) {adsOut.value=storyOut.value="";UI.showError?.(e.message);return;}
+            const lines = document.getElementById("alg-input").value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+            let ads = [], story = [], skipped = [];
+            for (const line of lines) {
+              const name = this.validateName(line);
+              if (!name) {skipped.push(line);continue;}
+              const url = root + folder + encodeURIComponent(name.cleaned);
+              const safe = this.htmlAttr(url);
+              if (["jpg","jpeg","png"].includes(name.ext)) {
+                ads.push(`<img src="${safe}" class="zoomImage" style="max-width:80%">`);
+                story.push(`<img src="${safe}" class="zoomImage" style="max-height:280px">`);
+              } else if (name.ext === "mp4") {
+                ads.push(modeNew ? url.replace(/^https:/,"").replace(/\.mp4$/i,"") : url);
+                const poster = root + folder + encodeURIComponent(name.cleaned.replace(/\.mp4$/i,".jpg"));
+                story.push(`<img src="${this.htmlAttr(poster)}" class="zoomImage" style="max-height:280px">`);
+              } else if (name.ext === "mp3") {
                 ads.push(url);
-                story.push(name);
+                story.push(name.cleaned); // textarea output only
               }
-            });
-            document.getElementById("alg-out-ads").value = ads.join("\n");
-            document.getElementById("alg-out-story").value = story.join("\n");
+            }
+            adsOut.value = ads.join("\n");
+            storyOut.value = story.join("\n");
+            if (skipped.length) UI.showError?.(`${skipped.length} invalid or unsupported filename(s) were skipped.`);
           },
           copy(id, btn) {
             const el = document.getElementById(id);
             el.select();
             el.setSelectionRange(0, 99999);
-            navigator.clipboard.writeText(el.value).then(() => {
-              UI.showSuccess(btn, "Copied");
-            });
+            if (navigator.clipboard?.writeText) {
+              navigator.clipboard.writeText(el.value).then(() => UI.showSuccess(btn,"Copied"))
+                .catch(() => {el.focus(); el.select();document.execCommand("copy");UI.showSuccess(btn,"Copied");});
+            } else {el.focus();el.select();document.execCommand("copy");UI.showSuccess(btn,"Copied");}
           },
         },
         AdDownloader: {
           workbookData: null,
           allNames: [],
           adTypeMap: {},
+          entries: [],
+          _downloadBusy: false,
           init() {
-            document
-              .getElementById("adDlInput")
-              .addEventListener("change", (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                  document.getElementById("adDlFileNameDisplay").innerText =
-                    file.name;
-                  this.loadExcel();
-                } else {
-                  document.getElementById("adDlFileNameDisplay").innerText =
-                    "Upload Excel";
-                }
-              });
+            document.getElementById("adDlInput").addEventListener("change", (e) => {
+              const file = e.target.files[0];
+              document.getElementById("adDlFileNameDisplay").innerText = file ? file.name : "Upload Excel";
+              if (file) this.loadExcel();
+            });
+            const header = document.getElementById("adlinksDlHeaderControls") || document.getElementById("adDlSummaryBar");
+            if (header && !document.getElementById("adDlBulkButton")) {
+              const btn = document.createElement("button");
+              btn.id = "adDlBulkButton";
+              btn.type = "button";
+              btn.className = "liquid-btn active-mode";
+              btn.style.cssText = "height:40px; padding:0 14px;";
+              btn.textContent = "Download selected ZIP";
+              btn.disabled = true;
+              btn.onclick = () => this.downloadBulk();
+              header.appendChild(btn);
+            }
+            const bar = document.getElementById("adDlSummaryBar");
+            if (bar && !document.getElementById("adDlStatus")) {
+              const status = document.createElement("span");
+              status.id = "adDlStatus";
+              status.setAttribute("role", "status");
+              status.setAttribute("aria-live", "polite");
+              status.style.cssText = "display:inline-block; margin-left:12px; font-size:12px; line-height:1.5; color:var(--text-muted);";
+              bar.appendChild(status);
+            }
+          },
+          status(message, isError = false) {
+            const el = document.getElementById("adDlStatus");
+            if (el) { el.textContent = message; el.style.color = isError ? "var(--danger, #b64a44)" : "var(--text-muted)"; }
           },
           normalize(text) {
-            return text
-              .toString()
-              .replace(/\s+/g, "")
-              .replace(/_/g, "")
-              .toUpperCase();
+            return String(text ?? "").replace(/\s+/g, "").replace(/_/g, "").toUpperCase();
+          },
+          safeName(text) {
+            return String(text ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+              .replace(/ß/g, "ss").replace(/[^a-zA-Z0-9]+/g, "_")
+              .replace(/_+/g, "_").replace(/^_|_$/g, "").slice(0, 160) || "asset";
+          },
+          safeUrl(url) {
+            const text = String(url ?? "").trim();
+            if (!/^https?:\/\//i.test(text)) return "";
+            try {
+              const result = new URL(text);
+              return /^https?:$/.test(result.protocol) ? result.href : "";
+            } catch { return ""; }
+          },
+          detectColumns(rows) {
+            const names = {no: /^(ad\s*(no|num|number|#)|number|no|id|ad\s*id)$/i,
+              link: /^(link|url|asset\s*(link|url)|download\s*(link|url)|media\s*(link|url)|hyperlink)$/i,
+              type: /^(type|ad\s*type|format|media\s*type|category|creative\s*type)$/i};
+            for (let r = 0; r < Math.min(rows.length, 12); r++) {
+              const found = {};
+              rows[r].forEach((cell, c) => {
+                const label = String(cell?.v ?? "").replace(/[_\s]+/g, " ").trim();
+                for (const [kind, re] of Object.entries(names)) if (re.test(label)) found[kind] = c;
+              });
+              if (found.no !== undefined && found.link !== undefined) {
+                return {start:r + 1,no:found.no,link:found.link,type:found.type ?? 2,recognized:true};
+              }
+            }
+            return {start:1,no:0,link:1,type:2,recognized:false}; // existing workbook layout
+          },
+          extensionHint(url, label, type) {
+            const allowed = new Set(["mp4","mov","avi","mkv","webm","mp3","wav","ogg","m4a","jpg","jpeg","png","gif","webp","svg","bmp","pdf","zip"]);
+            for (const value of [label, (() => { try { return new URL(url).pathname; } catch { return ""; } })()]) {
+              const m = String(value).match(/\.([a-z0-9]{2,5})(?:$|[?#])/i);
+              if (m && allowed.has(m[1].toLowerCase())) return {ext:"." + m[1].toLowerCase(),confidence:"high"};
+            }
+            const t = String(type ?? "").toLowerCase();
+            if (/\b(radio|podcast|audio|sound)\b/.test(t)) return {ext:".mp3",confidence:"inferred"};
+            if (/\b(tvc|video|ol[v]|cinema|film|reels|tv)\b/.test(t)) return {ext:".mp4",confidence:"inferred"};
+            if (/\b(print|outdoor|ooh|image|photo|static|poster|banner|display)\b/.test(t)) return {ext:".jpg",confidence:"inferred"};
+            return {ext:"",confidence:"unknown"};
           },
           loadExcel() {
             const file = document.getElementById("adDlInput").files[0];
-            if (!file) {
-              alert("Please upload an Excel file first.");
-              return;
-            }
+            if (!file) return;
             const reader = new FileReader();
+            reader.onerror = () => this.status("Could not read the spreadsheet.", true);
             reader.onload = (e) => {
-              const data = new Uint8Array(e.target.result);
-              this.workbookData = window.XLSX.read(data, { type: "array" });
-              this.generateDashboard();
+              try {
+                const data = new Uint8Array(e.target.result);
+                this.workbookData = window.XLSX.read(data, {type:"array"});
+                this.generateDashboard();
+              } catch (error) { this.status("Spreadsheet could not be parsed: " + error.message, true); }
             };
             reader.readAsArrayBuffer(file);
           },
           generateDashboard() {
-            const sheet =
-              this.workbookData.Sheets[this.workbookData.SheetNames[0]];
-            const range = window.XLSX.utils.decode_range(sheet["!ref"]);
-            const tbody = document.getElementById("adDlTableBody");
-            const downloadedBody =
-              document.getElementById("adDlDownloadedBody");
-            const downloadedHeaderRow = document.getElementById(
-              "adDlDownloadedHeaderRow",
-            );
-            tbody.innerHTML = "";
-            Array.from(downloadedBody.children).forEach((child) => {
-              if (child.id !== "adDlDownloadedHeaderRow") {
-                downloadedBody.removeChild(child);
-              }
-            });
-            downloadedHeaderRow.style.display = "none";
-            this.allNames = [];
-            this.adTypeMap = {};
-            let fragment = document.createDocumentFragment();
-            for (let r = 1; r <= range.e.r; r++) {
-              let adCell = sheet[window.XLSX.utils.encode_cell({ r: r, c: 0 })];
-              let linkCell =
-                sheet[window.XLSX.utils.encode_cell({ r: r, c: 1 })];
-              let typeCell =
-                sheet[window.XLSX.utils.encode_cell({ r: r, c: 2 })];
-              if (!typeCell) continue;
-              let adNo = adCell.v;
-              let adType = typeCell.v;
-              this.adTypeMap[this.normalize(adType)] = adNo;
-              let link = "";
-              if (linkCell && linkCell.l) link = linkCell.l.Target;
-              else if (linkCell) link = linkCell.v;
-              let linkString = link ? link.toString().trim() : "";
-              let displayText = ((linkCell && linkCell.v) || "")
-                .toString()
-                .trim();
-              let extRegex =
-                /\.(mp4|mov|avi|mkv|webm|flv|wmv|mp3|wav|ogg|m4a|aac|flac|jpg|jpeg|png|gif|webp|svg|bmp)\b/i;
-              let extMatch =
-                displayText.match(extRegex) || linkString.match(extRegex);
-              if (!extMatch) {
-                extMatch = displayText.match(/\.([a-zA-Z0-9]{2,4})$/i);
-                if (!extMatch) {
-                  try {
-                    let urlObj = new URL(linkString);
-                    extMatch = urlObj.pathname.match(/\.([a-zA-Z0-9]{2,4})$/i);
-                  } catch (e) {
-                    extMatch = linkString.match(/\.([a-zA-Z0-9]{2,4})$/i);
-                  }
-                }
-              }
-              let ext = extMatch ? extMatch[0].toLowerCase() : "";
-              const ignoredExts = [
-                ".com",
-                ".org",
-                ".net",
-                ".co",
-                ".io",
-                ".de",
-                ".uk",
-                ".us",
-                ".info",
-                ".biz",
-                ".html",
-                ".htm",
-                ".php",
-                ".asp",
-                ".aspx",
-                ".jsp",
-              ];
-              if (ignoredExts.includes(ext)) {
-                ext = "";
-              }
-              let clean = displayText
-                .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "")
-                .replace(/\u00df/g, "ss");
-              clean = clean.replace(/\.(mp4|mov|avi|mkv|webm|flv|wmv|mp3|wav|ogg|m4a|aac|flac|jpg|jpeg|png|gif|webp|svg|bmp)$/i, "");
-              if (ext) {
-                if (clean.toLowerCase().endsWith(ext)) {
-                  clean = clean.substring(0, clean.length - ext.length);
-                }
-} else {
-                 let typeLower = adType.toLowerCase().trim();
-                 const imageTypes = [
-                   "print", "ooh", "out of home", "outdoor", "billboard", "poster",
-                   "img", "image", "picture", "photo", "static", "display", "banner",
-                   "pic", "jpeg", "jpg", "png", "gif", "webp", "creative", "visual"
-                 ];
-                 const audioTypes = [
-                   "radio", "audio", "podcast", "sound", "voice", "music", "spot"
-                 ];
-                 const videoTypes = [
-                   "tv", "television", "video", "cinema", "pre-roll", "preroll",
-                   "mid-roll", "midroll", "post-roll", "postroll", "bumper",
-                   "in-stream", "instream", "ott", "ctv", "connected tv",
-                   "social video", "reels", "tiktok", "shorts", "story", "stories"
-                 ];
-
-                 let matched = false;
-                 for (const t of imageTypes) {
-                   if (typeLower === t || typeLower.includes(" " + t + " ") || typeLower.startsWith(t + " ") || typeLower.endsWith(" " + t)) {
-                     ext = ".jpg";
-                     matched = true;
-                     break;
-                   }
-                 }
-                 if (!matched) {
-                   for (const t of audioTypes) {
-                     if (typeLower === t || typeLower.includes(" " + t + " ") || typeLower.startsWith(t + " ") || typeLower.endsWith(" " + t)) {
-                       ext = ".mp3";
-                       matched = true;
-                       break;
-                     }
-                   }
-                 }
-                 if (!matched) {
-                   for (const t of videoTypes) {
-                     if (typeLower === t || typeLower.includes(" " + t + " ") || typeLower.startsWith(t + " ") || typeLower.endsWith(" " + t)) {
-                       ext = ".mp4";
-                       matched = true;
-                       break;
-                     }
-                   }
-                 }
-                 if (!matched) {
-                   ext = ".mp4";
-                 }
-               }
-              clean = clean
-                .replace(/[^a-zA-Z0-9]/g, "_")
-                .replace(/_+/g, "_")
-                .replace(/^_|_$/g, "");
-              let typeNumberMatch = adType.match(/\d+/);
-              let typeNumber = typeNumberMatch ? typeNumberMatch[0] : "";
-              let typeBase = adType.replace(/\d+/g, "").trim();
-              let typeBaseClean = typeBase
-                .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "")
-                .replace(/[^a-zA-Z0-9]/g, "_")
-                .replace(/_+/g, "_")
-                .replace(/^_|_$/g, "");
-              if (typeNumber) {
-                let regex = new RegExp(typeBaseClean, "i");
-                clean = clean.replace(regex, typeBaseClean + typeNumber);
-              }
-              let finalName = `AD${adNo}_${clean}`;
-              this.allNames.push(finalName);
-              let tr = document.createElement("tr");
-              tr.id = `adDl-row-${adNo}`;
-              tr.innerHTML = `<td style="padding: 16px; border-bottom: 1px solid var(--border); font-family: var(--font-mono);">${adNo}</td><td style="padding: 16px; border-bottom: 1px solid var(--border); font-family: var(--font-mono); color: var(--success);">${finalName}</td><td style="padding: 16px; border-bottom: 1px solid var(--border); text-align: right;"><div style="display:flex; gap:8px; justify-content:flex-end;"><button class="liquid-btn" style="padding:4px 8px; font-size:0.75rem;" onclick="Tools.AdDownloader.copySingleName('${finalName}')"><span class="material-symbols-rounded" style="margin-right:4px; font-size: 14px;">content_copy</span>Copy</button><button class="liquid-btn active-mode" style="padding:4px 8px; font-size:0.75rem;" onclick="Tools.AdDownloader.downloadPopup('${link}', '${adNo}', '${finalName}')"><span class="material-symbols-rounded" style="margin-right:4px; font-size: 14px;">download</span>Download</button></div></td>`;
-              tr.style.transition = "background 0.2s";
-              tr.onmouseover = () => {
-                if (!tr.classList.contains("downloaded"))
-                  tr.style.background = "var(--bg-input)";
-              };
-              tr.onmouseout = () => {
-                if (!tr.classList.contains("downloaded"))
-                  tr.style.background = "transparent";
-              };
+            if (!this.workbookData?.SheetNames?.length) { this.status("The workbook has no sheets.", true); return; }
+            const sheet = this.workbookData.Sheets[this.workbookData.SheetNames[0]];
+            if (!sheet?.["!ref"]) { this.status("The first sheet is empty.", true); return; }
+            const range = XLSX.utils.decode_range(sheet["!ref"]);
+            const rows = [];
+            for (let r = range.s.r; r <= range.e.r; r++) {
+              const cells = [];
+              for (let c = 0; c <= range.e.c; c++) cells.push(sheet[XLSX.utils.encode_cell({r,c})] || null);
+              rows.push(cells);
+            }
+            const columns = this.detectColumns(rows);
+            const body = document.getElementById("adDlTableBody");
+            const downloadedBody = document.getElementById("adDlDownloadedBody");
+            const downloadedHead = document.getElementById("adDlDownloadedHeaderRow");
+            body.replaceChildren();
+            Array.from(downloadedBody.children).filter(el => el !== downloadedHead).forEach(el => el.remove());
+            downloadedHead.style.display = "none";
+            const statusCell=downloadedHead.querySelector("td");
+            if (statusCell) statusCell.textContent="Download initiated";
+            this.entries = []; this.allNames = []; this.adTypeMap = {};
+            const seen = new Set();
+            let skipped = 0, inferred = 0;
+            const fragment = document.createDocumentFragment();
+            for (let r = columns.start; r < rows.length; r++) {
+              const line = rows[r];
+              const no = String(line[columns.no]?.v ?? "").trim();
+              const linkCell = line[columns.link];
+              const type = String(line[columns.type]?.v ?? "").trim();
+              const raw = String(linkCell?.l?.Target || linkCell?.v || "").trim();
+              const url = this.safeUrl(raw);
+              if (!no && !raw && !type) continue;
+              if (!no || !url) { skipped++; continue; }
+              const label = String(linkCell?.v || "").trim() || (() => { try {return decodeURIComponent(new URL(url).pathname.split("/").pop());} catch {return "asset";} })();
+              const hint = this.extensionHint(url, label, type);
+              if (hint.confidence === "inferred") inferred++;
+              const stem = label.replace(/\.(mp4|mov|avi|mkv|webm|mp3|wav|ogg|m4a|jpg|jpeg|png|gif|webp|svg|bmp|pdf|zip)$/i, "");
+              const typeNumber = type.match(/\d+/)?.[0] || "";
+              const typeBase = this.safeName(type.replace(/\d+/g, ""));
+              let clean = this.safeName(stem);
+              if (typeNumber && typeBase !== "asset") clean = clean.replace(new RegExp(typeBase + "(?!\d)","i"),typeBase + typeNumber);
+              const base = `AD${this.safeName(no)}_${clean}`;
+              let name = base, counter = 2;
+              while (seen.has(name.toLowerCase())) name = `${base}_${counter++}`;
+              seen.add(name.toLowerCase());
+              const entry = {no,url,type,displayName:name,ext:hint.ext,confidence:hint.confidence,selected:true,downloaded:false};
+              this.entries.push(entry);
+              this.allNames.push(name);
+              this.adTypeMap[this.normalize(type)] = no;
+              const tr = document.createElement("tr");
+              tr.id = `adDl-row-${this.entries.length}`;
+              const numCell = document.createElement("td");
+              const cb = document.createElement("input"); cb.type = "checkbox"; cb.checked = true;
+              cb.setAttribute("aria-label",`Include ${name} in ZIP`);
+              cb.style.marginRight = "9px";
+              cb.onchange = () => { entry.selected = cb.checked; this.updateBulkButton(); };
+              numCell.append(cb,document.createTextNode(no));
+              const nameCell = document.createElement("td");
+              nameCell.textContent = name + (hint.ext || "");
+              if (hint.confidence === "inferred") nameCell.title = "Extension inferred from media category; actual downloaded file type is checked";
+              if (hint.confidence === "unknown") nameCell.title = "File extension will be detected from the downloaded response";
+              const actions = document.createElement("td"); actions.style.textAlign = "right";
+              const copy = document.createElement("button"); copy.type = "button"; copy.className = "liquid-btn";
+              copy.textContent = "Copy"; copy.onclick = () => this.copySingleName(name);
+              const download = document.createElement("button"); download.type = "button";
+              download.className = "liquid-btn active-mode";
+              download.textContent = "Download"; download.onclick = () => this.downloadFile(entry);
+              const open = document.createElement("button"); open.type = "button"; open.className = "liquid-btn";
+              open.textContent = "Open source"; open.title = "Fallback when the hosting server blocks browser downloads";
+              open.onclick = () => window.open(entry.url,"_blank","noopener,noreferrer");
+              actions.append(copy," ",download," ",open);
+              tr.append(numCell,nameCell,actions); entry.row = tr; entry.downloadButton = download;
               fragment.appendChild(tr);
             }
-            tbody.appendChild(fragment);
-            document.getElementById("adDlTableContainer").style.display =
-              "block";
+            body.appendChild(fragment);
+            document.getElementById("adDlTableContainer").style.display = "block";
             document.getElementById("adDlSummaryBar").style.display = "block";
-            document.getElementById("adDlCountText").innerText =
-              this.allNames.length + " Ads Detected";
+            document.getElementById("adDlCountText").innerText = `${this.entries.length} valid ads`;
             document.getElementById("adDlEmptyState").style.display = "none";
-            if (window.lucide) {
-              /* window.lucide.createIcons */
+            this.updateBulkButton();
+            this.status(`${this.entries.length} ready · ${skipped} invalid rows skipped · ${inferred} extensions inferred. Download will verify response type.`);
+          },
+          updateBulkButton() {
+            const btn = document.getElementById("adDlBulkButton");
+            if (btn) btn.disabled = this._downloadBusy || !this.entries.some(entry => entry.selected && !entry.downloaded);
+          },
+          guessType(blob, hint, signature=[]) {
+            // Use the actual MIME where possible; do not trust guessed spreadsheet categories.
+            const mime = String(blob.type || "").split(";")[0].toLowerCase();
+            const types = {"video/mp4":"mp4","video/webm":"webm","video/quicktime":"mov","audio/mpeg":"mp3","audio/mp4":"m4a","audio/wav":"wav","image/jpeg":"jpg","image/png":"png","image/webp":"webp","image/gif":"gif","image/svg+xml":"svg","application/pdf":"pdf","application/zip":"zip"};
+            // Content sniffing is safer than a category-based extension guess.
+            const ascii=(a,b)=>String.fromCharCode(...Array.from(signature).slice(a,b));
+            if(ascii(0,4)==="%PDF")return ".pdf";
+            if(signature[0]===0x89&&ascii(1,4)==="PNG")return ".png";
+            if(signature[0]===0xff&&signature[1]===0xd8&&signature[2]===0xff)return ".jpg";
+            if(ascii(0,3)==="GIF")return ".gif";
+            if(ascii(0,4)==="RIFF"&&ascii(8,12)==="WEBP")return ".webp";
+            if(ascii(0,4)==="RIFF"&&ascii(8,12)==="WAVE")return ".wav";
+            if(ascii(4,8)==="ftyp")return ".mp4";
+            if(ascii(0,3)==="ID3")return ".mp3";
+            if(signature[0]===0x50&&signature[1]===0x4b&&signature[2]===0x03&&signature[3]===0x04)return ".zip";
+            if (types[mime]) return "." + types[mime];
+            if (mime === "text/html" || mime === "application/json") throw Error("The link returned a web page/error instead of a media file");
+            if (hint.confidence === "high") return hint.ext;
+            if (hint.confidence === "inferred" && mime.startsWith("audio/") && hint.ext === ".mp3") return hint.ext;
+            if (hint.confidence === "inferred" && mime.startsWith("video/") && hint.ext === ".mp4") return hint.ext;
+            if (hint.confidence === "inferred" && mime.startsWith("image/") && hint.ext === ".jpg") return hint.ext;
+            return ".bin";
+          },
+          async getAsset(entry, signal) {
+            const response = await fetch(entry.url, {mode:"cors", credentials:"omit", redirect:"follow", signal});
+            if (!response.ok) throw Error(`HTTP ${response.status}`);
+            const size = Number(response.headers.get("content-length")) || 0;
+            if (size > 100 * 1024 * 1024) throw Error("File exceeds 100 MB safety limit");
+            let blob;
+            if (response.body?.getReader) {
+              // Prevent unbounded allocations even when the server omits Content-Length.
+              const reader=response.body.getReader(), chunks=[];
+              let bytes=0;
+              try {
+                while (true) {
+                  const {done,value}=await reader.read();
+                  if (done) break;
+                  bytes+=value.byteLength;
+                  if (bytes>100*1024*1024) {await reader.cancel();throw Error("File exceeds 100 MB safety limit");}
+                  chunks.push(value);
+                }
+              } finally {reader.releaseLock();}
+              blob=new Blob(chunks,{type:response.headers.get("content-type")||"application/octet-stream"});
+            } else {blob=await response.blob();}
+            if (!blob.size) throw Error("Empty download");
+            if (blob.size > 100 * 1024 * 1024) throw Error("File exceeds 100 MB safety limit");
+            const bytes=new Uint8Array(await blob.slice(0,24).arrayBuffer());
+            const ext=this.guessType(blob,entry,bytes);
+            return {blob, name:entry.displayName + ext};
+          },
+          saveBlob(blob, name) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url; a.download = name;
+            document.body.appendChild(a); a.click(); a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 60000);
+          },
+          markDownloaded(entry) {
+            entry.downloaded = true;
+            if (entry.row) {
+              entry.row.classList.add("downloaded");
+              entry.row.style.opacity = "0.65";
+              document.getElementById("adDlDownloadedHeaderRow").style.display = "table-row";
+              document.getElementById("adDlDownloadedBody").appendChild(entry.row);
             }
+            this.updateBulkButton();
+          },
+          async downloadFile(entry) {
+            if (entry.downloaded || entry.inProgress) return;
+            entry.inProgress = true; entry.downloadButton.disabled = true;
+            this.status(`Downloading ${entry.displayName}...`);
+            try {
+              const {blob,name} = await this.getAsset(entry);
+              this.saveBlob(blob, name);
+              this.markDownloaded(entry);
+              this.status(`Download requested: ${name} (${(blob.size/1048576).toFixed(1)} MB).`);
+            } catch (error) {
+              this.status(`${entry.displayName}: automatic download unavailable (${error.message}). The source may block CORS; use Open source to save manually.`,true);
+              entry.downloadButton.disabled = false;
+            } finally {entry.inProgress = false;}
+          },
+          async downloadBulk() {
+            if (this._downloadBusy) return;
+            const selection = this.entries.filter(entry=>entry.selected && !entry.downloaded);
+            if (!selection.length) return;
+            if (selection.length > 250) { this.status("Select at most 250 files per ZIP.",true); return; }
+            if (typeof JSZip === "undefined") { this.status("ZIP library did not load.",true); return; }
+            this._downloadBusy = true; this.updateBulkButton();
+            const zip = new JSZip(); const successes = [], failures = [];
+            let index = 0, totalBytes = 0, stopped = false;
+            const worker = async () => {
+              while (!stopped && index < selection.length) {
+                const entry = selection[index++];
+                try {
+                  const {blob,name} = await this.getAsset(entry);
+                  totalBytes += blob.size;
+                  if (totalBytes > 350 * 1024 * 1024) { stopped = true; throw Error("ZIP exceeds 350 MB safety limit"); }
+                  zip.file(name,blob); successes.push(entry);
+                } catch (error) { failures.push({name:entry.displayName,reason:error.message}); }
+                this.status(`${successes.length + failures.length}/${selection.length} checked · ${successes.length} ready · ${failures.length} failed`);
+              }
+            };
+            try {
+              await Promise.all(Array.from({length:Math.min(3,selection.length)},worker));
+              if (!successes.length) {
+                this.status(`No files downloadable. ${failures.length} blocked or invalid links. Remote hosts must allow browser CORS.`,true);
+                return;
+              }
+              this.status(`Creating ZIP for ${successes.length} assets...`);
+              const blob = await zip.generateAsync({type:"blob",compression:"DEFLATE",compressionOptions:{level:2}});
+              this.saveBlob(blob, "ad_assets.zip");
+              successes.forEach(entry=>this.markDownloaded(entry));
+              const first = failures.slice(0,3).map(x=>`${x.name}: ${x.reason}`).join("; ");
+              this.status(`ZIP download requested for ${successes.length} files, ${failures.length} failed.${failures.length?" "+first:""}`,!!failures.length);
+            } catch (error) { this.status(`ZIP failed: ${error.message}`,true); }
+            finally {this._downloadBusy=false;this.updateBulkButton();}
           },
           copyToClipboardFallback(text) {
             const textArea = document.createElement("textarea");
@@ -10895,48 +11114,11 @@ Brand C" rows="8" style="
             }
             alert("All " + this.allNames.length + " names copied!");
           },
+          // Legacy inline-handler compatibility; direct downloads no longer open popups.
           downloadPopup(url, adNo, finalName) {
-            let downloadUrl = url;
-            if (downloadUrl && !downloadUrl.includes("download=")) {
-              if (downloadUrl.includes("?")) {
-                downloadUrl = downloadUrl.split("?")[0] + "?download=1";
-              } else {
-                downloadUrl += "?download=1";
-              }
-            }
-            if (finalName) {
-              if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(finalName).catch(() => {
-                  this.copyToClipboardFallback(finalName);
-                });
-              } else {
-                this.copyToClipboardFallback(finalName);
-              }
-            }
-            if (downloadUrl) {
-              window.open(
-                downloadUrl,
-                "downloadWindow",
-                "width=900,height=700,left=200,top=100",
-              );
-            }
-            if (adNo) {
-              const row = document.getElementById(`adDl-row-${adNo}`);
-              if (row) {
-                const downloadedBody =
-                  document.getElementById("adDlDownloadedBody");
-                const downloadedHeaderRow = document.getElementById(
-                  "adDlDownloadedHeaderRow",
-                );
-                row.classList.add("downloaded");
-                row.style.opacity = "0.6";
-                row.style.background = "rgba(255,255,255,0.01)";
-                const nameCell = row.querySelector("td:nth-child(2)");
-                if (nameCell) nameCell.style.textDecoration = "line-through";
-                downloadedHeaderRow.style.display = "table-row";
-                downloadedBody.appendChild(row);
-              }
-            }
+            const entry = this.entries.find(item => item.url === this.safeUrl(url) && item.no === String(adNo));
+            if (entry) return this.downloadFile(entry);
+            this.status("Please reimport the spreadsheet before downloading.",true);
           },
           getBucketData() {
             if (this.workbookData.SheetNames.length < 2) return [];

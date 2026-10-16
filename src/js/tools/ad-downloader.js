@@ -4,215 +4,300 @@ export default {
           workbookData: null,
           allNames: [],
           adTypeMap: {},
+          entries: [],
+          _downloadBusy: false,
           init() {
-            document
-              .getElementById("adDlInput")
-              .addEventListener("change", (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                  document.getElementById("adDlFileNameDisplay").innerText =
-                    file.name;
-                  this.loadExcel();
-                } else {
-                  document.getElementById("adDlFileNameDisplay").innerText =
-                    "Upload Excel";
-                }
-              });
+            document.getElementById("adDlInput").addEventListener("change", (e) => {
+              const file = e.target.files[0];
+              document.getElementById("adDlFileNameDisplay").innerText = file ? file.name : "Upload Excel";
+              if (file) this.loadExcel();
+            });
+            const header = document.getElementById("adlinksDlHeaderControls") || document.getElementById("adDlSummaryBar");
+            if (header && !document.getElementById("adDlBulkButton")) {
+              const btn = document.createElement("button");
+              btn.id = "adDlBulkButton";
+              btn.type = "button";
+              btn.className = "liquid-btn active-mode";
+              btn.style.cssText = "height:40px; padding:0 14px;";
+              btn.textContent = "Download selected ZIP";
+              btn.disabled = true;
+              btn.onclick = () => this.downloadBulk();
+              header.appendChild(btn);
+            }
+            const bar = document.getElementById("adDlSummaryBar");
+            if (bar && !document.getElementById("adDlStatus")) {
+              const status = document.createElement("span");
+              status.id = "adDlStatus";
+              status.setAttribute("role", "status");
+              status.setAttribute("aria-live", "polite");
+              status.style.cssText = "display:inline-block; margin-left:12px; font-size:12px; line-height:1.5; color:var(--text-muted);";
+              bar.appendChild(status);
+            }
+          },
+          status(message, isError = false) {
+            const el = document.getElementById("adDlStatus");
+            if (el) { el.textContent = message; el.style.color = isError ? "var(--danger, #b64a44)" : "var(--text-muted)"; }
           },
           normalize(text) {
-            return text
-              .toString()
-              .replace(/\s+/g, "")
-              .replace(/_/g, "")
-              .toUpperCase();
+            return String(text ?? "").replace(/\s+/g, "").replace(/_/g, "").toUpperCase();
+          },
+          safeName(text) {
+            return String(text ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+              .replace(/ß/g, "ss").replace(/[^a-zA-Z0-9]+/g, "_")
+              .replace(/_+/g, "_").replace(/^_|_$/g, "").slice(0, 160) || "asset";
+          },
+          safeUrl(url) {
+            const text = String(url ?? "").trim();
+            if (!/^https?:\/\//i.test(text)) return "";
+            try {
+              const result = new URL(text);
+              return /^https?:$/.test(result.protocol) ? result.href : "";
+            } catch { return ""; }
+          },
+          detectColumns(rows) {
+            const names = {no: /^(ad\s*(no|num|number|#)|number|no|id|ad\s*id)$/i,
+              link: /^(link|url|asset\s*(link|url)|download\s*(link|url)|media\s*(link|url)|hyperlink)$/i,
+              type: /^(type|ad\s*type|format|media\s*type|category|creative\s*type)$/i};
+            for (let r = 0; r < Math.min(rows.length, 12); r++) {
+              const found = {};
+              rows[r].forEach((cell, c) => {
+                const label = String(cell?.v ?? "").replace(/[_\s]+/g, " ").trim();
+                for (const [kind, re] of Object.entries(names)) if (re.test(label)) found[kind] = c;
+              });
+              if (found.no !== undefined && found.link !== undefined) {
+                return {start:r + 1,no:found.no,link:found.link,type:found.type ?? 2,recognized:true};
+              }
+            }
+            return {start:1,no:0,link:1,type:2,recognized:false}; // existing workbook layout
+          },
+          extensionHint(url, label, type) {
+            const allowed = new Set(["mp4","mov","avi","mkv","webm","mp3","wav","ogg","m4a","jpg","jpeg","png","gif","webp","svg","bmp","pdf","zip"]);
+            for (const value of [label, (() => { try { return new URL(url).pathname; } catch { return ""; } })()]) {
+              const m = String(value).match(/\.([a-z0-9]{2,5})(?:$|[?#])/i);
+              if (m && allowed.has(m[1].toLowerCase())) return {ext:"." + m[1].toLowerCase(),confidence:"high"};
+            }
+            const t = String(type ?? "").toLowerCase();
+            if (/\b(radio|podcast|audio|sound)\b/.test(t)) return {ext:".mp3",confidence:"inferred"};
+            if (/\b(tvc|video|ol[v]|cinema|film|reels|tv)\b/.test(t)) return {ext:".mp4",confidence:"inferred"};
+            if (/\b(print|outdoor|ooh|image|photo|static|poster|banner|display)\b/.test(t)) return {ext:".jpg",confidence:"inferred"};
+            return {ext:"",confidence:"unknown"};
           },
           loadExcel() {
             const file = document.getElementById("adDlInput").files[0];
-            if (!file) {
-              alert("Please upload an Excel file first.");
-              return;
-            }
+            if (!file) return;
             const reader = new FileReader();
+            reader.onerror = () => this.status("Could not read the spreadsheet.", true);
             reader.onload = (e) => {
-              const data = new Uint8Array(e.target.result);
-              this.workbookData = window.XLSX.read(data, { type: "array" });
-              this.generateDashboard();
+              try {
+                const data = new Uint8Array(e.target.result);
+                this.workbookData = window.XLSX.read(data, {type:"array"});
+                this.generateDashboard();
+              } catch (error) { this.status("Spreadsheet could not be parsed: " + error.message, true); }
             };
             reader.readAsArrayBuffer(file);
           },
           generateDashboard() {
-            const sheet =
-              this.workbookData.Sheets[this.workbookData.SheetNames[0]];
-            const range = window.XLSX.utils.decode_range(sheet["!ref"]);
-            const tbody = document.getElementById("adDlTableBody");
-            const downloadedBody =
-              document.getElementById("adDlDownloadedBody");
-            const downloadedHeaderRow = document.getElementById(
-              "adDlDownloadedHeaderRow",
-            );
-            tbody.innerHTML = "";
-            Array.from(downloadedBody.children).forEach((child) => {
-              if (child.id !== "adDlDownloadedHeaderRow") {
-                downloadedBody.removeChild(child);
-              }
-            });
-            downloadedHeaderRow.style.display = "none";
-            this.allNames = [];
-            this.adTypeMap = {};
-            let fragment = document.createDocumentFragment();
-            for (let r = 1; r <= range.e.r; r++) {
-              let adCell = sheet[window.XLSX.utils.encode_cell({ r: r, c: 0 })];
-              let linkCell =
-                sheet[window.XLSX.utils.encode_cell({ r: r, c: 1 })];
-              let typeCell =
-                sheet[window.XLSX.utils.encode_cell({ r: r, c: 2 })];
-              if (!typeCell) continue;
-              let adNo = adCell.v;
-              let adType = typeCell.v;
-              this.adTypeMap[this.normalize(adType)] = adNo;
-              let link = "";
-              if (linkCell && linkCell.l) link = linkCell.l.Target;
-              else if (linkCell) link = linkCell.v;
-              let linkString = link ? link.toString().trim() : "";
-              let displayText = ((linkCell && linkCell.v) || "")
-                .toString()
-                .trim();
-              let extRegex =
-                /\.(mp4|mov|avi|mkv|webm|flv|wmv|mp3|wav|ogg|m4a|aac|flac|jpg|jpeg|png|gif|webp|svg|bmp)\b/i;
-              let extMatch =
-                displayText.match(extRegex) || linkString.match(extRegex);
-              if (!extMatch) {
-                extMatch = displayText.match(/\.([a-zA-Z0-9]{2,4})$/i);
-                if (!extMatch) {
-                  try {
-                    let urlObj = new URL(linkString);
-                    extMatch = urlObj.pathname.match(/\.([a-zA-Z0-9]{2,4})$/i);
-                  } catch (e) {
-                    extMatch = linkString.match(/\.([a-zA-Z0-9]{2,4})$/i);
-                  }
-                }
-              }
-              let ext = extMatch ? extMatch[0].toLowerCase() : "";
-              const ignoredExts = [
-                ".com",
-                ".org",
-                ".net",
-                ".co",
-                ".io",
-                ".de",
-                ".uk",
-                ".us",
-                ".info",
-                ".biz",
-                ".html",
-                ".htm",
-                ".php",
-                ".asp",
-                ".aspx",
-                ".jsp",
-              ];
-              if (ignoredExts.includes(ext)) {
-                ext = "";
-              }
-              let clean = displayText
-                .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "")
-                .replace(/\u00df/g, "ss");
-              clean = clean.replace(/\.(mp4|mov|avi|mkv|webm|flv|wmv|mp3|wav|ogg|m4a|aac|flac|jpg|jpeg|png|gif|webp|svg|bmp)$/i, "");
-              if (ext) {
-                if (clean.toLowerCase().endsWith(ext)) {
-                  clean = clean.substring(0, clean.length - ext.length);
-                }
-} else {
-                 let typeLower = adType.toLowerCase().trim();
-                 const imageTypes = [
-                   "print", "ooh", "out of home", "outdoor", "billboard", "poster",
-                   "img", "image", "picture", "photo", "static", "display", "banner",
-                   "pic", "jpeg", "jpg", "png", "gif", "webp", "creative", "visual"
-                 ];
-                 const audioTypes = [
-                   "radio", "audio", "podcast", "sound", "voice", "music", "spot"
-                 ];
-                 const videoTypes = [
-                   "tv", "television", "video", "cinema", "pre-roll", "preroll",
-                   "mid-roll", "midroll", "post-roll", "postroll", "bumper",
-                   "in-stream", "instream", "ott", "ctv", "connected tv",
-                   "social video", "reels", "tiktok", "shorts", "story", "stories"
-                 ];
-
-                 let matched = false;
-                 for (const t of imageTypes) {
-                   if (typeLower === t || typeLower.includes(" " + t + " ") || typeLower.startsWith(t + " ") || typeLower.endsWith(" " + t)) {
-                     ext = ".jpg";
-                     matched = true;
-                     break;
-                   }
-                 }
-                 if (!matched) {
-                   for (const t of audioTypes) {
-                     if (typeLower === t || typeLower.includes(" " + t + " ") || typeLower.startsWith(t + " ") || typeLower.endsWith(" " + t)) {
-                       ext = ".mp3";
-                       matched = true;
-                       break;
-                     }
-                   }
-                 }
-                 if (!matched) {
-                   for (const t of videoTypes) {
-                     if (typeLower === t || typeLower.includes(" " + t + " ") || typeLower.startsWith(t + " ") || typeLower.endsWith(" " + t)) {
-                       ext = ".mp4";
-                       matched = true;
-                       break;
-                     }
-                   }
-                 }
-                 if (!matched) {
-                   ext = ".mp4";
-                 }
-               }
-              clean = clean
-                .replace(/[^a-zA-Z0-9]/g, "_")
-                .replace(/_+/g, "_")
-                .replace(/^_|_$/g, "");
-              let typeNumberMatch = adType.match(/\d+/);
-              let typeNumber = typeNumberMatch ? typeNumberMatch[0] : "";
-              let typeBase = adType.replace(/\d+/g, "").trim();
-              let typeBaseClean = typeBase
-                .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "")
-                .replace(/[^a-zA-Z0-9]/g, "_")
-                .replace(/_+/g, "_")
-                .replace(/^_|_$/g, "");
-              if (typeNumber) {
-                let regex = new RegExp(typeBaseClean, "i");
-                clean = clean.replace(regex, typeBaseClean + typeNumber);
-              }
-              let finalName = `AD${adNo}_${clean}`;
-              this.allNames.push(finalName);
-              let tr = document.createElement("tr");
-              tr.id = `adDl-row-${adNo}`;
-              tr.innerHTML = `<td style="padding: 16px; border-bottom: 1px solid var(--border); font-family: var(--font-mono);">${adNo}</td><td style="padding: 16px; border-bottom: 1px solid var(--border); font-family: var(--font-mono); color: var(--success);">${finalName}</td><td style="padding: 16px; border-bottom: 1px solid var(--border); text-align: right;"><div style="display:flex; gap:8px; justify-content:flex-end;"><button class="liquid-btn" style="padding:4px 8px; font-size:0.75rem;" onclick="Tools.AdDownloader.copySingleName('${finalName}')"><span class="material-symbols-rounded" style="margin-right:4px; font-size: 14px;">content_copy</span>Copy</button><button class="liquid-btn active-mode" style="padding:4px 8px; font-size:0.75rem;" onclick="Tools.AdDownloader.downloadPopup('${link}', '${adNo}', '${finalName}')"><span class="material-symbols-rounded" style="margin-right:4px; font-size: 14px;">download</span>Download</button></div></td>`;
-              tr.style.transition = "background 0.2s";
-              tr.onmouseover = () => {
-                if (!tr.classList.contains("downloaded"))
-                  tr.style.background = "var(--bg-input)";
-              };
-              tr.onmouseout = () => {
-                if (!tr.classList.contains("downloaded"))
-                  tr.style.background = "transparent";
-              };
+            if (!this.workbookData?.SheetNames?.length) { this.status("The workbook has no sheets.", true); return; }
+            const sheet = this.workbookData.Sheets[this.workbookData.SheetNames[0]];
+            if (!sheet?.["!ref"]) { this.status("The first sheet is empty.", true); return; }
+            const range = XLSX.utils.decode_range(sheet["!ref"]);
+            const rows = [];
+            for (let r = range.s.r; r <= range.e.r; r++) {
+              const cells = [];
+              for (let c = 0; c <= range.e.c; c++) cells.push(sheet[XLSX.utils.encode_cell({r,c})] || null);
+              rows.push(cells);
+            }
+            const columns = this.detectColumns(rows);
+            const body = document.getElementById("adDlTableBody");
+            const downloadedBody = document.getElementById("adDlDownloadedBody");
+            const downloadedHead = document.getElementById("adDlDownloadedHeaderRow");
+            body.replaceChildren();
+            Array.from(downloadedBody.children).filter(el => el !== downloadedHead).forEach(el => el.remove());
+            downloadedHead.style.display = "none";
+            const statusCell=downloadedHead.querySelector("td");
+            if (statusCell) statusCell.textContent="Download initiated";
+            this.entries = []; this.allNames = []; this.adTypeMap = {};
+            const seen = new Set();
+            let skipped = 0, inferred = 0;
+            const fragment = document.createDocumentFragment();
+            for (let r = columns.start; r < rows.length; r++) {
+              const line = rows[r];
+              const no = String(line[columns.no]?.v ?? "").trim();
+              const linkCell = line[columns.link];
+              const type = String(line[columns.type]?.v ?? "").trim();
+              const raw = String(linkCell?.l?.Target || linkCell?.v || "").trim();
+              const url = this.safeUrl(raw);
+              if (!no && !raw && !type) continue;
+              if (!no || !url) { skipped++; continue; }
+              const label = String(linkCell?.v || "").trim() || (() => { try {return decodeURIComponent(new URL(url).pathname.split("/").pop());} catch {return "asset";} })();
+              const hint = this.extensionHint(url, label, type);
+              if (hint.confidence === "inferred") inferred++;
+              const stem = label.replace(/\.(mp4|mov|avi|mkv|webm|mp3|wav|ogg|m4a|jpg|jpeg|png|gif|webp|svg|bmp|pdf|zip)$/i, "");
+              const typeNumber = type.match(/\d+/)?.[0] || "";
+              const typeBase = this.safeName(type.replace(/\d+/g, ""));
+              let clean = this.safeName(stem);
+              if (typeNumber && typeBase !== "asset") clean = clean.replace(new RegExp(typeBase + "(?!\d)","i"),typeBase + typeNumber);
+              const base = `AD${this.safeName(no)}_${clean}`;
+              let name = base, counter = 2;
+              while (seen.has(name.toLowerCase())) name = `${base}_${counter++}`;
+              seen.add(name.toLowerCase());
+              const entry = {no,url,type,displayName:name,ext:hint.ext,confidence:hint.confidence,selected:true,downloaded:false};
+              this.entries.push(entry);
+              this.allNames.push(name);
+              this.adTypeMap[this.normalize(type)] = no;
+              const tr = document.createElement("tr");
+              tr.id = `adDl-row-${this.entries.length}`;
+              const numCell = document.createElement("td");
+              const cb = document.createElement("input"); cb.type = "checkbox"; cb.checked = true;
+              cb.setAttribute("aria-label",`Include ${name} in ZIP`);
+              cb.style.marginRight = "9px";
+              cb.onchange = () => { entry.selected = cb.checked; this.updateBulkButton(); };
+              numCell.append(cb,document.createTextNode(no));
+              const nameCell = document.createElement("td");
+              nameCell.textContent = name + (hint.ext || "");
+              if (hint.confidence === "inferred") nameCell.title = "Extension inferred from media category; actual downloaded file type is checked";
+              if (hint.confidence === "unknown") nameCell.title = "File extension will be detected from the downloaded response";
+              const actions = document.createElement("td"); actions.style.textAlign = "right";
+              const copy = document.createElement("button"); copy.type = "button"; copy.className = "liquid-btn";
+              copy.textContent = "Copy"; copy.onclick = () => this.copySingleName(name);
+              const download = document.createElement("button"); download.type = "button";
+              download.className = "liquid-btn active-mode";
+              download.textContent = "Download"; download.onclick = () => this.downloadFile(entry);
+              const open = document.createElement("button"); open.type = "button"; open.className = "liquid-btn";
+              open.textContent = "Open source"; open.title = "Fallback when the hosting server blocks browser downloads";
+              open.onclick = () => window.open(entry.url,"_blank","noopener,noreferrer");
+              actions.append(copy," ",download," ",open);
+              tr.append(numCell,nameCell,actions); entry.row = tr; entry.downloadButton = download;
               fragment.appendChild(tr);
             }
-            tbody.appendChild(fragment);
-            document.getElementById("adDlTableContainer").style.display =
-              "block";
+            body.appendChild(fragment);
+            document.getElementById("adDlTableContainer").style.display = "block";
             document.getElementById("adDlSummaryBar").style.display = "block";
-            document.getElementById("adDlCountText").innerText =
-              this.allNames.length + " Ads Detected";
+            document.getElementById("adDlCountText").innerText = `${this.entries.length} valid ads`;
             document.getElementById("adDlEmptyState").style.display = "none";
-            if (window.lucide) {
-              /* window.lucide.createIcons */
+            this.updateBulkButton();
+            this.status(`${this.entries.length} ready · ${skipped} invalid rows skipped · ${inferred} extensions inferred. Download will verify response type.`);
+          },
+          updateBulkButton() {
+            const btn = document.getElementById("adDlBulkButton");
+            if (btn) btn.disabled = this._downloadBusy || !this.entries.some(entry => entry.selected && !entry.downloaded);
+          },
+          guessType(blob, hint, signature=[]) {
+            // Use the actual MIME where possible; do not trust guessed spreadsheet categories.
+            const mime = String(blob.type || "").split(";")[0].toLowerCase();
+            const types = {"video/mp4":"mp4","video/webm":"webm","video/quicktime":"mov","audio/mpeg":"mp3","audio/mp4":"m4a","audio/wav":"wav","image/jpeg":"jpg","image/png":"png","image/webp":"webp","image/gif":"gif","image/svg+xml":"svg","application/pdf":"pdf","application/zip":"zip"};
+            // Content sniffing is safer than a category-based extension guess.
+            const ascii=(a,b)=>String.fromCharCode(...Array.from(signature).slice(a,b));
+            if(ascii(0,4)==="%PDF")return ".pdf";
+            if(signature[0]===0x89&&ascii(1,4)==="PNG")return ".png";
+            if(signature[0]===0xff&&signature[1]===0xd8&&signature[2]===0xff)return ".jpg";
+            if(ascii(0,3)==="GIF")return ".gif";
+            if(ascii(0,4)==="RIFF"&&ascii(8,12)==="WEBP")return ".webp";
+            if(ascii(0,4)==="RIFF"&&ascii(8,12)==="WAVE")return ".wav";
+            if(ascii(4,8)==="ftyp")return ".mp4";
+            if(ascii(0,3)==="ID3")return ".mp3";
+            if(signature[0]===0x50&&signature[1]===0x4b&&signature[2]===0x03&&signature[3]===0x04)return ".zip";
+            if (types[mime]) return "." + types[mime];
+            if (mime === "text/html" || mime === "application/json") throw Error("The link returned a web page/error instead of a media file");
+            if (hint.confidence === "high") return hint.ext;
+            if (hint.confidence === "inferred" && mime.startsWith("audio/") && hint.ext === ".mp3") return hint.ext;
+            if (hint.confidence === "inferred" && mime.startsWith("video/") && hint.ext === ".mp4") return hint.ext;
+            if (hint.confidence === "inferred" && mime.startsWith("image/") && hint.ext === ".jpg") return hint.ext;
+            return ".bin";
+          },
+          async getAsset(entry, signal) {
+            const response = await fetch(entry.url, {mode:"cors", credentials:"omit", redirect:"follow", signal});
+            if (!response.ok) throw Error(`HTTP ${response.status}`);
+            const size = Number(response.headers.get("content-length")) || 0;
+            if (size > 100 * 1024 * 1024) throw Error("File exceeds 100 MB safety limit");
+            let blob;
+            if (response.body?.getReader) {
+              // Prevent unbounded allocations even when the server omits Content-Length.
+              const reader=response.body.getReader(), chunks=[];
+              let bytes=0;
+              try {
+                while (true) {
+                  const {done,value}=await reader.read();
+                  if (done) break;
+                  bytes+=value.byteLength;
+                  if (bytes>100*1024*1024) {await reader.cancel();throw Error("File exceeds 100 MB safety limit");}
+                  chunks.push(value);
+                }
+              } finally {reader.releaseLock();}
+              blob=new Blob(chunks,{type:response.headers.get("content-type")||"application/octet-stream"});
+            } else {blob=await response.blob();}
+            if (!blob.size) throw Error("Empty download");
+            if (blob.size > 100 * 1024 * 1024) throw Error("File exceeds 100 MB safety limit");
+            const bytes=new Uint8Array(await blob.slice(0,24).arrayBuffer());
+            const ext=this.guessType(blob,entry,bytes);
+            return {blob, name:entry.displayName + ext};
+          },
+          saveBlob(blob, name) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url; a.download = name;
+            document.body.appendChild(a); a.click(); a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 60000);
+          },
+          markDownloaded(entry) {
+            entry.downloaded = true;
+            if (entry.row) {
+              entry.row.classList.add("downloaded");
+              entry.row.style.opacity = "0.65";
+              document.getElementById("adDlDownloadedHeaderRow").style.display = "table-row";
+              document.getElementById("adDlDownloadedBody").appendChild(entry.row);
             }
+            this.updateBulkButton();
+          },
+          async downloadFile(entry) {
+            if (entry.downloaded || entry.inProgress) return;
+            entry.inProgress = true; entry.downloadButton.disabled = true;
+            this.status(`Downloading ${entry.displayName}...`);
+            try {
+              const {blob,name} = await this.getAsset(entry);
+              this.saveBlob(blob, name);
+              this.markDownloaded(entry);
+              this.status(`Download requested: ${name} (${(blob.size/1048576).toFixed(1)} MB).`);
+            } catch (error) {
+              this.status(`${entry.displayName}: automatic download unavailable (${error.message}). The source may block CORS; use Open source to save manually.`,true);
+              entry.downloadButton.disabled = false;
+            } finally {entry.inProgress = false;}
+          },
+          async downloadBulk() {
+            if (this._downloadBusy) return;
+            const selection = this.entries.filter(entry=>entry.selected && !entry.downloaded);
+            if (!selection.length) return;
+            if (selection.length > 250) { this.status("Select at most 250 files per ZIP.",true); return; }
+            if (typeof JSZip === "undefined") { this.status("ZIP library did not load.",true); return; }
+            this._downloadBusy = true; this.updateBulkButton();
+            const zip = new JSZip(); const successes = [], failures = [];
+            let index = 0, totalBytes = 0, stopped = false;
+            const worker = async () => {
+              while (!stopped && index < selection.length) {
+                const entry = selection[index++];
+                try {
+                  const {blob,name} = await this.getAsset(entry);
+                  totalBytes += blob.size;
+                  if (totalBytes > 350 * 1024 * 1024) { stopped = true; throw Error("ZIP exceeds 350 MB safety limit"); }
+                  zip.file(name,blob); successes.push(entry);
+                } catch (error) { failures.push({name:entry.displayName,reason:error.message}); }
+                this.status(`${successes.length + failures.length}/${selection.length} checked · ${successes.length} ready · ${failures.length} failed`);
+              }
+            };
+            try {
+              await Promise.all(Array.from({length:Math.min(3,selection.length)},worker));
+              if (!successes.length) {
+                this.status(`No files downloadable. ${failures.length} blocked or invalid links. Remote hosts must allow browser CORS.`,true);
+                return;
+              }
+              this.status(`Creating ZIP for ${successes.length} assets...`);
+              const blob = await zip.generateAsync({type:"blob",compression:"DEFLATE",compressionOptions:{level:2}});
+              this.saveBlob(blob, "ad_assets.zip");
+              successes.forEach(entry=>this.markDownloaded(entry));
+              const first = failures.slice(0,3).map(x=>`${x.name}: ${x.reason}`).join("; ");
+              this.status(`ZIP download requested for ${successes.length} files, ${failures.length} failed.${failures.length?" "+first:""}`,!!failures.length);
+            } catch (error) { this.status(`ZIP failed: ${error.message}`,true); }
+            finally {this._downloadBusy=false;this.updateBulkButton();}
           },
           copyToClipboardFallback(text) {
             const textArea = document.createElement("textarea");
@@ -264,48 +349,11 @@ export default {
             }
             alert("All " + this.allNames.length + " names copied!");
           },
+          // Legacy inline-handler compatibility; direct downloads no longer open popups.
           downloadPopup(url, adNo, finalName) {
-            let downloadUrl = url;
-            if (downloadUrl && !downloadUrl.includes("download=")) {
-              if (downloadUrl.includes("?")) {
-                downloadUrl = downloadUrl.split("?")[0] + "?download=1";
-              } else {
-                downloadUrl += "?download=1";
-              }
-            }
-            if (finalName) {
-              if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(finalName).catch(() => {
-                  this.copyToClipboardFallback(finalName);
-                });
-              } else {
-                this.copyToClipboardFallback(finalName);
-              }
-            }
-            if (downloadUrl) {
-              window.open(
-                downloadUrl,
-                "downloadWindow",
-                "width=900,height=700,left=200,top=100",
-              );
-            }
-            if (adNo) {
-              const row = document.getElementById(`adDl-row-${adNo}`);
-              if (row) {
-                const downloadedBody =
-                  document.getElementById("adDlDownloadedBody");
-                const downloadedHeaderRow = document.getElementById(
-                  "adDlDownloadedHeaderRow",
-                );
-                row.classList.add("downloaded");
-                row.style.opacity = "0.6";
-                row.style.background = "rgba(255,255,255,0.01)";
-                const nameCell = row.querySelector("td:nth-child(2)");
-                if (nameCell) nameCell.style.textDecoration = "line-through";
-                downloadedHeaderRow.style.display = "table-row";
-                downloadedBody.appendChild(row);
-              }
-            }
+            const entry = this.entries.find(item => item.url === this.safeUrl(url) && item.no === String(adNo));
+            if (entry) return this.downloadFile(entry);
+            this.status("Please reimport the spreadsheet before downloading.",true);
           },
           getBucketData() {
             if (this.workbookData.SheetNames.length < 2) return [];

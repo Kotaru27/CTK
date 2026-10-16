@@ -24,6 +24,15 @@ export default {
             boardMenu: document.getElementById("stillsBoardMenu"),
           },
           init() {
+            const controls = document.getElementById("videoHeaderControls");
+            if (controls && !document.getElementById("stillsSmartMode")) {
+              const label = document.createElement("label");
+              label.style.cssText = "display:inline-flex; gap:7px; align-items:center; font-size:12px; cursor:pointer; white-space:nowrap;";
+              label.title = "Optional: sample content and discard near-duplicate, blank or likely blurry frames. Normal extraction remains unchanged when off.";
+              const toggle = document.createElement("input"); toggle.type="checkbox"; toggle.id="stillsSmartMode";
+              label.append(toggle,document.createTextNode("Smart frame selection"));
+              controls.appendChild(label);
+            }
             Core.Utils.createDropZone(this.els.drop, (f) =>
               this.handleFiles(f),
             );
@@ -123,6 +132,32 @@ export default {
             this.els.empty.innerHTML = `${this.queue.length} video(s) queued.`;
             this.process();
           },
+          frameFingerprint(video, scratch) {
+            const ctx = scratch.getContext("2d",{willReadFrequently:true});
+            ctx.drawImage(video,0,0,scratch.width,scratch.height);
+            const pixels = ctx.getImageData(0,0,scratch.width,scratch.height).data;
+            const values = new Float32Array(scratch.width*scratch.height);
+            let sum=0, square=0, edge=0;
+            for(let i=0;i<values.length;i++) {
+              const at=i*4;
+              const lum=(0.2126*pixels[at]+0.7152*pixels[at+1]+0.0722*pixels[at+2])/255;
+              values[i]=lum; sum+=lum; square+=lum*lum;
+              if(i%scratch.width) edge+=Math.abs(lum-values[i-1]);
+              if(i>=scratch.width) edge+=Math.abs(lum-values[i-scratch.width]);
+            }
+            const avg=sum/values.length;
+            const variance=Math.max(0,square/values.length-avg*avg);
+            const texture=edge/(values.length*2);
+            return {values, avg, variance, texture, quality:variance*0.45+texture*0.55};
+          },
+          acceptFrame(sample, previous) {
+            if(sample.avg<0.025 || sample.avg>0.975 || sample.variance<0.0004) return false;
+            if(sample.texture<0.008 && sample.variance<0.012) return false;
+            if(!previous) return true;
+            let diff=0;
+            for(let i=0;i<sample.values.length;i++) diff+=Math.abs(sample.values[i]-previous.values[i]);
+            return diff/sample.values.length >= 0.045;
+          },
           async process() {
             if (this._processing || !this.queue.length) return;
             this._processing = true;
@@ -131,6 +166,7 @@ export default {
             UI.toggleEmptyState(this.els.stacks, false);
 
             const genAllStills = this.els.xlBtn ? this.els.xlBtn.checked : true;
+            const smartMode = !!document.getElementById("stillsSmartMode")?.checked;
             const genStory = this.els.storyBtn ? this.els.storyBtn.checked : false;
             const storyFramesCount = this.els.storyGrid ? parseInt(this.els.storyGrid.value, 10) : 4;
 
@@ -163,9 +199,14 @@ export default {
                 stack.onclick = () => this.openDetail(id);
                 this.els.stacks.appendChild(stack);
 
-                const totalFramesToExtract = Math.floor(vid.duration) || 1;
+                // Smart mode caps the candidate scan; uniform mode uses the original cadence.
+                const totalFramesToExtract = smartMode ? Math.min(Math.floor(vid.duration) || 1,180) : (Math.floor(vid.duration) || 1);
                 const interval = vid.duration / (totalFramesToExtract + 1);
                 let previewDataUrl = null;
+                let lastAccepted = null, bestCandidate = null, bestQuality = -1, kept = 0, skipped = 0;
+                const sampleCanvas = smartMode ? document.createElement("canvas") : null;
+                if (sampleCanvas) {sampleCanvas.width = 48; sampleCanvas.height = 27;}
+                const fallbackCanvas = smartMode ? document.createElement("canvas") : null;
                 const frameCanvas = document.createElement("canvas");
                 frameCanvas.width = vid.videoWidth;
                 frameCanvas.height = vid.videoHeight;
@@ -176,8 +217,19 @@ export default {
                   await this.seekVideo(vid, f * interval);
                   if (generation !== (this._generation || 0)) break;
                   frameCtx.drawImage(vid, 0, 0);
-
-                  if (!genAllStills && f === 1) {
+                  if (smartMode) {
+                    const sample = this.frameFingerprint(vid, sampleCanvas);
+                    if (sample.quality > bestQuality) {
+                      bestQuality=sample.quality; bestCandidate=f;
+                      fallbackCanvas.width=frameCanvas.width;
+                      fallbackCanvas.height=frameCanvas.height;
+                      fallbackCanvas.getContext("2d").drawImage(frameCanvas,0,0);
+                    }
+                    if (!this.acceptFrame(sample,lastAccepted)) {skipped++;continue;}
+                    lastAccepted=sample;
+                  }
+                  kept++;
+                  if (!genAllStills && !previewDataUrl) {
                     previewDataUrl = frameCanvas.toDataURL("image/jpeg", 0.5);
                     stack.querySelector("img").src = previewDataUrl;
                   }
@@ -189,7 +241,7 @@ export default {
                     if (!blob) throw new Error("Could not encode video frame");
                     if (generation !== (this._generation || 0)) break;
                     const url = Core.BlobRegistry.create(blob, "stills");
-                    if (f === 1) {
+                    if (!previewDataUrl) {
                       previewDataUrl = url;
                       stack.querySelector("img").src = url;
                     }
@@ -203,6 +255,20 @@ export default {
                   }
                 }
 
+                if (generation !== (this._generation || 0)) break;
+                // All candidates can be black/duplicate. Preserve one best candidate
+                // rather than reporting success with an empty collection.
+                if (smartMode && kept === 0 && bestCandidate !== null) {
+                  if (genAllStills) {
+                    const blob = await new Promise(r=>fallbackCanvas.toBlob(r,"image/jpeg",0.9));
+                    if (!blob) throw Error("Could not encode fallback frame");
+                    if (generation !== (this._generation || 0)) break;
+                    const url=Core.BlobRegistry.create(blob,"stills");
+                    this.collection[id].frames.push({num:bestCandidate,type:"still",blob,url,checked:true});
+                    stack.querySelector("img").src=url;
+                  } else { stack.querySelector("img").src=fallbackCanvas.toDataURL("image/jpeg",0.5); }
+                  kept=1;
+                }
                 if (generation !== (this._generation || 0)) break;
                 if (genStory) {
                   const storyInterval = vid.duration / (storyFramesCount + 1);
@@ -255,8 +321,9 @@ export default {
                     stack.querySelector("img").src = compUrl;
                 }
 
-                stack.querySelector(".stack-count").innerText =
-                  `${this.collection[id].frames.length} Items`;
+                stack.querySelector(".stack-count").innerText = smartMode
+                  ? `${this.collection[id].frames.length} Items · ${skipped} skipped`
+                  : `${this.collection[id].frames.length} Items`;
               } catch (e) {
                 if (generation === (this._generation || 0)) {
                   console.error(e);

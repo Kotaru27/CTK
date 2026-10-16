@@ -49,15 +49,24 @@ export default {
                 }, 150),
               );
             });
-            document.getElementById("generateStoryBtn").onclick = () =>
-              this.draw();
-            document.getElementById("downloadStoryBtn").onclick = () => {
-              if (this.canvas) {
-                const a = document.createElement("a");
-                a.href = this.canvas.toDataURL("image/jpeg", 0.95);
-                a.download = `${this.active.name}.jpg`;
-                a.click();
-              }
+            document.getElementById("generateStoryBtn").onclick = () => this.draw();
+            // Optional recommendation only; existing fit mode is unchanged until clicked.
+            const fit = document.getElementById("storyFitMode");
+            if (fit && !document.getElementById("storySmartFit")) {
+              const advice = document.createElement("button");
+              advice.type="button"; advice.id="storySmartFit"; advice.className="liquid-btn";
+              advice.textContent="Preserve full frames";
+              advice.title="Use Contain mode so mixed aspect-ratio images are never cropped";
+              advice.style.cssText="margin-top:7px; font-size:11px; padding:5px 9px;";
+              advice.onclick=()=> {fit.value="contain";this.saveSettings();this.draw();};
+              fit.insertAdjacentElement("afterend",advice);
+            }
+            document.getElementById("downloadStoryBtn").onclick = async () => {
+              if (!this.canvas || !this.active?.images.length) return;
+              try {
+                const blob = await this.encodeBoard(this.canvas);
+                this.saveBoardBlob(blob,`${this.safeExportName(this.active.name)}.jpg`);
+              } catch (e) { UI.showError(`Storyboard export failed: ${e.message}`); }
             };
             document.getElementById("downloadAllStoryBtn").onclick = () =>
               this.downloadAll();
@@ -174,65 +183,80 @@ export default {
               else this.switchProject(this.projects[Math.max(0, idx - 1)].id);
             });
           },
+          safeExportName(name) {
+            return String(name || "Board").replace(/[^a-zA-Z0-9_-]/g,"_").slice(0,100) || "Board";
+          },
+          validateImage(img) {
+            return !!img && Number.isFinite(img.naturalWidth || img.width) &&
+              Number.isFinite(img.naturalHeight || img.height) &&
+              (img.naturalWidth || img.width)>0 && (img.naturalHeight || img.height)>0;
+          },
+          async encodeBoard(canvas) {
+            if (!canvas || canvas.width < 1 || canvas.height < 1) throw Error("No rendered board available");
+            const blob=await new Promise((resolve,reject)=> {
+              try {canvas.toBlob(resolve,"image/jpeg",0.95);} catch(e) {reject(e);}
+            });
+            if (!blob?.size) throw Error("Canvas returned no image data");
+            return blob;
+          },
+          saveBoardBlob(blob, name) {
+            const url=URL.createObjectURL(blob);
+            const a=document.createElement("a");a.href=url;a.download=name;
+            document.body.appendChild(a);a.click();a.remove();
+            setTimeout(()=>URL.revokeObjectURL(url),60000);
+          },
           async handleFiles(files) {
+            const project = this.active;
+            if (!project) return;
+            let rejected=0;
             for (const file of files) {
-              let img;
+              if (project.images.length >= 200) {rejected++;continue;}
+              if (!file || file.size > 100*1024*1024) {rejected++;continue;}
+              let img=null;
               if (file.type.startsWith("video/")) {
-                try {
-                  img = await this.getVideoFrame(file);
-                } catch (e) {
-                  continue;
-                }
+                img=await this.getVideoFrame(file);
               } else if (file.type.startsWith("image/")) {
-                img = new Image();
-                img.src = Core.BlobRegistry.create(file, "story");
-                await new Promise((resolve) => {
-                  img.onload = resolve;
-                  img.onerror = resolve;
-                });
-              } else {
-                continue;
-              }
-              if (!img) continue;
-              this.active.images.push({ file, img });
+                const url=Core.BlobRegistry.create(file,"story");
+                img=new Image();
+                try {
+                  await new Promise((resolve,reject)=> {
+                    img.onload=resolve; img.onerror=()=>reject(Error("Invalid image"));img.src=url;
+                  });
+                } catch { Core.BlobRegistry.release(url);img=null; }
+              } else { rejected++;continue; }
+              if (!this.validateImage(img)) {rejected++;continue; }
+              project.images.push({file,img});
             }
-            this.saveSettings();
-            this.updateList();
-            this.draw();
+            if (rejected) UI.showError(`${rejected} unsupported, damaged or oversized storyboard files skipped.`);
+            // An upload may have finished after the user switched boards.
+            if (this.active===project) {this.saveSettings();this.updateList();this.draw();}
           },
           getVideoFrame(file) {
-            return new Promise((resolve) => {
-              const video = document.createElement("video");
-              const sourceUrl = URL.createObjectURL(file);
-              video.muted = true;
-              video.onloadedmetadata = () => {
-                video.currentTime = Math.min(1.0, Math.max(0, video.duration / 2));
+            return new Promise(resolve=> {
+              const video=document.createElement("video");
+              const url=URL.createObjectURL(file);
+              video.muted=true;
+              let done=false;
+              const timeout=setTimeout(()=>finish(null),15000);
+              const finish=(img)=> {
+                if(done)return;done=true;clearTimeout(timeout);
+                video.pause();video.removeAttribute("src");video.load();URL.revokeObjectURL(url);
+                resolve(img);
               };
-              video.src = sourceUrl;
-              video.onseeked = () => {
-                const c = document.createElement("canvas");
-                c.width = video.videoWidth;
-                c.height = video.videoHeight;
-                c.getContext("2d").drawImage(video, 0, 0);
-                const img = new Image();
-                img.src = c.toDataURL("image/jpeg");
-                img.onload = () => {
-                  URL.revokeObjectURL(sourceUrl);
-                  video.removeAttribute("src");
-                  video.load();
-                  resolve(img);
-                };
-                img.onerror = () => {
-                  URL.revokeObjectURL(sourceUrl);
-                  video.removeAttribute("src");
-                  video.load();
-                  resolve(null);
-                };
+              video.onerror=()=>finish(null);
+              video.onloadedmetadata=()=> {
+                if(!Number.isFinite(video.duration) || !video.videoWidth || !video.videoHeight) return finish(null);
+                try {video.currentTime=Math.min(1,Math.max(0,video.duration/2));}catch{return finish(null);}
               };
-              video.onerror = () => {
-                URL.revokeObjectURL(sourceUrl);
-                resolve(null);
+              video.onseeked=()=> {
+                try {
+                  const c=document.createElement("canvas");c.width=video.videoWidth;c.height=video.videoHeight;
+                  c.getContext("2d").drawImage(video,0,0);
+                  const img=new Image();img.onload=()=>finish(img);img.onerror=()=>finish(null);
+                  img.src=c.toDataURL("image/jpeg");
+                }catch {finish(null);}
               };
+              video.src=url;
             });
           },
           updateList() {
@@ -283,20 +307,38 @@ export default {
               return;
             }
             const imgs = this.active.images;
-            if (!imgs[0].img.complete) return;
+            if (imgs.some(item=>!this.validateImage(item.img) || item.img.complete===false)) {
+              UI.showError("A storyboard source is still loading or invalid. Remove it before exporting.");
+              return;
+            }
             const s = this.active.settings;
-
-            const c = Core.AdaptiveRenderer.renderBoard(imgs, {
-              cols: s.cols ? parseInt(s.cols) : 0,
+            const cols = Number(s.cols) || 0;
+            const gap = Number(s.gap) || 0;
+            const width = Number(s.width) || 1920;
+            if (cols < 0 || cols > 100 || gap < 0 || gap > 1000 ||
+                (!s.autoWidth && (width < 64 || width > 8192 || cols > 0 && width <= gap*(cols-1)+cols))) {
+              UI.showError("Invalid storyboard dimensions. Reduce columns/gaps or choose a width between 64 and 8192.");
+              return;
+            }
+            const ratios=imgs.map(item=>(item.img.naturalWidth||item.img.width)/(item.img.naturalHeight||item.img.height));
+            const ratioSpread=Math.max(...ratios)/Math.min(...ratios);
+            const recommend=document.getElementById("storySmartFit");
+            if (recommend) {
+              const mixed=ratioSpread > 1.35 && s.fitMode === "cover";
+              recommend.textContent=mixed ? "Mixed ratios · preserve full frames" : "Preserve full frames";
+              recommend.title=mixed ? "Your sources have different shapes. Contain prevents cropping. Click to apply." : "Use Contain to preserve each full frame";
+            }
+            let c;
+            try {c = Core.AdaptiveRenderer.renderBoard(imgs, {
+              cols: cols,
               rows: 0,
               autoWidth: s.autoWidth,
-              targetWidth: parseFloat(s.width) || 1920,
-              gap: s.gap ? parseInt(s.gap) : 0,
+              targetWidth: width,
+              gap: gap,
               bgColor: s.bgColor,
               fitMode: s.fitMode,
-            });
-
-            if (!c) return;
+            });} catch(e) {UI.showError(`Storyboard could not render: ${e.message}`);return;}
+            if (!c || !c.width || !c.height) {UI.showError("Storyboard renderer returned an empty canvas");return;}
             c.onclick = () => UI.openLightbox(c.toDataURL("image/jpeg", 0.95));
             this.canvas = c;
             this.els.preview.innerHTML = "";
@@ -308,30 +350,46 @@ export default {
             this.els.preview.appendChild(badge);
           },
           async downloadAll() {
-            if (!this.projects.some((p) => p.images.length > 0)) return;
-            const btn = document.getElementById("downloadAllStoryBtn");
-            btn.innerText = "Processing...";
-            const zip = new JSZip();
-            const origId = this.active.id;
-            for (let i = 0; i < this.projects.length; i++) {
-              const p = this.projects[i];
-              if (p.images.length === 0) continue;
-              this.active = p;
-              this.draw();
-              if (this.canvas) {
-                const blob = await new Promise((r) =>
-                  this.canvas.toBlob(r, "image/jpeg", 0.95),
-                );
-                zip.file(`${p.name}.jpg`, blob);
+            if (!this.projects.some(p=>p.images.length)) return;
+            const btn=document.getElementById("downloadAllStoryBtn");
+            if (btn.disabled) return;
+            const oldLabel=btn.innerText;
+            const origId=this.active.id;
+            btn.disabled=true;btn.innerText="Preparing ZIP...";
+            const zip=new JSZip();
+            let succeeded=0,failed=0;
+            const usedNames=new Set();
+            try {
+              for (const p of this.projects) {
+                if (!p.images.length) continue;
+                this.active=p;
+                const previous=this.canvas;
+                this.canvas=null;
+                this.draw();
+                try {
+                  if (!this.canvas || this.canvas===previous) throw Error("Board did not render");
+                  const blob=await this.encodeBoard(this.canvas);
+                  const base=this.safeExportName(p.name);
+                  let name=base,counter=2;
+                  while(usedNames.has(name.toLowerCase()))name=`${base}_${counter++}`;
+                  usedNames.add(name.toLowerCase());
+                  zip.file(`${name}.jpg`,blob);
+                  succeeded++;
+                } catch(e) { failed++; console.warn("Skipped invalid storyboard:",p.name,e); }
               }
+              if (!succeeded) throw Error("No boards could be exported");
+              const content=await zip.generateAsync({type:"blob"});
+              if (!content.size) throw Error("Empty ZIP");
+              this.saveBoardBlob(content,"boards.zip");
+              if(failed)UI.showError(`${failed} invalid board(s) skipped; ${succeeded} exported.`);
+            } catch(e) {UI.showError(`Storyboard ZIP failed: ${e.message}`);}
+            finally {
+              // Do not use switchProject here: it would save the previous board's
+              // controls into whichever project was last rendered for the ZIP.
+              this.active=this.projects.find(p=>p.id===origId)||this.projects[0];
+              if(this.active){this.loadSettings();this.renderTabs();this.updateList();this.draw();}
+              btn.disabled=false;btn.innerText=oldLabel;
             }
-            this.switchProject(origId);
-            const content = await zip.generateAsync({ type: "blob" });
-            const a = document.createElement("a");
-            a.href = URL.createObjectURL(content);
-            a.download = "boards.zip";
-            a.click();
-            btn.innerText = "Download All (Zip)";
           },
         },
 
