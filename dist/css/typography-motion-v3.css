@@ -446,3 +446,114 @@ body:not(.light-mode) #view-home .combined-home-grid > .home-card:hover{
     transition:none!important;
   }
 }
+
+/* GREEN / SINGLE SOURCE FOR STORYBOARD MODES */
+#view-app #section-stills-boards{
+ --sb-base:#15231b;--sb-shell:#1b2b22;--sb-panel:#25372b;
+ --sb-field:#192820;--sb-stage:#243329;--sb-line:#3e5242;
+ --sb-line-soft:#314638;--sb-text:#f1f5ed;--sb-muted:#b5c6b8;
+ --sb-dim:#92a693;--sb-action:#c5dbba;--sb-action-text:#203425;
+ --sb-link:#c6dcbc;--sb-focus:#a5c8a4;--sb-grain:rgba(212,236,210,.035);
+}
+body.light-mode #view-app #section-stills-boards{
+ --sb-base:#f6f7f2;--sb-shell:#eef1eb;--sb-panel:#ffffff;
+ --sb-field:#f8faf6;--sb-stage:#e8eee7;--sb-line:#d5dfd5;
+ --sb-line-soft:#e5ece3;--sb-text:#233729;--sb-muted:#52695a;
+ --sb-dim:#6a806f;--sb-action:#28543d;--sb-action-text:#fffefb;
+ --sb-link:#28543d;--sb-focus:#367351;--sb-grain:rgba(42,95,61,.042);
+}
+/* Across workspaces, discard legacy bright flash, lift, scale and shadow. */
+#view-app .liquid-btn::before,#view-app label.liquid-btn::before{
+ opacity:0!important;content:none!important;
+}
+#view-app .tool-section .liquid-btn:hover:not(:disabled),
+#view-app .tool-section .liquid-btn:active:not(:disabled),
+#view-app .tool-section label.liquid-btn:hover,
+#view-app .tool-section label.liquid-btn:active,
+#view-app .tool-section .ctk-row-menu > summary:hover{
+ transform:none!important;translate:0 0!important;
+ scale:1!important;filter:none!important;box-shadow:none!important;
+}
+#view-app .tool-section .liquid-btn:not(:disabled),
+#view-app .tool-section label.liquid-btn{
+ transition:background-color 180ms ease,border-color 180ms ease,color 180ms ease!important;
+}
+#view-app .tool-section .liquid-btn:hover:not(:disabled):not(.active-mode):not(.danger-btn),
+#view-app .tool-section label.liquid-btn:hover:not(.active-mode){
+ background:var(--studio-hover)!important;
+ color:var(--studio-title)!important;
+ border-color:var(--studio-border)!important;
+}
+#view-app .tool-section .liquid-btn.active-mode:hover:not(:disabled):not(.danger-btn),
+#view-app .tool-section label.liquid-btn.active-mode:hover{
+ background:var(--studio-accent)!important;
+ color:var(--studio-accent-on)!important;
+ border-color:var(--studio-accent)!important;
+}
+#view-app .tool-section .liquid-btn.danger-btn:hover:not(:disabled){
+ background:var(--studio-raised)!important;color:var(--danger,#c77d78)!important;
+ border-color:var(--studio-border)!important;
+}
+/* Primary contrast is tool-specific, not flattened into a generic background. */
+#view-app #section-logo .tool-header .drop-zone label.liquid-btn:hover{
+ background:var(--lr-cta)!important;color:var(--lr-cta-ink)!important;border-color:var(--lr-cta)!important;
+}
+#view-app #section-stills-boards :is(#storyHeaderControls,#filmstripHeaderControls,#fitHeaderControls) .liquid-btn.active-mode:hover:not(:disabled){
+ background:var(--sb-action)!important;color:var(--sb-action-text)!important;border-color:var(--sb-action)!important;
+}
+#view-app #section-stills-boards #storySubModeToggle .liquid-btn:hover{
+ background:var(--sb-panel)!important;color:var(--sb-text)!important;
+}
+#view-app #section-stills-boards :is(#stillsTabContentStory,#stillsTabContentFilmstrip,#stillsTabContentFit) .liquid-btn:hover:not(:disabled):not(.active-mode):not(.danger-btn){
+ background:var(--sb-shell)!important;color:var(--sb-text)!important;border-color:var(--sb-line)!important;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader #adlinksDlHeaderControls :is(label,button):hover:not(:disabled){
+ background:var(--ad-surface-alt)!important;color:var(--ad-ink)!important;
+ border-color:var(--ad-line-strong)!important;transform:none!important;box-shadow:none!important;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader #adlinksDlHeaderControls #adDlDropZone label:hover,
+#view-app #section-adlinks #adlinksTabContentDownloader #adlinksDlHeaderControls #adDlBulkButton:hover:not(:disabled){
+ background:var(--ad-primary)!important;color:var(--ad-primary-ink)!important;border-color:var(--ad-primary)!important;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader #adDlTableContainer tbody td:nth-child(3)>button.active-mode:hover:not(:disabled){
+ background:var(--ad-primary)!important;color:var(--ad-primary-ink)!important;
+ transform:none!important;box-shadow:none!important;border-color:transparent!important;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader #adDlTableContainer :is(button,.ctk-row-menu > summary):hover{
+ transform:none!important;filter:none!important;box-shadow:none!important;
+}
+/* The rail and catalogue no longer jump or grow when hovered. */
+.nav-sidebar .nav-item:hover,.nav-sidebar .nav-item:active,
+body:has(#nav-adlinks-dl.active) .nav-sidebar .nav-item:hover{
+ transform:none!important;translate:0 0!important;filter:none!important;box-shadow:none!important;
+}
+.nav-sidebar .nav-item:hover .material-symbols-rounded{transform:none!important;scale:1!important}
+#view-home .combined-home-grid > .home-card:hover :is(.home-card-title,.home-card-go,.home-card-art){
+ translate:0 0!important;
+}
+#view-home .combined-home-grid > .home-card:hover .home-card-title,
+#view-home .combined-home-grid > .home-card:hover .home-card-go{
+ transform:none!important;
+}
+#view-home .combined-home-grid > .home-card:hover > .home-card-art{filter:none!important}
+@media(prefers-reduced-motion:reduce){
+ #view-app .tool-section .liquid-btn,.nav-sidebar .nav-item{
+  transition:none!important;transform:none!important;
+ }
+}
+
+/* Storyboard's old selected-tab inset/shadow is static, but visually noisy. */
+#view-app #section-stills-boards #storySubModeToggle .liquid-btn.active-mode{
+ box-shadow:none!important;
+ outline:1px solid var(--sb-line)!important;
+ outline-offset:-1px!important;
+}
+
+@media(prefers-reduced-motion:reduce){
+  #view-app #section-adlinks #adlinksTabContentDownloader .liquid-btn,
+  #view-app #section-adlinks #adlinksTabContentDownloader #adlinksDlHeaderControls :is(label,button),
+  #view-app #section-adlinks #adlinksTabContentDownloader .ctk-row-menu > summary{
+    transition:none!important;
+    animation:none!important;
+  }
+}

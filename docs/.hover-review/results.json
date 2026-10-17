@@ -1,0 +1,383 @@
+[
+  {
+    "screen": "logo",
+    "theme": "dark",
+    "hasButton": true,
+    "label": "Upload",
+    "before": {
+      "transform": "none",
+      "translate": "none",
+      "shadow": "none",
+      "background": "rgb(212, 230, 199)",
+      "scale": "none"
+    },
+    "after": {
+      "transform": "none",
+      "translate": "0px",
+      "shadow": "none",
+      "background": "rgb(212, 230, 199)",
+      "scale": "1"
+    },
+    "overflow": false
+  },
+  {
+    "screen": "pdf-image",
+    "theme": "dark",
+    "hasButton": true,
+    "label": "Add PDF Files",
+    "before": {
+      "transform": "none",
+      "translate": "none",
+      "shadow": "none",
+      "background": "rgb(207, 227, 196)",
+      "scale": "none"
+    },
+    "after": {
+      "transform": "none",
+      "translate": "0px",
+      "shadow": "none",
+      "background": "rgb(207, 227, 196)",
+      "scale": "1"
+    },
+    "overflow": false
+  },
+  {
+    "screen": "image-splitter",
+    "theme": "dark",
+    "hasButton": true,
+    "label": "Add Images",
+    "before": {
+      "transform": "none",
+      "translate": "none",
+      "shadow": "none",
+      "background": "rgb(193, 216, 183)",
+      "scale": "none"
+    },
+    "after": {
+      "transform": "none",
+      "translate": "0px",
+      "shadow": "none",
+      "background": "rgb(193, 216, 183)",
+      "scale": "1"
+    },
+    "overflow": false
+  },
+  {
+    "screen": "video-stills",
+    "theme": "dark",
+    "hasButton": true,
+    "label": "Add Videos",
+    "before": {
+      "transform": "none",
+      "translate": "none",
+      "shadow": "none",
+      "background": "rgb(193, 216, 183)",
+      "scale": "none"
+    },
+    "after": {
+      "transform": "none",
+      "translate": "0px",
+      "shadow": "none",
+      "background": "rgb(193, 216, 183)",
+      "scale": "1"
+    },
+    "overflow": false
+  },
+  {
+    "screen": "storyboard",
+    "theme": "dark",
+    "hasButton": true,
+    "label": "Grid Board",
+    "before": {
+      "transform": "none",
+      "translate": "none",
+      "shadow": "none",
+      "background": "rgb(37, 55, 43)",
+      "scale": "none"
+    },
+    "after": {
+      "transform": "none",
+      "translate": "0px",
+      "shadow": "none",
+      "background": "rgb(37, 55, 43)",
+      "scale": "1"
+    },
+    "overflow": false
+  },
+  {
+    "screen": "filmstrip",
+    "theme": "dark",
+    "hasButton": true,
+    "label": "Grid Board",
+    "before": {
+      "transform": "none",
+      "translate": "0px",
+      "shadow": "none",
+      "background": "rgb(37, 55, 43)",
+      "scale": "1"
+    },
+    "after": {
+      "transform": "none",
+      "translate": "0px",
+      "shadow": "none",
+      "background": "rgb(37, 55, 43)",
+      "scale": "1"
+    },
+    "overflow": false
+  },
+  {
+    "screen": "link-gen",
+    "theme": "dark",
+    "hasButton": true,
+    "label": "Generate",
+    "before": {
+      "transform": "none",
+      "translate": "none",
+      "shadow": "none",
+      "background": "rgb(193, 216, 183)",
+      "scale": "none"
+    },
+    "after": {
+      "transform": "none",
+      "translate": "0px",
+      "shadow": "none",
+      "background": "rgb(193, 216, 183)",
+      "scale": "1"
+    },
+    "overflow": false
+  },
+  {
+    "screen": "ad-downloader",
+    "theme": "dark",
+    "hasButton": true,
+    "label": "Upload Excel",
+    "before": {
+      "transform": "none",
+      "translate": "none",
+      "shadow": "none",
+      "background": "rgb(196, 221, 186)",
+      "scale": "none"
+    },
+    "after": {
+      "transform": "none",
+      "translate": "0px",
+      "shadow": "none",
+      "background": "rgb(196, 221, 186)",
+      "scale": "1"
+    },
+    "overflow": false
+  },
+  {
+    "screen": "video-downloads",
+    "theme": "dark",
+    "hasButton": true,
+    "label": "Analyze",
+    "before": {
+      "transform": "none",
+      "translate": "none",
+      "shadow": "none",
+      "background": "rgb(193, 216, 183)",
+      "scale": "none"
+    },
+    "after": {
+      "transform": "none",
+      "translate": "0px",
+      "shadow": "none",
+      "background": "rgb(193, 216, 183)",
+      "scale": "1"
+    },
+    "overflow": false
+  },
+  {
+    "screen": "logo",
+    "theme": "light",
+    "hasButton": true,
+    "label": "Upload",
+    "before": {
+      "transform": "none",
+      "translate": "none",
+      "shadow": "none",
+      "background": "rgb(33, 74, 51)",
+      "scale": "none"
+    },
+    "after": {
+      "transform": "none",
+      "translate": "0px",
+      "shadow": "none",
+      "background": "rgb(33, 74, 51)",
+      "scale": "1"
+    },
+    "overflow": false
+  },
+  {
+    "screen": "pdf-image",
+    "theme": "light",
+    "hasButton": true,
+    "label": "Add PDF Files",
+    "before": {
+      "transform": "none",
+      "translate": "none",
+      "shadow": "none",
+      "background": "rgb(45, 89, 64)",
+      "scale": "none"
+    },
+    "after": {
+      "transform": "none",
+      "translate": "0px",
+      "shadow": "none",
+      "background": "rgb(45, 89, 64)",
+      "scale": "1"
+    },
+    "overflow": false
+  },
+  {
+    "screen": "image-splitter",
+    "theme": "light",
+    "hasButton": true,
+    "label": "Add Images",
+    "before": {
+      "transform": "none",
+      "translate": "none",
+      "shadow": "none",
+      "background": "rgb(40, 84, 61)",
+      "scale": "none"
+    },
+    "after": {
+      "transform": "none",
+      "translate": "0px",
+      "shadow": "none",
+      "background": "rgb(40, 84, 61)",
+      "scale": "1"
+    },
+    "overflow": false
+  },
+  {
+    "screen": "video-stills",
+    "theme": "light",
+    "hasButton": true,
+    "label": "Add Videos",
+    "before": {
+      "transform": "none",
+      "translate": "none",
+      "shadow": "none",
+      "background": "rgb(40, 84, 61)",
+      "scale": "none"
+    },
+    "after": {
+      "transform": "none",
+      "translate": "0px",
+      "shadow": "none",
+      "background": "rgb(40, 84, 61)",
+      "scale": "1"
+    },
+    "overflow": false
+  },
+  {
+    "screen": "storyboard",
+    "theme": "light",
+    "hasButton": true,
+    "label": "Grid Board",
+    "before": {
+      "transform": "none",
+      "translate": "none",
+      "shadow": "none",
+      "background": "rgb(255, 255, 255)",
+      "scale": "none"
+    },
+    "after": {
+      "transform": "none",
+      "translate": "0px",
+      "shadow": "none",
+      "background": "rgb(255, 255, 255)",
+      "scale": "1"
+    },
+    "overflow": false
+  },
+  {
+    "screen": "filmstrip",
+    "theme": "light",
+    "hasButton": true,
+    "label": "Grid Board",
+    "before": {
+      "transform": "none",
+      "translate": "0px",
+      "shadow": "none",
+      "background": "rgb(255, 255, 255)",
+      "scale": "1"
+    },
+    "after": {
+      "transform": "none",
+      "translate": "0px",
+      "shadow": "none",
+      "background": "rgb(255, 255, 255)",
+      "scale": "1"
+    },
+    "overflow": false
+  },
+  {
+    "screen": "link-gen",
+    "theme": "light",
+    "hasButton": true,
+    "label": "Generate",
+    "before": {
+      "transform": "none",
+      "translate": "none",
+      "shadow": "none",
+      "background": "rgb(40, 84, 61)",
+      "scale": "none"
+    },
+    "after": {
+      "transform": "none",
+      "translate": "0px",
+      "shadow": "none",
+      "background": "rgb(40, 84, 61)",
+      "scale": "1"
+    },
+    "overflow": false
+  },
+  {
+    "screen": "ad-downloader",
+    "theme": "light",
+    "hasButton": true,
+    "label": "Upload Excel",
+    "before": {
+      "transform": "none",
+      "translate": "none",
+      "shadow": "none",
+      "background": "rgb(40, 84, 61)",
+      "scale": "none"
+    },
+    "after": {
+      "transform": "none",
+      "translate": "0px",
+      "shadow": "none",
+      "background": "rgb(40, 84, 61)",
+      "scale": "1"
+    },
+    "overflow": false
+  },
+  {
+    "screen": "video-downloads",
+    "theme": "light",
+    "hasButton": true,
+    "label": "Analyze",
+    "before": {
+      "transform": "none",
+      "translate": "none",
+      "shadow": "none",
+      "background": "rgb(40, 84, 61)",
+      "scale": "none"
+    },
+    "after": {
+      "transform": "none",
+      "translate": "0px",
+      "shadow": "none",
+      "background": "rgb(40, 84, 61)",
+      "scale": "1"
+    },
+    "overflow": false
+  },
+  {
+    "pageErrors": []
+  }
+]
