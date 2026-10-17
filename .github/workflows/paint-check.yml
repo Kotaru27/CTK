@@ -21,6 +21,9 @@ jobs:
       - name: Compare resting, hovered and mouse-out primary buttons
         run: |
           mkdir -p docs/.paint-check
+          Xvfb :99 -screen 0 1440x900x24 -nolisten tcp &
+          export DISPLAY=:99
+          sleep 2
           python3 - <<'PY'
           import base64,json,re
           from PIL import Image
@@ -29,7 +32,7 @@ jobs:
           root=Path.cwd()
           results=[]
           with sync_playwright() as p:
-            browser=p.chromium.launch(channel='chrome',headless=True,args=['--no-sandbox'])
+            browser=p.chromium.launch(channel='chrome',headless=False,args=['--no-sandbox'])
             page=browser.new_page(viewport={'width':1440,'height':900},device_scale_factor=1)
             page.goto((root/'dist/creative-tools-standalone.html').as_uri(),wait_until='domcontentloaded')
             for section,mode,sel in [('section-stills-boards','story','#storySubModeToggle .liquid-btn.active-mode'),
