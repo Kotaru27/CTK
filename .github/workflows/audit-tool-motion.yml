@@ -19,6 +19,8 @@ jobs:
         run: npm install --no-save --no-package-lock playwright@1.58.2
       - name: Install Chromium
         run: npx playwright install chromium --with-deps
+      - name: Install local test-video encoder
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
       - name: Test source, build and standalone parity
         run: npm test
       - name: Start local Pages build
