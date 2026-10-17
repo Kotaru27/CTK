@@ -1,86 +1,138 @@
-/* The Forge / V2: stroke-to-solid letter construction, then one shared
-   wordmark moving into the actual home heading. No card/tool mutations. */
+/* The Forge: light, interruptible, compositor-first shared wordmark.
+   One kerned text node flies to an equal-font-metrics home heading.
+   Never touches tool cards, processing, navigation, or saved preferences. */
 (function () {
   'use strict';
   var intro = document.getElementById('forgeIntro');
-  var mark = document.getElementById('forgeIntroType');
+  var mark = document.getElementById('forgeIntroWordmark');
+  var glyphLayer = document.getElementById('forgeIntroGlyphs');
   var destination = document.getElementById('forgeHeroName');
-  if (!intro || !mark || !destination) return;
+  if (!intro || !mark || !glyphLayer || !destination) return;
+
   var reduced = window.matchMedia &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var seen = false, activeTool = null;
   try {
-    seen = sessionStorage.getItem('forge_intro_seen_v2') === '1';
+    seen = sessionStorage.getItem('forge_intro_seen_v3') === '1';
     activeTool = localStorage.getItem('cts_activeTool');
   } catch (_) {}
   if (reduced || seen || (activeTool && activeTool !== 'home')) {
     intro.remove();
     return;
   }
-  try { sessionStorage.setItem('forge_intro_seen_v2', '1'); } catch (_) {}
+  try { sessionStorage.setItem('forge_intro_seen_v3', '1'); } catch (_) {}
   document.body.classList.add('forge-opening');
 
-  var finished = false, startTimer, handoffTimer, watchdog;
-  var flight = null;
+  var finished = false, flight = null, timers = [];
   var skip = document.getElementById('forgeIntroSkip');
+  function after(ms, fn) {
+    var id = window.setTimeout(fn, ms);
+    timers.push(id);
+    return id;
+  }
   function cleanup() {
     if (finished) return;
     finished = true;
-    window.clearTimeout(startTimer);
-    window.clearTimeout(handoffTimer);
-    window.clearTimeout(watchdog);
-    document.removeEventListener('keydown', keydown);
+    timers.forEach(window.clearTimeout);
+    document.removeEventListener('keydown', onKey);
+    if (flight) {
+      flight.onfinish = null;
+      flight.cancel();
+    }
+    // The fully transformed wordmark and the hero exchange visibility
+    // in the same frame. This avoids the large-to-small snap.
+    mark.style.visibility = 'hidden';
     document.body.classList.remove('forge-opening','forge-home-arriving');
-    if (flight && flight.cancel) flight.cancel();
     intro.remove();
   }
-  function keydown(event) {
-    if (event.key === 'Escape' || event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
+  function onKey(e) {
+    if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
       cleanup();
     }
   }
-  if (skip) skip.addEventListener('click', cleanup, {once:true});
-  document.addEventListener('keydown', keydown);
-  watchdog = window.setTimeout(cleanup, 3500);
+  if (skip) skip.addEventListener('click',cleanup,{once:true});
+  document.addEventListener('keydown',onKey);
+  // Failsafe for background tabs / disconnected animations.
+  after(3400,cleanup);
 
-  function handoff() {
-    if (finished) return;
-    if (destination.getClientRects().length === 0 ||
-        !mark.animate || typeof mark.getBoundingClientRect !== 'function') {
-      intro.classList.add('forge-intro--ending');
-      window.setTimeout(cleanup, 300);
-      return;
+  function layoutGlyphs() {
+    // A single Kola text run has kerning that separate characters do not.
+    // Measure each character in that *real* wordmark with a DOM Range so
+    // every outline/ink overlay begins at the same advance position.
+    var node = mark.firstChild;
+    if (!node || node.nodeType !== 3) return false;
+    var base = mark.getBoundingClientRect();
+    if (!base.width || !base.height) return false;
+    var children = glyphLayer.children;
+    if (children.length !== node.length) return false;
+    var range = document.createRange();
+    for (var i=0; i<node.length; i++) {
+      range.setStart(node,i);
+      range.setEnd(node,i+1);
+      var glyph = children[i];
+      if (glyph.classList.contains('forge-intro-gap')) continue;
+      var rect = range.getBoundingClientRect();
+      glyph.style.left = (rect.left-base.left)+'px';
+      glyph.style.top = (rect.top-base.top)+'px';
     }
-    var from = mark.getBoundingClientRect();
-    var to = destination.getBoundingClientRect();
-    if (!from.width || !to.width) { cleanup(); return; }
-    var scale = to.width / from.width;
-    var dx = to.left - from.left;
-    var dy = to.top + to.height/2 - (from.top + from.height/2);
-    // Strip outlines after the fill, giving the letters a solid home state.
+    range.detach && range.detach();
+    return true;
+  }
+  function moveToHome() {
+    if (finished) return;
+    var from=mark.getBoundingClientRect();
+    var to=destination.getBoundingClientRect();
+    if (!from.width || !to.width || !mark.animate ||
+        destination.getClientRects().length === 0) { cleanup(); return; }
+    // Shared-element FLIP: same text run, matching font/line height,
+    // measured once after font load, then only translate+uniform scale.
+    var dx=to.left-from.left;
+    var dy=to.top-from.top;
+    var scale=to.width/from.width;
+    if (!isFinite(scale) || scale<=0) { cleanup(); return; }
     intro.classList.add('forge-intro--handoff');
     document.body.classList.add('forge-home-arriving');
-    flight = mark.animate([
+    flight=mark.animate([
       {transform:'translate3d(0,0,0) scale(1)'},
       {transform:'translate3d('+dx+'px,'+dy+'px,0) scale('+scale+')'}
-    ],{duration:670,easing:'cubic-bezier(.19,.86,.21,1)',fill:'forwards'});
-    flight.onfinish = cleanup;
-    // Fallback if animation completion is not delivered after backgrounding.
-    handoffTimer = window.setTimeout(cleanup, 900);
+    ],{
+      duration:820,
+      easing:'cubic-bezier(.22,.82,.24,1)',
+      fill:'forwards'
+    });
+    flight.onfinish=cleanup;
   }
-
-  function start() {
+  function settle() {
     if (finished) return;
-    intro.classList.add('is-playing');
-    handoffTimer = window.setTimeout(handoff, 1450);
+    intro.classList.add('is-settled');
+    after(165,function(){
+      if (!finished) requestAnimationFrame(moveToHome);
+    });
   }
-  // Avoid a branding font swap mid-reveal. Never stall the workspace for fonts.
-  var fonts = document.fonts;
-  var ready = fonts && fonts.load ?
-    fonts.load('400 120px "Kola"').catch(function(){}) : Promise.resolve();
+  function play() {
+    if (finished) return;
+    if (!layoutGlyphs()) { cleanup(); return; }
+    intro.classList.add('is-playing');
+    // Letter 8 completes at ~1.10s; the ink-to-wordmark crossfade is
+    // kept under one tenth of a second of visual stillness.
+    after(1110,settle);
+  }
+  // Start only with Kola ready. If the external font is unavailable,
+  // show the usable homepage instead of animating fallback and snapping.
+  var fonts=document.fonts;
+  if (!fonts || !fonts.load) {
+    cleanup();
+    return;
+  }
+  var timeout;
   Promise.race([
-    ready,
-    new Promise(function(resolve){ startTimer=window.setTimeout(resolve, 750); })
-  ]).then(start, start);
+    fonts.load('400 120px "Kola"').then(function(faces){return !!(faces && faces.length);},function(){return false;}),
+    new Promise(function(resolve){timeout=window.setTimeout(function(){resolve(false);},780);})
+  ]).then(function(ready){
+    window.clearTimeout(timeout);
+    if (finished) return;
+    if (!ready) { cleanup(); return; }
+    requestAnimationFrame(play);
+  },cleanup);
 })();
