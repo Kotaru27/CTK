@@ -2,6 +2,8 @@ name: Forge eight-workspace motion audit
 on:
   push:
     branches: [audit/forge-all-tool-motion-20261017]
+  pull_request:
+    branches: [main]
 permissions:
   contents: read
 jobs:
