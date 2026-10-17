@@ -19,6 +19,7 @@
     // Keep original synchronous navigation in older browsers, background
     // tabs and accessibility modes. Never insert a fixed waiting period.
     if(!canTransition()){
+      ++serial;
       if(active) {
         active.skipTransition();
         active=null;
@@ -33,7 +34,11 @@
     root.classList.add('forge-video-route-running');
     let transition;
     try{
-      transition=document.startViewTransition(()=>change());
+      transition=document.startViewTransition(()=>{
+        // Old update callbacks may be scheduled a frame later; never allow
+        // a superseded navigation to overwrite the user's newest choice.
+        if(token===serial)change();
+      });
     }catch(_){
       root.classList.remove('forge-video-route-running');
       change();
