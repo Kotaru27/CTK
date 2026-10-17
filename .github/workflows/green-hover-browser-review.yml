@@ -68,7 +68,7 @@ jobs:
                 checks.append(result)
                 if name in ('storyboard','ad-downloader','logo'):
                   capture=root/('docs/.hover-review/'+name+('-light' if light else '-dark')+'.jpg')
-                  page.screenshot(path=str(capture),type='jpeg',quality=65,animations='disabled')
+                  page.screenshot(path=str(capture),type='jpeg',quality=65,animations='allow')
                   capture.with_suffix('.b64').write_text(base64.b64encode(capture.read_bytes()).decode())
                   capture.unlink()
             page.emulate_media(reduced_motion='reduce')
