@@ -5965,6 +5965,12 @@ html.forge-route-running::view-transition-new(root) {
   #section-logo #logoGrid:has(#logoEmpty:not([style*="display: none"])) #logoEmpty {
     min-height:clamp(470px,calc(100dvh - 315px),1050px)!important;
   }
+  /* A taller outer frame must also stretch the art/copy grid.  Without
+     this the 470px inner grid leaves an empty white band underneath. */
+  #section-logo #logoGrid:has(#logoEmpty:not([style*="display: none"]))
+    #logoEmpty > .logo-empty-layout {
+    min-height:inherit!important;
+  }
   #section-logo .editor-layout:not(:has(#logoDetailOverlay.active))
     #logoGrid:not(:has(#logoEmpty:not([style*="display: none"]))) {
     grid-template-columns:repeat(auto-fill,minmax(clamp(220px,15vw,275px),1fr))!important;
