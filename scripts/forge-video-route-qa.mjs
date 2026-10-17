@@ -99,7 +99,7 @@ try{
      stuck:document.documentElement.classList.contains('forge-route-running')
    }));
    assert.equal(rapid.nav,'nav-adlinks-dl','Fast navigation ended on wrong tool');
-   assert.equal(rapid.header,'Ad Link Downloader','Fast navigation left wrong mode');
+   assert.equal(rapid.header,'Ad Downloader','Fast navigation left wrong mode');
    assert.equal(rapid.active,1,'Fast navigation left multiple workspaces active');
    assert.equal(rapid.stuck,false,'Motion class remained after fast navigation');
    assert.deepEqual(errors,[],'Unexpected console errors');
