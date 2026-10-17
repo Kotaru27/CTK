@@ -62,3 +62,7 @@ naming and ZIP downloads. See [docs/SHAREPOINT-GITHUB-PAGES.md](docs/SHAREPOINT-
 ## Optional SharePoint download naming experiment
 
 See [`docs/OPTIONAL-DOWNLOAD-RENAMING.md`](docs/OPTIONAL-DOWNLOAD-RENAMING.md). The native download still works independently of folder access. Auto-naming requires a user-selected directory in Chrome/Edge, and is unverified against a real company SharePoint download; no extension or Microsoft Entra setup is required.
+
+## Filename recovery for SharePoint
+
+After a native SharePoint download finishes, use **Save named copy** on that row to select the downloaded media and save a new local copy using the expected spreadsheet `ADn_...` filename. The original stays intact. The optional **Auto-name: Choose folder** feature remains available for hands-free renaming when Chrome saves into exactly the selected directory. These are local-file operations; neither path uses Microsoft Graph or SharePoint credentials in CTK.

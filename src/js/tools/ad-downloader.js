@@ -184,6 +184,20 @@ export default {
               download.className = "liquid-btn active-mode";
               download.textContent = "Download"; download.onclick = () => this.downloadFile(entry);
               actions.append(copy," ",download);
+              // Explicit recovery path: this works even when Chrome's download folder
+              // differs from the optional auto-name folder, or SharePoint changes its basename.
+              // The user chooses the actual local file; CTK never fetches protected media.
+              if (CTKSharePoint.isSharePoint(url)) {
+                const saveNamed = document.createElement("button");
+                saveNamed.type = "button";
+                saveNamed.className = "liquid-btn";
+                saveNamed.textContent = "Save named copy";
+                saveNamed.title = "After the SharePoint download finishes, select that downloaded file to save a copy with the AD name shown here.";
+                saveNamed.hidden = true;
+                saveNamed.onclick = () => this.saveSharePointCopy(entry);
+                actions.append(" ",saveNamed);
+                entry.renameCopyButton = saveNamed;
+              }
               tr.append(numCell,nameCell,actions); entry.row = tr; entry.downloadButton = download;
               fragment.appendChild(tr);
             }
@@ -297,9 +311,43 @@ export default {
             finally { a.remove(); }
             // Do not claim an unobservable cross-origin download completed.
             if (entry.downloadButton) entry.downloadButton.textContent = 'Download again';
+            if (entry.renameCopyButton) entry.renameCopyButton.hidden = false;
             this.status(tracking
               ? `SharePoint download requested. Waiting to rename ${entry.displayName} after it appears in your selected folder.`
               : `SharePoint download requested for ${entry.displayName}. CTK stays open. Select the SAME Chrome download folder via Auto-name to rename finished downloads. Completion cannot be confirmed here.`);
+          },
+          async saveSharePointCopy(entry) {
+            // This is deliberately user-initiated and operates on a File chosen from
+            // the local disk, not on a credentialed cross-origin SharePoint response.
+            // A normal same-origin blob download CAN apply an exact requested name.
+            if (!CTKSharePoint.isSharePoint(entry.url)) return;
+            const picker = document.createElement("input");
+            picker.type = "file";
+            picker.accept = "video/*,audio/*,image/*,.pdf,.zip,.svg,.mkv,.avi,.mov,.webm,.flac,.m4a";
+            picker.style.display = "none";
+            picker.oncancel = () => picker.remove();
+            picker.onchange = () => {
+              picker.remove();
+              const file = picker.files?.[0];
+              if (!file) return;
+              const originalName = file.name || "";
+              if (!file.size || !/\.(mp4|mov|m4v|avi|mkv|webm|mp3|m4a|wav|ogg|flac|jpg|jpeg|png|gif|webp|bmp|svg|pdf|zip)$/i.test(originalName) || /^text\/html\b/i.test(file.type)) {
+                this.status("Select the finished media file, not a SharePoint preview, HTML page, or unfinished download.",true);
+                return;
+              }
+              const expected = CTKDownloadRenamer.sourceFilename(entry.url);
+              if (expected && !CTKDownloadRenamer.matchesOriginal(originalName,expected) &&
+                  !window.confirm("The selected file name differs from the SharePoint source. Save a renamed copy of this file anyway?")) return;
+              const target = CTKDownloadRenamer.targetFilename(entry,originalName);
+              try {
+                this.saveBlob(file,target);
+                this.status("Requested a correctly named copy: " + target + ". The original SharePoint download is unchanged. Confirm the new file in your browser Downloads.");
+              } catch(error) {
+                this.status("Could not request the named copy: " + error.message,true);
+              }
+            };
+            document.body.appendChild(picker);
+            picker.click();
           },
           async downloadFile(entry) {
             if (entry.downloaded || entry.inProgress) return;

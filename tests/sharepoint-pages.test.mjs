@@ -81,3 +81,51 @@ test('SharePoint sources are explicitly excluded from client-side ZIP',async()=>
     assert.match(calls[0],/cannot be added to a client-side ZIP/);
   }finally{globalThis.CTKSharePoint=originalSP;}
 });
+
+test('SharePoint recovery copies a deliberately picked local media file with spreadsheet naming',async()=>{
+  const originalDoc=globalThis.document, originalWindow=globalThis.window;
+  const originalSP=globalThis.CTKSharePoint, originalRenamer=globalThis.CTKDownloadRenamer;
+  const file={name:'audio test.mp3',size:42,type:'audio/mpeg'};
+  const widgets=[];
+  globalThis.CTKSharePoint=sp;
+  globalThis.CTKDownloadRenamer={
+    sourceFilename(){return 'audio test.mp3';},
+    matchesOriginal(){return true;},
+    targetFilename(entry,name){return entry.displayName+name.slice(name.lastIndexOf('.'));}
+  };
+  globalThis.document={
+    body:{appendChild(node){widgets.push(node);}},
+    createElement(type){assert.equal(type,'input');return {click(){this.files=[file];this.onchange();},remove(){}};}
+  };
+  globalThis.window={confirm(){throw Error('Unexpected mismatched file confirmation')}};
+  const copies=[], statuses=[];
+  try{
+    const target=Object.assign({},AD,{
+      saveBlob(blob,name){copies.push([blob,name]);},
+      status(message){statuses.push(message);}
+    });
+    await target.saveSharePointCopy({url:'https://example.sharepoint.com/sites/DACH/Shared%20Documents/file.mp3',displayName:'AD1_campaign'});
+    assert.equal(copies[0][0],file);
+    assert.equal(copies[0][1],'AD1_campaign.mp3');
+    assert.match(statuses[0],/original SharePoint download is unchanged/);
+  }finally{
+    globalThis.document=originalDoc;globalThis.window=originalWindow;
+    globalThis.CTKSharePoint=originalSP;globalThis.CTKDownloadRenamer=originalRenamer;
+  }
+});
+
+test('Local renamed copy refuses an HTML/preview result rather than saving it as media',async()=>{
+  const originalDoc=globalThis.document, originalSP=globalThis.CTKSharePoint;
+  globalThis.CTKSharePoint=sp;
+  globalThis.document={
+    body:{appendChild(){}},
+    createElement(){return {click(){this.files=[{name:'preview.html',size:42,type:'text/html'}];this.onchange();},remove(){}};}
+  };
+  const errors=[];
+  try{
+    const target=Object.assign({},AD,{saveBlob(){throw Error('saved invalid file')},status:(s,e)=>errors.push([s,e])});
+    await target.saveSharePointCopy({url:'https://example.sharepoint.com/sites/DACH/Shared%20Documents/file.mp3',displayName:'AD1_campaign'});
+    assert.equal(errors[0][1],true);
+    assert.match(errors[0][0],/Select the finished media file/);
+  }finally{globalThis.document=originalDoc;globalThis.CTKSharePoint=originalSP;}
+});

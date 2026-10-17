@@ -118,11 +118,12 @@ const CTKDownloadRenamer = (() => {
       writer=null;
       const written = await destination.getFile();
       if (written.size !== originalFile.size) throw Error('Incomplete file copy. Original was preserved.');
-      // Size alone is insufficient to prove full file integrity; verify first and last 64 KB as well.
-      for (const start of [0, Math.max(0, originalFile.size-65536)]) {
-        const count=Math.min(65536,originalFile.size-start);
-        const a=new Uint8Array(await originalFile.slice(start,start+count).arrayBuffer());
-        const b=new Uint8Array(await written.slice(start,start+count).arrayBuffer());
+      // Verify the entire fallback copy before deleting the original; the
+      // previous first/last-64 KiB check could miss corruption in the middle.
+      for (let start = 0; start < originalFile.size; start += 1024*1024) {
+        const end = Math.min(originalFile.size,start+1024*1024);
+        const a=new Uint8Array(await originalFile.slice(start,end).arrayBuffer());
+        const b=new Uint8Array(await written.slice(start,end).arrayBuffer());
         if (a.length !== b.length || a.some((byte,index)=>byte!==b[index])) throw Error('File copy verification failed. Original was preserved.');
       }
       await directory.removeEntry(original);
