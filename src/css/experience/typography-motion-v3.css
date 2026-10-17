@@ -541,3 +541,10 @@ body:has(#nav-adlinks-dl.active) .nav-sidebar .nav-item:hover{
   transition:none!important;transform:none!important;
  }
 }
+
+/* Storyboard's old selected-tab inset/shadow is static, but visually noisy. */
+#view-app #section-stills-boards #storySubModeToggle .liquid-btn.active-mode{
+ box-shadow:none!important;
+ outline:1px solid var(--sb-line)!important;
+ outline-offset:-1px!important;
+}

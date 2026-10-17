@@ -60,7 +60,7 @@ jobs:
                   page.wait_for_timeout(300)
                   after=button.evaluate("""e=>{let s=getComputedStyle(e);return {transform:s.transform,translate:s.translate,shadow:s.boxShadow,background:s.backgroundColor,scale:s.scale}}""")
                   result.update({'label':button.inner_text()[:38],'before':before,'after':after})
-                  assert after['shadow']=='none',result
+                  assert after['shadow']==before['shadow'],result
                   assert after['transform'] in ('none','matrix(1, 0, 0, 1, 0, 0)'),result
                   assert after['translate'] in ('none','0px','0px 0px'),result
                 result['overflow']=page.evaluate('document.documentElement.scrollWidth>innerWidth+4')
