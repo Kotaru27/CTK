@@ -11,7 +11,7 @@ const routes=[
  {key:'stills',card:'tool-stills',nav:'nav-stills-video',header:'Video Stills'},
  {key:'story',card:'tool-story',nav:'nav-stills-story',header:'Storyboard'},
  {key:'links',card:'tool-links',nav:'nav-adlinks-gen',header:'Link Gen'},
- {key:'ads',card:'tool-ads',nav:'nav-adlinks-dl',header:'Ad Link Downloader'},
+ {key:'ads',card:'tool-ads',nav:'nav-adlinks-dl',header:'Ad Downloader'},
  {key:'video',card:'tool-video',nav:'nav-yt-helper',header:'Video Downloads'}
 ];
 const base='http://127.0.0.1:4173/';
@@ -99,7 +99,7 @@ try{
      stuck:document.documentElement.classList.contains('forge-route-running')
    }));
    assert.equal(rapid.nav,'nav-adlinks-dl','Fast navigation ended on wrong tool');
-   assert.equal(rapid.header,'Ad Link Downloader','Fast navigation left wrong mode');
+   assert.equal(rapid.header,'Ad Downloader','Fast navigation left wrong mode');
    assert.equal(rapid.active,1,'Fast navigation left multiple workspaces active');
    assert.equal(rapid.stuck,false,'Motion class remained after fast navigation');
    assert.deepEqual(errors,[],'Unexpected console errors');

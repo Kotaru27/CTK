@@ -17,3 +17,27 @@ test('finish layer is CSS-only and limits changes to specific workspaces',()=>{
  assert.match(css,/animation:none!important/);
  for(const s of ['@keyframes','backdrop-filter:','filter:blur','transform:scale','object-fit:','image-rendering:','display:none!important'])assert.ok(!css.includes(s),'undesired heavy media/motion override '+s);
 });
+test('precision-polish is focus-visible and compact without layout overrides',()=>{
+ const css=read('src/css/experience/forge-workspace-finish.css');
+ const polish=css.split('/* 06 / Precision pass')[1];
+ assert.ok(polish,'precision section missing');
+ for(const s of ['.nav-sidebar .nav-item:focus-visible','#storyFileList > div:focus-within',
+  '#storyProjectTabs > div:focus-within','#adDlTableContainer th',
+  'input[type="checkbox"]:checked',':focus-visible','prefers-reduced-motion:reduce']){
+  assert.ok(polish.includes(s),'missing '+s);
+ }
+ for(const s of ['grid-template-columns:','grid-template-rows:','position:fixed',
+   'min-height:','max-height:','object-fit:','transform:','display:none','padding-inline:']){
+  assert.ok(!polish.includes(s),'workspace-changing rule in precision layer: '+s);
+ }
+});
+test('Ad Downloader workspace title matches the nav label in every release',()=>{
+ for(const path of ['index.html','dist/index.html','dist/creative-tools-standalone.html']){
+  const html=read(path);
+  assert.ok(html.includes('<span style="flex: 1">Ad Downloader</span>'),path);
+  assert.ok(!html.includes('<span style="flex: 1">Ad Link Downloader</span>'),path);
+ }
+ assert.ok(read('scripts/build.mjs').includes('Ad Link Downloader</span>'),'missing baseline title replacement');
+ assert.ok(read('src/js/core/prelude.js').includes('"section-adlinks": { gen: "Link Gen", downloader: "Ad Downloader" }'),
+   'runtime route header label must match branded tool name');
+});

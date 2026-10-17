@@ -277,3 +277,130 @@ body.light-mode #view-app :is(.split-studio-meta,.split-studio-foot,.adgen-outpu
     transition:none!important;
   }
 }
+/* 06 / Precision pass — compact workspaces, not expanded layouts.
+   Improve reading hierarchy and interactive state without changing
+   panel widths, card positioning, scroll containers or media canvases. */
+
+/* A restrained, visible keyboard focus ring across the real tool controls.
+   No outline on ordinary mouse hover and no motion/scale effects. */
+#view-app .tool-section :is(.liquid-input,input:not([type="file"]):not([type="hidden"]),select,textarea):focus-visible,
+#view-app .tool-section :is(.liquid-btn,button,[role="tab"],[role="button"],summary):focus-visible {
+  outline:2px solid var(--studio-accent,#306648)!important;
+  outline-offset:2px!important;
+}
+#view-app .tool-section label:has(input:focus-visible) {
+  outline:2px solid var(--studio-accent,#306648)!important;
+  outline-offset:3px!important;
+}
+.nav-sidebar .nav-item:focus-visible {
+  outline:2px solid var(--studio-accent,#306648)!important;
+  outline-offset:-3px!important;
+}
+
+/* Small technical captions keep their quiet character but no longer fade
+   into their surfaces. Letterspacing is reduced for easier scanning. */
+#view-app #section-stills-boards #storyBoardControls .label-header {
+  font-size:12px!important;
+  font-weight:650!important;
+  letter-spacing:.035em!important;
+}
+#view-app #section-stills-boards #storyBoardControls :is(#storyNameInput,#storyCols,#storyWidth) {
+  font-size:13px!important;
+  color:var(--sb-text)!important;
+  caret-color:var(--sb-action);
+}
+#view-app #section-logo #logoControls .label-header,
+#view-app #section-pdf .pdf-side-settings .label-header {
+  letter-spacing:.045em!important;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader .ad-download-heading .edition-kicker {
+  letter-spacing:.105em!important;
+  font-size:11px!important;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader #adDlStatus {
+  font-size:12px!important;
+  line-height:1.55!important;
+}
+
+/* Storyboard projects and assets: clearer names and calmer selection affordances.
+   The board itself, image thumbnails, actions and drag behavior are untouched. */
+#stillsTabContentStory #storyProjectTabs > div {
+  font-weight:650!important;
+  letter-spacing:-.01em!important;
+  border-color:var(--sb-line)!important;
+  transition:background-color 150ms ease,border-color 150ms ease,color 150ms ease!important;
+}
+/* Preserve the active-project border; hover must not disguise selection. */
+#stillsTabContentStory #storyProjectTabs > div:is(
+  [style*="background: var(--text-main)"],
+  [style*="--bg-main"],
+  [style*="var(--text-main)"]
+) { border-color:var(--sb-action)!important; }
+#stillsTabContentStory #storyProjectTabs > div:hover {
+  border-color:var(--sb-dim)!important;
+}
+#stillsTabContentStory #storyProjectTabs > div:focus-within {
+  outline:2px solid var(--sb-focus)!important;
+  outline-offset:2px!important;
+}
+#stillsTabContentStory #storyFileList > div {
+  color:var(--sb-text)!important;
+  font-weight:550!important;
+  transition:background-color 150ms ease,border-color 150ms ease!important;
+}
+#stillsTabContentStory #storyFileList > div:hover {
+  border-color:var(--sb-dim)!important;
+}
+#stillsTabContentStory #storyFileList > div:focus-within {
+  border-color:var(--sb-focus)!important;
+  outline:1px solid var(--sb-focus)!important;
+  outline-offset:1px!important;
+}
+#stillsTabContentStory #storyFileList > div .liquid-btn:focus-visible {
+  outline:2px solid var(--sb-focus)!important;
+  outline-offset:1px!important;
+}
+body.light-mode #stillsTabContentStory #storyFileList > div {
+  background:var(--sb-panel)!important;
+}
+
+/* Campaign table: metadata should be readable, selected rows recognizable,
+   and per-row actions discoverable without making the table larger. */
+#view-app #section-adlinks #adlinksTabContentDownloader #adDlTableContainer th {
+  font-size:11px!important;
+  line-height:1.35!important;
+  letter-spacing:.09em!important;
+  color:var(--ad-ink-muted)!important;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader #adDlTableContainer tbody td:nth-child(2) {
+  font-size:12.5px!important;
+  line-height:1.55!important;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader #adDlTableContainer tbody td:nth-child(3) > button,
+#view-app #section-adlinks #adlinksTabContentDownloader #adDlTableContainer .ctk-row-menu > summary {
+  font-size:12px!important;
+  font-weight:650!important;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader #adDlTableContainer tbody tr:has(input[type="checkbox"]:checked):not(.downloaded) {
+  background:var(--ad-primary-soft)!important;
+  box-shadow:inset 2px 0 0 var(--ad-primary)!important;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader #adDlTableContainer tbody tr:focus-within {
+  box-shadow:inset 2px 0 0 var(--ad-primary)!important;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader #adDlTableContainer :is(button,summary,input[type="checkbox"]):focus-visible {
+  outline:2px solid var(--ad-primary)!important;
+  outline-offset:2px!important;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader #adDlTableContainer tbody tr.downloaded td:nth-child(2) {
+  color:var(--ad-ink-muted)!important;
+}
+
+/* Keep all responses gentle under reduced motion; never rely on animated
+   states for accessible contrast or focus feedback. */
+@media(prefers-reduced-motion:reduce) {
+  #stillsTabContentStory #storyProjectTabs > div,
+  #stillsTabContentStory #storyFileList > div {
+    transition:none!important;
+  }
+}

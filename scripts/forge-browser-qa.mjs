@@ -17,7 +17,6 @@ try {
  await page.goto(base,{waitUntil:'domcontentloaded',timeout:60000});
  const intro=page.locator('#forgeIntro');
  await intro.waitFor({state:'visible',timeout:8000});
- await page.screenshot({path:'artifacts/forge-browser/intro.png'});
  check(await page.locator('.forge-intro-glyph').count()===8,'Intro should have eight constructed glyphs');
  const trajectoryPromise=page.evaluate(()=>new Promise(resolve=>{
    const samples=[];
@@ -33,6 +32,8 @@ try {
    };
    requestAnimationFrame(loop);
  }));
+ // Collect intro rAF samples before screenshot can consume the handoff window.
+ await page.screenshot({path:'artifacts/forge-browser/intro.png'});
  await intro.waitFor({state:'detached',timeout:6000});
  const trajectory=await trajectoryPromise;
 
