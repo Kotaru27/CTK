@@ -1,6 +1,16 @@
-# Creative Tools Suite — Modular Source
+# The Forge — Creative Tools
 
-Structural refactor of the original eight-tool Creative Tools Suite, with its existing UI, themes, controls, scripts, dependencies, and inline event handlers retained. **No processing or visual redesign is included.**
+Eight-tool creative workspace, built from the original Creative Tools Suite modular source. **The Forge** branding introduces a Kola wordmark, opening reveal, refreshed homepage hero, and light-by-default theme. The eight tool cards, individual tool workspaces, exports, processing, dependencies, and inline handlers are preserved.
+
+## Brand presentation
+
+- Kola font is loaded from Fontshare for the product name, not as the interface font.
+- The wordmark-first design has no standalone logo icon.
+- The intro runs once per browser session, can be skipped, and respects reduced-motion settings.
+- Light is the default only when no theme preference has already been saved.
+- The hero is additive presentation: the original eight card buttons and their tool logic remain unchanged.
+- `source/baseline.html` and the legacy `creative-tools-standalone.html` filename are retained as compatibility and regression fixtures.
+- Brand assets: `src/css/experience/forge-brand.css`, `src/js/presentation/forge-brand.js`.
 
 ## Run locally
 
