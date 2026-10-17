@@ -5854,6 +5854,12 @@ html.forge-route-running[data-forge-route="story"] #section-stills-boards.active
      This also prevents two simultaneous animations on the same workspace. */
   animation:none!important;
 }
+#view-app .tool-section.active > .tool-header,
+#view-app .tool-section.active :is(.editor-layout,.story-layout,.split-studio-workspace,.adgen-studio,.yt-studio) {
+  /* Retire the stacked 5–9px child entrances. Snapshot and internal route
+     motion have one owner, without transforming canvases twice. */
+  animation:none!important;
+}
 html.forge-route-running #view-home .combined-home-grid > .home-card {
   /* Reversing a tool card must not retrigger its entire home entrance. */
   animation:none!important;
