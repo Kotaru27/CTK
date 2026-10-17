@@ -17,6 +17,8 @@ jobs:
         run: npm install --no-save --no-package-lock playwright@1.58.2
       - name: Install Chromium
         run: npx playwright install chromium --with-deps
+      - name: Test source, build and standalone parity
+        run: npm test
       - name: Start local Pages build
         run: |
           node scripts/dev.mjs > /tmp/forge-motion-audit.log 2>&1 &
