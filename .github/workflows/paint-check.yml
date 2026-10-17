@@ -17,12 +17,13 @@ jobs:
       - name: Build
         run: npm run build
       - name: Setup Playwright
-        run: python3 -m pip install --quiet --break-system-packages playwright
+        run: python3 -m pip install --quiet --break-system-packages playwright pillow
       - name: Compare resting, hovered and mouse-out primary buttons
         run: |
           mkdir -p docs/.paint-check
           python3 - <<'PY'
-          import base64,json
+          import base64,json,re
+          from PIL import Image
           from pathlib import Path
           from playwright.sync_api import sync_playwright
           root=Path.cwd()
@@ -49,7 +50,14 @@ jobs:
                   }""")
                   filename='docs/.paint-check/'+section+('-light' if light else '-dark')+'-'+stage
                   png=root/(filename+'.jpg')
-                  page.screenshot(path=str(png),type='jpeg',quality=85)
+                  page.screenshot(path=str(png),type='jpeg',quality=92)
+                  im=Image.open(png).convert('RGB')
+                  ix=int(state['box']['x']+state['box']['width']-12)
+                  iy=int(state['box']['y']+state['box']['height']/2)
+                  state['pixel']=im.getpixel((ix,iy))
+                  state['expectedRGB']=tuple(map(int,re.findall(r'\\d+',state['bg'])[:3])) if 'bg' in state else None
+                  if stage=='hover' and state['expectedRGB']:
+                    assert all(abs(a-b)<70 for a,b in zip(state['pixel'],state['expectedRGB'])), {'badPaint':stage,'button':section,'light':light,'pixel':state['pixel'],'computed':state['expectedRGB']}
                   (root/(filename+'.b64')).write_text(base64.b64encode(png.read_bytes()).decode())
                   png.unlink()
                   if stage=='hover':
