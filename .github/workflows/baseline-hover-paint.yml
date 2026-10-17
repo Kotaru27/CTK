@@ -35,6 +35,20 @@ jobs:
             browser=p.chromium.launch(channel='chrome',headless=False,args=['--no-sandbox'])
             page=browser.new_page(viewport={'width':1440,'height':900},device_scale_factor=1)
             page.goto((root/'dist/creative-tools-standalone.html').as_uri(),wait_until='domcontentloaded')
+            deleted=page.evaluate("""()=>{
+              let n=0;
+              function prune(group){
+                for(let i=group.cssRules.length-1;i>=0;i--){
+                  const r=group.cssRules[i];
+                  if(r.selectorText?.includes(':hover')){group.deleteRule(i);n++;}
+                  else if(r.cssRules)prune(r);
+                }
+              }
+              for(const sheet of document.styleSheets)try{prune(sheet)}catch(e){}
+              return n;
+            }""")
+            print('REMOVED HOVER CSS RULES:',deleted)
+            assert deleted>30,deleted
             for section,mode,sel in [('section-stills-boards','story','#storySubModeToggle .liquid-btn.active-mode'),
                                      ('section-adlinks','downloader','#adDlDropZone label')]:
               for light in (False,True):
