@@ -81,6 +81,7 @@ try {
  await page.reload({waitUntil:'domcontentloaded'});
  check(!(await page.locator('body').evaluate(el=>el.classList.contains('light-mode'))),
    'Saved dark theme was not honored');
+ await page.locator('#forgeIntro').waitFor({state:'detached',timeout:2500});
  check(await page.locator('#forgeIntro').count()===0,'Intro repeated within one session');
  await page.screenshot({path:'artifacts/forge-browser/home-dark.png'});
  await context.close();
@@ -90,7 +91,53 @@ try {
  await reducedPage.waitForTimeout(120);
  check(await reducedPage.locator('#forgeIntro').count()===0,'Reduced motion should bypass intro');
  await motion.close();
- console.log('Forge browser QA',JSON.stringify({details,motionFrames:trajectory.length,firstFrame:trajectory[0],lastFrame:trajectory.at(-1),pageErrors,failures},null,2));
+
+ // QHD desktop and 125%-scaled equivalent: keep light default and original
+ // navigation/card geometry, with no unintended scroll or full-width banner.
+ const qhd=[];
+ for(const viewport of [{width:2560,height:1440},{width:2048,height:1152}]) {
+   const wide=await browser.newContext({viewport,deviceScaleFactor:1,reducedMotion:'no-preference'});
+   await wide.addInitScript(()=>sessionStorage.setItem('forge_intro_seen_v4','1'));
+   const wp=await wide.newPage();
+   const errs=[];
+   wp.on('pageerror',error=>errs.push(String(error)));
+   await wp.goto(base,{waitUntil:'domcontentloaded',timeout:60000});
+   await wp.evaluate(()=>document.fonts.ready);
+   const values=await wp.evaluate(()=>{
+     const hero=document.querySelector('.forge-hero');
+     const title=document.querySelector('#forgeHeroName');
+     const grid=document.querySelector('#homeContent');
+     const hr=hero.getBoundingClientRect(),tr=title.getBoundingClientRect(),gr=grid.getBoundingClientRect();
+     return {
+       width:innerWidth,height:innerHeight,
+       heroHeight:hr.height,heroBottom:hr.bottom,
+       titleRight:tr.right,gridTop:gr.top,
+       overflow:document.documentElement.scrollWidth>innerWidth+2,
+       count:document.querySelectorAll('button.home-card').length,
+       kola:document.fonts.check('400 120px "Kola"'),
+       light:document.body.classList.contains('light-mode')
+     };
+   });
+   check(values.count===8,'QHD cards count differs from eight');
+   check(values.light,'QHD light mode default missing');
+   check(values.kola,'QHD Kola font not loaded');
+   check(!values.overflow,'QHD horizontal overflow');
+   check(values.titleRight<viewport.width,'QHD title clipped');
+   check(values.heroHeight<=410,'QHD hero consumes too much vertical space');
+   check(values.gridTop<590,'QHD workspace tiles begin too far down the page');
+   const tile=wp.locator('button.home-card').first();
+   const before=await tile.boundingBox();
+   await tile.hover();
+   await wp.waitForTimeout(280);
+   const after=await tile.boundingBox();
+   check(Math.abs(before.x-after.x)<2&&Math.abs(before.y-after.y)<2,
+     'Card hover moves the entire card, rather than a subtle internal affordance');
+   check(errs.length===0,'QHD JavaScript errors: '+errs.join('; '));
+   await wp.screenshot({path:'artifacts/forge-browser/qhd-'+viewport.width+'.png',fullPage:false});
+   qhd.push(values);
+   await wide.close();
+ }
+ console.log('Forge browser QA',JSON.stringify({details,motionFrames:trajectory.length,firstFrame:trajectory[0],lastFrame:trajectory.at(-1),pageErrors,qhd,failures},null,2));
  assert.deepEqual(failures,[],'Forge browser regression failures');
 } finally {
  await browser.close();
