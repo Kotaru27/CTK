@@ -24,6 +24,16 @@ export default {
               btn.onclick = () => this.downloadBulk();
               header.appendChild(btn);
             }
+            if (typeof window.showDirectoryPicker === "function" && window.isSecureContext && header && !document.getElementById("adDlRenameFolder")) {
+              const folderButton = document.createElement("button");
+              folderButton.id = "adDlRenameFolder";
+              folderButton.type = "button";
+              folderButton.className = "liquid-btn";
+              folderButton.textContent = "Auto-name: Choose folder";
+              folderButton.title = "Optional: give CTK permission to rename completed SharePoint downloads in Chrome's selected download folder.";
+              folderButton.onclick = () => this.chooseRenameFolder();
+              header.appendChild(folderButton);
+            }
             const bar = document.getElementById("adDlSummaryBar");
             if (bar && !document.getElementById("adDlStatus")) {
               const status = document.createElement("span");
@@ -37,6 +47,16 @@ export default {
           status(message, isError = false) {
             const el = document.getElementById("adDlStatus");
             if (el) { el.textContent = message; el.style.color = isError ? "var(--danger, #b64a44)" : "var(--text-muted)"; }
+          },
+          async chooseRenameFolder() {
+            try {
+              const chosen = await CTKDownloadRenamer.chooseFolder();
+              document.getElementById("adDlRenameFolder").textContent = "Auto-name: " + chosen;
+              this.status(`Auto-name is ready for multiple distinct SharePoint downloads. In Chrome Downloads settings, select the SAME folder: ${chosen}. Keep CTK open. Ambiguous files are left untouched for Fix downloaded name.`);
+            } catch(error) {
+              if (error.name === "AbortError") { this.status("Folder selection cancelled. Native downloads still work."); return; }
+              this.status("Folder access unavailable: "+error.message+". Native downloads still work.",true);
+            }
           },
           normalize(text) {
             return String(text ?? "").replace(/\s+/g, "").replace(/_/g, "").toUpperCase();
@@ -164,6 +184,28 @@ export default {
               download.className = "liquid-btn active-mode";
               download.textContent = "Download"; download.onclick = () => this.downloadFile(entry);
               actions.append(copy," ",download);
+              // Explicit recovery path: this works even when Chrome's download folder
+              // differs from the optional auto-name folder, or SharePoint changes its basename.
+              // The user chooses the actual local file; CTK never fetches protected media.
+              if (CTKSharePoint.isSharePoint(url)) {
+                const fixName = document.createElement("button");
+                fixName.type = "button";
+                fixName.className = "liquid-btn";
+                fixName.textContent = "Fix downloaded name";
+                fixName.title = "Rename the existing downloaded file in its current folder (does not create another copy).";
+                fixName.onclick = () => this.fixSharePointName(entry);
+                actions.append(" ",fixName);
+                entry.fixNameButton = fixName;
+                const saveNamed = document.createElement("button");
+                saveNamed.type = "button";
+                saveNamed.className = "liquid-btn";
+                saveNamed.textContent = "Save named copy";
+                saveNamed.title = "After the SharePoint download finishes, select that downloaded file to save a copy with the AD name shown here.";
+                saveNamed.hidden = true;
+                saveNamed.onclick = () => this.saveSharePointCopy(entry);
+                actions.append(" ",saveNamed);
+                entry.renameCopyButton = saveNamed;
+              }
               tr.append(numCell,nameCell,actions); entry.row = tr; entry.downloadButton = download;
               fragment.appendChild(tr);
             }
@@ -173,7 +215,7 @@ export default {
             document.getElementById("adDlCountText").innerText = `${this.entries.length} valid ads`;
             document.getElementById("adDlEmptyState").style.display = "none";
             this.updateBulkButton();
-            this.status(`${this.entries.length} ready · ${skipped} invalid rows skipped · ${inferred} extensions inferred.${this.entries.some(e=>CTKSharePoint.isSharePoint(e.url)) ? ' SharePoint links use your existing browser session; original filenames may be used.' : ''}`);
+            this.status(`${this.entries.length} ready · ${skipped} invalid rows skipped · ${inferred} extensions inferred.${this.entries.some(e=>CTKSharePoint.isSharePoint(e.url)) ? ' SharePoint uses native downloads; click Auto-name: Choose folder for optional renamed files.' : ''}`);
           },
           updateBulkButton() {
             const btn = document.getElementById("adDlBulkButton");
@@ -256,19 +298,103 @@ export default {
           downloadSharePoint(entry) {
             const target = CTKSharePoint.directUrl(entry.url);
             if (!target) throw Error('This SharePoint link does not contain a file path. A direct file link or a stream.aspx?id= file path is required.');
-            // Same-tab navigation uses the user's existing SharePoint sign-in.
-            // An attachment response downloads; an unauthorized/error response may navigate away.
-            // No popup, extension, Graph token or CORS fetch is used.
+            // Never navigate CTK itself: SharePoint may respond with an HTML viewer,
+            // expired authentication page, or an error instead of an attachment.
+            // A separate top-level tab preserves first-party SharePoint cookies and
+            // the entire CTK workspace even if that happens. For an attachment,
+            // Chrome normally downloads it without retaining the extra tab.
+            // A pure GitHub Pages app cannot inspect whether this download completes.
+            const renamer = typeof CTKDownloadRenamer !== 'undefined' ? CTKDownloadRenamer : null;
+            // The tracking starts synchronously from the same user gesture, preserving the
+            // native download's trusted click. The chosen folder is never uploaded.
+            entry.renameStatus = (message,isError=false) => {
+              const progress=renamer?.stats?.();
+              const suffix=progress ? ` · ${progress.renamed} named · ${progress.waiting} waiting · ${progress.failed} failed` : '';
+              this.status(message+suffix,isError);
+            };
+            const tracking = !!(renamer?.active() && renamer.begin(entry));
+            // If Auto-name is enabled but tracking is unsafe (duplicate source
+            // basename / too many jobs), do not silently start an untracked download.
+            if (renamer?.active() && !tracking) return;
             const a = document.createElement('a');
             a.href = target;
-            a.target = '_self';
-            a.rel = 'noreferrer';
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
             document.body.appendChild(a);
-            try { a.click(); } finally { a.remove(); }
-            // A cross-origin navigation provides no observable save-completion event.
-            // Never move this row to Downloaded based only on a navigation request.
+            try { a.click(); }
+            catch(error) { if(tracking)renamer.cancel(entry); throw error; }
+            finally { a.remove(); }
+            // Do not claim an unobservable cross-origin download completed.
             if (entry.downloadButton) entry.downloadButton.textContent = 'Download again';
-            this.status(`SharePoint download requested for ${entry.displayName}. Chrome will use the original SharePoint filename; completion cannot be confirmed here.`);
+            if (entry.renameCopyButton) entry.renameCopyButton.hidden = false;
+            this.status(tracking
+              ? `Tracking ${entry.displayName} for auto-naming. Multiple distinct ads can download at once.`
+              : `SharePoint download requested for ${entry.displayName}. CTK stays open. If the original SharePoint filename remains, click Fix downloaded name and choose the folder containing the file. Download completion cannot be confirmed here.`);
+          },
+          async fixSharePointName(entry) {
+            if (!CTKSharePoint.isSharePoint(entry.url)) return;
+            const button=entry.fixNameButton;
+            if (button) button.disabled=true;
+            try {
+              if (!CTKDownloadRenamer.active()) {
+                const folder=await CTKDownloadRenamer.chooseFolder();
+                const folderButton=document.getElementById("adDlRenameFolder");
+                if (folderButton) folderButton.textContent="Auto-name: "+folder;
+              }
+              const candidates=await CTKDownloadRenamer.findExisting(entry);
+              if (!candidates.length) {
+                throw Error("No matching finished file in the selected folder. Choose the actual download folder, or use Save named copy instead. Do not redownload the media.");
+              }
+              let selected=candidates[0].name;
+              if (candidates.length>1) {
+                const available=candidates.map((item,i)=>(i+1)+". "+item.name).join("\n");
+                const choice=window.prompt("Multiple downloaded copies match this row. Enter the number of the correct file to rename:\n"+available,"1");
+                if (choice===null) return;
+                const index=Number(choice);
+                if (!Number.isInteger(index)||index<1||index>candidates.length) throw Error("No valid file selected. Nothing changed.");
+                selected=candidates[index-1].name;
+              }
+              const target=await CTKDownloadRenamer.renameExisting(entry,selected);
+              this.status("Renamed existing file in place: "+selected+" → "+target+". There is no extra copy.");
+              if (button) button.textContent="Name fixed";
+            } catch(error) {
+              if (error.name!=="AbortError") this.status("Could not rename existing download: "+error.message,true);
+            } finally {
+              if (button) button.disabled=false;
+            }
+          },
+          async saveSharePointCopy(entry) {
+            // This is deliberately user-initiated and operates on a File chosen from
+            // the local disk, not on a credentialed cross-origin SharePoint response.
+            // A normal same-origin blob download CAN apply an exact requested name.
+            if (!CTKSharePoint.isSharePoint(entry.url)) return;
+            const picker = document.createElement("input");
+            picker.type = "file";
+            picker.accept = "video/*,audio/*,image/*,.pdf,.zip,.svg,.mkv,.avi,.mov,.webm,.flac,.m4a";
+            picker.style.display = "none";
+            picker.oncancel = () => picker.remove();
+            picker.onchange = () => {
+              picker.remove();
+              const file = picker.files?.[0];
+              if (!file) return;
+              const originalName = file.name || "";
+              if (!file.size || !/\.(mp4|mov|m4v|avi|mkv|webm|mp3|m4a|wav|ogg|flac|jpg|jpeg|png|gif|webp|bmp|svg|pdf|zip)$/i.test(originalName) || /^text\/html\b/i.test(file.type)) {
+                this.status("Select the finished media file, not a SharePoint preview, HTML page, or unfinished download.",true);
+                return;
+              }
+              const expected = CTKDownloadRenamer.sourceFilename(entry.url);
+              if (expected && !CTKDownloadRenamer.matchesOriginal(originalName,expected) &&
+                  !window.confirm("The selected file name differs from the SharePoint source. Save a renamed copy of this file anyway?")) return;
+              const target = CTKDownloadRenamer.targetFilename(entry,originalName);
+              try {
+                this.saveBlob(file,target);
+                this.status("Requested an additional named copy: " + target + ". The original is still present; use Fix downloaded name to rename an existing file without making a duplicate.");
+              } catch(error) {
+                this.status("Could not request the named copy: " + error.message,true);
+              }
+            };
+            document.body.appendChild(picker);
+            picker.click();
           },
           async downloadFile(entry) {
             if (entry.downloaded || entry.inProgress) return;

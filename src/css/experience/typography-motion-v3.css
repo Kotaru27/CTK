@@ -1,0 +1,563 @@
+/* CTK TYPE & MOTION / 2026.10
+   A single reversible presentation layer. All engines, layouts, routing,
+   uploads, rendering and exports are intentionally unchanged.
+   Motion: opacity/translate only; never animated blur or heavy filters. */
+:root {
+  --ctk-ease-out: cubic-bezier(.22,1,.36,1);
+  --ctk-ease-soft: cubic-bezier(.2,.8,.2,1);
+  --ctk-micro: 140ms;
+  --ctk-quick: 210ms;
+  --ctk-standard: 330ms;
+  --ctk-reveal: 470ms;
+}
+
+/* TYPE / 01 — one legible rhythm, preserve existing chosen font families. */
+body {
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+.header .brand-title {letter-spacing:.115em!important;font-weight:750!important}
+.header::after {letter-spacing:.145em!important;font-size:10px!important;font-weight:550!important;color:#9aa9a2!important}
+body.light-mode .header::after{color:#667a6d!important}
+#view-app .tool-header > h2,
+#view-app .tool-header h2 {
+  font-family:"Plus Jakarta Sans",system-ui,sans-serif!important;
+  font-size:clamp(20px,1.53vw,25px)!important;
+  font-weight:700!important;
+  line-height:1.16!important;
+  letter-spacing:-.047em!important;
+}
+#view-app .label-header,
+#view-app .control-group > .label-header {
+  font-size:11px!important;
+  font-weight:650!important;
+  line-height:1.48!important;
+  letter-spacing:.065em!important;
+  text-transform:uppercase!important;
+}
+/* Longer task guidance is a reading surface, not a decorative micro-label. */
+#view-app .sidebar-panel p,
+#view-app .right-panel p,
+#view-app .ad-download-heading p,
+#view-app .split-studio-identity p,
+#view-app .adgen-intro p {
+  line-height:1.66!important;
+}
+#view-app .edition-kicker,
+#view-app .edition-rule-label {
+  letter-spacing:.12em!important;
+  line-height:1.55!important;
+}
+#view-app :is(.liquid-btn,button:not(.material-symbols-rounded)):not(.nav-item):not(.home-card) {
+  font-family:"Plus Jakarta Sans",system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+/* Keep mono for names, data and output code: readable numbers, not affected by headings. */
+#view-app :is(.terminal-input,pre,code),
+#view-app .home-card-num {
+  font-variant-ligatures:none;
+}
+#view-app :is(input,select,textarea):focus-visible,
+#view-app :is(button,[role="tab"],[role="button"]):focus-visible {
+  outline-offset:3px!important;
+}
+
+/* MOTION / 02 — coherent response, no blur, no exaggerated spring/zoom.
+   No transitions on canvases, video, uploads, generated images or scrolling. */
+#view-app .tool-section.active {
+  animation:ctk-workspace-arrive var(--ctk-standard) var(--ctk-ease-out) both!important;
+}
+@keyframes ctk-workspace-arrive{
+  from{opacity:.65;translate:0 8px}
+  to{opacity:1;translate:0 0}
+}
+.nav-sidebar.visible{animation:ctk-shell-arrive var(--ctk-standard) var(--ctk-ease-out) both!important}
+@keyframes ctk-shell-arrive{from{opacity:.9}to{opacity:1}}
+#view-app .tool-header,
+#view-app .sidebar-panel,
+#view-app .right-panel {
+  transition:background-color var(--ctk-standard) var(--ctk-ease-soft),
+             border-color var(--ctk-quick) ease!important;
+}
+.nav-sidebar .nav-item {
+  transition:color var(--ctk-quick) ease,
+             background-color var(--ctk-quick) ease,
+             border-color var(--ctk-quick) ease,
+             translate var(--ctk-quick) var(--ctk-ease-out)!important;
+}
+/* Match selected-state feel across both theme variants without re-layout. */
+#view-app .liquid-btn:not(:disabled),
+#view-app [role="tab"]:not(:disabled) {
+  transition:background-color var(--ctk-quick) ease,
+             border-color var(--ctk-quick) ease,
+             color var(--ctk-quick) ease,
+             box-shadow var(--ctk-quick) ease,
+             translate var(--ctk-micro) var(--ctk-ease-out)!important;
+}
+#view-app .liquid-btn:not(:disabled):active{translate:0 1px}
+#view-app input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+#view-app textarea,
+#view-app select {
+  transition:border-color var(--ctk-quick) ease,box-shadow var(--ctk-quick) ease,
+             background-color var(--ctk-quick) ease!important;
+}
+#view-app #logoDetailOverlay.active {
+  animation:ctk-panel-arrive var(--ctk-standard) var(--ctk-ease-out) both!important;
+}
+@keyframes ctk-panel-arrive {from{opacity:.4;translate:12px 0}to{opacity:1;translate:0 0}}
+.presets-dialog,
+#view-app .modal-content,#view-app .dialog-content {
+  animation:ctk-dialog-arrive var(--ctk-standard) var(--ctk-ease-out) both!important;
+}
+@keyframes ctk-dialog-arrive {from{opacity:.55;translate:0 9px}to{opacity:1;translate:0 0}}
+
+/* HOME / 03 — refine the existing editorial design, not replace it. */
+#view-home .combined-home-layout .home-wordmark {
+  animation:ctk-hero-enter var(--ctk-reveal) var(--ctk-ease-out) both!important;
+}
+@keyframes ctk-hero-enter{from{opacity:.58;translate:0 12px}to{opacity:1;translate:0 0}}
+#view-home .combined-home-layout .home-heading {
+  font-family:"Instrument Serif",Georgia,serif!important;
+  font-weight:400!important;
+  font-optical-sizing:auto;
+  font-size:clamp(3.5rem,5.8vw,6.7rem)!important;
+  line-height:.965!important;
+  letter-spacing:-.048em!important;
+  text-wrap:balance;
+}
+#view-home .combined-home-layout .home-heading em {letter-spacing:-.042em!important}
+#view-home .combined-home-layout .home-summary {
+  font-size:clamp(14px,1.05vw,15.5px)!important;
+  font-weight:450!important;
+  line-height:1.7!important;
+  letter-spacing:-.012em!important;
+  max-width:550px!important;
+}
+#view-home .combined-home-layout .home-eyebrow {
+  font-size:10.5px!important;
+  font-weight:600!important;
+  letter-spacing:.15em!important;
+}
+#view-home .combined-home-grid > .home-card {
+  animation:ctk-tile-arrive var(--ctk-reveal) var(--ctk-ease-out) both!important;
+  transition:background-color var(--ctk-standard) var(--ctk-ease-soft),
+    box-shadow var(--ctk-standard) var(--ctk-ease-out),
+    border-color var(--ctk-quick) ease!important;
+}
+#view-home .combined-home-grid > .home-card:nth-child(1),
+#view-home .combined-home-grid > .home-card:nth-child(2) {animation-delay:55ms!important}
+#view-home .combined-home-grid > .home-card:nth-child(3),
+#view-home .combined-home-grid > .home-card:nth-child(4){animation-delay:95ms!important}
+#view-home .combined-home-grid > .home-card:nth-child(5),
+#view-home .combined-home-grid > .home-card:nth-child(6){animation-delay:135ms!important}
+#view-home .combined-home-grid > .home-card:nth-child(7),
+#view-home .combined-home-grid > .home-card:nth-child(8){animation-delay:175ms!important}
+@keyframes ctk-tile-arrive{
+  from{opacity:.55;translate:0 8px}
+  to{opacity:1;translate:0 0}
+}
+#view-home .combined-home-grid > .home-card:hover{
+  box-shadow:inset 0 0 0 1px rgba(227,232,218,.28)!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card:hover{
+  box-shadow:inset 0 0 0 1px rgba(25,50,40,.19)!important;
+}
+#view-home .combined-home-grid > .home-card .home-card-title {
+  font-weight:700!important;
+  letter-spacing:-.043em!important;
+  line-height:1.18!important;
+  transition:translate var(--ctk-quick) var(--ctk-ease-out)!important;
+}
+#view-home .combined-home-grid > .home-card .home-card-desc{
+  font-size:13px!important;line-height:1.56!important;letter-spacing:-.012em!important;
+}
+#view-home .combined-home-grid > .home-card .home-card-num {
+  font-weight:650!important;letter-spacing:.125em!important;font-size:10px!important;
+}
+#view-home .combined-home-grid > .home-card .home-card-go {
+  transition:translate var(--ctk-standard) var(--ctk-ease-out),
+             color var(--ctk-quick) ease!important;
+}
+#view-home .combined-home-grid > .home-card > .home-card-art,
+#view-home .combined-home-grid > .home-card .home-card-art {
+  transition:translate var(--ctk-standard) var(--ctk-ease-out)!important;
+}
+#view-home .combined-home-grid > .home-card:hover > .home-card-art {translate:0 -4px}
+#view-home .combined-home-grid > .home-card:hover .home-card-go {translate:2px -2px}
+#view-home .combined-home-layout .home-art-pane,
+#view-home .combined-home-layout .home-art-frame {
+  transition:translate 520ms var(--ctk-ease-out)!important;
+}
+#view-home .combined-home-layout .home-wordmark:hover .home-art-pane{translate:2px -3px}
+#view-home .combined-home-layout .home-wordmark:hover .home-art-frame{translate:-2px 2px}
+/* Match the homepage's carefully balanced dark/light palette. */
+body:not(.light-mode) #view-home .combined-home-layout .home-summary{color:#b0bcb5!important}
+body.light-mode #view-home .combined-home-layout .home-summary{color:#52665b!important}
+body:not(.light-mode) #view-home .combined-home-grid > .home-card .home-card-desc{color:#bccbc2!important}
+body.light-mode #view-home .combined-home-grid > .home-card .home-card-desc{color:#52665b!important}
+
+/* Always adapt to motion preference, even for existing older animation rules. */
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto!important}
+  /* Match the specificity of component-level !important animation rules,
+     instead of relying on a weak universal descendant selector. */
+  #view-home .combined-home-grid > .home-card,
+  #view-home .combined-home-layout .home-wordmark,
+  #view-home .combined-home-layout .home-art-pane,
+  #view-home .combined-home-layout .home-art-frame,
+  #view-app .tool-section.active,
+  #view-app #logoDetailOverlay.active,
+  .nav-sidebar.visible,
+  .nav-sidebar .nav-item,
+  .presets-dialog {
+    animation:none!important;
+    transition:none!important;
+  }
+  #view-home *,#view-home *::before,#view-home *::after,
+  #view-app .tool-section,#view-app .tool-section *,
+  #view-app .tool-section *::before,#view-app .tool-section *::after,
+  .nav-sidebar,.nav-sidebar *, .presets-dialog {
+    animation-duration:.01ms!important;
+    animation-delay:0ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.01ms!important;
+    scroll-behavior:auto!important;
+  }
+}
+
+
+/* =============================================================
+   PRECISION PASS / ONE coherent type and motion system.
+   This extends the EXISTING v3 sheet instead of adding a fourth
+   cascade layer. All CSS stays presentation-only.
+   ============================================================= */
+:root{
+  --ctk-type-xs:11px;
+  --ctk-type-sm:12.5px;
+  --ctk-type-md:13.5px;
+  --ctk-type-body:14px;
+  --ctk-type-subhead:16px;
+  --ctk-tracking-head:-.038em;
+  --ctk-tracking-small:.055em;
+  --ctk-focus-ring:rgba(195,223,195,.82);
+  --ctk-motion-snappy:cubic-bezier(.25,.85,.25,1);
+}
+body.light-mode{--ctk-focus-ring:rgba(34,88,66,.65)}
+
+/* Real hierarchy, not tiny tracking-heavy decorative labels. */
+#view-app .tool-header h2{
+  font-weight:720!important;
+  letter-spacing:-.041em!important;
+  line-height:1.18!important;
+}
+#view-app :is(.sidebar-panel,.right-panel,.story-sidebar,.story-right-panel) :is(h2,h3,h4):not(.material-symbols-rounded),
+#view-app :is(.adgen-intro,.adgen-output-intro,.split-studio-identity) :is(h2,h3){
+  text-wrap:balance;
+  letter-spacing:var(--ctk-tracking-head)!important;
+}
+#view-app :is(.sidebar-panel,.right-panel,.story-sidebar,.story-right-panel)
+  :is(.label-header,[class*="eyebrow"],[class*="kicker"]){
+  font-size:var(--ctk-type-xs)!important;
+  letter-spacing:var(--ctk-tracking-small)!important;
+  line-height:1.55!important;
+}
+#view-app :is(.sidebar-panel,.right-panel,.story-sidebar,.story-right-panel)
+  :is(p,.text-muted,[class*="helper"],[class*="hint"]){
+  line-height:1.7!important;
+}
+#view-app :is(.sidebar-panel,.right-panel,.story-sidebar,.story-right-panel)
+  :is(.control-group,fieldset) > label{
+  line-height:1.5!important;
+  letter-spacing:-.012em!important;
+}
+#view-app :is(.sidebar-panel,.right-panel,.story-sidebar,.story-right-panel)
+  :is(input:not([type="checkbox"]):not([type="radio"]),select,textarea){
+  font-size:var(--ctk-type-sm)!important;
+  line-height:1.55!important;
+}
+#view-app :is(.sidebar-panel,.right-panel,.story-sidebar,.story-right-panel)
+  :is(.liquid-btn,button:not(.icon-only)):not(.nav-item){
+  font-size:var(--ctk-type-sm)!important;
+  letter-spacing:-.012em!important;
+  line-height:1.35!important;
+}
+/* Media code/URL fields must retain mono, monospace numbers and copyability. */
+#view-app :is(.terminal-input,pre,code,.adgen-output-card textarea){
+  font-family:"JetBrains Mono",ui-monospace,monospace!important;
+  font-variant-ligatures:none;
+}
+
+/* High-visibility examples where old 8–9px labels reduced usability. */
+#section-logo #logoGrid #logoEmpty .logo-empty-note{font-size:10.5px!important;letter-spacing:.065em!important}
+#section-logo .logo-card-item .card-fname-lbl{font-size:13px!important;line-height:1.4!important}
+#section-pdf .label-header{font-size:11px!important}
+#section-stills-boards .story-sidebar .label-header,
+#section-stills-boards .label-header{font-size:11px!important;letter-spacing:.055em!important}
+.split-studio-meta,.split-studio-foot span:first-child{
+  font-size:10.5px!important;letter-spacing:.07em!important;
+}
+#section-adlinks #adlinksTabContentGen .adgen-output-intro h3{
+  font-size:clamp(26px,2.25vw,33px)!important;
+  letter-spacing:-.038em!important;
+}
+#section-yt-helper .label-header{font-size:11px!important}
+
+/* Repair actual Storyboard empty preview clipping: both pseudo captions
+   align to the same centered column; visible only in the empty state. */
+#storyPreview:has(> span.text-muted)::before{
+  left:50%!important;right:auto!important;
+  top:calc(50% - 66px)!important;
+  width:min(620px,calc(100% - 72px))!important;
+  max-width:100%!important;
+  transform:translateX(-50%)!important;
+  font-size:clamp(30px,2.8vw,44px)!important;
+  letter-spacing:-.025em!important;
+  line-height:1.14!important;
+  text-align:center!important;
+  white-space:normal!important;
+  z-index:2!important;
+  pointer-events:none!important;
+}
+#storyPreview:has(> span.text-muted)::after{
+  left:50%!important;right:auto!important;
+  top:calc(50% + 3px)!important;
+  width:min(530px,calc(100% - 64px))!important;
+  transform:translateX(-50%)!important;
+  font:500 13px/1.75 "Plus Jakarta Sans",sans-serif!important;
+  letter-spacing:-.01em!important;
+  text-align:center!important;
+  white-space:normal!important;
+  z-index:2!important;
+  pointer-events:none!important;
+}
+
+/* Crisp transitions make task-driven UI feel intentional.
+   No layout properties, backdrop blur, unbounded loops or JS interception. */
+#view-app .tool-section.active>.tool-header{
+  animation:ctk-header-settle 360ms var(--ctk-ease-out) both!important;
+}
+@keyframes ctk-header-settle{
+  from{opacity:.45;translate:0 -5px}
+  to{opacity:1;translate:0 0}
+}
+#view-app .tool-section.active :is(.editor-layout,.story-layout,.split-studio-workspace,.adgen-studio,.yt-studio){
+  animation:ctk-body-arrive 420ms var(--ctk-ease-out) both!important;
+}
+@keyframes ctk-body-arrive{
+  from{opacity:.72;translate:0 9px}
+  to{opacity:1;translate:0 0}
+}
+#view-app :is(.liquid-btn,[role="tab"],.nav-item):not(:disabled){
+  transition-property:background-color,border-color,color,box-shadow,translate!important;
+  transition-duration:var(--ctk-quick)!important;
+  transition-timing-function:var(--ctk-motion-snappy)!important;
+}
+/* The navigation rail is a tool selector; feedback must never feel springy. */
+.nav-sidebar .nav-item:not(.nav-toggle):active{translate:0 1px}
+#view-app :is(.liquid-btn,[role="tab"],.tab-btn):not(:disabled):active{translate:0 1px}
+/* Focus feedback matches both themes, without moving keyboard targets. */
+#view-app :is(button,input,select,textarea,[role="tab"],[role="button"]):focus-visible,
+#view-home .home-card:focus-visible{
+  outline:2px solid var(--ctk-focus-ring)!important;
+  outline-offset:3px!important;
+}
+
+/* Home / editorial refinement: actual hierarchy, fuller tile imagery,
+   physical hover feedback without a jarring scale on the whole card. */
+#view-home .combined-home-layout .home-heading{
+  font-size:clamp(3.45rem,5.7vw,6.5rem)!important;
+  line-height:.99!important;
+  letter-spacing:-.043em!important;
+}
+#view-home .combined-home-layout .home-heading em{
+  letter-spacing:-.048em!important;
+  font-style:italic!important;
+}
+#view-home .combined-home-layout .home-eyebrow{
+  font-size:11px!important;
+  letter-spacing:.12em!important;
+  font-weight:650!important;
+}
+#view-home .combined-home-layout .home-summary{
+  font-size:15px!important;
+  line-height:1.78!important;
+  max-width:570px!important;
+}
+#view-home .combined-home-grid > .home-card .home-card-title{
+  font-size:clamp(20px,1.65vw,24px)!important;
+  font-weight:700!important;
+  line-height:1.16!important;
+  letter-spacing:-.044em!important;
+}
+#view-home .combined-home-grid > .home-card .home-card-desc{
+  font-size:13.5px!important;
+  font-weight:460!important;
+  line-height:1.5!important;
+}
+#view-home .combined-home-grid > .home-card .home-card-num{
+  font-size:11px!important;
+  letter-spacing:.085em!important;
+}
+#view-home .combined-home-grid > .home-card .home-card-go{
+  font-size:24px!important;
+  transition:translate var(--ctk-standard) var(--ctk-ease-out),opacity var(--ctk-quick) ease!important;
+}
+#view-home .combined-home-grid > .home-card .home-card-art{
+  transition:translate 390ms var(--ctk-ease-out),opacity var(--ctk-quick) ease!important;
+}
+#view-home .combined-home-grid > .home-card:hover .home-card-title{
+  translate:0 -2px;
+}
+#view-home .combined-home-grid > .home-card:hover .home-card-go{
+  translate:2px -2px;
+}
+#view-home .combined-home-grid > .home-card:hover .home-card-art{
+  translate:0 -5px;
+}
+#view-home .combined-home-grid > .home-card:active{filter:brightness(.975)}
+/* Stronger card dividers help the deliberately asymmetric catalogue read. */
+#view-home .combined-home-grid{
+  border-color:color-mix(in srgb,var(--studio-border) 70%,transparent)!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card:hover{
+  box-shadow:inset 0 0 0 1px rgba(34,65,45,.24),inset 0 -3px 0 rgba(42,92,65,.16)!important;
+}
+body:not(.light-mode) #view-home .combined-home-grid > .home-card:hover{
+  box-shadow:inset 0 0 0 1px rgba(213,237,217,.25),inset 0 -3px 0 rgba(211,235,215,.12)!important;
+}
+
+/* Compact heading, tool tab and empty-state typography at all widths.
+   This remains a desktop-first deliverable. */
+@media(max-width:1180px){
+  #view-home .combined-home-layout .home-heading{font-size:clamp(48px,5.3vw,73px)!important}
+  #view-home .combined-home-grid > .home-card .home-card-title{font-size:20px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  #view-app .tool-section.active>.tool-header,
+  #view-app .tool-section.active :is(.editor-layout,.story-layout,.split-studio-workspace,.adgen-studio,.yt-studio){
+    animation:none!important;
+    transition:none!important;
+  }
+  #view-home .combined-home-grid > .home-card,
+  #view-home .combined-home-grid > .home-card .home-card-title,
+  #view-home .combined-home-grid > .home-card .home-card-art,
+  #view-home .combined-home-grid > .home-card .home-card-go {
+    animation:none!important;
+    transition:none!important;
+  }
+}
+
+/* GREEN / SINGLE SOURCE FOR STORYBOARD MODES */
+#view-app #section-stills-boards{
+ --sb-base:#15231b;--sb-shell:#1b2b22;--sb-panel:#25372b;
+ --sb-field:#192820;--sb-stage:#243329;--sb-line:#3e5242;
+ --sb-line-soft:#314638;--sb-text:#f1f5ed;--sb-muted:#b5c6b8;
+ --sb-dim:#92a693;--sb-action:#c5dbba;--sb-action-text:#203425;
+ --sb-link:#c6dcbc;--sb-focus:#a5c8a4;--sb-grain:rgba(212,236,210,.035);
+}
+body.light-mode #view-app #section-stills-boards{
+ --sb-base:#f6f7f2;--sb-shell:#eef1eb;--sb-panel:#ffffff;
+ --sb-field:#f8faf6;--sb-stage:#e8eee7;--sb-line:#d5dfd5;
+ --sb-line-soft:#e5ece3;--sb-text:#233729;--sb-muted:#52695a;
+ --sb-dim:#6a806f;--sb-action:#28543d;--sb-action-text:#fffefb;
+ --sb-link:#28543d;--sb-focus:#367351;--sb-grain:rgba(42,95,61,.042);
+}
+/* Across workspaces, discard legacy bright flash, lift, scale and shadow. */
+#view-app .liquid-btn::before,#view-app label.liquid-btn::before{
+ opacity:0!important;content:none!important;
+}
+#view-app .tool-section .liquid-btn:hover:not(:disabled),
+#view-app .tool-section .liquid-btn:active:not(:disabled),
+#view-app .tool-section label.liquid-btn:hover,
+#view-app .tool-section label.liquid-btn:active,
+#view-app .tool-section .ctk-row-menu > summary:hover{
+ transform:none!important;translate:none!important;
+ scale:none!important;filter:none!important;box-shadow:none!important;
+}
+#view-app .tool-section .liquid-btn:not(:disabled),
+#view-app .tool-section label.liquid-btn{
+ transition:background-color 180ms ease,border-color 180ms ease,color 180ms ease!important;
+}
+#view-app .tool-section .liquid-btn:hover:not(:disabled):not(.active-mode):not(.danger-btn),
+#view-app .tool-section label.liquid-btn:hover:not(.active-mode){
+ background:var(--studio-hover)!important;
+ color:var(--studio-title)!important;
+ border-color:var(--studio-border)!important;
+}
+#view-app .tool-section .liquid-btn.active-mode:hover:not(:disabled):not(.danger-btn),
+#view-app .tool-section label.liquid-btn.active-mode:hover{
+ background:var(--studio-accent)!important;
+ color:var(--studio-accent-on)!important;
+ border-color:var(--studio-accent)!important;
+}
+#view-app .tool-section .liquid-btn.danger-btn:hover:not(:disabled){
+ background:var(--studio-raised)!important;color:var(--danger,#c77d78)!important;
+ border-color:var(--studio-border)!important;
+}
+/* Primary contrast is tool-specific, not flattened into a generic background. */
+#view-app #section-logo .tool-header .drop-zone label.liquid-btn:hover{
+ background:var(--lr-cta)!important;color:var(--lr-cta-ink)!important;border-color:var(--lr-cta)!important;
+}
+#view-app #section-stills-boards :is(#storyHeaderControls,#filmstripHeaderControls,#fitHeaderControls) .liquid-btn.active-mode:hover:not(:disabled){
+ background:var(--sb-action)!important;color:var(--sb-action-text)!important;border-color:var(--sb-action)!important;
+}
+#view-app #section-stills-boards #storySubModeToggle .liquid-btn:hover{
+ background:var(--sb-panel)!important;color:var(--sb-text)!important;
+}
+#view-app #section-stills-boards :is(#stillsTabContentStory,#stillsTabContentFilmstrip,#stillsTabContentFit) .liquid-btn:hover:not(:disabled):not(.active-mode):not(.danger-btn){
+ background:var(--sb-shell)!important;color:var(--sb-text)!important;border-color:var(--sb-line)!important;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader #adlinksDlHeaderControls :is(label,button):hover:not(:disabled){
+ background:var(--ad-surface-alt)!important;color:var(--ad-ink)!important;
+ border-color:var(--ad-line-strong)!important;transform:none!important;box-shadow:none!important;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader #adlinksDlHeaderControls #adDlDropZone label:hover,
+#view-app #section-adlinks #adlinksTabContentDownloader #adlinksDlHeaderControls #adDlBulkButton:hover:not(:disabled){
+ background:var(--ad-primary)!important;color:var(--ad-primary-ink)!important;border-color:var(--ad-primary)!important;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader #adDlTableContainer tbody td:nth-child(3)>button.active-mode:hover:not(:disabled){
+ background:var(--ad-primary)!important;color:var(--ad-primary-ink)!important;
+ transform:none!important;box-shadow:none!important;border-color:transparent!important;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader #adDlTableContainer :is(button,.ctk-row-menu > summary):hover{
+ transform:none!important;filter:none!important;box-shadow:none!important;
+}
+/* The rail and catalogue no longer jump or grow when hovered. */
+.nav-sidebar .nav-item:hover,.nav-sidebar .nav-item:active,
+body:has(#nav-adlinks-dl.active) .nav-sidebar .nav-item:hover{
+ transform:none!important;translate:none!important;filter:none!important;box-shadow:none!important;
+}
+.nav-sidebar .nav-item:hover .material-symbols-rounded{transform:none!important;scale:none!important}
+#view-home .combined-home-grid > .home-card:hover :is(.home-card-title,.home-card-go,.home-card-art){
+ translate:none!important;
+}
+#view-home .combined-home-grid > .home-card:hover .home-card-title,
+#view-home .combined-home-grid > .home-card:hover .home-card-go{
+ transform:none!important;
+}
+#view-home .combined-home-grid > .home-card:hover > .home-card-art{filter:none!important}
+@media(prefers-reduced-motion:reduce){
+ #view-app .tool-section .liquid-btn,.nav-sidebar .nav-item{
+  transition:none!important;transform:none!important;
+ }
+}
+
+/* Storyboard's old selected-tab inset/shadow is static, but visually noisy. */
+#view-app #section-stills-boards #storySubModeToggle .liquid-btn.active-mode{
+ box-shadow:none!important;
+ outline:1px solid var(--sb-line)!important;
+ outline-offset:-1px!important;
+}
+
+@media(prefers-reduced-motion:reduce){
+  #view-app #section-adlinks #adlinksTabContentDownloader .liquid-btn,
+  #view-app #section-adlinks #adlinksTabContentDownloader #adlinksDlHeaderControls :is(label,button),
+  #view-app #section-adlinks #adlinksTabContentDownloader .ctk-row-menu > summary{
+    transition:none!important;
+    animation:none!important;
+  }
+}
+
+/* The app shell no longer needs the legacy blur/scale entrance: individual
+   tool transitions already handle the route animation. */
+#view-app.active{animation:none!important;filter:none!important;transform:none!important;}

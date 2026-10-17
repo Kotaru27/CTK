@@ -1,0 +1,95 @@
+/* THE FORGE / UNIFIED WORKSPACE ROUTES
+   Eight exact tool pairings; cards, controls and media are never re-laid out.
+   Browser View Transitions own the swap, not a fixed-delay timer.
+   Dynamic root data attribute guarantees only one selected title participates. */
+
+html.forge-route-running[data-forge-route="logo"] #view-home:not(.hidden) .home-card.tool-logo .home-card-title,
+html.forge-route-running[data-forge-route="logo"] #section-logo.active .tool-header h2 {
+  view-transition-name: forge-workspace-title;
+}
+html.forge-route-running[data-forge-route="pdf"] #view-home:not(.hidden) .home-card.tool-pdf .home-card-title,
+html.forge-route-running[data-forge-route="pdf"] #section-pdf.active .tool-header h2 {
+  view-transition-name: forge-workspace-title;
+}
+html.forge-route-running[data-forge-route="split"] #view-home:not(.hidden) .home-card.tool-split .home-card-title,
+html.forge-route-running[data-forge-route="split"] #section-pdf.active .tool-header h2 {
+  view-transition-name: forge-workspace-title;
+}
+html.forge-route-running[data-forge-route="stills"] #view-home:not(.hidden) .home-card.tool-stills .home-card-title,
+html.forge-route-running[data-forge-route="stills"] #section-stills-boards.active .tool-header h2 {
+  view-transition-name: forge-workspace-title;
+}
+html.forge-route-running[data-forge-route="story"] #view-home:not(.hidden) .home-card.tool-story .home-card-title,
+html.forge-route-running[data-forge-route="story"] #section-stills-boards.active .tool-header h2 {
+  view-transition-name: forge-workspace-title;
+}
+html.forge-route-running[data-forge-route="links"] #view-home:not(.hidden) .home-card.tool-links .home-card-title,
+html.forge-route-running[data-forge-route="links"] #section-adlinks.active .tool-header h2 {
+  view-transition-name: forge-workspace-title;
+}
+html.forge-route-running[data-forge-route="ads"] #view-home:not(.hidden) .home-card.tool-ads .home-card-title,
+html.forge-route-running[data-forge-route="ads"] #section-adlinks.active .tool-header h2 {
+  view-transition-name: forge-workspace-title;
+}
+html.forge-route-running[data-forge-route="video"] #view-home:not(.hidden) .home-card.tool-video .home-card-title,
+html.forge-route-running[data-forge-route="video"] #section-yt-helper.active .tool-header h2 {
+  view-transition-name: forge-workspace-title;
+}
+
+html.forge-route-running[data-forge-route="stills"] #view-home:not(.hidden) .home-card.tool-stills .home-card-art,
+html.forge-route-running[data-forge-route="stills"] #section-stills-boards.active .tool-header .tool-icon {
+  view-transition-name: forge-workspace-art;
+}
+html.forge-route-running[data-forge-route="story"] #view-home:not(.hidden) .home-card.tool-story .home-card-art,
+html.forge-route-running[data-forge-route="story"] #section-stills-boards.active .tool-header .tool-icon {
+  view-transition-name: forge-workspace-art;
+}
+
+html.forge-route-running #view-app .tool-section.active {
+  /* The old panel arrival would compete with shared title travel. */
+  animation:none!important;
+}
+html.forge-route-running #view-home .combined-home-grid > .home-card {
+  /* Reversing a tool card must not retrigger its entire home entrance. */
+  animation:none!important;
+}
+html.forge-route-running::view-transition-group(forge-workspace-title) {
+  animation-duration:510ms;
+  animation-timing-function:cubic-bezier(.20,.87,.27,1);
+}
+html.forge-route-running::view-transition-old(forge-workspace-title),
+html.forge-route-running::view-transition-new(forge-workspace-title) {
+  animation-duration:370ms;
+  animation-timing-function:cubic-bezier(.23,.76,.31,1);
+}
+html.forge-route-running::view-transition-group(forge-workspace-art) {
+  animation-duration:430ms;
+  animation-timing-function:cubic-bezier(.22,.81,.27,1);
+}
+html.forge-route-running::view-transition-old(forge-workspace-art) {
+  animation:forge-workspace-art-out 260ms ease-out both;
+}
+html.forge-route-running::view-transition-new(forge-workspace-art) {
+  animation:forge-workspace-art-in 360ms ease-out both;
+}
+html.forge-route-running::view-transition-old(root) {
+  animation:forge-workspace-root-out 225ms ease-in both;
+}
+html.forge-route-running::view-transition-new(root) {
+  animation:forge-workspace-root-in 400ms cubic-bezier(.2,.85,.3,1) both;
+}
+@keyframes forge-workspace-root-out {from{opacity:1}to{opacity:0}}
+@keyframes forge-workspace-root-in {from{opacity:.50}to{opacity:1}}
+@keyframes forge-workspace-art-out {from{opacity:1}to{opacity:0}}
+@keyframes forge-workspace-art-in {from{opacity:0}to{opacity:1}}
+
+@media(prefers-reduced-motion:reduce) {
+  html.forge-route-running::view-transition-old(root),
+  html.forge-route-running::view-transition-new(root),
+  html.forge-route-running::view-transition-old(forge-workspace-title),
+  html.forge-route-running::view-transition-new(forge-workspace-title),
+  html.forge-route-running::view-transition-old(forge-workspace-art),
+  html.forge-route-running::view-transition-new(forge-workspace-art) {
+    animation-duration:.01ms!important;
+  }
+}

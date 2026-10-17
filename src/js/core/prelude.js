@@ -717,7 +717,7 @@
           this.els.viewHome.classList.remove("hidden");
           this.updateNav("nav-home");
           this.applyTheme("home");
-          document.getElementById("brandText").textContent = "CREATIVE TOOLS SUITE";
+          document.getElementById("brandText").textContent = "The Forge";
           
           document.querySelectorAll(".home-card").forEach((card) => {
             const m = (card.getAttribute("onclick") || "").match(/openTool\('([^']+)'/);
@@ -749,8 +749,16 @@
         },
         showHome() {
           const core = () => this._showHome();
-          if (this.els.viewApp.classList.contains("active")) this.switchViews(core);
-          else core();
+          if (this.els.viewApp.classList.contains("active")) {
+            const motion = window.ForgeWorkspaceRoute;
+            const selectedRoute = motion && motion.selected();
+            if (selectedRoute) {
+              this._switchToken = (this._switchToken || 0) + 1;
+              motion.navigate(core, selectedRoute);
+            } else {
+              this.switchViews(core);
+            }
+          } else core();
         },
         _openTool(id, mode) {
           document.body.classList.add("tool-active");
@@ -803,14 +811,24 @@
           this.applyTheme(id);
           Core.AppState.save("activeTool", id);
           const toolName = this.toolDisplayName(id);
-          document.getElementById("brandText").textContent = "HOME";
+          document.getElementById("brandText").textContent = "The Forge";
         },
         openTool(id, mode) {
+          const motion = window.ForgeWorkspaceRoute;
           if (this.els.viewApp.classList.contains("active")) {
+            // Changing tools inside the workspace must immediately stop any
+            // older shared-element flight; never queue pending navigation.
+            if (motion) motion.cancel();
             this._openTool(id, mode);
           } else {
             const core = () => this._openTool(id, mode);
-            this.switchViews(core);
+            const route = motion && motion.fromOpen(id, mode);
+            if (route) {
+              this._switchToken = (this._switchToken || 0) + 1;
+              motion.navigate(core, route);
+            } else {
+              this.switchViews(core);
+            }
           }
         },
         switchPdfTab(tabId) {
@@ -1484,27 +1502,18 @@
           }
         },
         initTheme() {
-          const savedTheme = Core.AppState.load("theme") || "dark";
-          if (savedTheme === "light") {
-            document.body.classList.add("light-mode");
-          } else {
-            document.body.classList.remove("light-mode");
-          }
+          // Light-only presentation while the appearance switch is hidden.
+          // Preserve the underlying theme engine for a future opt-in return.
+          document.body.classList.add("light-mode");
           this.updateThemeButton();
           const activeTool = Core.AppState.load("activeTool") || "home";
           this.applyTheme(activeTool);
         },
         toggleTheme() {
-          const isLight = document.body.classList.toggle("light-mode");
-          Core.AppState.save("theme", isLight ? "light" : "dark");
-          this.updateThemeButton();
-          const activeTool = Core.AppState.load("activeTool") || "home";
-          this.applyTheme(activeTool);
-
-          // Play retro audio
-          if (window.RetroAudio) {
-            window.RetroAudio.playSuccess();
-          }
+          // API retained for existing inline handlers, but dark mode is
+          // intentionally unavailable in this light-only release.
+          document.body.classList.add("light-mode");
+          this.applyTheme(Core.AppState.load("activeTool") || "home");
         },
         updateThemeButton() {
           const btn = document.getElementById("themeToggleBtn");

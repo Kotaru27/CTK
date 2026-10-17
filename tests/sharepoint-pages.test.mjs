@@ -47,7 +47,7 @@ test('reject opaque sharing URLs, preview route with GUID only and malicious URL
     'https://example.sharepoint.com/sites/DACH/Shared%20Documents/folder/',
   ]) assert.equal(sp.directUrl(raw),null,raw);
 });
-test('native request uses same tab, no popup, no network fetch and no false downloaded state',()=>{
+test('SharePoint request isolates navigation from the CTK workspace and never claims success',()=>{
   let clicked=null, removed=false;
   const originalDoc=globalThis.document;
   const originalSP=globalThis.CTKSharePoint;
@@ -61,7 +61,9 @@ test('native request uses same tab, no popup, no network fetch and no false down
   try {
     const copy=Object.assign({},AD,{status:(message,err)=>statuses.push([message,err])});
     copy.downloadSharePoint(entry);
-    assert.equal(clicked.target,'_self');
+    assert.equal(clicked.target,'_blank');
+    assert.match(clicked.rel,/noopener/);
+    assert.match(clicked.rel,/noreferrer/);
     assert.match(clicked.href,/download\.aspx/);
     assert.equal(removed,true);
     assert.equal(entry.downloaded,false);
@@ -78,4 +80,74 @@ test('SharePoint sources are explicitly excluded from client-side ZIP',async()=>
     await engine.downloadBulk();
     assert.match(calls[0],/cannot be added to a client-side ZIP/);
   }finally{globalThis.CTKSharePoint=originalSP;}
+});
+
+test('SharePoint recovery copies a deliberately picked local media file with spreadsheet naming',async()=>{
+  const originalDoc=globalThis.document, originalWindow=globalThis.window;
+  const originalSP=globalThis.CTKSharePoint, originalRenamer=globalThis.CTKDownloadRenamer;
+  const file={name:'audio test.mp3',size:42,type:'audio/mpeg'};
+  const widgets=[];
+  globalThis.CTKSharePoint=sp;
+  globalThis.CTKDownloadRenamer={
+    sourceFilename(){return 'audio test.mp3';},
+    matchesOriginal(){return true;},
+    targetFilename(entry,name){return entry.displayName+name.slice(name.lastIndexOf('.'));}
+  };
+  globalThis.document={
+    body:{appendChild(node){widgets.push(node);}},
+    createElement(type){assert.equal(type,'input');return {style:{},click(){this.files=[file];this.onchange();},remove(){}};}
+  };
+  globalThis.window={confirm(){throw Error('Unexpected mismatched file confirmation')}};
+  const copies=[], statuses=[];
+  try{
+    const target=Object.assign({},AD,{
+      saveBlob(blob,name){copies.push([blob,name]);},
+      status(message){statuses.push(message);}
+    });
+    await target.saveSharePointCopy({url:'https://example.sharepoint.com/sites/DACH/Shared%20Documents/file.mp3',displayName:'AD1_campaign'});
+    assert.equal(copies[0][0],file);
+    assert.equal(copies[0][1],'AD1_campaign.mp3');
+    assert.match(statuses[0],/original is still present/);
+  }finally{
+    globalThis.document=originalDoc;globalThis.window=originalWindow;
+    globalThis.CTKSharePoint=originalSP;globalThis.CTKDownloadRenamer=originalRenamer;
+  }
+});
+
+test('Local renamed copy refuses an HTML/preview result rather than saving it as media',async()=>{
+  const originalDoc=globalThis.document, originalSP=globalThis.CTKSharePoint;
+  globalThis.CTKSharePoint=sp;
+  globalThis.document={
+    body:{appendChild(){}},
+    createElement(){return {style:{},click(){this.files=[{name:'preview.html',size:42,type:'text/html'}];this.onchange();},remove(){}};}
+  };
+  const errors=[];
+  try{
+    const target=Object.assign({},AD,{saveBlob(){throw Error('saved invalid file')},status:(s,e)=>errors.push([s,e])});
+    await target.saveSharePointCopy({url:'https://example.sharepoint.com/sites/DACH/Shared%20Documents/file.mp3',displayName:'AD1_campaign'});
+    assert.equal(errors[0][1],true);
+    assert.match(errors[0][0],/Select the finished media file/);
+  }finally{globalThis.document=originalDoc;globalThis.CTKSharePoint=originalSP;}
+});
+
+test('Fix downloaded name recovers a finished SharePoint file without saving a duplicate',async()=>{
+  const oldSP=globalThis.CTKSharePoint,oldRenamer=globalThis.CTKDownloadRenamer,oldDoc=globalThis.document,oldWindow=globalThis.window;
+  const statuses=[], operations=[];
+  globalThis.CTKSharePoint=sp;
+  globalThis.CTKDownloadRenamer={
+    active:()=>false,async chooseFolder(){operations.push('chooseFolder');return 'Downloads';},
+    async findExisting(){operations.push('findExisting');return [{name:'ALDI Frische Social LT3 OLV Social Pick me 22s (1).mp4'}];},
+    async renameExisting(entry,name){operations.push(name);return 'AD1_ALDI_Frische_Social_LT3_OLV_SOCIAL1_Pick_me_22s.mp4';}
+  };
+  globalThis.document={getElementById:()=>({textContent:''})};
+  globalThis.window={prompt(){throw Error('single candidate must not ask for choice')}};
+  const button={textContent:'Fix downloaded name',disabled:false};
+  try{
+    const copy=Object.assign({},AD,{status:s=>statuses.push(s)});
+    await copy.fixSharePointName({url:'https://example.sharepoint.com/sites/DACH/Shared%20Documents/video.mp4',fixNameButton:button});
+    assert.deepEqual(operations,['chooseFolder','findExisting','ALDI Frische Social LT3 OLV Social Pick me 22s (1).mp4']);
+    assert.equal(button.disabled,false);
+    assert.equal(button.textContent,'Name fixed');
+    assert.match(statuses[0],/Renamed existing file in place/);
+  }finally{globalThis.CTKSharePoint=oldSP;globalThis.CTKDownloadRenamer=oldRenamer;globalThis.document=oldDoc;globalThis.window=oldWindow;}
 });

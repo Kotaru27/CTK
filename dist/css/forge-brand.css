@@ -1,0 +1,482 @@
+/* THE FORGE / V2: editorial, light-first home and one continuous opening.
+   Deliberately scoped away from every tool card and workspace. */
+:root { --forge-forest:#123b2c; --forge-ink:#19372b; --forge-cream:#f8f7ed; }
+#brandText {
+  font-family:"Kola","Plus Jakarta Sans",sans-serif!important;
+  font-weight:400!important;
+  font-size:clamp(22px,1.85vw,30px)!important;
+  letter-spacing:-.015em!important;
+  line-height:1.22!important;
+  text-transform:none!important;
+}
+.header .brand-title {gap:10px;padding-inline:clamp(10px,1.5vw,22px)}
+/* Let typography, alignment and negative space carry the home: no dark banner. */
+#view-home .combined-home-layout .forge-hero {
+  --forge-hero-fg:#123b2c;
+  --forge-hero-muted:#587264;
+  --forge-hero-line:rgba(25,55,43,.18);
+  box-sizing:border-box;
+  display:grid;
+  grid-template-rows:auto 1fr auto;
+  gap:0;
+  min-height:clamp(322px,27vw,392px);
+  position:relative;
+  width:100%;
+  margin:0 0 clamp(20px,2.1vw,29px);
+  padding:clamp(26px,2.65vw,38px) clamp(4px,1.3vw,19px) clamp(23px,2.1vw,31px);
+  color:var(--forge-hero-fg);
+  background:transparent;
+  border:0;
+  border-top:1px solid var(--forge-hero-line);
+  border-bottom:1px solid var(--forge-hero-line);
+  border-radius:0;
+  box-shadow:none;
+  isolation:isolate;
+}
+.forge-hero-top {
+  display:flex;align-items:center;justify-content:space-between;
+  gap:24px;
+  font:650 10px/1.5 "Plus Jakarta Sans",sans-serif;
+  letter-spacing:.17em;text-transform:uppercase;
+  color:var(--forge-hero-muted);
+}
+.forge-hero-edition {display:inline-flex;align-items:center;gap:11px;}
+.forge-hero-edition::before {
+  content:"";display:block;width:7px;height:7px;
+  background:#2a7656;border-radius:50%;
+}
+.forge-hero-counter {font-variant-numeric:tabular-nums;}
+.forge-hero-middle {
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  gap:clamp(42px,6vw,130px);
+  min-height:193px;
+  padding:clamp(20px,2.2vw,33px) 0;
+}
+#view-home .combined-home-layout .forge-hero-name {
+  font-family:"Kola","Plus Jakarta Sans",sans-serif!important;
+  font-size:clamp(80px,9.15vw,151px)!important;
+  font-weight:400!important;
+  font-style:normal!important;
+  line-height:1.08!important;
+  letter-spacing:-.028em!important;
+  color:var(--forge-hero-fg)!important;
+  margin:0!important;
+  padding:0!important;
+  white-space:nowrap;
+  text-wrap:nowrap;
+  width:max-content!important;
+  justify-self:start;
+  min-width:0;
+  transform-origin:left center;
+}
+.forge-hero-aside {
+  display:flex;flex-direction:column;
+  justify-content:center;align-items:flex-start;
+  padding-left:clamp(16px,1.5vw,25px);
+  width:clamp(250px,22vw,337px);
+  flex:0 0 auto;
+  border-left:1px solid var(--forge-hero-line);
+}
+.forge-hero-aside-label {
+  margin-bottom:15px;
+  font:700 10px/1.5 "Plus Jakarta Sans",sans-serif;
+  letter-spacing:.19em;color:var(--forge-hero-muted);
+  text-transform:uppercase;
+}
+.forge-hero-aside p {
+  margin:0;
+  max-width:318px;
+  font:450 clamp(15px,1.12vw,18px)/1.66 "Plus Jakarta Sans",sans-serif;
+  letter-spacing:-.035em;
+  color:var(--forge-hero-fg);
+}
+.forge-hero-bottom {
+  display:flex;justify-content:space-between;align-items:flex-end;
+  gap:35px;
+  padding-top:22px;
+  border-top:1px solid var(--forge-hero-line);
+}
+.forge-hero-lineup {
+  font:600 clamp(11px,.95vw,13px)/1.5 "Plus Jakarta Sans",sans-serif;
+  letter-spacing:.08em;color:var(--forge-hero-fg);
+}
+.forge-hero-manifesto {
+  font:460 clamp(12px,1vw,14px)/1.55 "Plus Jakarta Sans",sans-serif;
+  letter-spacing:-.014em;color:var(--forge-hero-muted);
+  text-align:right;
+}
+.forge-after-hero {
+  display:flex;align-items:baseline;justify-content:space-between;
+  gap:18px;margin:0 0 20px;
+  color:var(--text-muted);
+}
+.forge-after-hero strong {
+  font:600 clamp(18px,1.55vw,23px)/1.2 "Plus Jakarta Sans",sans-serif;
+  letter-spacing:-.055em;color:var(--text-main);
+}
+.forge-after-hero span {
+  font:600 10px/1.4 "Plus Jakarta Sans",sans-serif;
+  letter-spacing:.12em;text-transform:uppercase;
+}
+body:not(.light-mode) #view-home .combined-home-layout .forge-hero {
+  --forge-hero-fg:#e5eddf;
+  --forge-hero-muted:#aec5b3;
+  --forge-hero-line:rgba(230,235,217,.18);
+}
+body:not(.light-mode) .forge-hero-edition::before {background:#b1d4b6;}
+/* Shared element: the homepage heading is present in layout, but hidden
+   until the one properly-kerned opener arrives at precisely the same rect. */
+body.forge-opening #forgeHeroName {opacity:0!important;}
+body.forge-opening .forge-hero-aside,
+body.forge-opening .forge-hero-top,
+body.forge-opening .forge-hero-bottom {opacity:0;transform:translate3d(0,8px,0);}
+body.forge-opening.forge-home-arriving .forge-hero-aside,
+body.forge-opening.forge-home-arriving .forge-hero-top,
+body.forge-opening.forge-home-arriving .forge-hero-bottom {
+  opacity:1;transform:translate3d(0,0,0);
+  transition:opacity .48s cubic-bezier(.21,.76,.31,1),
+             transform .65s cubic-bezier(.21,.76,.31,1);
+}
+/* The opening is one composition: outline -> raised ink -> continuous
+   FLIP wordmark handoff. All animated letter properties are compositable. */
+.forge-intro {
+  position:fixed;inset:0;z-index:2147483000;
+  display:grid;place-items:center;overflow:hidden;
+  background:transparent;color:#123b2c;
+  transition:opacity .2s linear;
+}
+/* Fade a composited backing plane instead of repainting the entire
+   2K screen via animated background-color on every refresh. */
+.forge-intro::before {
+  content:"";
+  position:absolute;
+  inset:0;
+  background:#f8f7ed;
+  opacity:1;
+  transform:translateZ(0);
+  transition:opacity .72s cubic-bezier(.18,.78,.24,1);
+  pointer-events:none;
+}
+.forge-intro--handoff::before {opacity:0;}
+.forge-intro--handoff {pointer-events:none;}
+.forge-intro--ending {opacity:0;pointer-events:none;}
+ .forge-intro-layout {width:min(1420px,91vw);position:relative;z-index:1;}
+.forge-intro-label {
+  position:absolute;top:clamp(-50px,-4vw,-32px);left:0;
+  font:650 10px/1.5 "Plus Jakarta Sans",sans-serif;
+  letter-spacing:.19em;text-transform:uppercase;color:#678172;
+  transition:opacity .23s linear;
+}
+/* The layout footprint is ALWAYS the final kerning-correct Kola string.
+   The construction layer is separately positioned and never changes width. */
+.forge-intro-type {
+  position:relative;
+  display:block;width:max-content;max-width:none;margin:0 auto;
+  white-space:nowrap;
+  font-family:"Kola","Plus Jakarta Sans",sans-serif;
+  font-size:clamp(66px,10.2vw,162px);
+  font-weight:400;
+  line-height:1.08;letter-spacing:-.028em;
+  color:#123b2c;
+}
+.forge-intro-wordmark {
+  display:block;
+  white-space:nowrap;
+  opacity:0;
+  transform-origin:top left;
+  will-change:transform,opacity;
+}
+.forge-intro-glyphs {
+  position:absolute;inset:0;pointer-events:none;
+  opacity:1;
+  transition:opacity .11s linear;
+}
+.forge-intro-glyph {
+  position:absolute;left:0;top:0;
+  display:block;line-height:inherit;
+}
+.forge-intro-gap {display:none;}
+.forge-intro-outline,
+.forge-intro-fill {display:block;white-space:pre;}
+.forge-intro-outline {
+  position:relative;color:transparent;
+  -webkit-text-stroke:1px rgba(18,59,44,.40);
+  opacity:0;transform:translate3d(0,8px,0);
+}
+.forge-intro-fill {
+  position:absolute;inset:0;color:#123b2c;
+  opacity:0;transform:translate3d(0,10px,0) scale(.99);
+  transform-origin:50% 50%;
+}
+.forge-intro.is-playing .forge-intro-outline {
+  animation:forge-draw-guide .31s cubic-bezier(.18,.82,.31,1) both;
+  animation-delay:calc(.04s + var(--step)*.065s);
+}
+.forge-intro.is-playing .forge-intro-fill {
+  animation:forge-draw-letter .40s cubic-bezier(.16,.86,.29,1) both;
+  animation-delay:calc(.15s + var(--step)*.065s);
+}
+@keyframes forge-draw-guide {
+  from{opacity:0;transform:translate3d(0,8px,0)}
+  to{opacity:1;transform:translate3d(0,0,0)}
+}
+@keyframes forge-draw-letter {
+  from{opacity:0;transform:translate3d(0,10px,0) scale(.99)}
+  to{opacity:1;transform:translate3d(0,0,0) scale(1)}
+}
+.forge-intro.is-settled .forge-intro-glyphs {opacity:0;}
+.forge-intro.is-settled .forge-intro-wordmark {
+  opacity:1;
+  transition:opacity .16s linear;
+}
+.forge-intro-caption {
+  display:flex;justify-content:space-between;align-items:center;
+  gap:16px;border-top:1px solid rgba(25,55,43,.2);
+  margin-top:clamp(24px,3.2vw,44px);padding-top:14px;
+  font:600 10px/1.4 "Plus Jakarta Sans",sans-serif;
+  letter-spacing:.2em;text-transform:uppercase;color:#678172;
+  transition:opacity .23s linear;
+}
+.forge-intro-skip {
+  font:600 11px/1.5 "Plus Jakarta Sans",sans-serif;
+  letter-spacing:.08em;padding:7px 0 7px 10px;
+  color:#123b2c;background:none;border:0;cursor:pointer;
+}
+.forge-intro-skip:hover {text-decoration:underline;text-underline-offset:4px;}
+.forge-intro-skip:focus-visible {outline:2px solid #123b2c;outline-offset:4px;}
+.forge-intro--handoff .forge-intro-label,
+.forge-intro--handoff .forge-intro-caption {opacity:0;}
+@media(max-width:1160px) {
+  .forge-hero-middle {gap:clamp(24px,4vw,52px);}
+  #view-home .combined-home-layout .forge-hero-name {font-size:clamp(71px,8.6vw,122px)!important;}
+}
+@media(max-width:810px) {
+  #view-home .combined-home-layout .forge-hero {min-height:320px;padding:27px 4px;}
+  .forge-hero-middle {display:grid;grid-template-columns:1fr;gap:16px;}
+  #view-home .combined-home-layout .forge-hero-name {font-size:clamp(62px,11vw,96px)!important}
+  .forge-hero-aside {padding-left:15px;width:min(100%,500px);}
+  .forge-hero-aside p {max-width:570px;}
+}
+@media(max-width:550px) {
+  #view-home .combined-home-layout .forge-hero {min-height:300px;}
+  .forge-hero-top {font-size:9px;}
+  .forge-hero-counter {display:none;}
+  #view-home .combined-home-layout .forge-hero-name {font-size:clamp(43px,11vw,66px)!important;}
+  .forge-hero-aside p {font-size:13px;}
+  .forge-hero-bottom {align-items:flex-start;flex-direction:column;gap:9px;}
+  .forge-hero-manifesto {text-align:left;font-size:11px;}
+  .forge-after-hero strong {font-size:18px;}
+  .forge-after-hero span {font-size:9px;}
+  .forge-intro-type {font-size:clamp(46px,10.6vw,68px);}
+  .forge-intro-label,.forge-intro-caption {font-size:9px;}
+}
+@media(prefers-reduced-motion:reduce) {
+  .forge-intro{display:none!important;}
+  body.forge-opening #forgeHeroName{opacity:1!important;}
+  body.forge-opening .forge-hero-aside,
+  body.forge-opening .forge-hero-top,
+  body.forge-opening .forge-hero-bottom{opacity:1!important;}
+  .forge-intro * {animation:none!important;transition:none!important;}
+}
+
+
+/* FORGE FINISH — quiet, deliberately scoped treatment for existing cards.
+   Preserve every tile's markup, illustration, placement and navigation.
+   Hover feedback uses a small transform, never filter, scale or shadow tween. */
+#view-home .combined-home-grid > .home-card {
+  transition:background-color .18s ease,border-color .18s ease!important;
+}
+#view-home .combined-home-grid > .home-card:hover {
+  box-shadow:none!important;
+  filter:none!important;
+  scale:1!important;
+}
+#view-home .combined-home-grid > .home-card:focus-visible {
+  outline:2px solid #357358!important;
+  outline-offset:-3px!important;
+}
+#view-home .combined-home-grid > .home-card .home-card-go {
+  translate:0 0!important;
+  transform:translate3d(0,0,0);
+  transition:transform .24s cubic-bezier(.22,.85,.26,1),color .18s ease!important;
+}
+#view-home .combined-home-grid > .home-card:hover .home-card-go,
+#view-home .combined-home-grid > .home-card:focus-visible .home-card-go {
+  translate:0 0!important;
+  transform:translate3d(2px,-2px,0);
+}
+#view-home .combined-home-grid > .home-card > .home-card-art {
+  translate:0 0!important;
+  transition:transform .26s cubic-bezier(.22,.85,.26,1)!important;
+}
+#view-home .combined-home-grid > .home-card:hover > .home-card-art {
+  translate:0 0!important;
+  transform:translate3d(0,-2px,0);
+}
+/* Legibility at QHD without adding any card content or changing tile scale. */
+#view-home .combined-home-grid > .home-card .home-card-desc {
+  line-height:1.6!important;
+}
+@media(prefers-reduced-motion:reduce) {
+  #view-home .combined-home-grid > .home-card,
+  #view-home .combined-home-grid > .home-card .home-card-go,
+  #view-home .combined-home-grid > .home-card > .home-card-art {
+    animation:none!important;
+    transition:none!important;
+    transform:none!important;
+  }
+}
+
+
+/* FORGE / LIGHT-ONLY EDITION — appearance switch is temporarily hidden.
+   No global button rules: workspace controls and tool functionality remain intact. */
+#themeToggleBtn {display:none!important;}
+/* Refine the existing home typography, not the eight card compositions. */
+#view-home .combined-home-layout .forge-hero {
+  --forge-hero-muted:#496b59;
+  --forge-hero-line:rgba(27,65,46,.20);
+}
+.forge-hero-top {
+  font-size:11px;
+  letter-spacing:.14em;
+  font-weight:650;
+}
+.forge-hero-aside {
+  gap:0;
+  border-left-color:rgba(27,65,46,.22);
+}
+.forge-hero-aside-label {
+  font-size:11px;
+  letter-spacing:.13em;
+  margin-bottom:12px;
+}
+.forge-hero-aside p {
+  font-size:clamp(16px,1.15vw,18px);
+  line-height:1.64;
+  letter-spacing:-.026em;
+  max-width:325px;
+}
+.forge-hero-bottom {
+  padding-top:18px;
+}
+.forge-hero-manifesto {
+  font-size:clamp(13px,1vw,14px);
+  letter-spacing:0;
+}
+.forge-after-hero strong {
+  font-size:clamp(20px,1.65vw,25px);
+  letter-spacing:-.045em;
+}
+.forge-after-hero span {
+  font-size:11px;
+  letter-spacing:.10em;
+}
+@media (min-width:1600px) {
+  .forge-hero-middle {gap:clamp(56px,4.3vw,100px);}
+  #view-home .combined-home-layout .forge-hero {
+    padding-top:32px;
+    padding-bottom:27px;
+  }
+}
+@media (max-width:810px) {
+  .forge-hero-aside p {font-size:14px;}
+  .forge-hero-top {font-size:10px;}
+}
+
+
+/* THE FORGE / EXECUTIVE EDITION — decisions, not more decoration.
+   One product statement, one explanation, then the tool index.
+   Workspaces and processing styles deliberately remain untouched. */
+
+/* The legacy header's generated tagline introduced a detached third brand
+   claim and incorrectly suggested a privacy promise. Remove it everywhere. */
+.header::after,
+body.light-mode .header::after {
+  content:none!important;
+  display:none!important;
+}
+/* Align the header wordmark to the same 1536px content grid as the homepage;
+   leave the workspace header's established layout unchanged. */
+body:has(#view-home:not(.hidden)) .header {
+  padding-left:max(46px,calc((100vw - 1536px)/2))!important;
+  padding-right:max(46px,calc((100vw - 1536px)/2))!important;
+}
+body:has(#view-home:not(.hidden)) .header .brand-title {
+  padding-inline:0!important;
+}
+/* A single clear hierarchy replaces the former three-tier slogan stack.
+   Keep an intrinsic wordmark box for the already-verified FLIP intro. */
+#view-home .combined-home-layout .forge-hero {
+  grid-template-rows:auto 1fr;
+  min-height:clamp(285px,23.6vw,332px);
+  padding-top:clamp(27px,2.5vw,35px);
+  padding-bottom:clamp(24px,2vw,30px);
+  margin-bottom:clamp(22px,2vw,30px);
+}
+.forge-hero-top {
+  justify-content:flex-start;
+  color:#365748;
+  letter-spacing:.085em;
+  font-size:11.5px;
+  font-weight:700;
+}
+.forge-hero-edition {gap:10px;}
+.forge-hero-edition::before {
+  width:5px;
+  height:5px;
+  background:#357452;
+}
+.forge-hero-middle {
+  gap:clamp(40px,5vw,102px);
+  padding:clamp(24px,2.5vw,34px) 0 0;
+  min-height:186px;
+}
+.forge-hero-aside {
+  border-left:1px solid rgba(27,65,46,.24);
+  width:clamp(290px,25vw,390px);
+  padding-left:clamp(20px,1.8vw,28px);
+  max-width:100%;
+}
+.forge-hero-aside p {
+  max-width:350px;
+  font-size:clamp(16px,1.16vw,18px);
+  line-height:1.65;
+  letter-spacing:-.018em;
+  color:#1a3c2e;
+}
+.forge-after-hero {
+  margin:0 0 19px;
+  align-items:center;
+}
+.forge-after-hero strong {
+  font-size:clamp(21px,1.8vw,26px);
+  color:#1a3228;
+  letter-spacing:-.045em;
+}
+/* The numerals convey sequence, so they need contrast comparable to labels. */
+#view-home .combined-home-grid > .home-card .home-card-num,
+body.light-mode #view-home .combined-home-grid > .home-card .home-card-num {
+  color:#405b4b!important;
+  font-size:11px!important;
+}
+/* Keep the existing illustrations, backgrounds and tile geometry unchanged. */
+@media(max-width:1170px) {
+  .forge-hero-middle {gap:clamp(25px,3vw,48px);}
+  .forge-hero-aside {width:clamp(250px,27vw,325px);}
+}
+@media(max-width:810px) {
+  body:has(#view-home:not(.hidden)) .header {padding-inline:24px!important;}
+  #view-home .combined-home-layout .forge-hero {
+    min-height:296px;
+    padding-top:24px;
+  }
+  .forge-hero-middle {gap:18px;padding-top:22px;}
+  .forge-hero-aside {width:min(100%,560px);}
+}
+@media(max-width:550px) {
+  body:has(#view-home:not(.hidden)) .header {padding-inline:18px!important;}
+  .forge-hero-top {font-size:10px;}
+  #view-home .combined-home-layout .forge-hero {min-height:282px;}
+}
