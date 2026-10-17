@@ -1051,7 +1051,7 @@ const CTKDownloadRenamer = (() => {
           this.els.viewHome.classList.remove("hidden");
           this.updateNav("nav-home");
           this.applyTheme("home");
-          document.getElementById("brandText").textContent = "CREATIVE TOOLS SUITE";
+          document.getElementById("brandText").textContent = "The Forge";
           
           document.querySelectorAll(".home-card").forEach((card) => {
             const m = (card.getAttribute("onclick") || "").match(/openTool\('([^']+)'/);
@@ -1137,7 +1137,7 @@ const CTKDownloadRenamer = (() => {
           this.applyTheme(id);
           Core.AppState.save("activeTool", id);
           const toolName = this.toolDisplayName(id);
-          document.getElementById("brandText").textContent = "HOME";
+          document.getElementById("brandText").textContent = "The Forge";
         },
         openTool(id, mode) {
           if (this.els.viewApp.classList.contains("active")) {
@@ -1818,7 +1818,7 @@ const CTKDownloadRenamer = (() => {
           }
         },
         initTheme() {
-          const savedTheme = Core.AppState.load("theme") || "dark";
+          const savedTheme = Core.AppState.load("theme") || "light";
           if (savedTheme === "light") {
             document.body.classList.add("light-mode");
           } else {
