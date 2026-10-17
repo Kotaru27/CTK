@@ -90,4 +90,5 @@ test('motion never animates polygon clipping or layout-changing font size',()=>{
   assert.match(brandJS,/mark\.style\.visibility = 'hidden'/);
   assert.match(brandJS,/document\.fonts/);
   assert.match(brandJS,/isFinite\(scale\)/);
+  assert.match(brandCss,/width:max-content!important/);
 });
