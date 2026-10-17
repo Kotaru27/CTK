@@ -5209,8 +5209,8 @@ body.light-mode #view-app #section-stills-boards{
 #view-app .tool-section label.liquid-btn:hover,
 #view-app .tool-section label.liquid-btn:active,
 #view-app .tool-section .ctk-row-menu > summary:hover{
- transform:none!important;translate:0 0!important;
- scale:1!important;filter:none!important;box-shadow:none!important;
+ transform:none!important;translate:none!important;
+ scale:none!important;filter:none!important;box-shadow:none!important;
 }
 #view-app .tool-section .liquid-btn:not(:disabled),
 #view-app .tool-section label.liquid-btn{
@@ -5263,11 +5263,11 @@ body.light-mode #view-app #section-stills-boards{
 /* The rail and catalogue no longer jump or grow when hovered. */
 .nav-sidebar .nav-item:hover,.nav-sidebar .nav-item:active,
 body:has(#nav-adlinks-dl.active) .nav-sidebar .nav-item:hover{
- transform:none!important;translate:0 0!important;filter:none!important;box-shadow:none!important;
+ transform:none!important;translate:none!important;filter:none!important;box-shadow:none!important;
 }
-.nav-sidebar .nav-item:hover .material-symbols-rounded{transform:none!important;scale:1!important}
+.nav-sidebar .nav-item:hover .material-symbols-rounded{transform:none!important;scale:none!important}
 #view-home .combined-home-grid > .home-card:hover :is(.home-card-title,.home-card-go,.home-card-art){
- translate:0 0!important;
+ translate:none!important;
 }
 #view-home .combined-home-grid > .home-card:hover .home-card-title,
 #view-home .combined-home-grid > .home-card:hover .home-card-go{
@@ -5294,6 +5294,20 @@ body:has(#nav-adlinks-dl.active) .nav-sidebar .nav-item:hover{
     transition:none!important;
     animation:none!important;
   }
+}
+
+/* Explicit solid hover paint for selected controls.
+   Headless Chromium occasionally rasterizes the selected background black
+   when a shorthand color-only hover rule is composed. A solid gradient paints
+   the same intended color above that layer without changing button geometry. */
+#view-app #section-stills-boards #storySubModeToggle .liquid-btn.active-mode:hover{
+  background-image:linear-gradient(var(--sb-panel),var(--sb-panel))!important;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader #adlinksDlHeaderControls #adDlDropZone label:hover{
+  background-image:linear-gradient(var(--ad-primary),var(--ad-primary))!important;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader #adlinksDlHeaderControls #adDlBulkButton:hover:not(:disabled){
+  background-image:linear-gradient(var(--ad-primary),var(--ad-primary))!important;
 }
 </style>
 </head>

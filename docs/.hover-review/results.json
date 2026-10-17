@@ -13,10 +13,10 @@
     },
     "after": {
       "transform": "none",
-      "translate": "0px",
+      "translate": "none",
       "shadow": "none",
       "background": "rgb(212, 230, 199)",
-      "scale": "1"
+      "scale": "none"
     },
     "overflow": false
   },
@@ -34,10 +34,10 @@
     },
     "after": {
       "transform": "none",
-      "translate": "0px",
+      "translate": "none",
       "shadow": "none",
       "background": "rgb(207, 227, 196)",
-      "scale": "1"
+      "scale": "none"
     },
     "overflow": false
   },
@@ -55,10 +55,10 @@
     },
     "after": {
       "transform": "none",
-      "translate": "0px",
+      "translate": "none",
       "shadow": "none",
       "background": "rgb(193, 216, 183)",
-      "scale": "1"
+      "scale": "none"
     },
     "overflow": false
   },
@@ -76,10 +76,10 @@
     },
     "after": {
       "transform": "none",
-      "translate": "0px",
+      "translate": "none",
       "shadow": "none",
       "background": "rgb(193, 216, 183)",
-      "scale": "1"
+      "scale": "none"
     },
     "overflow": false
   },
@@ -97,13 +97,13 @@
     },
     "after": {
       "transform": "none",
-      "translate": "0px",
+      "translate": "none",
       "shadow": "none",
       "background": "rgb(37, 55, 43)",
-      "scale": "1"
+      "scale": "none"
     },
     "detail": {
-      "bgImage": "none",
+      "bgImage": "linear-gradient(rgb(37, 55, 43), rgb(37, 55, 43))",
       "opacity": "1",
       "filter": "none",
       "color": "rgb(241, 245, 237)",
@@ -129,17 +129,17 @@
     "label": "Grid Board",
     "before": {
       "transform": "none",
-      "translate": "0px",
+      "translate": "none",
       "shadow": "none",
       "background": "rgb(37, 55, 43)",
-      "scale": "1"
+      "scale": "none"
     },
     "after": {
       "transform": "none",
-      "translate": "0px",
+      "translate": "none",
       "shadow": "none",
       "background": "rgb(37, 55, 43)",
-      "scale": "1"
+      "scale": "none"
     },
     "overflow": false
   },
@@ -157,10 +157,10 @@
     },
     "after": {
       "transform": "none",
-      "translate": "0px",
+      "translate": "none",
       "shadow": "none",
       "background": "rgb(193, 216, 183)",
-      "scale": "1"
+      "scale": "none"
     },
     "overflow": false
   },
@@ -178,13 +178,13 @@
     },
     "after": {
       "transform": "none",
-      "translate": "0px",
+      "translate": "none",
       "shadow": "none",
       "background": "rgb(196, 221, 186)",
-      "scale": "1"
+      "scale": "none"
     },
     "detail": {
-      "bgImage": "none",
+      "bgImage": "linear-gradient(rgb(196, 221, 186), rgb(196, 221, 186))",
       "opacity": "1",
       "filter": "none",
       "color": "rgb(27, 48, 34)",
@@ -217,10 +217,10 @@
     },
     "after": {
       "transform": "none",
-      "translate": "0px",
+      "translate": "none",
       "shadow": "none",
       "background": "rgb(193, 216, 183)",
-      "scale": "1"
+      "scale": "none"
     },
     "overflow": false
   },
@@ -238,10 +238,10 @@
     },
     "after": {
       "transform": "none",
-      "translate": "0px",
+      "translate": "none",
       "shadow": "none",
       "background": "rgb(33, 74, 51)",
-      "scale": "1"
+      "scale": "none"
     },
     "overflow": false
   },
@@ -259,10 +259,10 @@
     },
     "after": {
       "transform": "none",
-      "translate": "0px",
+      "translate": "none",
       "shadow": "none",
       "background": "rgb(45, 89, 64)",
-      "scale": "1"
+      "scale": "none"
     },
     "overflow": false
   },
@@ -280,10 +280,10 @@
     },
     "after": {
       "transform": "none",
-      "translate": "0px",
+      "translate": "none",
       "shadow": "none",
       "background": "rgb(40, 84, 61)",
-      "scale": "1"
+      "scale": "none"
     },
     "overflow": false
   },
@@ -301,10 +301,10 @@
     },
     "after": {
       "transform": "none",
-      "translate": "0px",
+      "translate": "none",
       "shadow": "none",
       "background": "rgb(40, 84, 61)",
-      "scale": "1"
+      "scale": "none"
     },
     "overflow": false
   },
@@ -322,13 +322,13 @@
     },
     "after": {
       "transform": "none",
-      "translate": "0px",
+      "translate": "none",
       "shadow": "none",
       "background": "rgb(255, 255, 255)",
-      "scale": "1"
+      "scale": "none"
     },
     "detail": {
-      "bgImage": "none",
+      "bgImage": "linear-gradient(rgb(255, 255, 255), rgb(255, 255, 255))",
       "opacity": "1",
       "filter": "none",
       "color": "rgb(35, 55, 41)",
@@ -354,17 +354,17 @@
     "label": "Grid Board",
     "before": {
       "transform": "none",
-      "translate": "0px",
+      "translate": "none",
       "shadow": "none",
       "background": "rgb(255, 255, 255)",
-      "scale": "1"
+      "scale": "none"
     },
     "after": {
       "transform": "none",
-      "translate": "0px",
+      "translate": "none",
       "shadow": "none",
       "background": "rgb(255, 255, 255)",
-      "scale": "1"
+      "scale": "none"
     },
     "overflow": false
   },
@@ -382,10 +382,10 @@
     },
     "after": {
       "transform": "none",
-      "translate": "0px",
+      "translate": "none",
       "shadow": "none",
       "background": "rgb(40, 84, 61)",
-      "scale": "1"
+      "scale": "none"
     },
     "overflow": false
   },
@@ -403,13 +403,13 @@
     },
     "after": {
       "transform": "none",
-      "translate": "0px",
+      "translate": "none",
       "shadow": "none",
       "background": "rgb(40, 84, 61)",
-      "scale": "1"
+      "scale": "none"
     },
     "detail": {
-      "bgImage": "none",
+      "bgImage": "linear-gradient(rgb(40, 84, 61), rgb(40, 84, 61))",
       "opacity": "1",
       "filter": "none",
       "color": "rgb(255, 255, 255)",
@@ -442,10 +442,10 @@
     },
     "after": {
       "transform": "none",
-      "translate": "0px",
+      "translate": "none",
       "shadow": "none",
       "background": "rgb(40, 84, 61)",
-      "scale": "1"
+      "scale": "none"
     },
     "overflow": false
   },
