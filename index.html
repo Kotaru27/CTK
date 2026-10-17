@@ -25,14 +25,15 @@
 </head>
 <body class="light-mode">
 <script>try{if(localStorage.getItem("cts_theme")==="dark")document.body.classList.remove("light-mode")}catch(_){}</script>
-<div class="forge-intro" id="forgeIntro" role="status" aria-label="Opening The Forge" aria-live="off">
-<div class="forge-intro-inner">
-<div class="forge-intro-kicker">A CREATIVE WORKSPACE</div>
-<div class="forge-intro-type" aria-label="The Forge"><span class="forge-intro-letter" aria-hidden="true" style="--step:0">T</span><span class="forge-intro-letter" aria-hidden="true" style="--step:1">h</span><span class="forge-intro-letter" aria-hidden="true" style="--step:2">e</span><span class="forge-intro-space" aria-hidden="true"></span><span class="forge-intro-letter" aria-hidden="true" style="--step:4">F</span><span class="forge-intro-letter" aria-hidden="true" style="--step:5">o</span><span class="forge-intro-letter" aria-hidden="true" style="--step:6">r</span><span class="forge-intro-letter" aria-hidden="true" style="--step:7">g</span><span class="forge-intro-letter" aria-hidden="true" style="--step:8">e</span></div>
-<div class="forge-intro-rule" aria-hidden="true"></div>
-<div class="forge-intro-foot">CREATE · TRANSFORM · TOGETHER</div>
-</div></div>
-
+<div class="forge-intro" id="forgeIntro" role="region" aria-label="The Forge introduction">
+ <div class="forge-intro-layout">
+  <div class="forge-intro-label">YOUR CREATIVE WORKSPACE</div>
+  <div class="forge-intro-type" id="forgeIntroType" role="img" aria-label="The Forge"><span class="forge-intro-glyph" style="--step:0" aria-hidden="true"><span class="forge-intro-outline">T</span><span class="forge-intro-fill">T</span></span><span class="forge-intro-glyph" style="--step:1" aria-hidden="true"><span class="forge-intro-outline">h</span><span class="forge-intro-fill">h</span></span><span class="forge-intro-glyph" style="--step:2" aria-hidden="true"><span class="forge-intro-outline">e</span><span class="forge-intro-fill">e</span></span><span class="forge-intro-gap" aria-hidden="true"></span><span class="forge-intro-glyph" style="--step:4" aria-hidden="true"><span class="forge-intro-outline">F</span><span class="forge-intro-fill">F</span></span><span class="forge-intro-glyph" style="--step:5" aria-hidden="true"><span class="forge-intro-outline">o</span><span class="forge-intro-fill">o</span></span><span class="forge-intro-glyph" style="--step:6" aria-hidden="true"><span class="forge-intro-outline">r</span><span class="forge-intro-fill">r</span></span><span class="forge-intro-glyph" style="--step:7" aria-hidden="true"><span class="forge-intro-outline">g</span><span class="forge-intro-fill">g</span></span><span class="forge-intro-glyph" style="--step:8" aria-hidden="true"><span class="forge-intro-outline">e</span><span class="forge-intro-fill">e</span></span></div>
+  <div class="forge-intro-caption"><span>CREATE / TRANSFORM / DELIVER</span>
+   <button type="button" class="forge-intro-skip" id="forgeIntroSkip" aria-label="Skip introduction">Skip intro ↗</button>
+  </div>
+ </div>
+</div>
 <header class="header">
 <div class="brand-title" onclick="UI.showHome()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();UI.showHome()}" role="button" style="cursor: pointer" tabindex="0">
 
@@ -82,13 +83,23 @@
 <div id="view-home">
 <div class="home-layout combined-home-layout">
 <section class="forge-hero" aria-labelledby="forgeHeroName">
-<div class="forge-hero-top"><span>YOUR CREATIVE WORKSPACE</span><span class="forge-hero-index">01 — 08 / EVERYDAY TOOLS</span></div>
-<h1 class="forge-hero-name" id="forgeHeroName">The Forge</h1>
-<div class="forge-hero-bottom">
-<p class="forge-hero-tagline">CREATE &nbsp;·&nbsp; TRANSFORM &nbsp;·&nbsp; TOGETHER</p>
-<p class="forge-hero-description">Turn scattered tasks into one seamless workflow. Resize, extract, convert, assemble and deliver — all in one place.</p>
-</div></section>
-<div class="forge-after-hero"><span>THE WORKSPACES</span><span>SELECT A TOOL TO BEGIN ↓</span></div>
+ <div class="forge-hero-top">
+  <span class="forge-hero-edition">THE FORGE / CREATIVE WORKSPACE</span>
+  <span class="forge-hero-counter">EIGHT TOOLS · ONE PLACE</span>
+ </div>
+ <div class="forge-hero-middle">
+  <h1 class="forge-hero-name" id="forgeHeroName">The Forge</h1>
+  <div class="forge-hero-aside">
+   <span class="forge-hero-aside-label">MAKE SOMETHING OF IT</span>
+   <p>Everything between your first idea and the finished asset. Without the extra steps.</p>
+  </div>
+ </div>
+ <div class="forge-hero-bottom">
+  <span class="forge-hero-lineup">Create / Transform / Deliver</span>
+  <span class="forge-hero-manifesto">One considered space for everyday creative work.</span>
+ </div>
+</section>
+<div class="forge-after-hero"><strong>Explore the workspaces</strong><span>CHOOSE WHERE TO BEGIN ↓</span></div>
 <div class="home-grid combined-home-grid" id="homeContent">
 <button class="home-card home-item tool-logo" onclick="UI.openTool('section-logo')" aria-label="Open Logo Workspace">
 <div class="home-card-top"><span class="home-card-num">01</span><span class="home-card-go" aria-hidden="true">↗</span></div>
