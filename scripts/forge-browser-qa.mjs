@@ -110,10 +110,22 @@ try {
      const title=document.querySelector('#forgeHeroName');
      const grid=document.querySelector('#homeContent');
      const hr=hero.getBoundingClientRect(),tr=title.getBoundingClientRect(),gr=grid.getBoundingClientRect();
+     const brand=document.querySelector('#brandText').getBoundingClientRect();
+     const number=document.querySelector('button.home-card .home-card-num');
+     const card=document.querySelector('button.home-card');
      return {
        width:innerWidth,height:innerHeight,
        heroHeight:hr.height,heroBottom:hr.bottom,
+       heroLeft:Math.round(hr.left),headerWordmarkLeft:Math.round(brand.left),
        titleRight:tr.right,gridTop:gr.top,
+       headerGeneratedText:getComputedStyle(document.querySelector('.header'),'::after').content,
+       eyebrow:document.querySelector('.forge-hero-edition')?.textContent,
+       heroSupportingText:document.querySelector('.forge-hero-aside p')?.textContent,
+       sectionHeading:document.querySelector('.forge-after-hero strong')?.textContent,
+       cardNumberColor:getComputedStyle(number).color,
+       cardBackground:getComputedStyle(card).backgroundColor,
+       logoName:document.querySelector('button.tool-logo .home-card-title')?.textContent,
+       adNavName:document.querySelector('#nav-adlinks-dl .nav-item-text')?.textContent,
        overflow:document.documentElement.scrollWidth>innerWidth+2,
        count:document.querySelectorAll('button.home-card').length,
        kola:document.fonts.check('400 120px "Kola"'),
@@ -121,13 +133,22 @@ try {
      };
    });
    check(values.count===8,'QHD cards count differs from eight');
+   check(values.eyebrow==='EIGHT TOOLS. ONE CREATIVE WORKSPACE.','QHD hero eyebrow lacks clear scope');
+   check(values.sectionHeading==='Choose a tool','QHD tool-section heading incorrect');
+   check(values.heroSupportingText.includes('convert PDFs'),'QHD description missing useful capability text');
+   check(values.headerGeneratedText==='none','Floating legacy header tagline still visible');
+   check(Math.abs(values.heroLeft-values.headerWordmarkLeft)<2,
+     'Brand header is not aligned to the homepage hero column');
+   check(values.cardNumberColor==='rgb(64, 91, 75)','Card numbers are still too faint');
+   check(values.logoName==='Logo Resizer','Logo card name inconsistent');
+   check(values.adNavName==='Ad Downloader','Ad Downloader navigation name inconsistent');
    check(values.light,'QHD light mode default missing');
    check(await wp.locator('#themeToggleBtn').isHidden(),'QHD appearance control visible');
    check(values.kola,'QHD Kola font not loaded');
    check(!values.overflow,'QHD horizontal overflow');
    check(values.titleRight<viewport.width,'QHD title clipped');
-   check(values.heroHeight<=410,'QHD hero consumes too much vertical space');
-   check(values.gridTop<590,'QHD workspace tiles begin too far down the page');
+   check(values.heroHeight<=360,'QHD hero consumes too much vertical space');
+   check(values.gridTop<510,'QHD workspace tiles begin too far down the page');
    // First let the existing staggered tile-entry animation finish:
    // the hover check must not mistake initial entrance travel for hover motion.
    await wp.waitForTimeout(750);
