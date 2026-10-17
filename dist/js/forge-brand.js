@@ -20,7 +20,7 @@
     intro.remove();
     return;
   }
-  try { sessionStorage.setItem('forge_intro_seen_v3', '1'); } catch (_) {}
+  try { sessionStorage.setItem('forge_intro_seen_v4', '1'); } catch (_) {}
   document.body.classList.add('forge-opening');
 
   var finished = false, flight = null, timers = [];
