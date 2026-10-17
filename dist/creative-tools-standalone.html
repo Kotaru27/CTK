@@ -4448,20 +4448,21 @@ body.light-mode #view-home .combined-home-grid > .home-card:hover {background:#f
   --ad-shadow:0 18px 44px -24px rgba(0,0,0,.48);
 }
 body.light-mode #section-adlinks{
-  --ad-base:#f6f7f2;
-  --ad-ink:#1e3527;
-  --ad-ink-muted:#5b715f;
-  --ad-ink-soft:#788d7a;
-  --ad-stage:#eef2ea;
-  --ad-surface:#ffffff;
-  --ad-surface-alt:#f1f5ef;
-  --ad-line:rgba(35,81,54,.105);
-  --ad-line-strong:rgba(35,81,54,.20);
-  --ad-primary:#28543d;
-  --ad-primary-ink:#ffffff;
-  --ad-primary-soft:rgba(40,84,61,.08);
-  --ad-warm:#a16b45;
-  --ad-shadow:0 18px 48px -28px rgba(38,75,51,.17);
+  /* Adopt the exact shared light palette instead of a separate Ad palette. */
+  --ad-base:var(--studio-main);
+  --ad-ink:var(--studio-title);
+  --ad-ink-muted:var(--studio-muted);
+  --ad-ink-soft:var(--studio-faint);
+  --ad-stage:var(--studio-main);
+  --ad-surface:var(--studio-panel);
+  --ad-surface-alt:var(--studio-raised);
+  --ad-line:var(--studio-border-soft);
+  --ad-line-strong:var(--studio-border);
+  --ad-primary:var(--studio-accent);
+  --ad-primary-ink:var(--studio-accent-on);
+  --ad-primary-soft:var(--studio-accent-quiet);
+  --ad-warm:var(--studio-strong);
+  --ad-shadow:var(--studio-shadow);
 }
 #section-adlinks:has(#adlinksTabContentDownloader[style*="display: block"]) {color:var(--ad-ink);}
 #section-adlinks .tool-header{background:var(--ad-base)!important;border-bottom:1px solid var(--ad-line)!important;color:var(--ad-ink)!important;min-height:65px!important;padding:12px 38px!important;gap:12px!important}
@@ -4470,10 +4471,6 @@ body.light-mode #section-adlinks{
  color:var(--ad-primary)!important;font-size:20px!important;
  background:var(--ad-primary-soft)!important;border:1px solid var(--ad-line)!important;
  border-radius:10px!important;box-shadow:none!important;
-}
-body:has(#nav-adlinks-dl.active) .header .brand-title .brand-icon,
-body.light-mode:has(#nav-adlinks-dl.active) .header .brand-title .brand-icon{
- background:#c4ddba!important;color:#193023!important;border-radius:9px!important;
 }
 #section-adlinks #tabRowAdlinks{
   background:var(--ad-base)!important;border-bottom:1px solid var(--ad-line)!important;
@@ -4490,17 +4487,6 @@ body.light-mode:has(#nav-adlinks-dl.active) .header .brand-title .brand-icon{
   background:var(--ad-primary-soft)!important;color:var(--ad-primary)!important;
 }
 #section-adlinks #tabRowAdlinks .liquid-btn.active-mode::after{content:"";display:block;position:absolute;bottom:-10px;left:12px;right:12px;height:2px;border-radius:3px;background:var(--ad-primary)}
-/* Branded shell only while the ad downloader is selected: preserve unrelated workspaces. */
-body:has(#nav-adlinks-dl.active) .nav-sidebar.visible,
-body.light-mode:has(#nav-adlinks-dl.active) .nav-sidebar.visible{
-  background:#15241b!important;border-right-color:rgba(190,219,194,.14)!important;
-}
-body:has(#nav-adlinks-dl.active) .nav-sidebar .nav-item{color:#a7bca9!important;transition:background-color .24s var(--ad-smooth),color .2s ease,transform .24s var(--ad-smooth)!important}
-body:has(#nav-adlinks-dl.active) .nav-sidebar .nav-item:hover{background:#24382a!important;color:#f0f6ed!important;transform:translateX(2px)!important}
-body:has(#nav-adlinks-dl.active) .nav-sidebar .nav-item.active{background:#c5dcbc!important;color:#1b3325!important;border-color:transparent!important}
-body:has(#nav-adlinks-dl.active) .nav-sidebar .nav-item.active :is(.material-symbols-rounded,.nav-item-text){color:#1b3325!important}
-body:has(#nav-adlinks-dl.active) .header,body.light-mode:has(#nav-adlinks-dl.active) .header{background:#15241b!important;border-bottom-color:rgba(190,219,194,.14)!important}
-body:has(#nav-adlinks-dl.active) .header .brand-title{color:#f1f6f0!important}
 #section-adlinks #adlinksTabContentDownloader.ad-download-studio{
   background:var(--ad-stage)!important;color:var(--ad-ink)!important;
   --studio-main:var(--ad-stage);--studio-side:var(--ad-base);--studio-panel:var(--ad-surface);
@@ -4513,7 +4499,7 @@ body:has(#nav-adlinks-dl.active) .header .brand-title{color:#f1f6f0!important}
   display:grid!important;grid-template-columns:minmax(295px,.84fr) minmax(560px,1.6fr)!important;
   align-items:end!important;justify-content:space-between!important;gap:30px 36px!important;
   padding:38px 40px 34px!important;position:relative;isolation:isolate;overflow:hidden;
-  background:linear-gradient(110deg,var(--ad-base) 0%,var(--ad-base) 63%,var(--ad-surface) 100%)!important;
+  background:var(--ad-base)!important;
   border-bottom:1px solid var(--ad-line)!important;
 }
 #section-adlinks #adlinksTabContentDownloader .ad-download-top:before{
@@ -4688,7 +4674,7 @@ body:has(#nav-adlinks-dl.active) .header .brand-title{color:#f1f6f0!important}
 #section-adlinks #adlinksTabContentDownloader #adDlTableContainer tr.downloaded td:nth-child(2){color:var(--ad-ink-muted)!important}
 #section-adlinks #adlinksTabContentDownloader #adDlEmptyState{
   margin:24px 27px 28px!important;border:1px solid var(--ad-line)!important;border-radius:18px!important;
-  min-height:360px!important;background:linear-gradient(145deg,var(--ad-surface),var(--ad-stage))!important;
+  min-height:360px!important;background:var(--ad-surface)!important;
   animation:ctk-ad-reveal .55s var(--ad-smooth) both;
 }
 #section-adlinks #adlinksTabContentDownloader #adDlEmptyState .ad-download-illustration{
@@ -4735,7 +4721,18 @@ body:has(#nav-adlinks-dl.active) .header .brand-title{color:#f1f6f0!important}
  #section-adlinks #adlinksTabContentDownloader *,#section-adlinks #adlinksTabContentDownloader *:before,#section-adlinks #adlinksTabContentDownloader *:after{
    animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;
  }
-}</style>
+}
+
+/* Forge light-only palette parity.
+   The Ad Downloader tile's former warm blush clashes with the sage card set.
+   No other cards, workspaces, commands, or event handlers are affected. */
+body.light-mode #view-home .combined-home-grid > .home-card.tool-ads {
+  background:#e7eee7!important;
+}
+body.light-mode #section-adlinks #adlinksTabContentDownloader .ad-download-top::before {
+  display:none!important;
+}
+</style>
 <style id="ctk-type-motion-v3">/* CTK TYPE & MOTION / 2026.10
    A single reversible presentation layer. All engines, layouts, routing,
    uploads, rendering and exports are intentionally unchanged.
