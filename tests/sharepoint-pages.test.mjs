@@ -107,7 +107,7 @@ test('SharePoint recovery copies a deliberately picked local media file with spr
     await target.saveSharePointCopy({url:'https://example.sharepoint.com/sites/DACH/Shared%20Documents/file.mp3',displayName:'AD1_campaign'});
     assert.equal(copies[0][0],file);
     assert.equal(copies[0][1],'AD1_campaign.mp3');
-    assert.match(statuses[0],/original SharePoint download is unchanged/);
+    assert.match(statuses[0],/original is still present/);
   }finally{
     globalThis.document=originalDoc;globalThis.window=originalWindow;
     globalThis.CTKSharePoint=originalSP;globalThis.CTKDownloadRenamer=originalRenamer;
