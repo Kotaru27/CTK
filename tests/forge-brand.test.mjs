@@ -47,7 +47,7 @@ test('intro is accessible, skippable, reduced-motion friendly and session scoped
   assert.match(brandJS,/to\.width\/from\.width/);
   assert.match(index,/id="forgeIntroWordmark"/);
   assert.match(brandJS,/flight\.onfinish\s*=\s*cleanup/);
-  assert.match(brandJS,/3500/);
+  assert.match(brandJS,/after\(3400,cleanup\)/);
   assert.match(brandCss,/@media\(prefers-reduced-motion:reduce\)/);
 });
 test('new brand CSS does not target tool cards, cards remain untouched',()=>{
