@@ -19,7 +19,9 @@ const originalMain=[...a.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g)].fin
 const newMain=rd('dist/js/app.js');
 const visualCss=rd('src/css/experience/ad-downloader-v2.css');
 const visualJs=rd('src/js/presentation/ad-downloader-v2.js');
+const typeMotionCss=rd('src/css/experience/typography-motion-v3.css');
 const withoutVisual=standalone
+  .replace('<style id="ctk-type-motion-v3">'+typeMotionCss+'</style>\n','')
   .replace('<style id="ctk-ad-downloader-v2">'+visualCss+'</style>\n','')
   .replace('<script id="ctk-ad-downloader-v2">'+visualJs+'</script>\n','');
 const restored=withoutVisual.replace(`<script>${newMain}</script>`,`<script>${originalMain}</script>`);
@@ -27,4 +29,6 @@ if(restored!==a)throw Error('Standalone changes source HTML/CSS or scripts outsi
 if(!standalone.includes(`<script>${newMain}</script>`))throw Error('Standalone does not contain current engine');
 if(!b.includes('./dist/css/ad-downloader-v2.css')||!b.includes('./dist/js/ad-downloader-v2.js'))throw Error('Ad Downloader experience layer missing');
 if(!standalone.includes('<style id="ctk-ad-downloader-v2">')||!standalone.includes('<script id="ctk-ad-downloader-v2">'))throw Error('Standalone experience layer missing');
+if(!b.includes('./dist/css/typography-motion-v3.css')||!standalone.includes('<style id="ctk-type-motion-v3">'))throw Error('Typography & motion design layer missing');
+if(rd('dist/css/typography-motion-v3.css')!==typeMotionCss)throw Error('Typography & motion modular stylesheet mismatch');
 console.log(`Verified: ${beforeIds.length} IDs, ${beforeRoutes.length} homepage links, ${ext.length} external dependencies, untouched tool functionality and additive Ad Downloader visual layer.`);
