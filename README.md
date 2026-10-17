@@ -58,3 +58,7 @@ SharePoint bulk ZIP is not possible without media bytes; opaque sharing links
 without a resolvable file path are unsupported. The browser's download result
 cannot be confirmed by the site. Other public CORS-enabled files keep formatted
 naming and ZIP downloads. See [docs/SHAREPOINT-GITHUB-PAGES.md](docs/SHAREPOINT-GITHUB-PAGES.md).
+
+## Optional SharePoint download naming experiment
+
+See [`docs/OPTIONAL-DOWNLOAD-RENAMING.md`](docs/OPTIONAL-DOWNLOAD-RENAMING.md). The native download still works independently of folder access. Auto-naming requires a user-selected directory in Chrome/Edge, and is unverified against a real company SharePoint download; no extension or Microsoft Entra setup is required.
