@@ -24,3 +24,9 @@ Next, click the existing per-row **Download** button. SharePoint still serves th
 `npm test` includes deterministic File System Access API mocks that check filename parsing, new-file-only matching, safe collision behavior, stable-file checks, and preserving the normal download without folder permission. It **cannot** prove that an actual company SharePoint download will trigger the rename: manual Chrome/Edge testing is mandatory before enabling it for more employees.
 
 Sources: [Chrome File System Access API](https://developer.chrome.com/docs/capabilities/web-apis/file-system-access), [MDN showDirectoryPicker](https://developer.mozilla.org/en-US/docs/Web/API/Window/showDirectoryPicker), [MDN anchor download restrictions](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/a).
+
+## Concurrent automatic naming
+
+The auto-name watcher now tracks up to **60 distinct SharePoint source filenames concurrently**. It polls the selected directory every 1.25 seconds, waits for a stable completed file, matches it against every active spreadsheet row, and renames only when the match is unambiguous. Exact filename matches outrank separator-normalized matches, which outrank fuzzy high-overlap matches. It refuses another concurrently initiated download with an indistinguishable source basename, rather than allowing an untracked duplicate download. It also refuses to change the monitored folder mid-batch. The UI reports counts for files named, still waiting, and failed.
+
+If two different ads have ambiguous downloaded basenames, CTK does not guess based on click order and may leave files untouched for manual **Fix downloaded name**. Keep CTK open throughout downloading and choose the exact Chrome download directory. This feature still cannot guarantee a filename when Chrome or SharePoint saves to another folder or names the download unexpectedly; do not infer 100% coverage from automated tests.

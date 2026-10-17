@@ -116,13 +116,17 @@ test('Recognizes SharePoint filename normalization but rejects unrelated MP4s',(
   assert.equal(h.rename.matchesOriginal('ALDI Frische Social LT3 OLV Social Pick me 22s.pdf',original),false);
 });
 
-test('Only one rename may be tracked at a time; a second request leaves existing tracking safe',async()=>{
+test('Distinct source filenames may be tracked concurrently while identical source names are refused',async()=>{
   const h=harness();
   await h.rename.chooseFolder();
   assert.equal(h.rename.begin(h.entry),true);
-  const next={...h.entry,displayName:'AD2_Other',renameStatus:(text)=>h.statuses.push({message:text})};
-  assert.equal(h.rename.begin(next),false);
-  assert.match(h.statuses.at(-1).message,/one file at a time/i);
+  const different={...h.entry,url:'https://example.sharepoint.com/sites/DACH/Shared%20Documents/Other%20Campaign.mp4',displayName:'AD2_Other'};
+  assert.equal(h.rename.begin(different),true);
+  assert.equal(h.rename.stats().waiting,2);
+  const duplicate={...h.entry,displayName:'AD99_duplicate'};
+  assert.equal(h.rename.begin(duplicate),false);
+  assert.match(h.statuses.at(-1).message,/same source filename/i);
+  assert.equal(h.rename.stats().waiting,2);
   assert.notEqual(h.timer,null);
 });
 
@@ -180,4 +184,70 @@ test('When Chrome cannot move local files, the fallback copies and verifies the 
   assert.equal(actual,fixed);
   assert.equal(h.files.has(duplicate),false);
   assert.deepEqual(h.files.get(fixed).bytes,bytes);
+});
+
+test('Twelve simultaneous downloads map to twelve distinct spreadsheet names even when completion order is shuffled',async()=>{
+  const h=harness();
+  await h.rename.chooseFolder();
+  const entries=Array.from({length:12},(_,i)=>({
+    url:'https://example.sharepoint.com/sites/DACH/_layouts/15/stream.aspx?id='+
+       encodeURIComponent('/sites/DACH/Shared Documents/ALDI Campaign '+(i+1)+' Media.mp4'),
+    displayName:'AD'+(i+1)+'_ALDI_Campaign_'+(i+1)+'_Media',
+    renameStatus:(message,error)=>h.statuses.push({message,error})
+  }));
+  entries.forEach(e=>assert.equal(h.rename.begin(e),true));
+  assert.equal(h.rename.stats().waiting,12);
+  for (const i of [7,0,11,4,2,9,1,10,5,8,3,6]) {
+    h.files.set('ALDI Campaign '+(i+1)+' Media (1).mp4',
+      h.mkHandle('ALDI Campaign '+(i+1)+' Media (1).mp4',Buffer.from('payload-'+(i+1)),10500));
+  }
+  h.files.set('Unrelated Company Another Video.mp4',h.mkHandle('Unrelated Company Another Video.mp4',Buffer.from('untouched')));
+  h.advance(5000);
+  await h.tick();await h.tick();assert.equal(h.rename.stats().renamed,0);
+  await h.tick();
+  for (let i=0;i<12;i++) {
+    const name='AD'+(i+1)+'_ALDI_Campaign_'+(i+1)+'_Media.mp4';
+    assert.equal(h.files.get(name)?.bytes.toString(),'payload-'+(i+1),name);
+    assert.equal(h.files.has('ALDI Campaign '+(i+1)+' Media (1).mp4'),false);
+  }
+  assert.equal(h.files.has('Unrelated Company Another Video.mp4'),true);
+  assert.equal(h.rename.stats().renamed,12);
+  assert.equal(h.rename.stats().waiting,0);
+  assert.equal(h.rename.stats().failed,0);
+  assert.equal(h.timer,null);
+});
+
+test('Ambiguous near-identical campaign names must not be guessed or renamed',async()=>{
+  const h=harness();
+  await h.rename.chooseFolder();
+  const first={
+    url:'https://example.sharepoint.com/sites/DACH/Shared%20Documents/ALDI%20Autumn%20Social%20Video%20Pick%2022s.mp4',
+    displayName:'AD1_Autumn_22s',renameStatus:()=>{}
+  };
+  const second={
+    url:'https://example.sharepoint.com/sites/DACH/Shared%20Documents/ALDI%20Autumn%20Social%20Video%20Pick%2030s.mp4',
+    displayName:'AD2_Autumn_30s',renameStatus:()=>{}
+  };
+  assert.equal(h.rename.begin(first),true);
+  assert.equal(h.rename.begin(second),true);
+  const ambiguous='ALDI Autumn Social Video Pick.mp4';
+  h.files.set(ambiguous,h.mkHandle(ambiguous,Buffer.from('ambiguous file')));
+  h.advance(5000);
+  for(let i=0;i<4;i++)await h.tick();
+  assert.equal(h.files.has(ambiguous),true);
+  assert.equal(h.rename.stats().renamed,0);
+  const exact='ALDI Autumn Social Video Pick 22s.mp4';
+  h.files.set(exact,h.mkHandle(exact,Buffer.from('correctly linked'),10500));
+  for(let i=0;i<3;i++)await h.tick();
+  assert.equal(h.files.get('AD1_Autumn_22s.mp4')?.bytes.toString(),'correctly linked');
+  assert.equal(h.files.has(ambiguous),true);
+  assert.equal(h.rename.stats().waiting,1);
+});
+
+test('The selected download folder cannot change while multiple downloads are being tracked',async()=>{
+  const h=harness();
+  await h.rename.chooseFolder();
+  h.rename.begin(h.entry);
+  await assert.rejects(h.rename.chooseFolder(),/active renames/i);
+  assert.equal(h.rename.stats().waiting,1);
 });

@@ -52,7 +52,7 @@ export default {
             try {
               const chosen = await CTKDownloadRenamer.chooseFolder();
               document.getElementById("adDlRenameFolder").textContent = "Auto-name: " + chosen;
-              this.status(`Folder selected: ${chosen}. In Chrome Downloads settings, set this SAME folder as your download location. CTK stays open when downloading. Chrome must save into the exact folder you chose; CTK only renames NEW matching completed files. If Chrome asks where to save, select this folder. Unrelated files are untouched.`);
+              this.status(`Auto-name is ready for multiple distinct SharePoint downloads. In Chrome Downloads settings, select the SAME folder: ${chosen}. Keep CTK open. Ambiguous files are left untouched for Fix downloaded name.`);
             } catch(error) {
               if (error.name === "AbortError") { this.status("Folder selection cancelled. Native downloads still work."); return; }
               this.status("Folder access unavailable: "+error.message+". Native downloads still work.",true);
@@ -307,8 +307,15 @@ export default {
             const renamer = typeof CTKDownloadRenamer !== 'undefined' ? CTKDownloadRenamer : null;
             // The tracking starts synchronously from the same user gesture, preserving the
             // native download's trusted click. The chosen folder is never uploaded.
-            entry.renameStatus = (message,isError=false) => this.status(message,isError);
+            entry.renameStatus = (message,isError=false) => {
+              const progress=renamer?.stats?.();
+              const suffix=progress ? ` · ${progress.renamed} named · ${progress.waiting} waiting · ${progress.failed} failed` : '';
+              this.status(message+suffix,isError);
+            };
             const tracking = !!(renamer?.active() && renamer.begin(entry));
+            // If Auto-name is enabled but tracking is unsafe (duplicate source
+            // basename / too many jobs), do not silently start an untracked download.
+            if (renamer?.active() && !tracking) return;
             const a = document.createElement('a');
             a.href = target;
             a.target = '_blank';
@@ -321,7 +328,7 @@ export default {
             if (entry.downloadButton) entry.downloadButton.textContent = 'Download again';
             if (entry.renameCopyButton) entry.renameCopyButton.hidden = false;
             this.status(tracking
-              ? `SharePoint download requested. Waiting to rename ${entry.displayName} after it appears in your selected folder.`
+              ? `Tracking ${entry.displayName} for auto-naming. Multiple distinct ads can download at once.`
               : `SharePoint download requested for ${entry.displayName}. CTK stays open. If the original SharePoint filename remains, click Fix downloaded name and choose the folder containing the file. Download completion cannot be confirmed here.`);
           },
           async fixSharePointName(entry) {

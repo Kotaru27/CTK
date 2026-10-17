@@ -70,3 +70,7 @@ After a native SharePoint download finishes, use **Save named copy** on that row
 ### Correct an already-downloaded SharePoint file
 
 Click **Fix downloaded name** beside the corresponding row. Select the folder where Chrome saved the SharePoint file; CTK looks for files matching the original SharePoint basename (including ` (1)` duplicates), asks which file if there is ambiguity, and renames the chosen completed file in that folder. This avoids the extra duplicate produced by **Save named copy**. For hands-free renaming, **Auto-name: Choose folder** still requires selecting the same folder used by Chrome before downloading.
+
+### Multi-file SharePoint Auto-name
+
+Auto-name can now track up to 60 **distinct original SharePoint filenames** simultaneously, with individual spreadsheet-derived targets. Duplicate source basenames and ambiguous filename matches are not automatically renamed. Chrome must use the exact selected folder; see [optional naming documentation](docs/OPTIONAL-DOWNLOAD-RENAMING.md).
