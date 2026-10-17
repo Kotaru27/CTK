@@ -42,6 +42,7 @@ test('intro is accessible, skippable, reduced-motion friendly and session scoped
   assert.match(brandCss,/@media\(prefers-reduced-motion:reduce\)/);
 });
 test('new brand CSS does not target tool cards, cards remain untouched',()=>{
-  assert.doesNotMatch(brandCss,/\.home-card\b|\.home-card-art\b|\.tool-section\b|#view-app\b/);
+  const cssRulesOnly = brandCss.replace(/\/\*[\s\S]*?\*\//g,'');
+  assert.doesNotMatch(cssRulesOnly,/\.home-card\b|\.home-card-art\b|\.tool-section\b|#view-app\b/);
   assert.doesNotMatch(brandJS,/home-card|\.tool-section|openTool/);
 });
