@@ -51,12 +51,12 @@ jobs:
                 err=None
                 if section:
                   try:
-                    page.evaluate('([section,mode])=>{window.UI._openTool(section,mode)}',[section,mode])
+                    page.evaluate('([section,mode])=>{UI._openTool(section,mode)}',[section,mode])
                   except Exception as e:
                     err=str(e)[:200]
                     page.evaluate('([section,mode])=>{const h=document.getElementById("view-home"),v=document.getElementById("view-app");h.classList.remove("active");h.classList.add("hidden");v.classList.add("active"); document.getElementById("mainSidebar").classList.add("visible");document.querySelectorAll(".tool-section").forEach(x=>x.classList.remove("active"));document.getElementById(section).classList.add("active");if(section==="section-pdf"){document.getElementById("pdfTabContentConvert").style.display=mode==="convert"?"block":"none";document.getElementById("pdfTabContentSplit").style.display=mode==="split"?"block":"none";}if(section==="section-adlinks"){document.getElementById("adlinksTabContentGen").style.display=mode==="gen"?"block":"none";document.getElementById("adlinksTabContentDownloader").style.display=mode==="downloader"?"block":"none";}}',[section,mode])
                 else:
-                  try:page.evaluate('()=>window.UI._showHome()')
+                  try:page.evaluate('()=>UI._showHome()')
                   except Exception as e:err=str(e)[:200]
                 page.wait_for_timeout(750)
                 data=page.evaluate('''({section,name})=>{
