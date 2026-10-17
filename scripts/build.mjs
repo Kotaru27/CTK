@@ -28,16 +28,69 @@ if(k!==5)throw Error('Did not replace all inline scripts');
 const visualCss=read('src/css/experience/ad-downloader-v2.css');
 const visualJs=read('src/js/presentation/ad-downloader-v2.js');
 const typeMotionCss=read('src/css/experience/typography-motion-v3.css');
+
+/* The brand shell is overlaid on the unchanged baseline; never rewrite tool cards. */
+const forgeBrandCss=read('src/css/experience/forge-brand.css');
+const forgeBrandJs=read('src/js/presentation/forge-brand.js');
+const forgeHero=[
+  '<section class="forge-hero" aria-labelledby="forgeHeroName">',
+  '<div class="forge-hero-top"><span>YOUR CREATIVE WORKSPACE</span><span class="forge-hero-index">01 — 08 / EVERYDAY TOOLS</span></div>',
+  '<h1 class="forge-hero-name" id="forgeHeroName">The Forge</h1>',
+  '<div class="forge-hero-bottom">',
+  '<p class="forge-hero-tagline">CREATE &nbsp;·&nbsp; TRANSFORM &nbsp;·&nbsp; TOGETHER</p>',
+  '<p class="forge-hero-description">Turn scattered tasks into one seamless workflow. Resize, extract, convert, assemble and deliver — all in one place.</p>',
+  '</div></section>',
+  '<div class="forge-after-hero"><span>THE WORKSPACES</span><span>SELECT A TOOL TO BEGIN ↓</span></div>'
+].join('\n');
+const forgeIntroLetters='The Forge'.split('').map((ch,i)=>
+  ch===' '?'<span class="forge-intro-space" aria-hidden="true"></span>':
+  '<span class="forge-intro-letter" aria-hidden="true" style="--step:'+i+'">'+ch+'</span>'
+).join('');
+const forgeIntro=[
+  '<div class="forge-intro" id="forgeIntro" role="status" aria-label="Opening The Forge" aria-live="off">',
+  '<div class="forge-intro-inner">',
+  '<div class="forge-intro-kicker">A CREATIVE WORKSPACE</div>',
+  '<div class="forge-intro-type" aria-label="The Forge">'+forgeIntroLetters+'</div>',
+  '<div class="forge-intro-rule" aria-hidden="true"></div>',
+  '<div class="forge-intro-foot">CREATE · TRANSFORM · TOGETHER</div>',
+  '</div></div>'
+].join('\n');
+function forgeBrand(html,standaloneRelease){
+  const start=html.indexOf('<div class="home-wordmark">');
+  const end=html.indexOf('<div class="home-grid combined-home-grid" id="homeContent">',start);
+  if(start<0||end<0)throw Error('Forge home injection anchors not found: refusing to modify tool cards');
+  html=html.slice(0,start)+forgeHero+'\n'+html.slice(end);
+  if(!html.includes('<title>Creative Tools Suite</title>'))throw Error('Original suite title not found');
+  html=html.replace('<title>Creative Tools Suite</title>','<title>The Forge — Creative Tools</title>');
+  html=html.replace('<link href="Toolkit%20logo.png" rel="icon" type="image/png"/>','');
+  html=html.replace('<span class="material-symbols-rounded brand-icon">deployed_code</span>','');
+  html=html.replace('<span class="brand-text" id="brandText">CREATIVE TOOLS SUITE</span>','<span class="brand-text" id="brandText">The Forge</span>');
+  const fontLink='<link rel="preconnect" href="https://api.fontshare.com" crossorigin="anonymous">\n'+
+    '<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=kola@400&amp;display=swap">\n';
+  const brandStyle=standaloneRelease?'<style id="forge-brand-styles">'+forgeBrandCss+'</style>\n':
+    '<link rel="stylesheet" href="./dist/css/forge-brand.css">\n';
+  html=html.replace('</head>',fontLink+brandStyle+'</head>');
+  const themeBootstrap='<script>try{if(localStorage.getItem("cts_theme")==="dark")document.body.classList.remove("light-mode")}catch(_){}</script>';
+  html=html.replace('<body>','<body class="light-mode">\n'+themeBootstrap+'\n'+forgeIntro+'\n');
+  const brandScript=standaloneRelease?'<script id="forge-brand-intro-js">'+forgeBrandJs+'</script>':
+    '<script id="forge-brand-intro-js" src="./dist/js/forge-brand.js"></script>';
+  html=html.replace('</body>',brandScript+'\n</body>');
+  return html;
+}
+
 output=output.replace('<link rel="stylesheet" href="./dist/css/app.css">','<link rel="stylesheet" href="./dist/css/app.css">\n<link rel="stylesheet" href="./dist/css/ad-downloader-v2.css">');
 output=output.replace('</body>','<script id="ctk-ad-downloader-v2" src="./dist/js/ad-downloader-v2.js"></script>\n</body>');
 output=output.replace('<link rel="stylesheet" href="./dist/css/ad-downloader-v2.css">',
  '<link rel="stylesheet" href="./dist/css/ad-downloader-v2.css">\n<link rel="stylesheet" href="./dist/css/typography-motion-v3.css">');
 save('dist/css/typography-motion-v3.css',typeMotionCss);
+save('dist/css/forge-brand.css',forgeBrandCss);
+save('dist/js/forge-brand.js',forgeBrandJs);
 save('dist/css/ad-downloader-v2.css',visualCss);
 save('dist/js/ad-downloader-v2.js',visualJs);
 save('dist/css/app.css',css);save('dist/js/app.js',main);
 const targets=['home-interactions','vector-icons','video-downloads-presentation','pdf-to-image-presentation'];
 for(let i=0;i<targets.length;i++)save(`dist/js/${targets[i]}.js`,read(cfg.presentation[i]));
+output=forgeBrand(output,false);
 save('index.html',output);
 save('dist/index.html',output.replaceAll('./dist/css/','./css/').replaceAll('./dist/js/','./js/'));
 // The standalone release includes the current engine while preserving the original HTML and CSS.
@@ -45,6 +98,7 @@ let originalIndex=0;let standalone=baseline.replace(/<script\b([^>]*)>([\s\S]*?)
 if(originalIndex!==5)throw Error('Standalone release is missing a script');
 standalone=standalone.replace('</head>','<style id="ctk-ad-downloader-v2">'+visualCss+'</style>\n<style id="ctk-type-motion-v3">'+typeMotionCss+'</style>\n</head>');
 standalone=standalone.replace('</body>','<script id="ctk-ad-downloader-v2">'+visualJs+'</script>\n</body>');
+standalone=forgeBrand(standalone,true);
 save('dist/creative-tools-standalone.html',standalone);
 const hash=s=>crypto.createHash('sha256').update(s).digest('hex');
 console.log('Build OK');console.log('CSS',css.length,'SHA256',hash(css));console.log('JS',main.length,'SHA256',hash(main));console.log('Standalone contains optimized engine:',standalone.includes(main));
