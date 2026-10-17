@@ -16,7 +16,7 @@ test('shared route motion is only wired for the Video Stills tool, preserving ot
   assert.match(core,/this\._openTool\(id, mode\)/);
   assert.match(core,/this\._showHome\(\)/);
   const original=[...baseline.matchAll(/<button class="home-card\b[\s\S]*?<\/button>/g)]
-    .map(m=>m[0].replace('Logo Workspace','Logo Resizer'));
+    .map(m=>m[0].replaceAll('Logo Workspace','Logo Resizer'));
   const latest=[...index.matchAll(/<button class="home-card\b[\s\S]*?<\/button>/g)]
     .map(m=>m[0]);
   assert.equal(original.length,8);
