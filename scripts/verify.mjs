@@ -6,7 +6,7 @@ const rd=s=>fs.readFileSync(path.join(root,s),'utf8');
 const a=rd('source/baseline.html'), b=rd('index.html');
 const ids=s=>[...s.replace(/<script\b[^>]*>[\s\S]*?<\/script>/g,'').matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]).sort();
 const getRoutes=s=>[...s.matchAll(/<button\b[^>]*class="[^"]*home-card[^>]*"[^>]*onclick="([^"]+)"/g)].map(m=>m[1]);
-const beforeIds=ids(a),afterIds=ids(b).filter(id=>id!=="forgeIntro"&&id!=="forgeHeroName");
+const beforeIds=ids(a),afterIds=ids(b).filter(id=>!["forgeIntro","forgeHeroName","forgeIntroType","forgeIntroSkip"].includes(id));
 if(JSON.stringify(beforeIds)!==JSON.stringify(afterIds))throw Error('DOM element IDs changed');
 const beforeRoutes=getRoutes(a),afterRoutes=getRoutes(b);
 if(beforeRoutes.length!==8||JSON.stringify(beforeRoutes)!==JSON.stringify(afterRoutes))throw Error('Homepage routes changed');

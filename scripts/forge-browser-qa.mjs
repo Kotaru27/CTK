@@ -1,0 +1,68 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {chromium} from 'playwright';
+
+const base='http://127.0.0.1:4173/';
+fs.mkdirSync('artifacts/forge-browser',{recursive:true});
+const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+const failures=[];
+function check(value,message) {
+ if(!value) failures.push(message);
+}
+try {
+ const context=await browser.newContext({viewport:{width:1440,height:900},reducedMotion:'no-preference'});
+ const page=await context.newPage();
+ const pageErrors=[];
+ page.on('pageerror',error=>pageErrors.push(String(error)));
+ await page.goto(base,{waitUntil:'domcontentloaded',timeout:60000});
+ const intro=page.locator('#forgeIntro');
+ await intro.waitFor({state:'visible',timeout:8000});
+ await page.screenshot({path:'artifacts/forge-browser/intro.png'});
+ check(await page.locator('.forge-intro-glyph').count()===8,'Intro should have eight constructed glyphs');
+ await intro.waitFor({state:'detached',timeout:6000});
+ const cards=page.locator('button.home-card');
+ check(await cards.count()===8,'All eight tool cards must exist after handoff');
+ const details=await page.evaluate(()=>{
+  const hero=document.getElementById('forgeHeroName');
+  const element=document.querySelector('.forge-hero');
+  const r=hero.getBoundingClientRect(),box=element.getBoundingClientRect();
+  const style=getComputedStyle(element);
+  return {
+   light:document.body.classList.contains('light-mode'),
+   title:hero.textContent,
+   titleOpacity:getComputedStyle(hero).opacity,
+   backgroundColor:style.backgroundColor,
+   heroWidth:Math.round(box.width),titleWidth:Math.round(r.width),
+   titleLeft:Math.round(r.left),titleRight:Math.round(r.right),
+   overflow:document.documentElement.scrollWidth>innerWidth+3,
+   font:getComputedStyle(hero).fontFamily,
+   kolaLoaded:document.fonts.check('400 120px "Kola"')
+  };
+ });
+ await page.screenshot({path:'artifacts/forge-browser/home-light.png'});
+ check(details.light,'New visitors should default to light theme');
+ check(details.title==='The Forge','Hero title text incorrect');
+ check(details.titleOpacity==='1','Hero title must be fully revealed after intro');
+ check(details.backgroundColor==='rgba(0, 0, 0, 0)','Hero should be open/transparent, not dark banner');
+ check(!details.overflow,'Homepage should not overflow horizontally at 1440px');
+ check(details.titleRight < 1440,'Wordmark is clipped on the desktop viewport');
+ check(details.font.includes('Kola'),'Wordmark must request Kola');
+ // Existing theme persistence must remain functional.
+ await page.evaluate(()=>localStorage.setItem('cts_theme','dark'));
+ await page.reload({waitUntil:'domcontentloaded'});
+ check(!(await page.locator('body').evaluate(el=>el.classList.contains('light-mode'))),
+   'Saved dark theme was not honored');
+ check(await page.locator('#forgeIntro').count()===0,'Intro repeated within one session');
+ await page.screenshot({path:'artifacts/forge-browser/home-dark.png'});
+ await context.close();
+ const motion=await browser.newContext({viewport:{width:1440,height:900},reducedMotion:'reduce'});
+ const reducedPage=await motion.newPage();
+ await reducedPage.goto(base,{waitUntil:'domcontentloaded',timeout:60000});
+ await reducedPage.waitForTimeout(120);
+ check(await reducedPage.locator('#forgeIntro').count()===0,'Reduced motion should bypass intro');
+ await motion.close();
+ console.log('Forge browser QA',JSON.stringify({details,pageErrors,failures},null,2));
+ assert.deepEqual(failures,[],'Forge browser regression failures');
+} finally {
+ await browser.close();
+}

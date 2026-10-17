@@ -34,26 +34,40 @@ const forgeBrandCss=read('src/css/experience/forge-brand.css');
 const forgeBrandJs=read('src/js/presentation/forge-brand.js');
 const forgeHero=[
   '<section class="forge-hero" aria-labelledby="forgeHeroName">',
-  '<div class="forge-hero-top"><span>YOUR CREATIVE WORKSPACE</span><span class="forge-hero-index">01 — 08 / EVERYDAY TOOLS</span></div>',
-  '<h1 class="forge-hero-name" id="forgeHeroName">The Forge</h1>',
-  '<div class="forge-hero-bottom">',
-  '<p class="forge-hero-tagline">CREATE &nbsp;·&nbsp; TRANSFORM &nbsp;·&nbsp; TOGETHER</p>',
-  '<p class="forge-hero-description">Turn scattered tasks into one seamless workflow. Resize, extract, convert, assemble and deliver — all in one place.</p>',
-  '</div></section>',
-  '<div class="forge-after-hero"><span>THE WORKSPACES</span><span>SELECT A TOOL TO BEGIN ↓</span></div>'
+  ' <div class="forge-hero-top">',
+  '  <span class="forge-hero-edition">THE FORGE / CREATIVE WORKSPACE</span>',
+  '  <span class="forge-hero-counter">EIGHT TOOLS · ONE PLACE</span>',
+  ' </div>',
+  ' <div class="forge-hero-middle">',
+  '  <h1 class="forge-hero-name" id="forgeHeroName">The Forge</h1>',
+  '  <div class="forge-hero-aside">',
+  '   <span class="forge-hero-aside-label">MAKE SOMETHING OF IT</span>',
+  '   <p>Everything between your first idea and the finished asset. Without the extra steps.</p>',
+  '  </div>',
+  ' </div>',
+  ' <div class="forge-hero-bottom">',
+  '  <span class="forge-hero-lineup">Create / Transform / Deliver</span>',
+  '  <span class="forge-hero-manifesto">One considered space for everyday creative work.</span>',
+  ' </div>',
+  '</section>',
+  '<div class="forge-after-hero"><strong>Explore the workspaces</strong><span>CHOOSE WHERE TO BEGIN ↓</span></div>'
 ].join('\n');
 const forgeIntroLetters='The Forge'.split('').map((ch,i)=>
-  ch===' '?'<span class="forge-intro-space" aria-hidden="true"></span>':
-  '<span class="forge-intro-letter" aria-hidden="true" style="--step:'+i+'">'+ch+'</span>'
+  ch===' '?'<span class="forge-intro-gap" aria-hidden="true"></span>':
+  '<span class="forge-intro-glyph" style="--step:'+i+'" aria-hidden="true">'+
+   '<span class="forge-intro-outline">'+ch+'</span>'+
+   '<span class="forge-intro-fill">'+ch+'</span></span>'
 ).join('');
 const forgeIntro=[
-  '<div class="forge-intro" id="forgeIntro" role="status" aria-label="Opening The Forge" aria-live="off">',
-  '<div class="forge-intro-inner">',
-  '<div class="forge-intro-kicker">A CREATIVE WORKSPACE</div>',
-  '<div class="forge-intro-type" aria-label="The Forge">'+forgeIntroLetters+'</div>',
-  '<div class="forge-intro-rule" aria-hidden="true"></div>',
-  '<div class="forge-intro-foot">CREATE · TRANSFORM · TOGETHER</div>',
-  '</div></div>'
+  '<div class="forge-intro" id="forgeIntro" role="region" aria-label="The Forge introduction">',
+  ' <div class="forge-intro-layout">',
+  '  <div class="forge-intro-label">YOUR CREATIVE WORKSPACE</div>',
+  '  <div class="forge-intro-type" id="forgeIntroType" role="img" aria-label="The Forge">'+forgeIntroLetters+'</div>',
+  '  <div class="forge-intro-caption"><span>CREATE / TRANSFORM / DELIVER</span>',
+  '   <button type="button" class="forge-intro-skip" id="forgeIntroSkip" aria-label="Skip introduction">Skip intro ↗</button>',
+  '  </div>',
+  ' </div>',
+  '</div>'
 ].join('\n');
 function forgeBrand(html,standaloneRelease){
   const start=html.indexOf('<div class="home-wordmark">');

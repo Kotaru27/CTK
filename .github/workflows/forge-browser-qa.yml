@@ -1,0 +1,43 @@
+name: Forge desktop browser QA
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/css/experience/forge-brand.css'
+      - 'src/js/presentation/forge-brand.js'
+      - 'scripts/build.mjs'
+      - 'scripts/forge-browser-qa.mjs'
+      - '.github/workflows/forge-browser-qa.yml'
+permissions:
+  contents: read
+jobs:
+  chromium:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install isolated browser test dependency
+        run: npm install --no-save --no-package-lock playwright@1.58.2
+      - name: Install Chromium
+        run: npx playwright install chromium --with-deps
+      - name: Start development server
+        run: |
+          node scripts/dev.mjs > /tmp/forge-server.log 2>&1 &
+          for i in $(seq 1 50); do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/forge-server.log
+          exit 1
+      - name: Verify intro and desktop homepage
+        run: node scripts/forge-browser-qa.mjs
+      - name: Keep screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: forge-browser-qa
+          path: artifacts/forge-browser/
+          if-no-files-found: ignore

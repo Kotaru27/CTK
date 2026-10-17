@@ -39,10 +39,41 @@ test('intro is accessible, skippable, reduced-motion friendly and session scoped
   assert.match(brandJS,/sessionStorage/);
   assert.match(brandJS,/prefers-reduced-motion/);
   assert.match(brandJS,/Escape/);
+  assert.match(index,/id="forgeIntroSkip"/);
+  assert.match(brandJS,/document\.fonts/);
+  assert.match(brandJS,/destination\.getBoundingClientRect/);
+  assert.match(brandJS,/mark\.animate/);
+  assert.match(brandJS,/flight\.onfinish = cleanup/);
+  assert.match(brandJS,/3500/);
   assert.match(brandCss,/@media\(prefers-reduced-motion:reduce\)/);
 });
 test('new brand CSS does not target tool cards, cards remain untouched',()=>{
   const cssRulesOnly = brandCss.replace(/\/\*[\s\S]*?\*\//g,'');
   assert.doesNotMatch(cssRulesOnly,/\.home-card\b|\.home-card-art\b|\.tool-section\b|#view-app\b/);
   assert.doesNotMatch(brandJS,/home-card|\.tool-section|openTool/);
+});
+
+test('editorial hero is light-first, free of the old dark banner and circular decoration',()=>{
+  for (const page of [index,standalone]) {
+    assert.match(page,/class="forge-hero-middle"/);
+    assert.match(page,/class="forge-hero-aside"/);
+    assert.match(page,/class="forge-hero-manifesto"/);
+    assert.match(page,/class="forge-after-hero"/);
+    assert.doesNotMatch(page,/class="forge-hero-index"/);
+    assert.doesNotMatch(page,/class="forge-hero-tagline"/);
+  }
+  assert.match(brandCss,/background:transparent/);
+  assert.match(brandCss,/border-top:1px solid var\(--forge-hero-line\)/);
+  assert.doesNotMatch(brandCss,/forge-hero::before|forge-hero::after/);
+  assert.doesNotMatch(brandCss,/\.forge-hero\s*\{[^}]*linear-gradient/);
+});
+test('intro constructs Kola lettering rather than only fading a full wordmark',()=>{
+  assert.match(index,/class="forge-intro-outline"/);
+  assert.match(index,/class="forge-intro-fill"/);
+  assert.match(brandCss,/@keyframes forge-draw-letter/);
+  assert.match(brandCss,/-webkit-text-stroke:/);
+  assert.match(brandCss,/\.forge-intro--handoff/);
+  assert.match(brandJS,/forge-home-arriving/);
+  assert.match(brandJS,/prefers-reduced-motion/);
+  assert.match(brandJS,/forge_intro_seen_v2/);
 });
