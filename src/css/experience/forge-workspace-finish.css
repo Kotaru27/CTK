@@ -1,0 +1,267 @@
+/* THE FORGE — WORKSPACE FINISH / 2026.10
+   Precision typography and output-first composition.
+   Strictly presentation CSS: never alter editors, media sizing algorithms,
+   upload controls, command generation, workspace routing or export paths. */
+
+/* 01 / Readability. Normalize tiny supporting text without inflating major
+   headlines or distorting dense technical surfaces on short screens. */
+#view-app .tool-section :is(.edition-kicker,.edition-rule-label,.split-studio-meta,
+  .split-studio-foot,.yt-terminal-bar,.yt-stage-step small,.pdf-eyebrow,
+  .pdf-step,.pdf-stage-topline,.pdf-format-note,.pdf-local-mark small,
+  .vs-collection-kicker,.vs-overline,.vs-gallery-bar,.ad-download-heading .edition-kicker) {
+  font-size:clamp(10.5px,.72vw,12px)!important;
+  line-height:1.55!important;
+  letter-spacing:.055em!important;
+}
+#view-app :is(.adgen-intro,.yt-studio-identity,.split-studio-identity) > p {
+  font-size:13px!important;
+  line-height:1.72!important;
+}
+#view-app #section-pdf :is(.pdf-side-identity p,.pdf-empty-copy p,.pdf-format-note) {
+  font-size:12.5px!important;
+  line-height:1.65!important;
+}
+#view-app #section-logo #logoControls :is(label,.glass-panel > div .label-header) {
+  font-size:11.5px!important;
+  line-height:1.55!important;
+}
+#view-app #section-logo #logoControls :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]),textarea,select) {
+  font-size:13px!important;
+}
+#view-app #section-logo #logoGrid .logo-card-item :is(.card-text,textarea) {
+  font-size:12px!important;
+  line-height:1.48!important;
+}
+#view-app #section-stills-boards #storyBoardControls .label-header {
+  font-size:11.5px!important;
+  letter-spacing:.025em!important;
+  line-height:1.5!important;
+}
+#view-app #section-stills-boards #storyBoardControls :is(input,select) {
+  font-size:12.5px!important;
+}
+#view-app #section-adlinks #adlinksTabContentGen :is(#alg-folder,#alg-server,#alg-input) {
+  font-size:13px!important;
+  line-height:1.6!important;
+}
+#view-app #section-yt-helper #ytUrlInput {font-size:13px!important;line-height:1.65!important;}
+#view-app #section-yt-helper :is(.yt-stage-step small,.yt-terminal-caption) {
+  font-size:11.5px!important;line-height:1.55!important;
+}
+#view-app #section-yt-helper .yt-studio-input code {
+  font-size:12px!important;line-height:1.65!important;
+}
+body.light-mode #view-app #section-logo #logoControls :is(label,.glass-panel > div .label-header) {
+  color:#506c59!important;
+}
+body.light-mode #view-app #section-pdf :is(.pdf-eyebrow,.pdf-step,.pdf-format-note,.pdf-local-mark small) {
+  color:#4f6857!important;
+}
+body.light-mode #view-app :is(.split-studio-meta,.split-studio-foot,.adgen-output-intro p,.yt-terminal-caption,.yt-stage-step small) {
+  color:#526b59!important;
+}
+
+/* 02 / Populated media states.
+   Enhance cards and filenames only; no canvas/img height, transform, zoom
+   or object-fit overrides that could affect processing or inspection. */
+#section-logo #logoGrid .logo-card-item {
+  border-color:var(--lr-line)!important;
+  box-shadow:0 5px 18px rgba(19,55,34,.055)!important;
+}
+#section-logo #logoGrid .logo-card-item :is(.card-text,input,textarea) {
+  min-width:0;
+}
+#section-logo #logoGrid .logo-card-item > div:last-child {
+  border-top:1px solid var(--lr-line);
+}
+#section-pdf .pdf-stack-wrapper .stack-title {
+  font-size:13px!important;line-height:1.5!important;
+  overflow-wrap:anywhere;
+}
+#section-pdf #pdfStacksContainer:has(#pdfEmptyState[style*="display: none"]) {
+  align-content:start!important;
+}
+#stillsDetailOverlay.vs-contact-sheet .vs-sheet-gallery {
+  background:var(--vs-layer)!important;
+}
+#stillsDetailOverlay.vs-contact-sheet .vs-gallery-bar {
+  font-size:11px!important;
+}
+#stillsDetailOverlay.vs-contact-sheet .vs-sheet-preview {
+  background:var(--vs-bg)!important;
+}
+#section-adlinks #adlinksTabContentDownloader #adDlTableContainer tbody td {
+  font-size:12px!important;line-height:1.55!important;
+}
+
+/* 03 / Storyboard — board is the main surface, navigation is quiet, controls
+   are grouped in a compact rail. Real canvases retain their exact dimensions. */
+#stillsTabContentStory .sidebar-panel {
+  background:var(--sb-shell)!important;
+  border-right:1px solid var(--sb-line)!important;
+}
+#stillsTabContentStory #storyBoardControls > .glass-panel {
+  border-bottom:1px solid var(--sb-line-soft)!important;
+  margin-bottom:14px!important;
+  padding-bottom:13px!important;
+}
+#stillsTabContentStory #storyBoardControls > .glass-panel:last-child {
+  border-bottom:0!important;
+}
+#stillsTabContentStory #storyProjectTabs {
+  padding-bottom:6px!important;
+}
+#stillsTabContentStory #storyProjectTabs > div {
+  border-radius:5px!important;
+  font-size:12.5px!important;
+  min-height:38px!important;
+}
+#stillsTabContentStory #storyFileList > div {
+  border:1px solid var(--sb-line)!important;
+  padding:9px!important;
+  font-size:12px!important;
+  line-height:1.4!important;
+  border-radius:6px!important;
+  background:var(--sb-panel)!important;
+}
+#stillsTabContentStory .story-center-panel {
+  background:var(--sb-stage)!important;
+}
+#stillsTabContentStory #storyBoardPreviewArea {
+  border:1px solid var(--sb-line)!important;
+  box-shadow:0 12px 36px rgba(24,56,35,.045)!important;
+}
+#stillsTabContentStory #storyPreview:has(canvas) {
+  background:color-mix(in srgb,var(--sb-stage) 75%,var(--sb-panel))!important;
+}
+#stillsTabContentStory #storyPreview:has(canvas)::before,
+#stillsTabContentStory #storyPreview:has(canvas)::after {
+  color:var(--sb-muted)!important;
+}
+#section-stills-boards #storySubModeToggle {
+  border-radius:7px!important;
+  gap:4px!important;
+}
+#section-stills-boards #storySubModeToggle .liquid-btn {
+  min-height:36px!important;
+  border-radius:5px!important;
+  font-size:12px!important;
+}
+
+/* 04 / Link Gen — wide screens display both generated artefacts as a real
+   two-output workbench; narrow and laptop layouts retain a readable stack. */
+#section-adlinks #adlinksTabContentGen .adgen-studio-input {
+  border-right:1px solid var(--studio-border)!important;
+}
+#section-adlinks #adlinksTabContentGen .adgen-source-controls > div {
+  flex-wrap:wrap;
+}
+#section-adlinks #adlinksTabContentGen .adgen-output-card {
+  border-radius:7px!important;
+  padding:clamp(17px,1.3vw,24px)!important;
+  border-top:3px solid var(--studio-border)!important;
+  box-shadow:0 5px 18px rgba(24,58,38,.035)!important;
+}
+#section-adlinks #adlinksTabContentGen .adgen-output-card:nth-of-type(2) {
+  border-top-color:var(--studio-accent)!important;
+}
+#section-adlinks #adlinksTabContentGen .adgen-output-card textarea {
+  font-size:12.5px!important;
+  line-height:1.72!important;
+  border-radius:5px!important;
+  tab-size:2;
+}
+#section-adlinks #adlinksTabContentGen .adgen-output-card textarea:not(:placeholder-shown) {
+  background:var(--studio-panel)!important;
+  border-color:color-mix(in srgb,var(--studio-accent) 28%,var(--studio-border))!important;
+}
+#section-adlinks #adlinksTabContentGen .adgen-output-card button {
+  min-height:36px!important;
+  padding-inline:15px!important;
+  font-size:12px!important;
+}
+@media (min-width:1660px) {
+  #section-adlinks #adlinksTabContentGen .right-panel.adgen-studio-results {
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    grid-template-rows:auto minmax(0,1fr)!important;
+    align-items:stretch!important;
+    gap:clamp(14px,1.15vw,22px)!important;
+  }
+  #section-adlinks #adlinksTabContentGen .adgen-output-intro {
+    grid-column:1 / -1!important;
+  }
+  #section-adlinks #adlinksTabContentGen .right-panel.adgen-studio-results > .adgen-output-card {
+    flex:none!important;min-height:0!important;
+    height:100%!important;
+    margin:0!important;
+  }
+  #section-adlinks #adlinksTabContentGen .adgen-output-card textarea {
+    min-height:230px!important;
+  }
+}
+
+/* 05 / Video Downloads — populated metadata is the result surface.
+   Keep copying commands exactly as implemented, only improve presentation. */
+#section-yt-helper #ytMetadataPanel.yt-result-card {
+  border-radius:7px!important;
+  padding:clamp(18px,1.4vw,27px)!important;
+  border-top:3px solid var(--studio-accent)!important;
+}
+#section-yt-helper #ytMetadataPanel > .label-header {
+  display:block;
+  font-size:11px!important;
+  letter-spacing:.075em!important;
+  padding-bottom:14px!important;
+  margin-bottom:18px!important;
+  border-bottom:1px solid var(--studio-border);
+}
+#section-yt-helper #ytMetadataContent > .glass-panel {
+  background:var(--studio-panel)!important;
+  border:1px solid var(--studio-border)!important;
+  box-shadow:none!important;
+  border-radius:6px!important;
+  padding:18px!important;
+  margin-bottom:14px!important;
+}
+#section-yt-helper #ytMetadataContent h4 {
+  color:var(--studio-title)!important;
+  font-size:clamp(15px,1vw,18px)!important;
+  line-height:1.4!important;
+}
+#section-yt-helper #ytMetadataContent .copy-cmd-btn {
+  min-height:40px!important;
+  font-size:12px!important;
+  padding:8px 12px!important;
+  border:1px solid var(--studio-border)!important;
+  border-radius:5px!important;
+  background:var(--studio-raised)!important;
+  color:var(--studio-title)!important;
+}
+#section-yt-helper #ytMetadataContent .copy-cmd-btn:first-child {
+  background:var(--studio-accent)!important;
+  color:var(--studio-accent-on)!important;
+  border-color:var(--studio-accent)!important;
+}
+#section-yt-helper #ytMetadataContent img {
+  border-radius:4px!important;
+}
+
+/* Prevent extra-wide code sections and metadata from losing hierarchy. */
+@media(min-width:1660px) {
+  #section-yt-helper #ytMetadataPanel {max-width:1100px;}
+  #section-yt-helper #ytEmptyStage {max-width:none;}
+}
+@media(max-width:1400px) {
+  #section-adlinks #adlinksTabContentGen .adgen-output-card {padding:16px!important;}
+  #section-yt-helper #ytMetadataPanel.yt-result-card {padding:16px!important;}
+  #section-stills-boards #storySubModeToggle .liquid-btn {
+    padding-inline:10px!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  #section-adlinks #adlinksTabContentGen .adgen-output-card,
+  #section-yt-helper #ytMetadataContent > .glass-panel {
+    transition:none!important;
+  }
+}
