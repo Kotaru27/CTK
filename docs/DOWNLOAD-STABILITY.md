@@ -1,0 +1,7 @@
+# SharePoint download workspace and filename stability (guarded review)
+
+The prior version used `target="_self"` for SharePoint downloads. SharePoint sometimes returned a web page instead of a file, replacing CTK and clearing the workspace. The updated version uses a separate protected top-level tab (`target="_blank" rel="noopener noreferrer"`), preserving CTK even if SharePoint responds with HTML or login. Attachment downloads generally do not leave an extra tab, but this behavior is browser/server-controlled.
+
+The filename matcher now tolerates common SharePoint separator/case variations, still requires the same file extension and strong name similarity, avoids handling multiple concurrent naming jobs, and refuses existing destination filenames. An `AD1_...` name can be applied **only after** the native SharePoint file appears in the directory explicitly granted to CTK. Chrome's own Save As dialog still uses SharePoint's filename. Pick exactly the same folder in CTK and Chrome, preferably a dedicated `CTK Downloads` folder. CTK never collects company credentials or SharePoint media bytes for this feature.
+
+The native download path continues to work without folder access. Genuine automatic naming is **not guaranteed** by a static GitHub Pages app: cross-origin Content-Disposition filenames and browser download history cannot be controlled. Tests cover safe navigation, filename variants, conflicts, and wrong file extensions; a signed-in Chrome + SharePoint manual test is still required. No other CTK tools or UI styling were modified.

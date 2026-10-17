@@ -47,7 +47,7 @@ test('reject opaque sharing URLs, preview route with GUID only and malicious URL
     'https://example.sharepoint.com/sites/DACH/Shared%20Documents/folder/',
   ]) assert.equal(sp.directUrl(raw),null,raw);
 });
-test('native request uses same tab, no popup, no network fetch and no false downloaded state',()=>{
+test('SharePoint request isolates navigation from the CTK workspace and never claims success',()=>{
   let clicked=null, removed=false;
   const originalDoc=globalThis.document;
   const originalSP=globalThis.CTKSharePoint;
@@ -61,7 +61,9 @@ test('native request uses same tab, no popup, no network fetch and no false down
   try {
     const copy=Object.assign({},AD,{status:(message,err)=>statuses.push([message,err])});
     copy.downloadSharePoint(entry);
-    assert.equal(clicked.target,'_self');
+    assert.equal(clicked.target,'_blank');
+    assert.match(clicked.rel,/noopener/);
+    assert.match(clicked.rel,/noreferrer/);
     assert.match(clicked.href,/download\.aspx/);
     assert.equal(removed,true);
     assert.equal(entry.downloaded,false);

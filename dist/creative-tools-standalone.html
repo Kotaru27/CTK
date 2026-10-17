@@ -6138,16 +6138,34 @@ const CTKDownloadRenamer = (() => {
     if (!name || !/\.(?:mp4|mov|m4v|avi|mkv|webm|mp3|m4a|wav|ogg|flac|jpg|jpeg|png|gif|webp|bmp|svg|pdf|zip)$/i.test(name)) return null;
     return name;
   }
-  function matchesOriginal(actual, original) {
-    const dot = original.lastIndexOf('.');
-    if (dot < 1) return false;
-    const stem = original.slice(0,dot), ext = original.slice(dot);
-    // Windows and Chrome append (1), (2), ... for colliding native downloads.
-    return actual.toLowerCase() === original.toLowerCase() ||
-      (actual.toLowerCase().startsWith(stem.toLowerCase()+' (') &&
-        new RegExp('^'+escapeRegex(stem)+' \\(\\d+\\)'+escapeRegex(ext)+'$','i').test(actual));
+  function filenameParts(name) {
+    const dot = name.lastIndexOf('.');
+    if (dot <= 0) return null;
+    const stem = name.slice(0,dot).replace(/ \(\d+\)$/,'');
+    const extension = name.slice(dot).toLowerCase();
+    return { stem, extension };
   }
-  function escapeRegex(value) { return value.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
+  function comparableTokens(stem) {
+    const normalized=stem.normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+      .replace(/([a-z])([A-Z])/g,'$1 $2')
+      .toLowerCase().replace(/[^a-z0-9]+/g,' ')
+      .trim().split(/\s+/).filter(Boolean);
+    return new Set(normalized.filter(t=>!/^ad\d+$/.test(t)));
+  }
+  function matchesOriginal(actual, original) {
+    const a=filenameParts(actual), o=filenameParts(original);
+    if (!a || !o || a.extension!==o.extension) return false;
+    const originalStem=o.stem;
+    if (a.stem.toLowerCase() === originalStem.toLowerCase()) return true;
+    // SharePoint may normalize separators/case in the name it returns.
+    // Require high overlap AND at least three matching distinct terms to avoid
+    // renaming an unrelated new media file with the same extension.
+    const aa=comparableTokens(a.stem), oo=comparableTokens(originalStem);
+    if (aa.size<3 || oo.size<3) return false;
+    let common=0;
+    for (const token of aa) if (oo.has(token)) common++;
+    return common>=3 && common/aa.size>=0.78 && common/oo.size>=0.78;
+  }
   function targetFilename(entry, original) {
     const extension = original.slice(original.lastIndexOf('.')).toLowerCase();
     const stem = String(entry.displayName || 'AD').replace(/[^a-zA-Z0-9_\-]/g,'_').slice(0,160);
@@ -6166,6 +6184,10 @@ const CTKDownloadRenamer = (() => {
     // The picker can return a handle with permission that later expires; avoid destructive writes until checked.
     if (!selected || selected.kind !== 'directory') throw Error('No folder selected.');
     directory = selected;
+    if (typeof directory.queryPermission === 'function' && await directory.queryPermission({mode:'readwrite'}) !== 'granted') {
+      directory = null;
+      throw Error('Read and write permission was not granted for the chosen folder.');
+    }
     known = await currentNames();
     pending.clear();
     stopTimer();
@@ -6175,7 +6197,10 @@ const CTKDownloadRenamer = (() => {
   function begin(entry) {
     if (!directory) return false;
     const original = sourceFilename(entry.url);
-    if (!original || pending.has(entry)) return false;
+    if (!original || pending.has(entry) || pending.size) {
+      if (pending.size && !pending.has(entry)) entry.renameStatus?.('Another file is still being tracked. Download one file at a time when Auto-name is enabled.',true);
+      return false;
+    }
     const candidate = {original,entry,started:Date.now(),readings:new Map()};
     pending.set(entry,candidate);
     if (!ticker) ticker = setInterval(() => { scanOnce().catch(err => {
@@ -6235,7 +6260,7 @@ const CTKDownloadRenamer = (() => {
       for (const [entry,job] of [...pending]) {
         if (Date.now()-job.started > startedLimitMs) {
           cancel(entry);
-          entry.renameStatus?.('Timed out waiting for a finished file. Your original download is untouched.',true);
+          entry.renameStatus?.('Automatic naming timed out: the file was not found in your selected folder. Save the SharePoint download into that same folder; your original file was untouched.',true);
           continue;
         }
         // Only newly created files matching the expected original media basename qualify.
@@ -11018,7 +11043,7 @@ const CTKDownloadRenamer = (() => {
             try {
               const chosen = await CTKDownloadRenamer.chooseFolder();
               document.getElementById("adDlRenameFolder").textContent = "Auto-name: " + chosen;
-              this.status(`Folder selected: ${chosen}. In Chrome Downloads settings, set this SAME folder as your download location. CTK only renames NEW matching downloads after they finish; unrelated files are untouched.`);
+              this.status(`Folder selected: ${chosen}. In Chrome Downloads settings, set this SAME folder as your download location. CTK stays open when downloading. Chrome must save into the exact folder you chose; CTK only renames NEW matching completed files. If Chrome asks where to save, select this folder. Unrelated files are untouched.`);
             } catch(error) {
               if (error.name === "AbortError") { this.status("Folder selection cancelled. Native downloads still work."); return; }
               this.status("Folder access unavailable: "+error.message+". Native downloads still work.",true);
@@ -11242,9 +11267,12 @@ const CTKDownloadRenamer = (() => {
           downloadSharePoint(entry) {
             const target = CTKSharePoint.directUrl(entry.url);
             if (!target) throw Error('This SharePoint link does not contain a file path. A direct file link or a stream.aspx?id= file path is required.');
-            // Same-tab navigation uses the user's existing SharePoint sign-in.
-            // An attachment response downloads; an unauthorized/error response may navigate away.
-            // No popup, extension, Graph token or CORS fetch is used.
+            // Never navigate CTK itself: SharePoint may respond with an HTML viewer,
+            // expired authentication page, or an error instead of an attachment.
+            // A separate top-level tab preserves first-party SharePoint cookies and
+            // the entire CTK workspace even if that happens. For an attachment,
+            // Chrome normally downloads it without retaining the extra tab.
+            // A pure GitHub Pages app cannot inspect whether this download completes.
             const renamer = typeof CTKDownloadRenamer !== 'undefined' ? CTKDownloadRenamer : null;
             // The tracking starts synchronously from the same user gesture, preserving the
             // native download's trusted click. The chosen folder is never uploaded.
@@ -11252,8 +11280,8 @@ const CTKDownloadRenamer = (() => {
             const tracking = !!(renamer?.active() && renamer.begin(entry));
             const a = document.createElement('a');
             a.href = target;
-            a.target = '_self';
-            a.rel = 'noreferrer';
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
             document.body.appendChild(a);
             try { a.click(); }
             catch(error) { if(tracking)renamer.cancel(entry); throw error; }
@@ -11262,7 +11290,7 @@ const CTKDownloadRenamer = (() => {
             if (entry.downloadButton) entry.downloadButton.textContent = 'Download again';
             this.status(tracking
               ? `SharePoint download requested. Waiting to rename ${entry.displayName} after it appears in your selected folder.`
-              : `SharePoint download requested for ${entry.displayName}. Select Auto-name: Choose folder to rename future downloads; otherwise Chrome uses SharePoint's filename. Download completion cannot be confirmed here.`);
+              : `SharePoint download requested for ${entry.displayName}. CTK stays open. Select the SAME Chrome download folder via Auto-name to rename finished downloads. Completion cannot be confirmed here.`);
           },
           async downloadFile(entry) {
             if (entry.downloaded || entry.inProgress) return;

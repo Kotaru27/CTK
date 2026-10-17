@@ -52,7 +52,7 @@ export default {
             try {
               const chosen = await CTKDownloadRenamer.chooseFolder();
               document.getElementById("adDlRenameFolder").textContent = "Auto-name: " + chosen;
-              this.status(`Folder selected: ${chosen}. In Chrome Downloads settings, set this SAME folder as your download location. CTK only renames NEW matching downloads after they finish; unrelated files are untouched.`);
+              this.status(`Folder selected: ${chosen}. In Chrome Downloads settings, set this SAME folder as your download location. CTK stays open when downloading. Chrome must save into the exact folder you chose; CTK only renames NEW matching completed files. If Chrome asks where to save, select this folder. Unrelated files are untouched.`);
             } catch(error) {
               if (error.name === "AbortError") { this.status("Folder selection cancelled. Native downloads still work."); return; }
               this.status("Folder access unavailable: "+error.message+". Native downloads still work.",true);
@@ -276,9 +276,12 @@ export default {
           downloadSharePoint(entry) {
             const target = CTKSharePoint.directUrl(entry.url);
             if (!target) throw Error('This SharePoint link does not contain a file path. A direct file link or a stream.aspx?id= file path is required.');
-            // Same-tab navigation uses the user's existing SharePoint sign-in.
-            // An attachment response downloads; an unauthorized/error response may navigate away.
-            // No popup, extension, Graph token or CORS fetch is used.
+            // Never navigate CTK itself: SharePoint may respond with an HTML viewer,
+            // expired authentication page, or an error instead of an attachment.
+            // A separate top-level tab preserves first-party SharePoint cookies and
+            // the entire CTK workspace even if that happens. For an attachment,
+            // Chrome normally downloads it without retaining the extra tab.
+            // A pure GitHub Pages app cannot inspect whether this download completes.
             const renamer = typeof CTKDownloadRenamer !== 'undefined' ? CTKDownloadRenamer : null;
             // The tracking starts synchronously from the same user gesture, preserving the
             // native download's trusted click. The chosen folder is never uploaded.
@@ -286,8 +289,8 @@ export default {
             const tracking = !!(renamer?.active() && renamer.begin(entry));
             const a = document.createElement('a');
             a.href = target;
-            a.target = '_self';
-            a.rel = 'noreferrer';
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
             document.body.appendChild(a);
             try { a.click(); }
             catch(error) { if(tracking)renamer.cancel(entry); throw error; }
@@ -296,7 +299,7 @@ export default {
             if (entry.downloadButton) entry.downloadButton.textContent = 'Download again';
             this.status(tracking
               ? `SharePoint download requested. Waiting to rename ${entry.displayName} after it appears in your selected folder.`
-              : `SharePoint download requested for ${entry.displayName}. Select Auto-name: Choose folder to rename future downloads; otherwise Chrome uses SharePoint's filename. Download completion cannot be confirmed here.`);
+              : `SharePoint download requested for ${entry.displayName}. CTK stays open. Select the SAME Chrome download folder via Auto-name to rename finished downloads. Completion cannot be confirmed here.`);
           },
           async downloadFile(entry) {
             if (entry.downloaded || entry.inProgress) return;

@@ -99,3 +99,29 @@ test('Declined folder choice does not affect default native SharePoint download'
   assert.equal(h.rename.begin(h.entry),false);
   assert.equal(h.timer,null);
 });
+
+
+test('Recognizes SharePoint filename normalization but rejects unrelated MP4s',()=>{
+  const h=harness();
+  assert.equal(h.rename.matchesOriginal('ALDI-Frische_Social_LT3_OLV_Social_Pick_me_22s.mp4',original),true);
+  assert.equal(h.rename.matchesOriginal('Unrelated Project Another Company Video.mp4',original),false);
+  assert.equal(h.rename.matchesOriginal('ALDI Frische Social LT3 OLV Social Pick me 22s (2).mp4',original),true);
+  assert.equal(h.rename.matchesOriginal('ALDI Frische Social LT3 OLV Social Pick me 22s.pdf',original),false);
+});
+
+test('Only one rename may be tracked at a time; a second request leaves existing tracking safe',async()=>{
+  const h=harness();
+  await h.rename.chooseFolder();
+  assert.equal(h.rename.begin(h.entry),true);
+  const next={...h.entry,displayName:'AD2_Other',renameStatus:(text)=>h.statuses.push({message:text})};
+  assert.equal(h.rename.begin(next),false);
+  assert.match(h.statuses.at(-1).message,/one file at a time/i);
+  assert.notEqual(h.timer,null);
+});
+
+test('A newly created file in the wrong extension is not renamed',async()=>{
+  const h=harness(); await h.rename.chooseFolder(); h.rename.begin(h.entry);
+  h.files.set('ALDI Frische Social LT3 OLV Social Pick me 22s.htm',h.mkHandle('ALDI Frische Social LT3 OLV Social Pick me 22s.htm',Buffer.from('<html>Not media</html>')));
+  h.advance(5000);for(let i=0;i<4;i++) await h.tick();
+  assert.equal(h.files.has(fixed),false);
+});

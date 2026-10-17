@@ -19,16 +19,34 @@ const CTKDownloadRenamer = (() => {
     if (!name || !/\.(?:mp4|mov|m4v|avi|mkv|webm|mp3|m4a|wav|ogg|flac|jpg|jpeg|png|gif|webp|bmp|svg|pdf|zip)$/i.test(name)) return null;
     return name;
   }
-  function matchesOriginal(actual, original) {
-    const dot = original.lastIndexOf('.');
-    if (dot < 1) return false;
-    const stem = original.slice(0,dot), ext = original.slice(dot);
-    // Windows and Chrome append (1), (2), ... for colliding native downloads.
-    return actual.toLowerCase() === original.toLowerCase() ||
-      (actual.toLowerCase().startsWith(stem.toLowerCase()+' (') &&
-        new RegExp('^'+escapeRegex(stem)+' \\(\\d+\\)'+escapeRegex(ext)+'$','i').test(actual));
+  function filenameParts(name) {
+    const dot = name.lastIndexOf('.');
+    if (dot <= 0) return null;
+    const stem = name.slice(0,dot).replace(/ \(\d+\)$/,'');
+    const extension = name.slice(dot).toLowerCase();
+    return { stem, extension };
   }
-  function escapeRegex(value) { return value.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
+  function comparableTokens(stem) {
+    const normalized=stem.normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+      .replace(/([a-z])([A-Z])/g,'$1 $2')
+      .toLowerCase().replace(/[^a-z0-9]+/g,' ')
+      .trim().split(/\s+/).filter(Boolean);
+    return new Set(normalized.filter(t=>!/^ad\d+$/.test(t)));
+  }
+  function matchesOriginal(actual, original) {
+    const a=filenameParts(actual), o=filenameParts(original);
+    if (!a || !o || a.extension!==o.extension) return false;
+    const originalStem=o.stem;
+    if (a.stem.toLowerCase() === originalStem.toLowerCase()) return true;
+    // SharePoint may normalize separators/case in the name it returns.
+    // Require high overlap AND at least three matching distinct terms to avoid
+    // renaming an unrelated new media file with the same extension.
+    const aa=comparableTokens(a.stem), oo=comparableTokens(originalStem);
+    if (aa.size<3 || oo.size<3) return false;
+    let common=0;
+    for (const token of aa) if (oo.has(token)) common++;
+    return common>=3 && common/aa.size>=0.78 && common/oo.size>=0.78;
+  }
   function targetFilename(entry, original) {
     const extension = original.slice(original.lastIndexOf('.')).toLowerCase();
     const stem = String(entry.displayName || 'AD').replace(/[^a-zA-Z0-9_\-]/g,'_').slice(0,160);
@@ -47,6 +65,10 @@ const CTKDownloadRenamer = (() => {
     // The picker can return a handle with permission that later expires; avoid destructive writes until checked.
     if (!selected || selected.kind !== 'directory') throw Error('No folder selected.');
     directory = selected;
+    if (typeof directory.queryPermission === 'function' && await directory.queryPermission({mode:'readwrite'}) !== 'granted') {
+      directory = null;
+      throw Error('Read and write permission was not granted for the chosen folder.');
+    }
     known = await currentNames();
     pending.clear();
     stopTimer();
@@ -56,7 +78,10 @@ const CTKDownloadRenamer = (() => {
   function begin(entry) {
     if (!directory) return false;
     const original = sourceFilename(entry.url);
-    if (!original || pending.has(entry)) return false;
+    if (!original || pending.has(entry) || pending.size) {
+      if (pending.size && !pending.has(entry)) entry.renameStatus?.('Another file is still being tracked. Download one file at a time when Auto-name is enabled.',true);
+      return false;
+    }
     const candidate = {original,entry,started:Date.now(),readings:new Map()};
     pending.set(entry,candidate);
     if (!ticker) ticker = setInterval(() => { scanOnce().catch(err => {
@@ -116,7 +141,7 @@ const CTKDownloadRenamer = (() => {
       for (const [entry,job] of [...pending]) {
         if (Date.now()-job.started > startedLimitMs) {
           cancel(entry);
-          entry.renameStatus?.('Timed out waiting for a finished file. Your original download is untouched.',true);
+          entry.renameStatus?.('Automatic naming timed out: the file was not found in your selected folder. Save the SharePoint download into that same folder; your original file was untouched.',true);
           continue;
         }
         // Only newly created files matching the expected original media basename qualify.
