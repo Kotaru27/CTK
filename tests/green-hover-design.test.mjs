@@ -19,7 +19,7 @@ test('Storyboard uses green surfaces and accents in both themes',()=>{
 test('Button hover has no flash overlay, bounce, scale or shadow',()=>{
  assert.match(global,/#view-app \.liquid-btn::before/);
  assert.match(global,/transform:none!important/);
- assert.match(global,/scale:1!important/);
+ assert.match(global,/scale:none!important/);
  assert.match(global,/box-shadow:none!important/);
  assert.match(global,/\.liquid-btn\.danger-btn:hover/);
  assert.match(global,/\.liquid-btn\.active-mode:hover/);
