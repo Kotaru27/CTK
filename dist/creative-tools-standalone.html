@@ -5309,6 +5309,16 @@ body:has(#nav-adlinks-dl.active) .nav-sidebar .nav-item:hover{
 #view-app #section-adlinks #adlinksTabContentDownloader #adlinksDlHeaderControls #adDlBulkButton:hover:not(:disabled){
   background-image:linear-gradient(var(--ad-primary),var(--ad-primary))!important;
 }
+
+/* Retired legacy whole-view blur+scale animation. Its fill-mode left
+   filter:blur(0) and transform:matrix(1,...) on the entire app, creating
+   an unnecessary compositing layer over hovered buttons. Tool-specific
+   entrance choreography already exists below this shell. */
+#view-app.active{
+  animation:none!important;
+  filter:none!important;
+  transform:none!important;
+}
 </style>
 </head>
 <body>
