@@ -79,6 +79,7 @@ try{
   await page.locator('#logoDimHeight').fill('420');
   await page.locator('#logoDimOkBtn').click();
   await page.waitForFunction(()=>Tools.Logo.cards.length>=4,{timeout:35000});
+  await page.waitForFunction(()=>Tools.Logo.cards.every(c=>c.img.complete&&c.canvas?.width>0&&c.canvas?.height>0),{timeout:35000});
   const logo=await page.evaluate(()=>{
     const grid=document.getElementById('logoGrid');
     const inspect=e=>{const r=e.getBoundingClientRect(),c=getComputedStyle(e);return {
@@ -96,6 +97,8 @@ try{
   console.log('FORGE_LOGO_VISIBLE_DIAGNOSTIC',label,JSON.stringify(logo));
   assert.equal(logo.rendered,4,`${label}: logo asset cards were not rendered`);
   assert.equal(logo.visible,4,`${label}: logo cards exist but are not visibly rendered`);
+  assert.equal(await page.locator('#logoGrid > .logo-card-item').first().evaluate(e=>getComputedStyle(e).animationName),'none',
+    `${label}: legacy cardReveal still obscures populated output`);
 
   // Real input and canvas render in Storyboard.
   await open('section-stills-boards','story');
