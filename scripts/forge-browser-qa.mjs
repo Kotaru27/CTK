@@ -76,14 +76,16 @@ try {
    check(Math.abs(last.left-details.titleLeft)<48,'Final shared wordmark position diverges from hero');
  }
 
- // Existing theme persistence must remain functional.
+ // Legacy dark preference must not strand users in dark mode after hiding the toggle.
  await page.evaluate(()=>localStorage.setItem('cts_theme','dark'));
  await page.reload({waitUntil:'domcontentloaded'});
- check(!(await page.locator('body').evaluate(el=>el.classList.contains('light-mode'))),
-   'Saved dark theme was not honored');
+ check(await page.locator('body').evaluate(el=>el.classList.contains('light-mode')),
+   'Light-only release still applies a saved dark preference');
+ check(await page.locator('#themeToggleBtn').isHidden(),
+   'Appearance toggle should be hidden in light-only release');
  await page.locator('#forgeIntro').waitFor({state:'detached',timeout:2500});
  check(await page.locator('#forgeIntro').count()===0,'Intro repeated within one session');
- await page.screenshot({path:'artifacts/forge-browser/home-dark.png'});
+ await page.screenshot({path:'artifacts/forge-browser/home-light-legacy-dark.png'});
  await context.close();
  const motion=await browser.newContext({viewport:{width:1440,height:900},reducedMotion:'reduce'});
  const reducedPage=await motion.newPage();
@@ -120,6 +122,7 @@ try {
    });
    check(values.count===8,'QHD cards count differs from eight');
    check(values.light,'QHD light mode default missing');
+   check(await wp.locator('#themeToggleBtn').isHidden(),'QHD appearance control visible');
    check(values.kola,'QHD Kola font not loaded');
    check(!values.overflow,'QHD horizontal overflow');
    check(values.titleRight<viewport.width,'QHD title clipped');
