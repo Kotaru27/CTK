@@ -102,6 +102,24 @@
       "background": "rgb(37, 55, 43)",
       "scale": "1"
     },
+    "detail": {
+      "bgImage": "none",
+      "opacity": "1",
+      "filter": "none",
+      "color": "rgb(241, 245, 237)",
+      "before": {
+        "content": "none",
+        "bg": "rgb(241, 245, 237)",
+        "opacity": "0",
+        "z": "auto"
+      },
+      "after": {
+        "content": "none",
+        "bg": "rgba(0, 0, 0, 0)",
+        "opacity": "1",
+        "z": "auto"
+      }
+    },
     "overflow": false
   },
   {
@@ -164,6 +182,24 @@
       "shadow": "none",
       "background": "rgb(196, 221, 186)",
       "scale": "1"
+    },
+    "detail": {
+      "bgImage": "none",
+      "opacity": "1",
+      "filter": "none",
+      "color": "rgb(27, 48, 34)",
+      "before": {
+        "content": "none",
+        "bg": "rgb(27, 48, 34)",
+        "opacity": "0",
+        "z": "auto"
+      },
+      "after": {
+        "content": "none",
+        "bg": "rgba(0, 0, 0, 0)",
+        "opacity": "1",
+        "z": "auto"
+      }
     },
     "overflow": false
   },
@@ -291,6 +327,24 @@
       "background": "rgb(255, 255, 255)",
       "scale": "1"
     },
+    "detail": {
+      "bgImage": "none",
+      "opacity": "1",
+      "filter": "none",
+      "color": "rgb(35, 55, 41)",
+      "before": {
+        "content": "none",
+        "bg": "rgb(35, 55, 41)",
+        "opacity": "0",
+        "z": "auto"
+      },
+      "after": {
+        "content": "none",
+        "bg": "rgba(0, 0, 0, 0)",
+        "opacity": "1",
+        "z": "auto"
+      }
+    },
     "overflow": false
   },
   {
@@ -353,6 +407,24 @@
       "shadow": "none",
       "background": "rgb(40, 84, 61)",
       "scale": "1"
+    },
+    "detail": {
+      "bgImage": "none",
+      "opacity": "1",
+      "filter": "none",
+      "color": "rgb(255, 255, 255)",
+      "before": {
+        "content": "none",
+        "bg": "rgb(255, 255, 255)",
+        "opacity": "0",
+        "z": "auto"
+      },
+      "after": {
+        "content": "none",
+        "bg": "rgba(0, 0, 0, 0)",
+        "opacity": "1",
+        "z": "auto"
+      }
     },
     "overflow": false
   },
