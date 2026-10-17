@@ -8,10 +8,13 @@ const standalone = read('../dist/creative-tools-standalone.html');
 const brandCss = read('../src/css/experience/forge-brand.css');
 const brandJS = read('../src/js/presentation/forge-brand.js');
 function cards(s) {return [...s.matchAll(/<button class="home-card\b[\s\S]*?<\/button>/g)].map(m=>m[0]);}
-test('all eight original tool cards have byte-identical markup',()=>{
+test('all eight cards preserve exact structure and routes except two intentional Logo Resizer texts',()=>{
   assert.equal(cards(baseline).length,8);
-  assert.deepEqual(cards(index),cards(baseline));
-  assert.deepEqual(cards(standalone),cards(baseline));
+  const normalize=s=>s
+    .replaceAll('aria-label="Open Logo Resizer"','aria-label="Open Logo Workspace"')
+    .replaceAll('<h2 class="home-card-title">Logo Resizer</h2>','<h2 class="home-card-title">Logo Workspace</h2>');
+  assert.deepEqual(cards(index).map(normalize),cards(baseline));
+  assert.deepEqual(cards(standalone).map(normalize),cards(baseline));
 });
 test('brand name and Kola are integrated in both releases',()=>{
   for (const s of [index,standalone]) {
@@ -67,7 +70,6 @@ test('editorial hero is light-first, free of the old dark banner and circular de
   for (const page of [index,standalone]) {
     assert.match(page,/class="forge-hero-middle"/);
     assert.match(page,/class="forge-hero-aside"/);
-    assert.match(page,/class="forge-hero-manifesto"/);
     assert.match(page,/class="forge-after-hero"/);
     assert.doesNotMatch(page,/class="forge-hero-index"/);
     assert.doesNotMatch(page,/class="forge-hero-tagline"/);
@@ -111,12 +113,21 @@ test('QHD and high refresh polish avoids expensive background color and hover sh
   assert.match(brandJS,/after\(115,function\(\)/);
 });
 
-test('wordmark-led hero preserves all tool cards while improving visual hierarchy',()=>{
+test('executive hero states one purpose, one description, then tool selection',()=>{
   for(const page of [index,standalone]){
-    assert.match(page,/MAKE MORE OF YOUR FILES/);
-    assert.match(page,/Everything at your fingertips/);
-    assert.match(page,/EIGHT TOOLS · ONE WORKFLOW/);
+    assert.match(page,/EIGHT TOOLS\. ONE CREATIVE WORKSPACE\./);
+    assert.match(page,/Resize images, convert PDFs, capture video stills/);
+    assert.match(page,/class="forge-after-hero"><strong>Choose a tool<\/strong>/);
+    assert.doesNotMatch(page,/Everything at your fingertips/);
+    assert.doesNotMatch(page,/From working files to finished assets/);
+    assert.doesNotMatch(page,/class="forge-hero-bottom"/);
+    assert.doesNotMatch(page,/class="forge-hero-counter"/);
+    assert.match(page,/aria-label="Open Logo Resizer"/);
+    assert.match(page,/>Logo Resizer<\/h2>/);
+    assert.match(page,/<span class="nav-item-text">Ad Downloader<\/span>/);
   }
-  assert.match(brandCss,/\.forge-hero-aside-label/);
-  assert.match(brandCss,/\.forge-after-hero strong/);
+  assert.match(brandCss,/\.header::after/);
+  assert.match(brandCss,/content:none!important/);
+  assert.match(brandCss,/body:has\(#view-home:not\(\.hidden\)\) \.header/);
+  assert.match(brandCss,/\.home-card-num/);
 });
