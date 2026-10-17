@@ -1,0 +1,89 @@
+name: Visual review Ad Downloader v2
+on:
+  push:
+    branches: [design/ad-downloader-experience-v2]
+permissions:
+  contents: write
+jobs:
+  screenshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser driver
+        run: python3 -m pip install --quiet --break-system-packages playwright
+      - name: Render desktop dark and light workspaces
+        run: |
+          mkdir -p docs/.visual-check
+          python3 - <<'PY'
+          from pathlib import Path
+          from playwright.sync_api import sync_playwright
+          root=Path.cwd()
+          with sync_playwright() as p:
+              browser=p.chromium.launch(channel='chrome',headless=True,args=['--no-sandbox'])
+              page=browser.new_page(viewport={'width':1536,'height':980},device_scale_factor=1)
+              page.goto((root/'dist/creative-tools-standalone.html').as_uri(),wait_until='domcontentloaded',timeout=30000)
+              page.wait_for_timeout(1000)
+              page.evaluate("""() => {
+                const home=document.getElementById('view-home');
+                const app=document.getElementById('view-app');
+                if(home){home.classList.remove('active');home.style.display='none';}
+                if(app){app.classList.add('active');app.style.display='block';}
+                const sidebar=document.getElementById('mainSidebar');
+                if(sidebar){sidebar.classList.add('visible');sidebar.classList.remove('collapsed');}
+                document.querySelectorAll('.tool-section').forEach(x=>x.classList.remove('active'));
+                document.getElementById('section-adlinks').classList.add('active');
+                document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
+                document.getElementById('nav-adlinks-dl').classList.add('active');
+                document.getElementById('adlinksTabContentGen').style.display='none';
+                document.getElementById('adlinksTabContentDownloader').style.display='block';
+                document.getElementById('adlinksDlHeaderControls').style.display='flex';
+                document.getElementById('adlinksTabDownloader').classList.add('active-mode');
+                document.getElementById('adlinksTabGen').classList.remove('active-mode');
+                document.getElementById('adDlSummaryBar').style.display='flex';
+                document.getElementById('adDlTableContainer').style.display='block';
+                document.getElementById('adDlEmptyState').style.display='none';
+                document.getElementById('adDlFileNameDisplay').textContent='ALDI ads 1.xlsx';
+                document.getElementById('adDlCountText').textContent='12 assets ready';
+                document.getElementById('adDlStatus').textContent='All files prepared · 0 named · 12 ready to download';
+                const body=document.getElementById('adDlTableBody');
+                const names=['ALDI Frische Social LT3 OLV Social Pick me 22s','ALDI Campaign Herbst Price TVC 25s','LIDL Dauerhaft Gunstig Ohne App TVC 20s','Kaufland Beste Preise TVC 15s','REWE Bio Markt Print','EDEKA Frische Radio 30s','ALDI Autumn Social Video 22s','LIDL Prospekt Print Header','ALDI Social Digital OLV 15s','Kaufland Digital Outdoor Banner','REWE Newsletter Static Display','EDEKA Wochenangebot Promo Video'];
+                for(let i=0;i<12;i++){
+                  const tr=document.createElement('tr');
+                  const ad=i+1;
+                  tr.innerHTML='<td><input type="checkbox" checked aria-label="Select ad"> '+ad+'</td><td>AD'+ad+'_'+names[i].replaceAll(' ','_')+(i===4||i===7||i===10?'.jpg':'.mp4')+'</td><td></td>';
+                  const td=tr.cells[2];
+                  for(const [label,primary] of [['Copy',false],['Download',true],['Fix downloaded name',false],['Save named copy',false]]){
+                    const b=document.createElement('button');
+                    b.type='button';b.textContent=label;b.className='liquid-btn'+(primary?' active-mode':'');
+                    if(label==='Save named copy')b.hidden=true;
+                    td.append(' ',b);
+                  }
+                  body.append(tr);
+                }
+              }""")
+              page.wait_for_timeout(700)
+              assert page.locator('.ctk-row-menu').count()==12, 'More menus missing'
+              assert page.locator('#adDlTableBody tr').count()==12
+              page.screenshot(path='docs/.visual-check/ad-v2-dark.png',full_page=False,animations='disabled')
+              page.locator('.ctk-row-menu > summary').first.click()
+              assert page.locator('.ctk-row-menu[open]').count()==1
+              page.keyboard.press('Escape')
+              assert page.locator('.ctk-row-menu[open]').count()==0
+              page.evaluate("document.body.classList.add('light-mode')")
+              page.wait_for_timeout(300)
+              page.screenshot(path='docs/.visual-check/ad-v2-light.png',full_page=False,animations='disabled')
+              browser.close()
+          PY
+          base64 -w0 docs/.visual-check/ad-v2-dark.png > docs/.visual-check/ad-v2-dark.b64
+          base64 -w0 docs/.visual-check/ad-v2-light.png > docs/.visual-check/ad-v2-light.b64
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/.visual-check/*.b64
+          if ! git diff --cached --quiet; then
+            git commit -m "test: capture Ad Downloader desktop visual review"
+            git push
+          fi
