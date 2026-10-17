@@ -27,3 +27,18 @@ test("typography preserves webfont choices and improves accessibility",()=>{
  assert.match(css,/font-synthesis: none/);
  assert.match(css,/text-wrap:balance/);
 });
+
+test("workspace text scale is explicitly defined and storyboard help stays centered",()=>{
+ assert.match(css,/--ctk-type-xs:11px/);
+ assert.match(css,/--ctk-type-sm:12\.5px/);
+ assert.match(css,/#storyPreview:has\(> span\.text-muted\)::before/);
+ assert.match(css,/#storyPreview:has\(> span\.text-muted\)::after/);
+ assert.match(css,/transform:translateX\(-50%\)!important/);
+ assert.match(css,/#section-stills-boards \.label-header/);
+});
+test("one stylesheet handles focused tool feedback and reduced-motion entrances",()=>{
+ assert.match(css,/ctk-header-settle/);
+ assert.match(css,/ctk-body-arrive/);
+ assert.match(css,/prefers-reduced-motion:reduce/);
+ assert.match(css,/:focus-visible/);
+});
