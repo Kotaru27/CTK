@@ -1,0 +1,88 @@
+name: Desktop UI audit capture
+on:
+  push:
+    branches: [audit/whole-suite-desktop-20261017]
+    paths-ignore:
+      - 'docs/.audit-images/**'
+permissions:
+  contents: write
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Chrome browser driver
+        run: python3 -m pip install --quiet --break-system-packages playwright
+      - name: Capture existing tool screens and diagnostics
+        run: |
+          mkdir -p docs/.audit-images
+          python3 - <<'PY'
+          import base64,json
+          from pathlib import Path
+          from playwright.sync_api import sync_playwright
+          root=Path.cwd()
+          cases=[
+              ('home',None,None),
+              ('logo','section-logo',None),
+              ('pdf-image','section-pdf','convert'),
+              ('image-splitter','section-pdf','split'),
+              ('video-stills','section-stills-boards','video'),
+              ('storyboard','section-stills-boards','story'),
+              ('filmstrip','section-stills-boards','filmstrip'),
+              ('link-gen','section-adlinks','gen'),
+              ('ad-downloader','section-adlinks','downloader'),
+              ('video-downloads','section-yt-helper',None),
+          ]
+          diagnostics=[]
+          with sync_playwright() as p:
+            browser=p.chromium.launch(channel='chrome',headless=True,args=['--no-sandbox','--disable-features=TranslateUI'])
+            page=browser.new_page(viewport={'width':1440,'height':900},device_scale_factor=1,accept_downloads=False)
+            exceptions=[]
+            page.on('pageerror',lambda err:exceptions.append(str(err)[:250]))
+            page.goto((root/'dist/creative-tools-standalone.html').as_uri(),wait_until='domcontentloaded',timeout=45000)
+            page.wait_for_timeout(1200)
+            for light in (False,True):
+              page.evaluate('(light)=>{document.body.classList.toggle("light-mode",light)}',light)
+              for name,section,mode in cases:
+                err=None
+                if section:
+                  try:
+                    page.evaluate('([section,mode])=>{window.UI._openTool(section,mode)}',[section,mode])
+                  except Exception as e:
+                    err=str(e)[:200]
+                    page.evaluate('([section,mode])=>{const h=document.getElementById("view-home"),v=document.getElementById("view-app");h.classList.remove("active");h.classList.add("hidden");v.classList.add("active"); document.getElementById("mainSidebar").classList.add("visible");document.querySelectorAll(".tool-section").forEach(x=>x.classList.remove("active"));document.getElementById(section).classList.add("active");if(section==="section-pdf"){document.getElementById("pdfTabContentConvert").style.display=mode==="convert"?"block":"none";document.getElementById("pdfTabContentSplit").style.display=mode==="split"?"block":"none";}if(section==="section-adlinks"){document.getElementById("adlinksTabContentGen").style.display=mode==="gen"?"block":"none";document.getElementById("adlinksTabContentDownloader").style.display=mode==="downloader"?"block":"none";}}',[section,mode])
+                else:
+                  try:page.evaluate('()=>window.UI._showHome()')
+                  except Exception as e:err=str(e)[:200]
+                page.wait_for_timeout(750)
+                data=page.evaluate('''({section,name})=>{
+                  const area=section?document.getElementById(section):document.getElementById('view-home');
+                  const el=document.querySelector('body');
+                  const title=area.querySelector('.tool-header h2')||area.querySelector('.home-heading')||area.querySelector('h2');
+                  const vis = e=>{const r=e.getBoundingClientRect(),s=getComputedStyle(e);return s.display!=='none'&&s.visibility!=='hidden'&&r.width>1&&r.height>1}
+                  const btn=[...area.querySelectorAll('button')].filter(vis).length;
+                  const viewport={width:innerWidth,height:innerHeight};
+                  const totalOverflow=document.documentElement.scrollWidth>innerWidth+30;
+                  return {section,name,visible:vis(area),h2:title?.textContent?.trim().slice(0,70),titleFont:title?getComputedStyle(title).fontFamily:null,buttons:btn,overflow:totalOverflow,bodyBg:getComputedStyle(el).backgroundColor}
+                }''',{'section':section,'name':name})
+                path='docs/.audit-images/'+name+('-light' if light else '-dark')+'.jpg'
+                page.screenshot(path=path,type='jpeg',quality=57,full_page=False,animations='disabled')
+                with open(path,'rb') as f: encoded=base64.b64encode(f.read()).decode()
+                Path(path+'.b64').write_text(encoded)
+                Path(path).unlink()
+                data['light']=light;data['routeError']=err
+                diagnostics.append(data)
+            diagnostics.append({'browserPageErrors':exceptions[:25]})
+            browser.close()
+          Path('docs/.audit-images/diagnostics.json').write_text(json.dumps(diagnostics,indent=2))
+          print(json.dumps(diagnostics,indent=2))
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/.audit-images/
+          git commit -m "audit: attach desktop screenshots for visual evaluation"
+          git push
