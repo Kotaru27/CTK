@@ -32,6 +32,8 @@ const typeMotionCss=read('src/css/experience/typography-motion-v3.css');
 /* The brand shell is overlaid on the unchanged baseline; never rewrite tool cards. */
 const forgeBrandCss=read('src/css/experience/forge-brand.css');
 const forgeBrandJs=read('src/js/presentation/forge-brand.js');
+const forgeVideoRouteCss=read('src/css/experience/forge-video-route.css');
+const forgeVideoRouteJs=read('src/js/presentation/forge-video-route.js');
 const forgeHero=[
   '<section class="forge-hero" aria-labelledby="forgeHeroName">',
   ' <div class="forge-hero-top">',
@@ -92,12 +94,16 @@ function forgeBrand(html,standaloneRelease){
     '<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=kola@400&amp;display=swap">\n';
   const brandStyle=standaloneRelease?'<style id="forge-brand-styles">'+forgeBrandCss+'</style>\n':
     '<link rel="stylesheet" href="./dist/css/forge-brand.css">\n';
-  html=html.replace('</head>',fontLink+brandStyle+'</head>');
+  const routeStyle=standaloneRelease?'<style id="forge-video-route-styles">'+forgeVideoRouteCss+'</style>\n':
+    '<link rel="stylesheet" href="./dist/css/forge-video-route.css">\n';
+  html=html.replace('</head>',fontLink+brandStyle+routeStyle+'</head>');
   // Light-only presentation: do not read an old dark preference on first paint.
   html=html.replace('<body>','<body class="light-mode">\n'+forgeIntro+'\n');
   const brandScript=standaloneRelease?'<script id="forge-brand-intro-js">'+forgeBrandJs+'</script>':
     '<script id="forge-brand-intro-js" src="./dist/js/forge-brand.js"></script>';
-  html=html.replace('</body>',brandScript+'\n</body>');
+  const routeScript=standaloneRelease?'<script id="forge-video-route-js">'+forgeVideoRouteJs+'</script>':
+    '<script id="forge-video-route-js" src="./dist/js/forge-video-route.js"></script>';
+  html=html.replace('</body>',brandScript+'\n'+routeScript+'\n</body>');
   return html;
 }
 
@@ -108,6 +114,8 @@ output=output.replace('<link rel="stylesheet" href="./dist/css/ad-downloader-v2.
 save('dist/css/typography-motion-v3.css',typeMotionCss);
 save('dist/css/forge-brand.css',forgeBrandCss);
 save('dist/js/forge-brand.js',forgeBrandJs);
+save('dist/css/forge-video-route.css',forgeVideoRouteCss);
+save('dist/js/forge-video-route.js',forgeVideoRouteJs);
 save('dist/css/ad-downloader-v2.css',visualCss);
 save('dist/js/ad-downloader-v2.js',visualJs);
 save('dist/css/app.css',css);save('dist/js/app.js',main);

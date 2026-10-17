@@ -20,10 +20,20 @@ const newMain=rd('dist/js/app.js');
 const visualCss=rd('src/css/experience/ad-downloader-v2.css');
 const visualJs=rd('src/js/presentation/ad-downloader-v2.js');
 const typeMotionCss=rd('src/css/experience/typography-motion-v3.css');
+const videoRouteCss=rd('src/css/experience/forge-video-route.css');
+const videoRouteJs=rd('src/js/presentation/forge-video-route.js');
+if(!standalone.includes('<style id="forge-video-route-styles">'+videoRouteCss+'</style>') ||
+   !standalone.includes('<script id="forge-video-route-js">'+videoRouteJs+'</script>'))
+  throw Error('Standalone shared route layer missing or stale');
+if(rd('dist/css/forge-video-route.css')!==videoRouteCss ||
+   rd('dist/js/forge-video-route.js')!==videoRouteJs)
+  throw Error('Modular Video Stills route layer differs from its source');
 const withoutVisual=standalone
   .replace('<style id="ctk-type-motion-v3">'+typeMotionCss+'</style>\n','')
   .replace('<style id="ctk-ad-downloader-v2">'+visualCss+'</style>\n','')
-  .replace('<script id="ctk-ad-downloader-v2">'+visualJs+'</script>\n','');
+  .replace('<script id="ctk-ad-downloader-v2">'+visualJs+'</script>\n','')
+  .replace('<style id="forge-video-route-styles">'+videoRouteCss+'</style>\n','')
+  .replace('<script id="forge-video-route-js">'+videoRouteJs+'</script>\n','');
 // Remove only the new, explicitly-scoped Forge presentation layer before
 // comparing to the untouched original. Tool sections and cards must be identical.
 const forgeJs=rd('src/js/presentation/forge-brand.js');
@@ -63,5 +73,7 @@ if(!standalone.includes('<style id="ctk-ad-downloader-v2">')||!standalone.includ
 if(!b.includes('./dist/css/typography-motion-v3.css')||!standalone.includes('<style id="ctk-type-motion-v3">'))throw Error('Typography & motion design layer missing');
 if(rd('dist/css/typography-motion-v3.css')!==typeMotionCss)throw Error('Typography & motion modular stylesheet mismatch');
 if(!b.includes('./dist/css/forge-brand.css')||!b.includes('./dist/js/forge-brand.js'))throw Error('Forge brand assets missing');
+if(!b.includes('./dist/css/forge-video-route.css')||!b.includes('./dist/js/forge-video-route.js'))
+  throw Error('Video Stills shared transition assets missing');
 if(!standalone.includes('<style id="forge-brand-styles">')||!standalone.includes('<script id="forge-brand-intro-js">'))throw Error('Forge standalone assets missing');
 console.log(`Verified: ${beforeIds.length} IDs, ${beforeRoutes.length} homepage links, ${ext.length} external dependencies, untouched tool functionality and additive Ad Downloader visual layer.`);

@@ -1,0 +1,43 @@
+name: Forge Video Stills shared route QA
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/js/core/prelude.js'
+      - 'src/css/experience/forge-video-route.css'
+      - 'src/js/presentation/forge-video-route.js'
+      - 'scripts/forge-video-route-qa.mjs'
+      - '.github/workflows/forge-video-route-qa.yml'
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Chromium test tools
+        run: npm install --no-save --no-package-lock playwright@1.58.2
+      - name: Install Chromium
+        run: npx playwright install chromium --with-deps
+      - name: Start the local Pages build
+        run: |
+          node scripts/dev.mjs > /tmp/forge-video-route-server.log 2>&1 &
+          for i in $(seq 1 50); do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/forge-video-route-server.log
+          exit 1
+      - name: Verify forward, reverse, rapid and accessible motion
+        run: node scripts/forge-video-route-qa.mjs
+      - name: Archive visual checkpoints
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: forge-video-route-qa
+          path: artifacts/forge-video-route/
+          if-no-files-found: ignore
