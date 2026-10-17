@@ -172,6 +172,8 @@ try{
 
   // Real Excel import with an isolated, synthetic workbook. No media fetched.
   await open('section-adlinks','downloader');
+  assert.equal((await page.locator('#section-adlinks .tool-header h2').innerText()).trim(),'Ad Downloader',
+    label+': downloader header name regressed after navigation');
   const workbookBase64=await page.evaluate(()=>{
     const wb=XLSX.utils.book_new();
     const sheet=XLSX.utils.aoa_to_sheet([
