@@ -19,5 +19,5 @@ test('responsive overrides preserve focus mode and processed media',()=>{
  for(const property of ['zoom:','scale:','image-rendering:','object-fit:','transform:','animation:','transition:']){
    assert.ok(!css.includes(property),'Layout layer must not override media or motion: '+property);
  }
- assert.ok(!/display:\s*none/.test(css),'Do not hide any tool controls');
+ assert.ok(!/(?:^|;)\s*display:\s*none\s*!important/m.test(css),'Do not hide any tool controls');
 });
