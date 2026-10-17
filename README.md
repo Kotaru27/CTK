@@ -66,3 +66,7 @@ See [`docs/OPTIONAL-DOWNLOAD-RENAMING.md`](docs/OPTIONAL-DOWNLOAD-RENAMING.md). 
 ## Filename recovery for SharePoint
 
 After a native SharePoint download finishes, use **Save named copy** on that row to select the downloaded media and save a new local copy using the expected spreadsheet `ADn_...` filename. The original stays intact. The optional **Auto-name: Choose folder** feature remains available for hands-free renaming when Chrome saves into exactly the selected directory. These are local-file operations; neither path uses Microsoft Graph or SharePoint credentials in CTK.
+
+### Correct an already-downloaded SharePoint file
+
+Click **Fix downloaded name** beside the corresponding row. Select the folder where Chrome saved the SharePoint file; CTK looks for files matching the original SharePoint basename (including ` (1)` duplicates), asks which file if there is ambiguity, and renames the chosen completed file in that folder. This avoids the extra duplicate produced by **Save named copy**. For hands-free renaming, **Auto-name: Choose folder** still requires selecting the same folder used by Chrome before downloading.

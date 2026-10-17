@@ -125,3 +125,39 @@ test('A newly created file in the wrong extension is not renamed',async()=>{
   h.advance(5000);for(let i=0;i<4;i++) await h.tick();
   assert.equal(h.files.has(fixed),false);
 });
+
+test('Explicit recovery renames already-existing (1).mp4 and removes that original instead of creating another copy',async()=>{
+  const duplicate='ALDI Frische Social LT3 OLV Social Pick me 22s (1).mp4';
+  const h=harness([{name:original,bytes:'older',modified:3000},{name:duplicate,bytes:'actual video bytes',modified:4000},{name:'unrelated.mp4',bytes:'unrelated',modified:4000}]);
+  await h.rename.chooseFolder();
+  const candidates=await h.rename.findExisting(h.entry);
+  assert.equal(candidates[0].name,duplicate);
+  assert.equal(candidates.length,2);
+  const renamed=await h.rename.renameExisting(h.entry,duplicate);
+  assert.equal(renamed,fixed);
+  assert.equal(h.files.get(fixed).bytes.toString(),'actual video bytes');
+  assert.equal(h.files.has(duplicate),false);
+  assert.equal(h.files.get(original).bytes.toString(),'older');
+  assert.equal(h.files.get('unrelated.mp4').bytes.toString(),'unrelated');
+});
+
+test('Explicit recovery refuses wrong file, existing destination, and incomplete download',async()=>{
+  const duplicate='ALDI Frische Social LT3 OLV Social Pick me 22s (1).mp4';
+  const h=harness([{name:duplicate,bytes:'video',modified:3000},{name:fixed,bytes:'existing',modified:3000}]);
+  await h.rename.chooseFolder();
+  await assert.rejects(h.rename.renameExisting(h.entry,'unrelated.mp4'),/does not match/);
+  await assert.rejects(h.rename.renameExisting(h.entry,duplicate),/already exists/);
+  assert.equal(h.files.get(duplicate).bytes.toString(),'video');
+  assert.equal(h.files.get(fixed).bytes.toString(),'existing');
+  h.files.set(duplicate+'.crdownload',h.mkHandle(duplicate+'.crdownload',Buffer.from('partial'),3000));
+  await assert.rejects(h.rename.renameExisting(h.entry,duplicate),/not finished/);
+  assert.equal(h.files.has(duplicate),true);
+});
+
+test('Recovery does not touch unmatched files or folder entries',async()=>{
+  const h=harness([{name:'unrelated.mp4',bytes:'other',modified:3000}]);
+  await h.rename.chooseFolder();
+  assert.equal((await h.rename.findExisting(h.entry)).length,0);
+  await assert.rejects(h.rename.renameExisting(h.entry,'unrelated.mp4'),/does not match/);
+  assert.equal(h.files.get('unrelated.mp4').bytes.toString(),'other');
+});

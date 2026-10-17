@@ -13,3 +13,9 @@ Each SharePoint row now reveals **Save named copy** immediately after its native
 **Limit:** a copy is saved; the original remains. This fallback involves an extra file selection; automatic naming of cross-origin protected downloads cannot be guaranteed on GitHub Pages without privileged browser integration. Chrome may add a collision suffix and must allow the download. No claim is made that the copied file reached disk until the browser confirms it.
 
 The existing folder-based automatic renamer now compares **every byte** of any fallback copy against its original before deleting the original, not just the first/last 64 KiB. No related-file or existing destination overwrite is permitted.
+
+## Existing-download repair
+
+The row's **Fix downloaded name** action can be used even when SharePoint has already downloaded an originally named file (such as `ALDI Frische Social LT3 OLV Social Pick me 22s (1).mp4`) before selecting an Auto-name folder. Click the action, approve access to the **actual folder containing the completed file**, and select the relevant source if multiple copies match. CTK verifies the original filename and extension, refuses partial downloads, avoids overwriting destinations, and renames the selected file in its original folder. On browsers without direct filesystem rename support, CTK streams a copy, checks the complete file content, then deletes the original only after verification.
+
+A prior **Save named copy** action remains as fallback when the folder cannot be granted, but it deliberately leaves the first file behind. This fix does not change SharePoint's initial `Content-Disposition` filename; GitHub Pages alone cannot control that response. Automatic in-place renaming without any folder permission, extension or authorized proxy remains impossible.

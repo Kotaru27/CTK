@@ -178,8 +178,51 @@ const CTKDownloadRenamer = (() => {
       }
     } finally {scanning=false;}
   }
+  // Existing files were already present when the folder was selected, so the
+  // background 'new file only' watcher will never process them. Make this an
+  // explicit user-driven recovery operation instead.
+  async function findExisting(entry) {
+    if (!directory) throw Error('Choose the folder containing the downloaded file first.');
+    const original=sourceFilename(entry.url);
+    if (!original) throw Error('SharePoint URL does not identify a supported media filename.');
+    const names=await currentNames();
+    const candidates=[];
+    for (const name of names) {
+      if (!matchesOriginal(name,original) || names.has(name+'.crdownload')) continue;
+      const handle=await directory.getFileHandle(name);
+      const file=await handle.getFile();
+      if (!file.size) continue;
+      candidates.push({name,size:file.size,lastModified:file.lastModified});
+    }
+    candidates.sort((a,b)=>b.lastModified-a.lastModified || a.name.localeCompare(b.name));
+    return candidates;
+  }
+  async function renameExisting(entry,actual) {
+    if (!directory) throw Error('No folder selected.');
+    if (scanning) throw Error('Automatic rename is in progress. Try again once it finishes.');
+    const original=sourceFilename(entry.url);
+    if (!original || !matchesOriginal(actual,original)) throw Error('Selected name does not match this SharePoint media file.');
+    // Protect files still being written and any Chrome partial download.
+    const names=await currentNames();
+    if (!names.has(actual)) throw Error('Selected download was not found in this folder.');
+    if (names.has(actual+'.crdownload')) throw Error('The browser has not finished downloading this file.');
+    const handle=await directory.getFileHandle(actual);
+    const file=await handle.getFile();
+    if (!file.size || Date.now()-file.lastModified < 2500) throw Error('Download is still recent or incomplete. Wait for Chrome to finish and try again.');
+    const target=targetFilename(entry,original);
+    if (target.toLowerCase()===actual.toLowerCase()) {
+      cancel(entry);
+      return target;
+    }
+    await renameConfirmed(handle,actual,target);
+    cancel(entry);
+    known.add(actual);
+    known.add(target);
+    entry.renamedFilename=target;
+    return target;
+  }
   function active() {return !!directory;}
   function folderName() {return directory?.name || '';}
   // scanOnce is exposed for deterministic regression tests; ordinary callers use begin().
-  return {chooseFolder,begin,cancel,active,folderName,sourceFilename,targetFilename,matchesOriginal,scanOnce};
+  return {chooseFolder,begin,cancel,active,folderName,sourceFilename,targetFilename,matchesOriginal,scanOnce,findExisting,renameExisting};
 })();

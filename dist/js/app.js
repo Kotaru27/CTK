@@ -226,10 +226,53 @@ const CTKDownloadRenamer = (() => {
       }
     } finally {scanning=false;}
   }
+  // Existing files were already present when the folder was selected, so the
+  // background 'new file only' watcher will never process them. Make this an
+  // explicit user-driven recovery operation instead.
+  async function findExisting(entry) {
+    if (!directory) throw Error('Choose the folder containing the downloaded file first.');
+    const original=sourceFilename(entry.url);
+    if (!original) throw Error('SharePoint URL does not identify a supported media filename.');
+    const names=await currentNames();
+    const candidates=[];
+    for (const name of names) {
+      if (!matchesOriginal(name,original) || names.has(name+'.crdownload')) continue;
+      const handle=await directory.getFileHandle(name);
+      const file=await handle.getFile();
+      if (!file.size) continue;
+      candidates.push({name,size:file.size,lastModified:file.lastModified});
+    }
+    candidates.sort((a,b)=>b.lastModified-a.lastModified || a.name.localeCompare(b.name));
+    return candidates;
+  }
+  async function renameExisting(entry,actual) {
+    if (!directory) throw Error('No folder selected.');
+    if (scanning) throw Error('Automatic rename is in progress. Try again once it finishes.');
+    const original=sourceFilename(entry.url);
+    if (!original || !matchesOriginal(actual,original)) throw Error('Selected name does not match this SharePoint media file.');
+    // Protect files still being written and any Chrome partial download.
+    const names=await currentNames();
+    if (!names.has(actual)) throw Error('Selected download was not found in this folder.');
+    if (names.has(actual+'.crdownload')) throw Error('The browser has not finished downloading this file.');
+    const handle=await directory.getFileHandle(actual);
+    const file=await handle.getFile();
+    if (!file.size || Date.now()-file.lastModified < 2500) throw Error('Download is still recent or incomplete. Wait for Chrome to finish and try again.');
+    const target=targetFilename(entry,original);
+    if (target.toLowerCase()===actual.toLowerCase()) {
+      cancel(entry);
+      return target;
+    }
+    await renameConfirmed(handle,actual,target);
+    cancel(entry);
+    known.add(actual);
+    known.add(target);
+    entry.renamedFilename=target;
+    return target;
+  }
   function active() {return !!directory;}
   function folderName() {return directory?.name || '';}
   // scanOnce is exposed for deterministic regression tests; ordinary callers use begin().
-  return {chooseFolder,begin,cancel,active,folderName,sourceFilename,targetFilename,matchesOriginal,scanOnce};
+  return {chooseFolder,begin,cancel,active,folderName,sourceFilename,targetFilename,matchesOriginal,scanOnce,findExisting,renameExisting};
 })();
 
 
@@ -5109,6 +5152,14 @@ const CTKDownloadRenamer = (() => {
               // differs from the optional auto-name folder, or SharePoint changes its basename.
               // The user chooses the actual local file; CTK never fetches protected media.
               if (CTKSharePoint.isSharePoint(url)) {
+                const fixName = document.createElement("button");
+                fixName.type = "button";
+                fixName.className = "liquid-btn";
+                fixName.textContent = "Fix downloaded name";
+                fixName.title = "Rename the existing downloaded file in its current folder (does not create another copy).";
+                fixName.onclick = () => this.fixSharePointName(entry);
+                actions.append(" ",fixName);
+                entry.fixNameButton = fixName;
                 const saveNamed = document.createElement("button");
                 saveNamed.type = "button";
                 saveNamed.className = "liquid-btn";
@@ -5235,7 +5286,39 @@ const CTKDownloadRenamer = (() => {
             if (entry.renameCopyButton) entry.renameCopyButton.hidden = false;
             this.status(tracking
               ? `SharePoint download requested. Waiting to rename ${entry.displayName} after it appears in your selected folder.`
-              : `SharePoint download requested for ${entry.displayName}. CTK stays open. Select the SAME Chrome download folder via Auto-name to rename finished downloads. Completion cannot be confirmed here.`);
+              : `SharePoint download requested for ${entry.displayName}. CTK stays open. If the original SharePoint filename remains, click Fix downloaded name and choose the folder containing the file. Download completion cannot be confirmed here.`);
+          },
+          async fixSharePointName(entry) {
+            if (!CTKSharePoint.isSharePoint(entry.url)) return;
+            const button=entry.fixNameButton;
+            if (button) button.disabled=true;
+            try {
+              if (!CTKDownloadRenamer.active()) {
+                const folder=await CTKDownloadRenamer.chooseFolder();
+                const folderButton=document.getElementById("adDlRenameFolder");
+                if (folderButton) folderButton.textContent="Auto-name: "+folder;
+              }
+              const candidates=await CTKDownloadRenamer.findExisting(entry);
+              if (!candidates.length) {
+                throw Error("No matching finished file in the selected folder. Choose the actual download folder, or use Save named copy instead. Do not redownload the media.");
+              }
+              let selected=candidates[0].name;
+              if (candidates.length>1) {
+                const available=candidates.map((item,i)=>(i+1)+". "+item.name).join("\n");
+                const choice=window.prompt("Multiple downloaded copies match this row. Enter the number of the correct file to rename:\n"+available,"1");
+                if (choice===null) return;
+                const index=Number(choice);
+                if (!Number.isInteger(index)||index<1||index>candidates.length) throw Error("No valid file selected. Nothing changed.");
+                selected=candidates[index-1].name;
+              }
+              const target=await CTKDownloadRenamer.renameExisting(entry,selected);
+              this.status("Renamed existing file in place: "+selected+" → "+target+". There is no extra copy.");
+              if (button) button.textContent="Name fixed";
+            } catch(error) {
+              if (error.name!=="AbortError") this.status("Could not rename existing download: "+error.message,true);
+            } finally {
+              if (button) button.disabled=false;
+            }
           },
           async saveSharePointCopy(entry) {
             // This is deliberately user-initiated and operates on a File chosen from
@@ -5262,7 +5345,7 @@ const CTKDownloadRenamer = (() => {
               const target = CTKDownloadRenamer.targetFilename(entry,originalName);
               try {
                 this.saveBlob(file,target);
-                this.status("Requested a correctly named copy: " + target + ". The original SharePoint download is unchanged. Confirm the new file in your browser Downloads.");
+                this.status("Requested an additional named copy: " + target + ". The original is still present; use Fix downloaded name to rename an existing file without making a duplicate.");
               } catch(error) {
                 this.status("Could not request the named copy: " + error.message,true);
               }

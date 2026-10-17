@@ -129,3 +129,25 @@ test('Local renamed copy refuses an HTML/preview result rather than saving it as
     assert.match(errors[0][0],/Select the finished media file/);
   }finally{globalThis.document=originalDoc;globalThis.CTKSharePoint=originalSP;}
 });
+
+test('Fix downloaded name recovers a finished SharePoint file without saving a duplicate',async()=>{
+  const oldSP=globalThis.CTKSharePoint,oldRenamer=globalThis.CTKDownloadRenamer,oldDoc=globalThis.document,oldWindow=globalThis.window;
+  const statuses=[], operations=[];
+  globalThis.CTKSharePoint=sp;
+  globalThis.CTKDownloadRenamer={
+    active:()=>false,async chooseFolder(){operations.push('chooseFolder');return 'Downloads';},
+    async findExisting(){operations.push('findExisting');return [{name:'ALDI Frische Social LT3 OLV Social Pick me 22s (1).mp4'}];},
+    async renameExisting(entry,name){operations.push(name);return 'AD1_ALDI_Frische_Social_LT3_OLV_SOCIAL1_Pick_me_22s.mp4';}
+  };
+  globalThis.document={getElementById:()=>({textContent:''})};
+  globalThis.window={prompt(){throw Error('single candidate must not ask for choice')}};
+  const button={textContent:'Fix downloaded name',disabled:false};
+  try{
+    const copy=Object.assign({},AD,{status:s=>statuses.push(s)});
+    await copy.fixSharePointName({url:'https://example.sharepoint.com/sites/DACH/Shared%20Documents/video.mp4',fixNameButton:button});
+    assert.deepEqual(operations,['chooseFolder','findExisting','ALDI Frische Social LT3 OLV Social Pick me 22s (1).mp4']);
+    assert.equal(button.disabled,false);
+    assert.equal(button.textContent,'Name fixed');
+    assert.match(statuses[0],/Renamed existing file in place/);
+  }finally{globalThis.CTKSharePoint=oldSP;globalThis.CTKDownloadRenamer=oldRenamer;globalThis.document=oldDoc;globalThis.window=oldWindow;}
+});
