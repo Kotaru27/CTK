@@ -69,8 +69,14 @@ jobs:
               assert page.locator('.ctk-row-menu').count()==12, 'More menus missing'
               assert page.locator('#adDlTableBody tr').count()==12
               page.screenshot(path='docs/.visual-check/ad-v2-dark.png',full_page=False,animations='disabled')
-              page.locator('.ctk-row-menu > summary').first.click()
+              page.locator('.ctk-row-menu > summary').nth(5).click()
               assert page.locator('.ctk-row-menu[open]').count()==1
+              bounds=page.evaluate("""() => {
+                const menu=document.querySelector('.ctk-row-menu[open] .ctk-row-popover').getBoundingClientRect();
+                const table=document.querySelector('#adDlTableContainer').getBoundingClientRect();
+                return {top:menu.top,bottom:menu.bottom,tableTop:table.top,tableBottom:table.bottom};
+              }""")
+              assert bounds['top']>=bounds['tableTop']-5 and bounds['bottom']<=bounds['tableBottom']+5, 'Menu clipped: '+str(bounds)
               page.keyboard.press('Escape')
               assert page.locator('.ctk-row-menu[open]').count()==0
               page.evaluate("document.body.classList.add('light-mode')")
