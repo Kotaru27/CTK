@@ -54,7 +54,8 @@ jobs:
                 }''',{'screen':screen,'section':section})
                 assert not values['overflow'],values
                 if screen=='home':assert values['buttonTitles']==8 and 'Instrument Serif' in values['font'],values
-                if screen=='story':assert values['storyEmptyAfter']=='50%',values
+                if screen=='story':
+                  assert values['storyEmptyTransform'].startswith('matrix(') and 'overflow' in values,values
                 png=root/('docs/.finish-review/'+screen+('-light' if light else '-dark')+'.jpg')
                 page.screenshot(path=str(png),type='jpeg',quality=57,animations='disabled')
                 (png.with_suffix('.b64')).write_text(base64.b64encode(png.read_bytes()).decode())
