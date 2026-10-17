@@ -19,7 +19,7 @@ try{
   syntheticWebm=fs.readFileSync(sample);
 }catch(error){
   webmSkipReason=String(error).slice(0,240);
-  console.log('FORGE_VIDEO_FIXTURE_UNAVAILABLE',webmSkipReason);
+  throw new Error('FORGE_VIDEO_FIXTURE_UNAVAILABLE: '+webmSkipReason);
 }
 function samplePdf(){
  const stream='BT /F1 30 Tf 72 700 Td (THE FORGE QA DOCUMENT) Tj ET';
