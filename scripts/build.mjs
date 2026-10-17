@@ -81,7 +81,8 @@ function forgeBrand(html,standaloneRelease){
     ['aria-label="Open Logo Workspace"','aria-label="Open Logo Resizer"'],
     ['<h2 class="home-card-title">Logo Workspace</h2>','<h2 class="home-card-title">Logo Resizer</h2>'],
     ['title="Ad Link Downloader"','title="Ad Downloader"'],
-    ['<span class="nav-item-text">Ad Link Downloader</span>','<span class="nav-item-text">Ad Downloader</span>']
+    ['<span class="nav-item-text">Ad Link Downloader</span>','<span class="nav-item-text">Ad Downloader</span>'],
+    ['<span style="flex: 1">Ad Link Downloader</span>','<span style="flex: 1">Ad Downloader</span>']
   ]) {
     if(!html.includes(before)) throw Error('Naming refinement anchor missing: '+before);
     html=html.replace(before,after);
