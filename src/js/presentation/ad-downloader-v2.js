@@ -46,19 +46,23 @@
           menu.append(summary,body);
           body.append(fix,save);
           actions.append(menu);
-          menu.addEventListener("toggle",()=>{
-            if (!menu.open) return;
-            closeMenus(menu);
-            // Detect clipping against the scrolling table, not just the last
-            // three rows (which might be off screen). Keep rare actions usable
-            // in every visible row without changing their original handlers.
+          function positionMenu() {
+            // Compute position BEFORE native details opens, so a menu at
+            // the bottom of the scroll viewport never flashes outside it.
             const viewport=root.querySelector("#adDlTableContainer")?.getBoundingClientRect();
-            const popover=body.getBoundingClientRect();
-            if (viewport) {
-              const downSpace=viewport.bottom-summary.getBoundingClientRect().bottom;
-              const upSpace=summary.getBoundingClientRect().top-viewport.top;
-              const preferred=downSpace>=popover.height+13 || downSpace>=upSpace ? "down":"up";
-              menu.dataset.side=preferred;
+            if (!viewport) return;
+            const trigger=summary.getBoundingClientRect();
+            const downSpace=viewport.bottom-trigger.bottom;
+            const upSpace=trigger.top-viewport.top;
+            const visibleButtons=Array.from(body.querySelectorAll("button")).filter(el=>!el.hidden).length;
+            const panelHeight=14+visibleButtons*42;
+            menu.dataset.side=(downSpace>=panelHeight || downSpace>=upSpace)?"down":"up";
+          }
+          summary.addEventListener("click",positionMenu);
+          menu.addEventListener("toggle",()=>{
+            if (menu.open) {
+              closeMenus(menu);
+              positionMenu();
             }
           });
           body.addEventListener("click",e=>{

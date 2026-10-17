@@ -71,6 +71,7 @@ jobs:
               page.screenshot(path='docs/.visual-check/ad-v2-dark.png',full_page=False,animations='disabled')
               page.locator('.ctk-row-menu > summary').nth(5).click()
               assert page.locator('.ctk-row-menu[open]').count()==1
+              page.wait_for_timeout(130)
               bounds=page.evaluate("""() => {
                 const menu=document.querySelector('.ctk-row-menu[open] .ctk-row-popover').getBoundingClientRect();
                 const table=document.querySelector('#adDlTableContainer').getBoundingClientRect();

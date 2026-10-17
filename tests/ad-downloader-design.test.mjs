@@ -15,7 +15,7 @@ test("Ad downloader v2 ships in both modular and standalone releases without los
   assert.match(js,/actions\.insertBefore\(download,copy\)/);
   assert.match(js,/body\.append\(fix,save\)/);
   assert.match(js,/new MutationObserver\(enhance\)/);
-  assert.match(js,/menu\.dataset\.side=preferred/);
+  assert.match(js,/summary\.addEventListener\("click",positionMenu\)/);
   assert.match(css,/ctk-row-menu\[data-side="up"\]/);
   assert.match(js,/observer\.observe\(rows,\{childList:true\}\)/);
 });
