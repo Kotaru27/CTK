@@ -1084,12 +1084,11 @@ const CTKDownloadRenamer = (() => {
         showHome() {
           const core = () => this._showHome();
           if (this.els.viewApp.classList.contains("active")) {
-            // Only the Video Stills route opts into the new shared transition.
-            // Storyboard and every other tool retain the original navigation.
-            const videoSelected = document.getElementById("nav-stills-video")
-              ?.classList.contains("active");
-            if (videoSelected && window.ForgeVideoRoute) {
-              window.ForgeVideoRoute.navigate(core);
+            const motion = window.ForgeWorkspaceRoute;
+            const selectedRoute = motion && motion.selected();
+            if (selectedRoute) {
+              this._switchToken = (this._switchToken || 0) + 1;
+              motion.navigate(core, selectedRoute);
             } else {
               this.switchViews(core);
             }
@@ -1149,13 +1148,18 @@ const CTKDownloadRenamer = (() => {
           document.getElementById("brandText").textContent = "The Forge";
         },
         openTool(id, mode) {
+          const motion = window.ForgeWorkspaceRoute;
           if (this.els.viewApp.classList.contains("active")) {
+            // Changing tools inside the workspace must immediately stop any
+            // older shared-element flight; never queue pending navigation.
+            if (motion) motion.cancel();
             this._openTool(id, mode);
           } else {
             const core = () => this._openTool(id, mode);
-            if (id === "section-stills-boards" && mode === "video" &&
-                window.ForgeVideoRoute) {
-              window.ForgeVideoRoute.navigate(core);
+            const route = motion && motion.fromOpen(id, mode);
+            if (route) {
+              this._switchToken = (this._switchToken || 0) + 1;
+              motion.navigate(core, route);
             } else {
               this.switchViews(core);
             }
