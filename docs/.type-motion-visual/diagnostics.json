@@ -1,0 +1,94 @@
+[
+  {
+    "screen": "home",
+    "light": false,
+    "headingFont": "\"Instrument Serif\", Georgia, serif",
+    "headingLetterSpacing": "-4.00896px",
+    "headingLineHeight": "80.5968px",
+    "tileAnimation": "0.47s",
+    "tileTransition": "0.33s, 0.33s, 0.21s",
+    "paragraphSize": "15.12px",
+    "paragraphColor": "rgb(176, 188, 181)",
+    "tileCount": 8,
+    "horizontalOverflow": false
+  },
+  {
+    "screen": "logo",
+    "light": false,
+    "title": "Logo Resizer",
+    "titleFont": "\"Plus Jakarta Sans\", system-ui, sans-serif",
+    "titleSize": "22.032px",
+    "animation": "0.33s",
+    "exists": true,
+    "horizontalOverflow": false
+  },
+  {
+    "screen": "storyboard",
+    "light": false,
+    "title": "Storyboard",
+    "titleFont": "\"Plus Jakarta Sans\", sans-serif",
+    "titleSize": "23px",
+    "animation": "0.33s",
+    "exists": true,
+    "horizontalOverflow": false
+  },
+  {
+    "screen": "ad-downloader",
+    "light": false,
+    "title": "Ad Link Downloader",
+    "titleFont": "\"Plus Jakarta Sans\", system-ui, sans-serif",
+    "titleSize": "22.032px",
+    "animation": "0.33s",
+    "exists": true,
+    "horizontalOverflow": false
+  },
+  {
+    "screen": "home",
+    "light": true,
+    "headingFont": "\"Instrument Serif\", Georgia, serif",
+    "headingLetterSpacing": "-4.00896px",
+    "headingLineHeight": "80.5968px",
+    "tileAnimation": "0.47s",
+    "tileTransition": "0.33s, 0.33s, 0.21s",
+    "paragraphSize": "15.12px",
+    "paragraphColor": "rgb(82, 102, 91)",
+    "tileCount": 8,
+    "horizontalOverflow": false
+  },
+  {
+    "screen": "logo",
+    "light": true,
+    "title": "Logo Resizer",
+    "titleFont": "\"Plus Jakarta Sans\", system-ui, sans-serif",
+    "titleSize": "22.032px",
+    "animation": "0.33s",
+    "exists": true,
+    "horizontalOverflow": false
+  },
+  {
+    "screen": "storyboard",
+    "light": true,
+    "title": "Storyboard",
+    "titleFont": "\"Plus Jakarta Sans\", sans-serif",
+    "titleSize": "23px",
+    "animation": "0.33s",
+    "exists": true,
+    "horizontalOverflow": false
+  },
+  {
+    "screen": "ad-downloader",
+    "light": true,
+    "title": "Ad Link Downloader",
+    "titleFont": "\"Plus Jakarta Sans\", system-ui, sans-serif",
+    "titleSize": "22.032px",
+    "animation": "0.33s",
+    "exists": true,
+    "horizontalOverflow": false
+  },
+  {
+    "screen": "reduced-motion",
+    "homeAnimation": "0s",
+    "homeTransition": "0s",
+    "navTransition": "0s"
+  }
+]

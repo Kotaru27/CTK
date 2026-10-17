@@ -4736,6 +4736,233 @@ body:has(#nav-adlinks-dl.active) .header .brand-title{color:#f0f5ff!important}
    animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;
  }
 }</style>
+<style id="ctk-type-motion-v3">/* CTK TYPE & MOTION / 2026.10
+   A single reversible presentation layer. All engines, layouts, routing,
+   uploads, rendering and exports are intentionally unchanged.
+   Motion: opacity/translate only; never animated blur or heavy filters. */
+:root {
+  --ctk-ease-out: cubic-bezier(.22,1,.36,1);
+  --ctk-ease-soft: cubic-bezier(.2,.8,.2,1);
+  --ctk-micro: 140ms;
+  --ctk-quick: 210ms;
+  --ctk-standard: 330ms;
+  --ctk-reveal: 470ms;
+}
+
+/* TYPE / 01 — one legible rhythm, preserve existing chosen font families. */
+body {
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+.header .brand-title {letter-spacing:.115em!important;font-weight:750!important}
+.header::after {letter-spacing:.145em!important;font-size:10px!important;font-weight:550!important;color:#9aa9a2!important}
+body.light-mode .header::after{color:#667a6d!important}
+#view-app .tool-header > h2,
+#view-app .tool-header h2 {
+  font-family:"Plus Jakarta Sans",system-ui,sans-serif!important;
+  font-size:clamp(20px,1.53vw,25px)!important;
+  font-weight:700!important;
+  line-height:1.16!important;
+  letter-spacing:-.047em!important;
+}
+#view-app .label-header,
+#view-app .control-group > .label-header {
+  font-size:11px!important;
+  font-weight:650!important;
+  line-height:1.48!important;
+  letter-spacing:.065em!important;
+  text-transform:uppercase!important;
+}
+/* Longer task guidance is a reading surface, not a decorative micro-label. */
+#view-app .sidebar-panel p,
+#view-app .right-panel p,
+#view-app .ad-download-heading p,
+#view-app .split-studio-identity p,
+#view-app .adgen-intro p {
+  line-height:1.66!important;
+}
+#view-app .edition-kicker,
+#view-app .edition-rule-label {
+  letter-spacing:.12em!important;
+  line-height:1.55!important;
+}
+#view-app :is(.liquid-btn,button:not(.material-symbols-rounded)):not(.nav-item):not(.home-card) {
+  font-family:"Plus Jakarta Sans",system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+/* Keep mono for names, data and output code: readable numbers, not affected by headings. */
+#view-app :is(.terminal-input,pre,code),
+#view-app .home-card-num {
+  font-variant-ligatures:none;
+}
+#view-app :is(input,select,textarea):focus-visible,
+#view-app :is(button,[role="tab"],[role="button"]):focus-visible {
+  outline-offset:3px!important;
+}
+
+/* MOTION / 02 — coherent response, no blur, no exaggerated spring/zoom.
+   No transitions on canvases, video, uploads, generated images or scrolling. */
+#view-app .tool-section.active {
+  animation:ctk-workspace-arrive var(--ctk-standard) var(--ctk-ease-out) both!important;
+}
+@keyframes ctk-workspace-arrive{
+  from{opacity:.65;translate:0 8px}
+  to{opacity:1;translate:0 0}
+}
+.nav-sidebar.visible{animation:ctk-shell-arrive var(--ctk-standard) var(--ctk-ease-out) both!important}
+@keyframes ctk-shell-arrive{from{opacity:.9}to{opacity:1}}
+#view-app .tool-header,
+#view-app .sidebar-panel,
+#view-app .right-panel {
+  transition:background-color var(--ctk-standard) var(--ctk-ease-soft),
+             border-color var(--ctk-quick) ease!important;
+}
+.nav-sidebar .nav-item {
+  transition:color var(--ctk-quick) ease,
+             background-color var(--ctk-quick) ease,
+             border-color var(--ctk-quick) ease,
+             translate var(--ctk-quick) var(--ctk-ease-out)!important;
+}
+/* Match selected-state feel across both theme variants without re-layout. */
+#view-app .liquid-btn:not(:disabled),
+#view-app [role="tab"]:not(:disabled) {
+  transition:background-color var(--ctk-quick) ease,
+             border-color var(--ctk-quick) ease,
+             color var(--ctk-quick) ease,
+             box-shadow var(--ctk-quick) ease,
+             translate var(--ctk-micro) var(--ctk-ease-out)!important;
+}
+#view-app .liquid-btn:not(:disabled):active{translate:0 1px}
+#view-app input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+#view-app textarea,
+#view-app select {
+  transition:border-color var(--ctk-quick) ease,box-shadow var(--ctk-quick) ease,
+             background-color var(--ctk-quick) ease!important;
+}
+#view-app #logoDetailOverlay.active {
+  animation:ctk-panel-arrive var(--ctk-standard) var(--ctk-ease-out) both!important;
+}
+@keyframes ctk-panel-arrive {from{opacity:.4;translate:12px 0}to{opacity:1;translate:0 0}}
+.presets-dialog,
+#view-app .modal-content,#view-app .dialog-content {
+  animation:ctk-dialog-arrive var(--ctk-standard) var(--ctk-ease-out) both!important;
+}
+@keyframes ctk-dialog-arrive {from{opacity:.55;translate:0 9px}to{opacity:1;translate:0 0}}
+
+/* HOME / 03 — refine the existing editorial design, not replace it. */
+#view-home .combined-home-layout .home-wordmark {
+  animation:ctk-hero-enter var(--ctk-reveal) var(--ctk-ease-out) both!important;
+}
+@keyframes ctk-hero-enter{from{opacity:.58;translate:0 12px}to{opacity:1;translate:0 0}}
+#view-home .combined-home-layout .home-heading {
+  font-family:"Instrument Serif",Georgia,serif!important;
+  font-weight:400!important;
+  font-optical-sizing:auto;
+  font-size:clamp(3.5rem,5.8vw,6.7rem)!important;
+  line-height:.965!important;
+  letter-spacing:-.048em!important;
+  text-wrap:balance;
+}
+#view-home .combined-home-layout .home-heading em {letter-spacing:-.042em!important}
+#view-home .combined-home-layout .home-summary {
+  font-size:clamp(14px,1.05vw,15.5px)!important;
+  font-weight:450!important;
+  line-height:1.7!important;
+  letter-spacing:-.012em!important;
+  max-width:550px!important;
+}
+#view-home .combined-home-layout .home-eyebrow {
+  font-size:10.5px!important;
+  font-weight:600!important;
+  letter-spacing:.15em!important;
+}
+#view-home .combined-home-grid > .home-card {
+  animation:ctk-tile-arrive var(--ctk-reveal) var(--ctk-ease-out) both!important;
+  transition:background-color var(--ctk-standard) var(--ctk-ease-soft),
+    box-shadow var(--ctk-standard) var(--ctk-ease-out),
+    border-color var(--ctk-quick) ease!important;
+}
+#view-home .combined-home-grid > .home-card:nth-child(1),
+#view-home .combined-home-grid > .home-card:nth-child(2) {animation-delay:55ms!important}
+#view-home .combined-home-grid > .home-card:nth-child(3),
+#view-home .combined-home-grid > .home-card:nth-child(4){animation-delay:95ms!important}
+#view-home .combined-home-grid > .home-card:nth-child(5),
+#view-home .combined-home-grid > .home-card:nth-child(6){animation-delay:135ms!important}
+#view-home .combined-home-grid > .home-card:nth-child(7),
+#view-home .combined-home-grid > .home-card:nth-child(8){animation-delay:175ms!important}
+@keyframes ctk-tile-arrive{
+  from{opacity:.55;translate:0 8px}
+  to{opacity:1;translate:0 0}
+}
+#view-home .combined-home-grid > .home-card:hover{
+  box-shadow:inset 0 0 0 1px rgba(227,232,218,.28)!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card:hover{
+  box-shadow:inset 0 0 0 1px rgba(25,50,40,.19)!important;
+}
+#view-home .combined-home-grid > .home-card .home-card-title {
+  font-weight:700!important;
+  letter-spacing:-.043em!important;
+  line-height:1.18!important;
+  transition:translate var(--ctk-quick) var(--ctk-ease-out)!important;
+}
+#view-home .combined-home-grid > .home-card .home-card-desc{
+  font-size:13px!important;line-height:1.56!important;letter-spacing:-.012em!important;
+}
+#view-home .combined-home-grid > .home-card .home-card-num {
+  font-weight:650!important;letter-spacing:.125em!important;font-size:10px!important;
+}
+#view-home .combined-home-grid > .home-card .home-card-go {
+  transition:translate var(--ctk-standard) var(--ctk-ease-out),
+             color var(--ctk-quick) ease!important;
+}
+#view-home .combined-home-grid > .home-card > .home-card-art,
+#view-home .combined-home-grid > .home-card .home-card-art {
+  transition:translate var(--ctk-standard) var(--ctk-ease-out)!important;
+}
+#view-home .combined-home-grid > .home-card:hover > .home-card-art {translate:0 -4px}
+#view-home .combined-home-grid > .home-card:hover .home-card-go {translate:2px -2px}
+#view-home .combined-home-layout .home-art-pane,
+#view-home .combined-home-layout .home-art-frame {
+  transition:translate 520ms var(--ctk-ease-out)!important;
+}
+#view-home .combined-home-layout .home-wordmark:hover .home-art-pane{translate:2px -3px}
+#view-home .combined-home-layout .home-wordmark:hover .home-art-frame{translate:-2px 2px}
+/* Match the homepage's carefully balanced dark/light palette. */
+body:not(.light-mode) #view-home .combined-home-layout .home-summary{color:#b0bcb5!important}
+body.light-mode #view-home .combined-home-layout .home-summary{color:#52665b!important}
+body:not(.light-mode) #view-home .combined-home-grid > .home-card .home-card-desc{color:#bccbc2!important}
+body.light-mode #view-home .combined-home-grid > .home-card .home-card-desc{color:#52665b!important}
+
+/* Always adapt to motion preference, even for existing older animation rules. */
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto!important}
+  /* Match the specificity of component-level !important animation rules,
+     instead of relying on a weak universal descendant selector. */
+  #view-home .combined-home-grid > .home-card,
+  #view-home .combined-home-layout .home-wordmark,
+  #view-home .combined-home-layout .home-art-pane,
+  #view-home .combined-home-layout .home-art-frame,
+  #view-app .tool-section.active,
+  #view-app #logoDetailOverlay.active,
+  .nav-sidebar.visible,
+  .nav-sidebar .nav-item,
+  .presets-dialog {
+    animation:none!important;
+    transition:none!important;
+  }
+  #view-home *,#view-home *::before,#view-home *::after,
+  #view-app .tool-section,#view-app .tool-section *,
+  #view-app .tool-section *::before,#view-app .tool-section *::after,
+  .nav-sidebar,.nav-sidebar *, .presets-dialog {
+    animation-duration:.01ms!important;
+    animation-delay:0ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.01ms!important;
+    scroll-behavior:auto!important;
+  }
+}
+</style>
 </head>
 <body>
 <header class="header">
