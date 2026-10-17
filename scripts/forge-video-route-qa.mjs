@@ -17,7 +17,7 @@ async function setup(viewport,motion='no-preference'){
  page.on('pageerror',error=>errors.push(String(error)));
  page.on('console',msg=>{if(msg.type()==='error')errors.push(msg.text());});
  await page.goto(base,{waitUntil:'domcontentloaded',timeout:60000});
- await page.waitForFunction(()=>typeof window.UI==='object' && !!window.ForgeVideoRoute,{timeout:10000});
+ await page.waitForFunction(()=>typeof UI==='object' && !!window.ForgeVideoRoute,{timeout:10000});
  await page.evaluate(()=>{
   const orig=document.startViewTransition?.bind(document);
   window.__forgeTransitionCount=0;
