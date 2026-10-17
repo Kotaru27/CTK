@@ -54,11 +54,11 @@ jobs:
               for light in (False,True):
                 page.evaluate('(light)=>document.body.classList.toggle("light-mode",light)',light)
                 page.evaluate('([s,m])=>UI._openTool(s,m)',[section,mode])
-              page.evaluate("""()=>{
-                const labeled=[...document.querySelectorAll('[title]')];
-                for(const el of labeled)el.removeAttribute('title');
-                return labeled.length;
-              }""")
+                page.evaluate("""()=>{
+                  const labeled=[...document.querySelectorAll('[title]')];
+                  for(const el of labeled)el.removeAttribute('title');
+                  return labeled.length;
+                }""")
                 page.wait_for_timeout(450)
                 button=page.locator(sel).first
                 for stage in ('rest','hover','out'):
