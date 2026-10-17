@@ -95,7 +95,7 @@ test('SharePoint recovery copies a deliberately picked local media file with spr
   };
   globalThis.document={
     body:{appendChild(node){widgets.push(node);}},
-    createElement(type){assert.equal(type,'input');return {click(){this.files=[file];this.onchange();},remove(){}};}
+    createElement(type){assert.equal(type,'input');return {style:{},click(){this.files=[file];this.onchange();},remove(){}};}
   };
   globalThis.window={confirm(){throw Error('Unexpected mismatched file confirmation')}};
   const copies=[], statuses=[];
@@ -119,7 +119,7 @@ test('Local renamed copy refuses an HTML/preview result rather than saving it as
   globalThis.CTKSharePoint=sp;
   globalThis.document={
     body:{appendChild(){}},
-    createElement(){return {click(){this.files=[{name:'preview.html',size:42,type:'text/html'}];this.onchange();},remove(){}};}
+    createElement(){return {style:{},click(){this.files=[{name:'preview.html',size:42,type:'text/html'}];this.onchange();},remove(){}};}
   };
   const errors=[];
   try{
