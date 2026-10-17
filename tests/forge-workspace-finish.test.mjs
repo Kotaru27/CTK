@@ -31,3 +31,11 @@ test('precision-polish is focus-visible and compact without layout overrides',()
   assert.ok(!polish.includes(s),'workspace-changing rule in precision layer: '+s);
  }
 });
+test('Ad Downloader workspace title matches the nav label in every release',()=>{
+ for(const path of ['index.html','dist/index.html','dist/creative-tools-standalone.html']){
+  const html=read(path);
+  assert.ok(html.includes('<span style="flex: 1">Ad Downloader</span>'),path);
+  assert.ok(!html.includes('<span style="flex: 1">Ad Link Downloader</span>'),path);
+ }
+ assert.match(read('scripts/build.mjs'),/\\['<span style="flex: 1">Ad Link Downloader<\\/span>'/);
+});
