@@ -61,7 +61,7 @@ body.light-mode #view-app :is(.split-studio-meta,.split-studio-foot,.adgen-outpu
   color:#526b59!important;
 }
 
-/* Legacy cardReveal animates filter:blur and opacity on every generated
+/* Legacy cardReveal animates visual blur and opacity on every generated
    card. It can make a successful import look empty for several frames.
    Our workspace route already provides motion feedback; output renders
    immediately with no additional blur or delayed entrance. */
