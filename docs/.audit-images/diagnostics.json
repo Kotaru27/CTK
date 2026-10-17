@@ -9,7 +9,7 @@
     "overflow": false,
     "bodyBg": "rgb(16, 25, 21)",
     "light": false,
-    "routeError": "Page.evaluate: TypeError: Cannot read properties of undefined (reading '_showHome')\n    at eval (eval at evaluate (:370:30), <anonymous>:1:15)\n    at UtilityScript.evaluate (<anonymous>:377:18)\n    at"
+    "routeError": null
   },
   {
     "section": "section-logo",
@@ -21,91 +21,91 @@
     "overflow": false,
     "bodyBg": "rgb(16, 25, 21)",
     "light": false,
-    "routeError": "Page.evaluate: TypeError: Cannot read properties of undefined (reading '_openTool')\n    at eval (eval at evaluate (:370:30), <anonymous>:1:30)\n    at UtilityScript.evaluate (<anonymous>:377:18)\n    at"
+    "routeError": null
   },
   {
     "section": "section-pdf",
     "name": "pdf-image",
     "visible": true,
-    "h2": "PDF Tools",
+    "h2": "PDF to Image",
     "titleFont": "\"Plus Jakarta Sans\", system-ui, sans-serif",
     "buttons": 2,
     "overflow": false,
     "bodyBg": "rgb(16, 25, 21)",
     "light": false,
-    "routeError": "Page.evaluate: TypeError: Cannot read properties of undefined (reading '_openTool')\n    at eval (eval at evaluate (:370:30), <anonymous>:1:30)\n    at UtilityScript.evaluate (<anonymous>:377:18)\n    at"
+    "routeError": null
   },
   {
     "section": "section-pdf",
     "name": "image-splitter",
     "visible": true,
-    "h2": "PDF Tools",
+    "h2": "Image Splitter",
     "titleFont": "\"Plus Jakarta Sans\", system-ui, sans-serif",
-    "buttons": 0,
+    "buttons": 3,
     "overflow": false,
     "bodyBg": "rgb(16, 25, 21)",
     "light": false,
-    "routeError": "Page.evaluate: TypeError: Cannot read properties of undefined (reading '_openTool')\n    at eval (eval at evaluate (:370:30), <anonymous>:1:30)\n    at UtilityScript.evaluate (<anonymous>:377:18)\n    at"
+    "routeError": null
   },
   {
     "section": "section-stills-boards",
     "name": "video-stills",
     "visible": true,
-    "h2": "Stills & Boards",
+    "h2": "Video Stills",
     "titleFont": "\"Plus Jakarta Sans\", system-ui, sans-serif",
-    "buttons": 4,
+    "buttons": 2,
     "overflow": false,
     "bodyBg": "rgb(16, 25, 21)",
     "light": false,
-    "routeError": "Page.evaluate: TypeError: Cannot read properties of undefined (reading '_openTool')\n    at eval (eval at evaluate (:370:30), <anonymous>:1:30)\n    at UtilityScript.evaluate (<anonymous>:377:18)\n    at"
+    "routeError": null
   },
   {
     "section": "section-stills-boards",
     "name": "storyboard",
     "visible": true,
-    "h2": "Stills & Boards",
-    "titleFont": "\"Plus Jakarta Sans\", system-ui, sans-serif",
-    "buttons": 4,
+    "h2": "Storyboard",
+    "titleFont": "\"Plus Jakarta Sans\", sans-serif",
+    "buttons": 8,
     "overflow": false,
     "bodyBg": "rgb(16, 25, 21)",
     "light": false,
-    "routeError": "Page.evaluate: TypeError: Cannot read properties of undefined (reading '_openTool')\n    at eval (eval at evaluate (:370:30), <anonymous>:1:30)\n    at UtilityScript.evaluate (<anonymous>:377:18)\n    at"
+    "routeError": null
   },
   {
     "section": "section-stills-boards",
     "name": "filmstrip",
     "visible": true,
-    "h2": "Stills & Boards",
-    "titleFont": "\"Plus Jakarta Sans\", system-ui, sans-serif",
-    "buttons": 4,
+    "h2": "Storyboard",
+    "titleFont": "\"Plus Jakarta Sans\", sans-serif",
+    "buttons": 9,
     "overflow": false,
     "bodyBg": "rgb(16, 25, 21)",
     "light": false,
-    "routeError": "Page.evaluate: TypeError: Cannot read properties of undefined (reading '_openTool')\n    at eval (eval at evaluate (:370:30), <anonymous>:1:30)\n    at UtilityScript.evaluate (<anonymous>:377:18)\n    at"
+    "routeError": null
   },
   {
     "section": "section-adlinks",
     "name": "link-gen",
     "visible": true,
-    "h2": "Ad Links & Downloader",
+    "h2": "Link Gen",
     "titleFont": "\"Plus Jakarta Sans\", sans-serif",
-    "buttons": 5,
+    "buttons": 3,
     "overflow": false,
     "bodyBg": "rgb(16, 25, 21)",
     "light": false,
-    "routeError": "Page.evaluate: TypeError: Cannot read properties of undefined (reading '_openTool')\n    at eval (eval at evaluate (:370:30), <anonymous>:1:30)\n    at UtilityScript.evaluate (<anonymous>:377:18)\n    at"
+    "routeError": null
   },
   {
     "section": "section-adlinks",
     "name": "ad-downloader",
     "visible": true,
-    "h2": "Ad Links & Downloader",
+    "h2": "Ad Link Downloader",
     "titleFont": "\"Plus Jakarta Sans\", sans-serif",
-    "buttons": 6,
+    "buttons": 4,
     "overflow": false,
     "bodyBg": "rgb(16, 25, 21)",
     "light": false,
-    "routeError": "Page.evaluate: TypeError: Cannot read properties of undefined (reading '_openTool')\n    at eval (eval at evaluate (:370:30), <anonymous>:1:30)\n    at UtilityScript.evaluate (<anonymous>:377:18)\n    at"
+    "routeError": null
   },
   {
     "section": "section-yt-helper",
@@ -117,19 +117,19 @@
     "overflow": false,
     "bodyBg": "rgb(16, 25, 21)",
     "light": false,
-    "routeError": "Page.evaluate: TypeError: Cannot read properties of undefined (reading '_openTool')\n    at eval (eval at evaluate (:370:30), <anonymous>:1:30)\n    at UtilityScript.evaluate (<anonymous>:377:18)\n    at"
+    "routeError": null
   },
   {
     "section": null,
     "name": "home",
-    "visible": false,
+    "visible": true,
     "h2": "Make space for better work.",
     "titleFont": "\"Instrument Serif\", Georgia, \"Times New Roman\", serif",
-    "buttons": 0,
+    "buttons": 8,
     "overflow": false,
     "bodyBg": "rgb(234, 234, 226)",
     "light": true,
-    "routeError": "Page.evaluate: TypeError: Cannot read properties of undefined (reading '_showHome')\n    at eval (eval at evaluate (:370:30), <anonymous>:1:15)\n    at UtilityScript.evaluate (<anonymous>:377:18)\n    at"
+    "routeError": null
   },
   {
     "section": "section-logo",
@@ -141,91 +141,91 @@
     "overflow": false,
     "bodyBg": "rgb(234, 234, 226)",
     "light": true,
-    "routeError": "Page.evaluate: TypeError: Cannot read properties of undefined (reading '_openTool')\n    at eval (eval at evaluate (:370:30), <anonymous>:1:30)\n    at UtilityScript.evaluate (<anonymous>:377:18)\n    at"
+    "routeError": null
   },
   {
     "section": "section-pdf",
     "name": "pdf-image",
     "visible": true,
-    "h2": "PDF Tools",
+    "h2": "PDF to Image",
     "titleFont": "\"Plus Jakarta Sans\", system-ui, sans-serif",
     "buttons": 2,
     "overflow": false,
     "bodyBg": "rgb(234, 234, 226)",
     "light": true,
-    "routeError": "Page.evaluate: TypeError: Cannot read properties of undefined (reading '_openTool')\n    at eval (eval at evaluate (:370:30), <anonymous>:1:30)\n    at UtilityScript.evaluate (<anonymous>:377:18)\n    at"
+    "routeError": null
   },
   {
     "section": "section-pdf",
     "name": "image-splitter",
     "visible": true,
-    "h2": "PDF Tools",
+    "h2": "Image Splitter",
     "titleFont": "\"Plus Jakarta Sans\", system-ui, sans-serif",
-    "buttons": 0,
+    "buttons": 3,
     "overflow": false,
     "bodyBg": "rgb(234, 234, 226)",
     "light": true,
-    "routeError": "Page.evaluate: TypeError: Cannot read properties of undefined (reading '_openTool')\n    at eval (eval at evaluate (:370:30), <anonymous>:1:30)\n    at UtilityScript.evaluate (<anonymous>:377:18)\n    at"
+    "routeError": null
   },
   {
     "section": "section-stills-boards",
     "name": "video-stills",
     "visible": true,
-    "h2": "Stills & Boards",
+    "h2": "Video Stills",
     "titleFont": "\"Plus Jakarta Sans\", system-ui, sans-serif",
-    "buttons": 4,
+    "buttons": 2,
     "overflow": false,
     "bodyBg": "rgb(234, 234, 226)",
     "light": true,
-    "routeError": "Page.evaluate: TypeError: Cannot read properties of undefined (reading '_openTool')\n    at eval (eval at evaluate (:370:30), <anonymous>:1:30)\n    at UtilityScript.evaluate (<anonymous>:377:18)\n    at"
+    "routeError": null
   },
   {
     "section": "section-stills-boards",
     "name": "storyboard",
     "visible": true,
-    "h2": "Stills & Boards",
-    "titleFont": "\"Plus Jakarta Sans\", system-ui, sans-serif",
-    "buttons": 4,
+    "h2": "Storyboard",
+    "titleFont": "\"Plus Jakarta Sans\", sans-serif",
+    "buttons": 8,
     "overflow": false,
     "bodyBg": "rgb(234, 234, 226)",
     "light": true,
-    "routeError": "Page.evaluate: TypeError: Cannot read properties of undefined (reading '_openTool')\n    at eval (eval at evaluate (:370:30), <anonymous>:1:30)\n    at UtilityScript.evaluate (<anonymous>:377:18)\n    at"
+    "routeError": null
   },
   {
     "section": "section-stills-boards",
     "name": "filmstrip",
     "visible": true,
-    "h2": "Stills & Boards",
-    "titleFont": "\"Plus Jakarta Sans\", system-ui, sans-serif",
-    "buttons": 4,
+    "h2": "Storyboard",
+    "titleFont": "\"Plus Jakarta Sans\", sans-serif",
+    "buttons": 9,
     "overflow": false,
     "bodyBg": "rgb(234, 234, 226)",
     "light": true,
-    "routeError": "Page.evaluate: TypeError: Cannot read properties of undefined (reading '_openTool')\n    at eval (eval at evaluate (:370:30), <anonymous>:1:30)\n    at UtilityScript.evaluate (<anonymous>:377:18)\n    at"
+    "routeError": null
   },
   {
     "section": "section-adlinks",
     "name": "link-gen",
     "visible": true,
-    "h2": "Ad Links & Downloader",
+    "h2": "Link Gen",
     "titleFont": "\"Plus Jakarta Sans\", sans-serif",
-    "buttons": 5,
+    "buttons": 3,
     "overflow": false,
     "bodyBg": "rgb(234, 234, 226)",
     "light": true,
-    "routeError": "Page.evaluate: TypeError: Cannot read properties of undefined (reading '_openTool')\n    at eval (eval at evaluate (:370:30), <anonymous>:1:30)\n    at UtilityScript.evaluate (<anonymous>:377:18)\n    at"
+    "routeError": null
   },
   {
     "section": "section-adlinks",
     "name": "ad-downloader",
     "visible": true,
-    "h2": "Ad Links & Downloader",
+    "h2": "Ad Link Downloader",
     "titleFont": "\"Plus Jakarta Sans\", sans-serif",
-    "buttons": 6,
+    "buttons": 4,
     "overflow": false,
     "bodyBg": "rgb(234, 234, 226)",
     "light": true,
-    "routeError": "Page.evaluate: TypeError: Cannot read properties of undefined (reading '_openTool')\n    at eval (eval at evaluate (:370:30), <anonymous>:1:30)\n    at UtilityScript.evaluate (<anonymous>:377:18)\n    at"
+    "routeError": null
   },
   {
     "section": "section-yt-helper",
@@ -237,7 +237,7 @@
     "overflow": false,
     "bodyBg": "rgb(234, 234, 226)",
     "light": true,
-    "routeError": "Page.evaluate: TypeError: Cannot read properties of undefined (reading '_openTool')\n    at eval (eval at evaluate (:370:30), <anonymous>:1:30)\n    at UtilityScript.evaluate (<anonymous>:377:18)\n    at"
+    "routeError": null
   },
   {
     "browserPageErrors": []
