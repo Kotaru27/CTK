@@ -1,4 +1,5 @@
 import {chromium} from 'playwright';
+import assert from 'node:assert/strict';
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 try{
  const context=await browser.newContext({viewport:{width:2560,height:1440}});
@@ -68,6 +69,35 @@ try{
   out.push(run('downloader->link gen',()=>UI.switchAdlinksTab('gen')));
   return out;
  });
+ // The original synchronous tab ledger cannot see MutationObserver microtasks.
+ // Exercise each tab independently and measure the actual running WAAPI effect.
+ const observedTabs=[];
+ const modeCases=[
+  ['PDF convert → split','section-pdf','convert','switchPdfTab','split','pdfTabContentSplit'],
+  ['PDF split → convert','section-pdf','split','switchPdfTab','convert','pdfTabContentConvert'],
+  ['Storyboard → Filmstrip','section-stills-boards','story','switchStillsTab','filmstrip','stillsTabContentFilmstrip'],
+  ['Filmstrip → Storyboard','section-stills-boards','filmstrip','switchStillsTab','story','stillsTabContentStory'],
+  ['Link Gen → Ad Downloader','section-adlinks','gen','switchAdlinksTab','downloader','adlinksTabContentDownloader'],
+  ['Ad Downloader → Link Gen','section-adlinks','downloader','switchAdlinksTab','gen','adlinksTabContentGen']
+ ];
+ for(const [name,section,mode,method,destination,panel] of modeCases){
+  await page.evaluate(({section,mode})=>UI.openTool(section,mode),{section,mode});
+  await page.waitForTimeout(260);
+  await page.evaluate(({method,destination})=>UI[method](destination),{method,destination});
+  await page.waitForTimeout(40);
+  const measurement=await page.evaluate(panel=>{
+   const element=document.getElementById(panel);
+   const active=document.getAnimations({subtree:true}).filter(animation=>
+     animation.playState==='running' && animation.effect?.target===element);
+   return {panel,visible:!!element&&getComputedStyle(element).display!=='none',
+     motionCount:active.length,durations:active.map(a=>a.effect.getTiming().duration)};
+  },panel);
+  observedTabs.push({name,...measurement});
+  assert.ok(measurement.visible,name+' target not visible');
+  assert.ok(measurement.motionCount>0,name+' has no internal panel transition');
+ }
+ assert.deepEqual(errors,[],'Internal motion audit produced runtime errors');
+ console.log('FORGE_TOOL_INTERNAL_MEASURED '+JSON.stringify(observedTabs));
  console.log('FORGE_TOOL_INTERNAL_MOTION '+JSON.stringify({record,tabs,errors}));
  await context.close();
 }finally{await browser.close();}
