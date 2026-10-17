@@ -5,9 +5,20 @@ const read=p=>fs.readFileSync(new URL(p,import.meta.url),'utf8');
 const ad=read('../src/css/experience/ad-downloader-v2.css');
 const global=read('../src/css/experience/typography-motion-v3.css');
 const standalone=read('../dist/creative-tools-standalone.html');
-test('Ad Downloader is forest green in both themes with no blue palette left',()=>{
- for(const value of ['--ad-primary:#c4ddba','--ad-primary:#28543d','#15241b','#c5dcbc']) assert.ok(ad.includes(value),value);
+test('Ad Downloader follows shared light studio palette and retains forest dark tokens',()=>{
+ for(const value of [
+   '--ad-primary:#c4ddba',
+   '--ad-primary:var(--studio-accent)',
+   '--ad-base:var(--studio-main)',
+   '--ad-stage:var(--studio-main)',
+   '--ad-surface:var(--studio-panel)',
+   '--ad-surface-alt:var(--studio-raised)',
+   '--ad-ink:var(--studio-title)',
+   '--ad-line-strong:var(--studio-border)'
+ ]) assert.ok(ad.includes(value),value);
  for(const old of ['#b7cbff','#3157bf','#101927','#d5e1ff','#0d1422']) assert.ok(!ad.includes(old),old);
+ assert.ok(!ad.includes('body:has(#nav-adlinks-dl.active)'),'Ad-specific dark chrome must not override shared theme');
+ assert.ok(ad.includes('body.light-mode #view-home .combined-home-grid > .home-card.tool-ads'));
  assert.ok(standalone.includes('<style id="ctk-ad-downloader-v2">'+ad+'</style>'));
 });
 test('Storyboard uses green surfaces and accents in both themes',()=>{
