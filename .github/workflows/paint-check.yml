@@ -52,6 +52,21 @@ jobs:
                   page.screenshot(path=str(png),type='jpeg',quality=85)
                   (root/(filename+'.b64')).write_text(base64.b64encode(png.read_bytes()).decode())
                   png.unlink()
+                  if stage=='hover':
+                    state['ancestors']=button.evaluate("""e=>{
+                      let a=[],node=e;
+                      while(node&&a.length<9){
+                        const c=getComputedStyle(node),p=getComputedStyle(node,'::before'),q=getComputedStyle(node,'::after');
+                        a.push({tag:node.tagName,id:node.id,cl:node.className?.baseVal||node.className,
+                         hover:node.matches(':hover'),bg:c.backgroundColor,image:c.backgroundImage,
+                         filter:c.filter,opacity:c.opacity,transform:c.transform,translate:c.translate,
+                         shadow:c.boxShadow,blend:c.mixBlendMode,isolation:c.isolation,
+                         pseudoBefore:{content:p.content,background:p.background,opacity:p.opacity,position:p.position,display:p.display},
+                         pseudoAfter:{content:q.content,background:q.background,opacity:q.opacity,position:q.position,display:q.display}});
+                        node=node.parentElement;
+                      }
+                      return a;
+                    }""")
                   results.append({'section':section,'light':light,'stage':stage,**state})
             browser.close()
           (root/'docs/.paint-check/results.json').write_text(json.dumps(results,indent=2))
@@ -61,6 +76,4 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/.paint-check/
-          git commit -m "test: captured button hover paint comparison"
-          git push
+          echo "Paint diagnostics above; no branch mutation during this run"
