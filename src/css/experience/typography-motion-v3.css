@@ -199,6 +199,20 @@ body.light-mode #view-home .combined-home-grid > .home-card .home-card-desc{colo
 /* Always adapt to motion preference, even for existing older animation rules. */
 @media(prefers-reduced-motion:reduce){
   html{scroll-behavior:auto!important}
+  /* Match the specificity of component-level !important animation rules,
+     instead of relying on a weak universal descendant selector. */
+  #view-home .combined-home-grid > .home-card,
+  #view-home .combined-home-layout .home-wordmark,
+  #view-home .combined-home-layout .home-art-pane,
+  #view-home .combined-home-layout .home-art-frame,
+  #view-app .tool-section.active,
+  #view-app #logoDetailOverlay.active,
+  .nav-sidebar.visible,
+  .nav-sidebar .nav-item,
+  .presets-dialog {
+    animation:none!important;
+    transition:none!important;
+  }
   #view-home *,#view-home *::before,#view-home *::after,
   #view-app .tool-section,#view-app .tool-section *,
   #view-app .tool-section *::before,#view-app .tool-section *::after,
