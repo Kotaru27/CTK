@@ -13,7 +13,7 @@
     window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var seen = false, activeTool = null;
   try {
-    seen = sessionStorage.getItem('forge_intro_seen_v3') === '1';
+    seen = sessionStorage.getItem('forge_intro_seen_v4') === '1';
     activeTool = localStorage.getItem('cts_activeTool');
   } catch (_) {}
   if (reduced || seen || (activeTool && activeTool !== 'home')) {
@@ -54,7 +54,7 @@
   if (skip) skip.addEventListener('click',cleanup,{once:true});
   document.addEventListener('keydown',onKey);
   // Failsafe for background tabs / disconnected animations.
-  after(3400,cleanup);
+  after(3200,cleanup);
 
   function layoutGlyphs() {
     // A single Kola text run has kerning that separate characters do not.
@@ -97,8 +97,8 @@
       {transform:'translate3d(0,0,0) scale(1)'},
       {transform:'translate3d('+dx+'px,'+dy+'px,0) scale('+scale+')'}
     ],{
-      duration:820,
-      easing:'cubic-bezier(.22,.82,.24,1)',
+      duration:760,
+      easing:'cubic-bezier(.24,.86,.30,1)',
       fill:'forwards'
     });
     flight.onfinish=cleanup;
@@ -106,7 +106,7 @@
   function settle() {
     if (finished) return;
     intro.classList.add('is-settled');
-    after(165,function(){
+    after(115,function(){
       if (!finished) requestAnimationFrame(moveToHome);
     });
   }
@@ -114,9 +114,9 @@
     if (finished) return;
     if (!layoutGlyphs()) { cleanup(); return; }
     intro.classList.add('is-playing');
-    // Letter 8 completes at ~1.10s; the ink-to-wordmark crossfade is
-    // kept under one tenth of a second of visual stillness.
-    after(1110,settle);
+    // The last letter settles near 1.07s. The wordmark crossfades
+    // immediately, then flies without a long static hold.
+    after(1100,settle);
   }
   // Start only with Kola ready. If the external font is unavailable,
   // show the usable homepage instead of animating fallback and snapping.
