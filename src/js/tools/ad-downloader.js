@@ -24,6 +24,16 @@ export default {
               btn.onclick = () => this.downloadBulk();
               header.appendChild(btn);
             }
+            if (typeof window.showDirectoryPicker === "function" && window.isSecureContext && header && !document.getElementById("adDlRenameFolder")) {
+              const folderButton = document.createElement("button");
+              folderButton.id = "adDlRenameFolder";
+              folderButton.type = "button";
+              folderButton.className = "liquid-btn";
+              folderButton.textContent = "Auto-name: Choose folder";
+              folderButton.title = "Optional: give CTK permission to rename completed SharePoint downloads in Chrome's selected download folder.";
+              folderButton.onclick = () => this.chooseRenameFolder();
+              header.appendChild(folderButton);
+            }
             const bar = document.getElementById("adDlSummaryBar");
             if (bar && !document.getElementById("adDlStatus")) {
               const status = document.createElement("span");
@@ -37,6 +47,16 @@ export default {
           status(message, isError = false) {
             const el = document.getElementById("adDlStatus");
             if (el) { el.textContent = message; el.style.color = isError ? "var(--danger, #b64a44)" : "var(--text-muted)"; }
+          },
+          async chooseRenameFolder() {
+            try {
+              const chosen = await CTKDownloadRenamer.chooseFolder();
+              document.getElementById("adDlRenameFolder").textContent = "Auto-name: " + chosen;
+              this.status(`Folder selected: ${chosen}. In Chrome Downloads settings, set this SAME folder as your download location. CTK only renames NEW matching downloads after they finish; unrelated files are untouched.`);
+            } catch(error) {
+              if (error.name === "AbortError") { this.status("Folder selection cancelled. Native downloads still work."); return; }
+              this.status("Folder access unavailable: "+error.message+". Native downloads still work.",true);
+            }
           },
           normalize(text) {
             return String(text ?? "").replace(/\s+/g, "").replace(/_/g, "").toUpperCase();
@@ -173,7 +193,7 @@ export default {
             document.getElementById("adDlCountText").innerText = `${this.entries.length} valid ads`;
             document.getElementById("adDlEmptyState").style.display = "none";
             this.updateBulkButton();
-            this.status(`${this.entries.length} ready · ${skipped} invalid rows skipped · ${inferred} extensions inferred.${this.entries.some(e=>CTKSharePoint.isSharePoint(e.url)) ? ' SharePoint links use your existing browser session; original filenames may be used.' : ''}`);
+            this.status(`${this.entries.length} ready · ${skipped} invalid rows skipped · ${inferred} extensions inferred.${this.entries.some(e=>CTKSharePoint.isSharePoint(e.url)) ? ' SharePoint uses native downloads; click Auto-name: Choose folder for optional renamed files.' : ''}`);
           },
           updateBulkButton() {
             const btn = document.getElementById("adDlBulkButton");
@@ -259,16 +279,24 @@ export default {
             // Same-tab navigation uses the user's existing SharePoint sign-in.
             // An attachment response downloads; an unauthorized/error response may navigate away.
             // No popup, extension, Graph token or CORS fetch is used.
+            const renamer = typeof CTKDownloadRenamer !== 'undefined' ? CTKDownloadRenamer : null;
+            // The tracking starts synchronously from the same user gesture, preserving the
+            // native download's trusted click. The chosen folder is never uploaded.
+            entry.renameStatus = (message,isError=false) => this.status(message,isError);
+            const tracking = !!(renamer?.active() && renamer.begin(entry));
             const a = document.createElement('a');
             a.href = target;
             a.target = '_self';
             a.rel = 'noreferrer';
             document.body.appendChild(a);
-            try { a.click(); } finally { a.remove(); }
-            // A cross-origin navigation provides no observable save-completion event.
-            // Never move this row to Downloaded based only on a navigation request.
+            try { a.click(); }
+            catch(error) { if(tracking)renamer.cancel(entry); throw error; }
+            finally { a.remove(); }
+            // Do not claim an unobservable cross-origin download completed.
             if (entry.downloadButton) entry.downloadButton.textContent = 'Download again';
-            this.status(`SharePoint download requested for ${entry.displayName}. Chrome will use the original SharePoint filename; completion cannot be confirmed here.`);
+            this.status(tracking
+              ? `SharePoint download requested. Waiting to rename ${entry.displayName} after it appears in your selected folder.`
+              : `SharePoint download requested for ${entry.displayName}. Select Auto-name: Choose folder to rename future downloads; otherwise Chrome uses SharePoint's filename. Download completion cannot be confirmed here.`);
           },
           async downloadFile(entry) {
             if (entry.downloaded || entry.inProgress) return;
