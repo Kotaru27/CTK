@@ -1083,8 +1083,17 @@ const CTKDownloadRenamer = (() => {
         },
         showHome() {
           const core = () => this._showHome();
-          if (this.els.viewApp.classList.contains("active")) this.switchViews(core);
-          else core();
+          if (this.els.viewApp.classList.contains("active")) {
+            // Only the Video Stills route opts into the new shared transition.
+            // Storyboard and every other tool retain the original navigation.
+            const videoSelected = document.getElementById("nav-stills-video")
+              ?.classList.contains("active");
+            if (videoSelected && window.ForgeVideoRoute) {
+              window.ForgeVideoRoute.navigate(core);
+            } else {
+              this.switchViews(core);
+            }
+          } else core();
         },
         _openTool(id, mode) {
           document.body.classList.add("tool-active");
@@ -1144,7 +1153,12 @@ const CTKDownloadRenamer = (() => {
             this._openTool(id, mode);
           } else {
             const core = () => this._openTool(id, mode);
-            this.switchViews(core);
+            if (id === "section-stills-boards" && mode === "video" &&
+                window.ForgeVideoRoute) {
+              window.ForgeVideoRoute.navigate(core);
+            } else {
+              this.switchViews(core);
+            }
           }
         },
         switchPdfTab(tabId) {
