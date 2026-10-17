@@ -1,0 +1,97 @@
+name: Type & motion V3 desktop verification
+on:
+  push:
+    branches: [design/type-motion-home-refinement-20261017]
+    paths-ignore:
+      - 'docs/.type-motion-visual/**'
+permissions:
+  contents: write
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Full regression suite and deterministic build
+        run: npm test
+      - name: Install headless browser
+        run: python3 -m pip install --quiet --break-system-packages playwright
+      - name: Validate real desktop routes, fonts and motion preferences
+        run: |
+          mkdir -p docs/.type-motion-visual
+          python3 - <<'PY'
+          import base64,json
+          from pathlib import Path
+          from playwright.sync_api import sync_playwright
+          root=Path.cwd()
+          checks=[]
+          with sync_playwright() as p:
+            browser=p.chromium.launch(channel='chrome',headless=True,args=['--no-sandbox'])
+            page=browser.new_page(viewport={'width':1440,'height':900},device_scale_factor=1)
+            page.goto((root/'dist/creative-tools-standalone.html').as_uri(),wait_until='domcontentloaded',timeout=40000)
+            page.wait_for_timeout(950)
+            def capture(name):
+              pth=root/('docs/.type-motion-visual/'+name+'.jpg')
+              page.screenshot(path=str(pth),type='jpeg',quality=61,animations='disabled')
+              (root/('docs/.type-motion-visual/'+name+'.b64')).write_text(base64.b64encode(pth.read_bytes()).decode())
+              pth.unlink()
+            for light in (False,True):
+              page.evaluate('(b)=>document.body.classList.toggle("light-mode",b)',light)
+              page.evaluate('()=>UI._showHome()')
+              page.wait_for_timeout(520)
+              capture('home-light' if light else 'home-dark')
+              summary=page.evaluate("""() => {
+                const h=document.querySelector('.home-heading'),t=document.querySelector('.home-card'),p=document.querySelector('.home-summary');
+                const heading=getComputedStyle(h),tile=getComputedStyle(t),description=getComputedStyle(p);
+                return {headingFont:heading.fontFamily,headingLetterSpacing:heading.letterSpacing,
+                  headingLineHeight:heading.lineHeight,tileAnimation:tile.animationDuration,tileTransition:tile.transitionDuration,
+                  paragraphSize:description.fontSize,paragraphColor:description.color,
+                  tileCount:document.querySelectorAll('#homeContent .home-card').length,
+                  horizontalOverflow:document.documentElement.scrollWidth>innerWidth+3}
+              }""")
+              assert summary['tileCount']==8,summary
+              assert not summary['horizontalOverflow'],summary
+              assert 'Instrument Serif' in summary['headingFont'],summary
+              checks.append({'screen':'home','light':light,**summary})
+              for name,section,mode in [('logo','section-logo',None),('storyboard','section-stills-boards','story'),
+                                        ('ad-downloader','section-adlinks','downloader')]:
+                page.evaluate('([s,m])=>UI._openTool(s,m)',[section,mode])
+                page.wait_for_timeout(420)
+                data=page.evaluate("""s=>{
+                  const area=document.getElementById(s);
+                  const h=area.querySelector('.tool-header h2');
+                  return {title:h?.textContent?.trim(),titleFont:getComputedStyle(h).fontFamily,
+                    titleSize:getComputedStyle(h).fontSize,
+                    animation:getComputedStyle(area).animationDuration,
+                    exists:area.classList.contains('active'),
+                    horizontalOverflow:document.documentElement.scrollWidth>innerWidth+3};
+                }""",section)
+                assert data['exists'] and not data['horizontalOverflow'],data
+                checks.append({'screen':name,'light':light,**data})
+                capture(name+('-light' if light else '-dark'))
+            page.evaluate('()=>UI._showHome()')
+            page.emulate_media(reduced_motion='reduce')
+            page.wait_for_timeout(80)
+            reduced=page.evaluate("""()=>({
+              homeAnimation:getComputedStyle(document.querySelector('.home-card')).animationDuration,
+              homeTransition:getComputedStyle(document.querySelector('.home-card')).transitionDuration,
+              navTransition:getComputedStyle(document.querySelector('.nav-item')).transitionDuration
+            })""")
+            assert max(float(s.rstrip('s')) for s in reduced['homeAnimation'].split(','))<.002,reduced
+            checks.append({'screen':'reduced-motion',**reduced})
+            browser.close()
+          (root/'docs/.type-motion-visual/diagnostics.json').write_text(json.dumps(checks,indent=2))
+          print(json.dumps(checks,indent=2))
+          PY
+      - name: Save review captures for inspection
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html dist/ docs/.type-motion-visual/
+          if ! git diff --cached --quiet; then
+            git commit -m "test: synchronize release and typography/motion desktop captures"
+            git push
+          fi
