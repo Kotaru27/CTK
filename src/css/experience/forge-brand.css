@@ -328,3 +328,59 @@ body.forge-opening.forge-home-arriving .forge-hero-bottom {
     transform:none!important;
   }
 }
+
+
+/* FORGE / LIGHT-ONLY EDITION — appearance switch is temporarily hidden.
+   No global button rules: workspace controls and tool functionality remain intact. */
+#themeToggleBtn {display:none!important;}
+/* Refine the existing home typography, not the eight card compositions. */
+#view-home .combined-home-layout .forge-hero {
+  --forge-hero-muted:#496b59;
+  --forge-hero-line:rgba(27,65,46,.20);
+}
+.forge-hero-top {
+  font-size:11px;
+  letter-spacing:.14em;
+  font-weight:650;
+}
+.forge-hero-aside {
+  gap:0;
+  border-left-color:rgba(27,65,46,.22);
+}
+.forge-hero-aside-label {
+  font-size:11px;
+  letter-spacing:.13em;
+  margin-bottom:12px;
+}
+.forge-hero-aside p {
+  font-size:clamp(16px,1.15vw,18px);
+  line-height:1.64;
+  letter-spacing:-.026em;
+  max-width:325px;
+}
+.forge-hero-bottom {
+  padding-top:18px;
+}
+.forge-hero-manifesto {
+  font-size:clamp(13px,1vw,14px);
+  letter-spacing:0;
+}
+.forge-after-hero strong {
+  font-size:clamp(20px,1.65vw,25px);
+  letter-spacing:-.045em;
+}
+.forge-after-hero span {
+  font-size:11px;
+  letter-spacing:.10em;
+}
+@media (min-width:1600px) {
+  .forge-hero-middle {gap:clamp(56px,4.3vw,100px);}
+  #view-home .combined-home-layout .forge-hero {
+    padding-top:32px;
+    padding-bottom:27px;
+  }
+}
+@media (max-width:810px) {
+  .forge-hero-aside p {font-size:14px;}
+  .forge-hero-top {font-size:10px;}
+}

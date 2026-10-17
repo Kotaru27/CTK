@@ -5652,10 +5652,65 @@ body.forge-opening.forge-home-arriving .forge-hero-bottom {
     transform:none!important;
   }
 }
+
+
+/* FORGE / LIGHT-ONLY EDITION — appearance switch is temporarily hidden.
+   No global button rules: workspace controls and tool functionality remain intact. */
+#themeToggleBtn {display:none!important;}
+/* Refine the existing home typography, not the eight card compositions. */
+#view-home .combined-home-layout .forge-hero {
+  --forge-hero-muted:#496b59;
+  --forge-hero-line:rgba(27,65,46,.20);
+}
+.forge-hero-top {
+  font-size:11px;
+  letter-spacing:.14em;
+  font-weight:650;
+}
+.forge-hero-aside {
+  gap:0;
+  border-left-color:rgba(27,65,46,.22);
+}
+.forge-hero-aside-label {
+  font-size:11px;
+  letter-spacing:.13em;
+  margin-bottom:12px;
+}
+.forge-hero-aside p {
+  font-size:clamp(16px,1.15vw,18px);
+  line-height:1.64;
+  letter-spacing:-.026em;
+  max-width:325px;
+}
+.forge-hero-bottom {
+  padding-top:18px;
+}
+.forge-hero-manifesto {
+  font-size:clamp(13px,1vw,14px);
+  letter-spacing:0;
+}
+.forge-after-hero strong {
+  font-size:clamp(20px,1.65vw,25px);
+  letter-spacing:-.045em;
+}
+.forge-after-hero span {
+  font-size:11px;
+  letter-spacing:.10em;
+}
+@media (min-width:1600px) {
+  .forge-hero-middle {gap:clamp(56px,4.3vw,100px);}
+  #view-home .combined-home-layout .forge-hero {
+    padding-top:32px;
+    padding-bottom:27px;
+  }
+}
+@media (max-width:810px) {
+  .forge-hero-aside p {font-size:14px;}
+  .forge-hero-top {font-size:10px;}
+}
 </style>
 </head>
 <body class="light-mode">
-<script>try{if(localStorage.getItem("cts_theme")==="dark")document.body.classList.remove("light-mode")}catch(_){}</script>
 <div class="forge-intro" id="forgeIntro" role="region" aria-label="The Forge introduction">
  <div class="forge-intro-layout">
   <div class="forge-intro-label">YOUR CREATIVE WORKSPACE</div>
@@ -5718,22 +5773,22 @@ body.forge-opening.forge-home-arriving .forge-hero-bottom {
 <div class="home-layout combined-home-layout">
 <section class="forge-hero" aria-labelledby="forgeHeroName">
  <div class="forge-hero-top">
-  <span class="forge-hero-edition">THE FORGE / CREATIVE WORKSPACE</span>
-  <span class="forge-hero-counter">EIGHT TOOLS · ONE PLACE</span>
+  <span class="forge-hero-edition">THE FORGE / CREATIVE DESK</span>
+  <span class="forge-hero-counter">EIGHT TOOLS · ONE WORKFLOW</span>
  </div>
  <div class="forge-hero-middle">
   <h1 class="forge-hero-name" id="forgeHeroName">The Forge</h1>
   <div class="forge-hero-aside">
-   <span class="forge-hero-aside-label">MAKE SOMETHING OF IT</span>
-   <p>Everything between your first idea and the finished asset. Without the extra steps.</p>
+   <span class="forge-hero-aside-label">MAKE MORE OF YOUR FILES</span>
+   <p>Resize, extract, convert and assemble creative assets, all in one workspace.</p>
   </div>
  </div>
  <div class="forge-hero-bottom">
   <span class="forge-hero-lineup">Create / Transform / Deliver</span>
-  <span class="forge-hero-manifesto">One considered space for everyday creative work.</span>
+  <span class="forge-hero-manifesto">From working files to finished assets.</span>
  </div>
 </section>
-<div class="forge-after-hero"><strong>Explore the workspaces</strong><span>CHOOSE WHERE TO BEGIN ↓</span></div>
+<div class="forge-after-hero"><strong>Everything at your fingertips</strong><span>PICK A TOOL TO BEGIN ↓</span></div>
 <div class="home-grid combined-home-grid" id="homeContent">
 <button class="home-card home-item tool-logo" onclick="UI.openTool('section-logo')" aria-label="Open Logo Workspace">
 <div class="home-card-top"><span class="home-card-num">01</span><span class="home-card-go" aria-hidden="true">↗</span></div>
@@ -9135,27 +9190,18 @@ const CTKDownloadRenamer = (() => {
           }
         },
         initTheme() {
-          const savedTheme = Core.AppState.load("theme") || "light";
-          if (savedTheme === "light") {
-            document.body.classList.add("light-mode");
-          } else {
-            document.body.classList.remove("light-mode");
-          }
+          // Light-only presentation while the appearance switch is hidden.
+          // Preserve the underlying theme engine for a future opt-in return.
+          document.body.classList.add("light-mode");
           this.updateThemeButton();
           const activeTool = Core.AppState.load("activeTool") || "home";
           this.applyTheme(activeTool);
         },
         toggleTheme() {
-          const isLight = document.body.classList.toggle("light-mode");
-          Core.AppState.save("theme", isLight ? "light" : "dark");
-          this.updateThemeButton();
-          const activeTool = Core.AppState.load("activeTool") || "home";
-          this.applyTheme(activeTool);
-
-          // Play retro audio
-          if (window.RetroAudio) {
-            window.RetroAudio.playSuccess();
-          }
+          // API retained for existing inline handlers, but dark mode is
+          // intentionally unavailable in this light-only release.
+          document.body.classList.add("light-mode");
+          this.applyTheme(Core.AppState.load("activeTool") || "home");
         },
         updateThemeButton() {
           const btn = document.getElementById("themeToggleBtn");
@@ -13887,7 +13933,7 @@ const CTKDownloadRenamer = (() => {
     intro.remove();
     return;
   }
-  try { sessionStorage.setItem('forge_intro_seen_v3', '1'); } catch (_) {}
+  try { sessionStorage.setItem('forge_intro_seen_v4', '1'); } catch (_) {}
   document.body.classList.add('forge-opening');
 
   var finished = false, flight = null, timers = [];

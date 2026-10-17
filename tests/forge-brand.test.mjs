@@ -27,16 +27,21 @@ test('brand name and Kola are integrated in both releases',()=>{
   assert.match(standalone,/<style id="forge-brand-styles">/);
   assert.match(standalone,/<script id="forge-brand-intro-js">/);
 });
-test('light is the default and saved dark remains supported',()=>{
+test('light-only release hides appearance toggle and ignores legacy dark selection',()=>{
   const core = read('../src/js/core/prelude.js');
-  assert.match(core,/Core\.AppState\.load\("theme"\) \|\| "light"/);
-  assert.match(index,/localStorage\.getItem\("cts_theme"\)==="dark"/);
+  assert.match(core,/initTheme\(\)\s*\{[\s\S]*?document\.body\.classList\.add\("light-mode"\)/);
+  assert.match(core,/toggleTheme\(\)\s*\{[\s\S]*?document\.body\.classList\.add\("light-mode"\)/);
+  assert.doesNotMatch(core,/Core\.AppState\.save\("theme", isLight \? "light" : "dark"\)/);
+  assert.match(brandCss,/#themeToggleBtn\s*\{display:none!important;/);
   assert.match(index,/<body class="light-mode">/);
-  assert.match(core,/Core\.AppState\.save\("theme", isLight \? "light" : "dark"\)/);
+  assert.doesNotMatch(index,/localStorage\.getItem\("cts_theme"\)==="dark"/);
+  assert.doesNotMatch(standalone,/localStorage\.getItem\("cts_theme"\)==="dark"/);
 });
 test('intro is accessible, skippable, reduced-motion friendly and session scoped',()=>{
   assert.match(index,/id="forgeIntro"/);
   assert.match(brandJS,/sessionStorage/);
+  assert.match(brandJS,/sessionStorage\.getItem\('forge_intro_seen_v4'\)/);
+  assert.match(brandJS,/sessionStorage\.setItem\('forge_intro_seen_v4'/);
   assert.match(brandJS,/prefers-reduced-motion/);
   assert.match(brandJS,/Escape/);
   assert.match(index,/id="forgeIntroSkip"/);
@@ -104,4 +109,14 @@ test('QHD and high refresh polish avoids expensive background color and hover sh
   assert.match(brandCss,/\.home-card-go[\s\S]*?transform:translate3d/);
   assert.match(brandJS,/duration:760/);
   assert.match(brandJS,/after\(115,function\(\)/);
+});
+
+test('wordmark-led hero preserves all tool cards while improving visual hierarchy',()=>{
+  for(const page of [index,standalone]){
+    assert.match(page,/MAKE MORE OF YOUR FILES/);
+    assert.match(page,/Everything at your fingertips/);
+    assert.match(page,/EIGHT TOOLS · ONE WORKFLOW/);
+  }
+  assert.match(brandCss,/\.forge-hero-aside-label/);
+  assert.match(brandCss,/\.forge-after-hero strong/);
 });

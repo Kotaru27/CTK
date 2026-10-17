@@ -35,22 +35,22 @@ const forgeBrandJs=read('src/js/presentation/forge-brand.js');
 const forgeHero=[
   '<section class="forge-hero" aria-labelledby="forgeHeroName">',
   ' <div class="forge-hero-top">',
-  '  <span class="forge-hero-edition">THE FORGE / CREATIVE WORKSPACE</span>',
-  '  <span class="forge-hero-counter">EIGHT TOOLS · ONE PLACE</span>',
+  '  <span class="forge-hero-edition">THE FORGE / CREATIVE DESK</span>',
+  '  <span class="forge-hero-counter">EIGHT TOOLS · ONE WORKFLOW</span>',
   ' </div>',
   ' <div class="forge-hero-middle">',
   '  <h1 class="forge-hero-name" id="forgeHeroName">The Forge</h1>',
   '  <div class="forge-hero-aside">',
-  '   <span class="forge-hero-aside-label">MAKE SOMETHING OF IT</span>',
-  '   <p>Everything between your first idea and the finished asset. Without the extra steps.</p>',
+  '   <span class="forge-hero-aside-label">MAKE MORE OF YOUR FILES</span>',
+  '   <p>Resize, extract, convert and assemble creative assets, all in one workspace.</p>',
   '  </div>',
   ' </div>',
   ' <div class="forge-hero-bottom">',
   '  <span class="forge-hero-lineup">Create / Transform / Deliver</span>',
-  '  <span class="forge-hero-manifesto">One considered space for everyday creative work.</span>',
+  '  <span class="forge-hero-manifesto">From working files to finished assets.</span>',
   ' </div>',
   '</section>',
-  '<div class="forge-after-hero"><strong>Explore the workspaces</strong><span>CHOOSE WHERE TO BEGIN ↓</span></div>'
+  '<div class="forge-after-hero"><strong>Everything at your fingertips</strong><span>PICK A TOOL TO BEGIN ↓</span></div>'
 ].join('\n');
 const forgeIntroLetters='The Forge'.split('').map((ch,i)=>
   ch===' '?'<span class="forge-intro-gap" aria-hidden="true"></span>':
@@ -87,8 +87,8 @@ function forgeBrand(html,standaloneRelease){
   const brandStyle=standaloneRelease?'<style id="forge-brand-styles">'+forgeBrandCss+'</style>\n':
     '<link rel="stylesheet" href="./dist/css/forge-brand.css">\n';
   html=html.replace('</head>',fontLink+brandStyle+'</head>');
-  const themeBootstrap='<script>try{if(localStorage.getItem("cts_theme")==="dark")document.body.classList.remove("light-mode")}catch(_){}</script>';
-  html=html.replace('<body>','<body class="light-mode">\n'+themeBootstrap+'\n'+forgeIntro+'\n');
+  // Light-only presentation: do not read an old dark preference on first paint.
+  html=html.replace('<body>','<body class="light-mode">\n'+forgeIntro+'\n');
   const brandScript=standaloneRelease?'<script id="forge-brand-intro-js">'+forgeBrandJs+'</script>':
     '<script id="forge-brand-intro-js" src="./dist/js/forge-brand.js"></script>';
   html=html.replace('</body>',brandScript+'\n</body>');
