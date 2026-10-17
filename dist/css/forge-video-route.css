@@ -45,8 +45,9 @@ html.forge-route-running[data-forge-route="story"] #section-stills-boards.active
   view-transition-name: forge-workspace-art;
 }
 
-html.forge-route-running #view-app .tool-section.active {
-  /* The old panel arrival would compete with shared title travel. */
+#view-app .tool-section.active {
+  /* One passive, immediate WAAPI entrance replaces the legacy 8px reveal.
+     This also prevents two simultaneous animations on the same workspace. */
   animation:none!important;
 }
 html.forge-route-running #view-home .combined-home-grid > .home-card {
