@@ -384,3 +384,99 @@ body.forge-opening.forge-home-arriving .forge-hero-bottom {
   .forge-hero-aside p {font-size:14px;}
   .forge-hero-top {font-size:10px;}
 }
+
+
+/* THE FORGE / EXECUTIVE EDITION — decisions, not more decoration.
+   One product statement, one explanation, then the tool index.
+   Workspaces and processing styles deliberately remain untouched. */
+
+/* The legacy header's generated tagline introduced a detached third brand
+   claim and incorrectly suggested a privacy promise. Remove it everywhere. */
+.header::after,
+body.light-mode .header::after {
+  content:none!important;
+  display:none!important;
+}
+/* Align the header wordmark to the same 1536px content grid as the homepage;
+   leave the workspace header's established layout unchanged. */
+body:has(#view-home:not(.hidden)) .header {
+  padding-left:max(46px,calc((100vw - 1536px)/2))!important;
+  padding-right:max(46px,calc((100vw - 1536px)/2))!important;
+}
+body:has(#view-home:not(.hidden)) .header .brand-title {
+  padding-inline:0!important;
+}
+/* A single clear hierarchy replaces the former three-tier slogan stack.
+   Keep an intrinsic wordmark box for the already-verified FLIP intro. */
+#view-home .combined-home-layout .forge-hero {
+  grid-template-rows:auto 1fr;
+  min-height:clamp(285px,23.6vw,332px);
+  padding-top:clamp(27px,2.5vw,35px);
+  padding-bottom:clamp(24px,2vw,30px);
+  margin-bottom:clamp(22px,2vw,30px);
+}
+.forge-hero-top {
+  justify-content:flex-start;
+  color:#365748;
+  letter-spacing:.085em;
+  font-size:11.5px;
+  font-weight:700;
+}
+.forge-hero-edition {gap:10px;}
+.forge-hero-edition::before {
+  width:5px;
+  height:5px;
+  background:#357452;
+}
+.forge-hero-middle {
+  gap:clamp(40px,5vw,102px);
+  padding:clamp(24px,2.5vw,34px) 0 0;
+  min-height:186px;
+}
+.forge-hero-aside {
+  border-left:1px solid rgba(27,65,46,.24);
+  width:clamp(290px,25vw,390px);
+  padding-left:clamp(20px,1.8vw,28px);
+  max-width:100%;
+}
+.forge-hero-aside p {
+  max-width:350px;
+  font-size:clamp(16px,1.16vw,18px);
+  line-height:1.65;
+  letter-spacing:-.018em;
+  color:#1a3c2e;
+}
+.forge-after-hero {
+  margin:0 0 19px;
+  align-items:center;
+}
+.forge-after-hero strong {
+  font-size:clamp(21px,1.8vw,26px);
+  color:#1a3228;
+  letter-spacing:-.045em;
+}
+/* The numerals convey sequence, so they need contrast comparable to labels. */
+#view-home .combined-home-grid > .home-card .home-card-num,
+body.light-mode #view-home .combined-home-grid > .home-card .home-card-num {
+  color:#405b4b!important;
+  font-size:11px!important;
+}
+/* Keep the existing illustrations, backgrounds and tile geometry unchanged. */
+@media(max-width:1170px) {
+  .forge-hero-middle {gap:clamp(25px,3vw,48px);}
+  .forge-hero-aside {width:clamp(250px,27vw,325px);}
+}
+@media(max-width:810px) {
+  body:has(#view-home:not(.hidden)) .header {padding-inline:24px!important;}
+  #view-home .combined-home-layout .forge-hero {
+    min-height:296px;
+    padding-top:24px;
+  }
+  .forge-hero-middle {gap:18px;padding-top:22px;}
+  .forge-hero-aside {width:min(100%,560px);}
+}
+@media(max-width:550px) {
+  body:has(#view-home:not(.hidden)) .header {padding-inline:18px!important;}
+  .forge-hero-top {font-size:10px;}
+  #view-home .combined-home-layout .forge-hero {min-height:282px;}
+}

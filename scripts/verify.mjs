@@ -49,7 +49,14 @@ if([headerStart,headerEnd,sourceHeaderStart,sourceHeaderEnd].some(i=>i<0))
 withoutForge=withoutForge.slice(0,headerStart)+a.slice(sourceHeaderStart,sourceHeaderEnd)+withoutForge.slice(headerEnd);
 withoutForge=withoutForge.replace('id="brandText">The Forge</span>','id="brandText">CREATIVE TOOLS SUITE</span>');
 const restored=withoutForge.replace('<script>'+newMain+'</script>','<script>'+originalMain+'</script>');
-if(restored!==a)throw Error('Standalone changes source HTML/CSS or scripts outside the intentional presentation layer');
+// Only four known, textual naming alignments are allowed outside the hero.
+// Reconstruct the legacy terms before the strict byte-for-byte parity check.
+const restoredNames=restored
+  .replace('aria-label="Open Logo Resizer"','aria-label="Open Logo Workspace"')
+  .replace('<h2 class="home-card-title">Logo Resizer</h2>','<h2 class="home-card-title">Logo Workspace</h2>')
+  .replace('title="Ad Downloader"','title="Ad Link Downloader"')
+  .replace('<span class="nav-item-text">Ad Downloader</span>','<span class="nav-item-text">Ad Link Downloader</span>');
+if(restoredNames!==a)throw Error('Standalone changes source HTML/CSS or scripts outside the intentional presentation/naming layer');
 if(!standalone.includes(`<script>${newMain}</script>`))throw Error('Standalone does not contain current engine');
 if(!b.includes('./dist/css/ad-downloader-v2.css')||!b.includes('./dist/js/ad-downloader-v2.js'))throw Error('Ad Downloader experience layer missing');
 if(!standalone.includes('<style id="ctk-ad-downloader-v2">')||!standalone.includes('<script id="ctk-ad-downloader-v2">'))throw Error('Standalone experience layer missing');

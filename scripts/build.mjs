@@ -35,22 +35,16 @@ const forgeBrandJs=read('src/js/presentation/forge-brand.js');
 const forgeHero=[
   '<section class="forge-hero" aria-labelledby="forgeHeroName">',
   ' <div class="forge-hero-top">',
-  '  <span class="forge-hero-edition">THE FORGE / CREATIVE DESK</span>',
-  '  <span class="forge-hero-counter">EIGHT TOOLS · ONE WORKFLOW</span>',
+  '  <span class="forge-hero-edition">EIGHT TOOLS. ONE CREATIVE WORKSPACE.</span>',
   ' </div>',
   ' <div class="forge-hero-middle">',
   '  <h1 class="forge-hero-name" id="forgeHeroName">The Forge</h1>',
   '  <div class="forge-hero-aside">',
-  '   <span class="forge-hero-aside-label">MAKE MORE OF YOUR FILES</span>',
-  '   <p>Resize, extract, convert and assemble creative assets, all in one workspace.</p>',
+  '   <p>Resize images, convert PDFs, capture video stills, build storyboards and prepare links — all from one place.</p>',
   '  </div>',
   ' </div>',
-  ' <div class="forge-hero-bottom">',
-  '  <span class="forge-hero-lineup">Create / Transform / Deliver</span>',
-  '  <span class="forge-hero-manifesto">From working files to finished assets.</span>',
-  ' </div>',
   '</section>',
-  '<div class="forge-after-hero"><strong>Everything at your fingertips</strong><span>PICK A TOOL TO BEGIN ↓</span></div>'
+  '<div class="forge-after-hero"><strong>Choose a tool</strong></div>'
 ].join('\n');
 const forgeIntroLetters='The Forge'.split('').map((ch,i)=>
   ch===' '?'<span class="forge-intro-gap" aria-hidden="true"></span>':
@@ -77,6 +71,18 @@ function forgeBrand(html,standaloneRelease){
   const end=html.indexOf('<div class="home-grid combined-home-grid" id="homeContent">',start);
   if(start<0||end<0)throw Error('Forge home injection anchors not found: refusing to modify tool cards');
   html=html.slice(0,start)+forgeHero+'\n'+html.slice(end);
+  // Two strictly textual naming alignments. Keep card artwork, structure,
+  // navigation handlers, tool logic and all eight button routes unchanged.
+  for(const [before,after] of [
+    ['aria-label="Open Logo Workspace"','aria-label="Open Logo Resizer"'],
+    ['<h2 class="home-card-title">Logo Workspace</h2>','<h2 class="home-card-title">Logo Resizer</h2>'],
+    ['title="Ad Link Downloader"','title="Ad Downloader"'],
+    ['<span class="nav-item-text">Ad Link Downloader</span>','<span class="nav-item-text">Ad Downloader</span>']
+  ]) {
+    if(!html.includes(before)) throw Error('Naming refinement anchor missing: '+before);
+    html=html.replace(before,after);
+  }
+
   if(!html.includes('<title>Creative Tools Suite</title>'))throw Error('Original suite title not found');
   html=html.replace('<title>Creative Tools Suite</title>','<title>The Forge — Creative Tools</title>');
   html=html.replace('<link href="Toolkit%20logo.png" rel="icon" type="image/png"/>','');
