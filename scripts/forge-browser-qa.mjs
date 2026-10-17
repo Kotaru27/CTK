@@ -50,6 +50,7 @@ try {
    backgroundColor:style.backgroundColor,
    heroWidth:Math.round(box.width),titleWidth:Math.round(r.width),
    titleLeft:Math.round(r.left),titleRight:Math.round(r.right),
+   inkWidth:(()=>{const range=document.createRange();range.selectNodeContents(hero);return Math.round(range.getBoundingClientRect().width);})(),
    overflow:document.documentElement.scrollWidth>innerWidth+3,
    font:getComputedStyle(hero).fontFamily,
    kolaLoaded:document.fonts.check('400 120px "Kola"')
@@ -63,12 +64,14 @@ try {
  check(!details.overflow,'Homepage should not overflow horizontally at 1440px');
  check(details.titleRight < 1440,'Wordmark is clipped on the desktop viewport');
  check(details.font.includes('Kola'),'Wordmark must request Kola');
+ check(Math.abs(details.titleWidth-details.inkWidth)<7,'Hero heading box must match actual kerned text width');
  check(trajectory.length>=12,'Expected at least twelve compositor animation frames');
  if(trajectory.length>=2){
    const deltas=trajectory.slice(1).map((f,i)=>Math.abs(f.width-trajectory[i].width));
    const maxStep=Math.max(...deltas);
    const last=trajectory[trajectory.length-1];
    check(maxStep<45,'Large size jump detected during shared wordmark flight: '+maxStep.toFixed(1)+'px');
+   check(trajectory[0].width>last.width,'Intro wordmark should shrink continuously into the smaller homepage wordmark');
    check(Math.abs(last.width-details.titleWidth)<48,'Final shared wordmark width diverges from hero');
    check(Math.abs(last.left-details.titleLeft)<48,'Final shared wordmark position diverges from hero');
  }
