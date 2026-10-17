@@ -137,6 +137,20 @@ try{
     fileEntries:document.querySelector('#storyFileList')?.children.length}));
   assert.ok(storyboard.hasCanvas&&storyboard.assets===6,`${label}: storyboard canvas not populated`);
   await snap('storyboard-populated');
+  // Real populated rail: readable captions, keyboard-discoverable fields.
+  const storyboardType=await page.evaluate(()=>{
+    const header=document.querySelector('#storyBoardControls .label-header');
+    const field=document.getElementById('storyNameInput');
+    return {label:parseFloat(getComputedStyle(header).fontSize),input:parseFloat(getComputedStyle(field).fontSize)};
+  });
+  assert.ok(storyboardType.label>=12&&storyboardType.input>=13,
+    label+': Storyboard caption/input too small '+JSON.stringify(storyboardType));
+  await page.locator('#storyNameInput').focus();
+  const storyboardFocus=await page.locator('#storyNameInput').evaluate(el=>({
+    style:getComputedStyle(el).outlineStyle,width:parseFloat(getComputedStyle(el).outlineWidth)
+  }));
+  assert.ok(storyboardFocus.style==='solid'&&storyboardFocus.width>=2,
+    label+': Storyboard focus invisible '+JSON.stringify(storyboardFocus));
 
   // Real input-to-preview path for Image Splitter.
   await open('section-pdf','split');
@@ -181,6 +195,18 @@ try{
   }));
   assert.equal(ads.visibleRows,3,`${label}: imported ad table rows are missing`);
   await snap('ads-populated');
+  const adTypography=await page.evaluate(()=>{
+    const header=document.querySelector('#adDlTableContainer th');
+    const fname=document.querySelector('#adDlTableBody td:nth-child(2)');
+    const action=document.querySelector('#adDlTableBody td:nth-child(3) button');
+    return {header:parseFloat(getComputedStyle(header).fontSize),
+      filename:parseFloat(getComputedStyle(fname).fontSize),
+      action:action?parseFloat(getComputedStyle(action).fontSize):null};
+  });
+  assert.ok(adTypography.header>=11&&adTypography.filename>=12.5,
+    label+': campaign table text too small '+JSON.stringify(adTypography));
+  if(adTypography.action!==null)assert.ok(adTypography.action>=12,
+    label+': campaign action caption too small '+JSON.stringify(adTypography));
 
   // One genuine local WebM exercises the original Video Stills extractor.
   // Run only at Full HD to bound CPU expense. No remote videos or user data.
