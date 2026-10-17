@@ -81,6 +81,7 @@ try {
  await page.reload({waitUntil:'domcontentloaded'});
  check(!(await page.locator('body').evaluate(el=>el.classList.contains('light-mode'))),
    'Saved dark theme was not honored');
+ await page.locator('#forgeIntro').waitFor({state:'detached',timeout:2500});
  check(await page.locator('#forgeIntro').count()===0,'Intro repeated within one session');
  await page.screenshot({path:'artifacts/forge-browser/home-dark.png'});
  await context.close();
