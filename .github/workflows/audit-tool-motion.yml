@@ -34,10 +34,14 @@ jobs:
         run: node scripts/audit-tool-motion.mjs
       - name: Inspect internal tool-to-tool navigation and tab switches
         run: node scripts/audit-tool-internal.mjs
+      - name: Inspect responsive desktop layouts at laptop, Full HD and QHD
+        run: node scripts/audit-responsive-desktop.mjs
       - name: Retain screenshot and telemetry report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: forge-eight-tool-motion-audit
-          path: artifacts/tool-motion/
+          path: |
+            artifacts/tool-motion/
+            artifacts/desktop-responsive/
           if-no-files-found: ignore

@@ -33,6 +33,7 @@ const typeMotionCss=read('src/css/experience/typography-motion-v3.css');
 const forgeBrandCss=read('src/css/experience/forge-brand.css');
 const forgeBrandJs=read('src/js/presentation/forge-brand.js');
 const forgeVideoRouteCss=read('src/css/experience/forge-video-route.css');
+const forgeAdaptiveCss=read('src/css/experience/forge-adaptive-desktop.css');
 const forgeVideoRouteJs=read('src/js/presentation/forge-video-route.js');
 const forgeHero=[
   '<section class="forge-hero" aria-labelledby="forgeHeroName">',
@@ -96,7 +97,9 @@ function forgeBrand(html,standaloneRelease){
     '<link rel="stylesheet" href="./dist/css/forge-brand.css">\n';
   const routeStyle=standaloneRelease?'<style id="forge-video-route-styles">'+forgeVideoRouteCss+'</style>\n':
     '<link rel="stylesheet" href="./dist/css/forge-video-route.css">\n';
-  html=html.replace('</head>',fontLink+brandStyle+routeStyle+'</head>');
+  const adaptiveStyle=standaloneRelease?'<style id="forge-adaptive-styles">'+forgeAdaptiveCss+'</style>\n':
+    '<link rel="stylesheet" href="./dist/css/forge-adaptive-desktop.css">\n';
+  html=html.replace('</head>',fontLink+brandStyle+routeStyle+adaptiveStyle+'</head>');
   // Light-only presentation: do not read an old dark preference on first paint.
   html=html.replace('<body>','<body class="light-mode">\n'+forgeIntro+'\n');
   const brandScript=standaloneRelease?'<script id="forge-brand-intro-js">'+forgeBrandJs+'</script>':
@@ -115,6 +118,7 @@ save('dist/css/typography-motion-v3.css',typeMotionCss);
 save('dist/css/forge-brand.css',forgeBrandCss);
 save('dist/js/forge-brand.js',forgeBrandJs);
 save('dist/css/forge-video-route.css',forgeVideoRouteCss);
+save('dist/css/forge-adaptive-desktop.css',forgeAdaptiveCss);
 save('dist/js/forge-video-route.js',forgeVideoRouteJs);
 save('dist/css/ad-downloader-v2.css',visualCss);
 save('dist/js/ad-downloader-v2.js',visualJs);

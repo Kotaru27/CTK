@@ -1,0 +1,70 @@
+/* THE FORGE / ADAPTIVE DESKTOP — 1366 / Full HD / QHD
+   Sized by usable viewport, not a QHD-specific zoom or global font scale.
+   No change to uploads, preview media, board sizing engines, exports, or
+   Logo Resizer's sidebar Focus inspector.  Narrow layouts remain baseline. */
+
+/* Let the working area win on compact desktops; let configuration panels
+   breathe on Full HD without becoming oversized on QHD. */
+@media (min-width:1021px) {
+  #section-logo .editor-layout:not(:has(#logoDetailOverlay.active)) > .sidebar-panel {
+    flex:0 0 clamp(255px,18vw,318px)!important;
+    width:clamp(255px,18vw,318px)!important;
+    min-width:clamp(255px,18vw,318px)!important;
+    max-width:clamp(255px,18vw,318px)!important;
+  }
+  #section-pdf .pdf-workbench {
+    grid-template-columns:clamp(290px,19vw,350px) minmax(0,1fr);
+  }
+  #adlinksTabContentGen .adgen-studio {
+    grid-template-columns:clamp(315px,22vw,405px) minmax(0,1fr)!important;
+  }
+  #section-yt-helper .yt-studio {
+    grid-template-columns:clamp(315px,22vw,405px) minmax(0,1fr)!important;
+  }
+  /* The empty-state composition fills the existing board; only its height
+     changes.  Loaded outputs and the Focus sidebar use their own layouts. */
+  #section-logo #logoGrid:has(#logoEmpty:not([style*="display: none"])) #logoEmpty {
+    min-height:clamp(470px,calc(100dvh - 315px),1050px)!important;
+  }
+  /* A taller outer frame must also stretch the art/copy grid.  Without
+     this the 470px inner grid leaves an empty white band underneath. */
+  #section-logo #logoGrid:has(#logoEmpty:not([style*="display: none"]))
+    #logoEmpty > .logo-empty-layout {
+    min-height:inherit!important;
+  }
+  #section-logo .editor-layout:not(:has(#logoDetailOverlay.active))
+    #logoGrid:not(:has(#logoEmpty:not([style*="display: none"]))) {
+    grid-template-columns:repeat(auto-fill,minmax(clamp(220px,15vw,275px),1fr))!important;
+  }
+}
+
+/* On taller workstations center Video Stills' existing upload invitation
+   within the real collection area, rather than leaving a dead lower half. */
+@media (min-width:1021px) and (min-height:960px) {
+  #stillsTabContentVideo .vs-collection-body:has(#stillsEmpty:not([style*="display: none"])) > .vs-empty-hero {
+    min-height:clamp(410px,calc(100dvh - 520px),780px)!important;
+  }
+}
+
+/* Results have a comfortable maximum cell width instead of accumulating
+   narrow thumbnails across a high-resolution monitor. */
+@media (min-width:1700px) {
+  #section-pdf #pdfStacksContainer:has(#pdfEmptyState[style*="display: none"]) {
+    grid-template-columns:repeat(auto-fill,minmax(260px,290px))!important;
+  }
+}
+
+/* A short laptop/zoomed Full HD browser needs vertical room for real
+   controls; do not hide actions, collapse sections or change scroll owners. */
+@media (min-width:1021px) and (max-height:820px) {
+  #section-pdf .pdf-side-identity {padding:19px 22px 16px;}
+  #section-pdf .pdf-brandmark {margin:15px 0 17px;}
+  #section-pdf .pdf-side-settings {padding:15px 22px;}
+  #section-logo #logoGrid:has(#logoEmpty:not([style*="display: none"])) #logoEmpty {
+    min-height:470px!important;
+  }
+  #stillsTabContentVideo .vs-empty-hero {min-height:320px;}
+}
+
+/* Deliberately no refresh-rate media query: all motion uses the unchanged
+   compositor-friendly durations at 60Hz, 100Hz and 144Hz. */
