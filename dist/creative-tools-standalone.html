@@ -5343,11 +5343,11 @@ body:has(#nav-adlinks-dl.active) .nav-sidebar .nav-item:hover{
   display:grid;
   grid-template-rows:auto 1fr auto;
   gap:0;
-  min-height:clamp(365px,33vw,500px);
+  min-height:clamp(322px,27vw,392px);
   position:relative;
   width:100%;
-  margin:0 0 clamp(25px,3vw,43px);
-  padding:clamp(30px,3.35vw,50px) clamp(4px,1.3vw,19px) clamp(26px,2.6vw,37px);
+  margin:0 0 clamp(20px,2.1vw,29px);
+  padding:clamp(26px,2.65vw,38px) clamp(4px,1.3vw,19px) clamp(23px,2.1vw,31px);
   color:var(--forge-hero-fg);
   background:transparent;
   border:0;
@@ -5371,16 +5371,16 @@ body:has(#nav-adlinks-dl.active) .nav-sidebar .nav-item:hover{
 }
 .forge-hero-counter {font-variant-numeric:tabular-nums;}
 .forge-hero-middle {
-  display:grid;
-  grid-template-columns:minmax(0,1.85fr) minmax(240px,.75fr);
+  display:flex;
   align-items:center;
-  column-gap:clamp(24px,3vw,50px);
-  min-height:225px;
-  padding:clamp(22px,3.2vw,48px) 0;
+  justify-content:flex-start;
+  gap:clamp(42px,6vw,130px);
+  min-height:193px;
+  padding:clamp(20px,2.2vw,33px) 0;
 }
 #view-home .combined-home-layout .forge-hero-name {
   font-family:"Kola","Plus Jakarta Sans",sans-serif!important;
-  font-size:clamp(81px,9.2vw,162px)!important;
+  font-size:clamp(80px,9.15vw,151px)!important;
   font-weight:400!important;
   font-style:normal!important;
   line-height:1.08!important;
@@ -5398,7 +5398,9 @@ body:has(#nav-adlinks-dl.active) .nav-sidebar .nav-item:hover{
 .forge-hero-aside {
   display:flex;flex-direction:column;
   justify-content:center;align-items:flex-start;
-  padding-left:clamp(18px,2vw,32px);
+  padding-left:clamp(16px,1.5vw,25px);
+  width:clamp(250px,22vw,337px);
+  flex:0 0 auto;
   border-left:1px solid var(--forge-hero-line);
 }
 .forge-hero-aside-label {
@@ -5409,8 +5411,8 @@ body:has(#nav-adlinks-dl.active) .nav-sidebar .nav-item:hover{
 }
 .forge-hero-aside p {
   margin:0;
-  max-width:286px;
-  font:450 clamp(15px,1.16vw,18px)/1.66 "Plus Jakarta Sans",sans-serif;
+  max-width:318px;
+  font:450 clamp(15px,1.12vw,18px)/1.66 "Plus Jakarta Sans",sans-serif;
   letter-spacing:-.035em;
   color:var(--forge-hero-fg);
 }
@@ -5466,16 +5468,25 @@ body.forge-opening.forge-home-arriving .forge-hero-bottom {
 .forge-intro {
   position:fixed;inset:0;z-index:2147483000;
   display:grid;place-items:center;overflow:hidden;
-  background:#f8f7ed;color:#123b2c;
-  transition:background-color .82s cubic-bezier(.17,.78,.28,1),
-             opacity .23s linear;
+  background:transparent;color:#123b2c;
+  transition:opacity .2s linear;
 }
-.forge-intro--handoff {
-  background-color:rgba(248,247,237,0);
+/* Fade a composited backing plane instead of repainting the entire
+   2K screen via animated background-color on every refresh. */
+.forge-intro::before {
+  content:"";
+  position:absolute;
+  inset:0;
+  background:#f8f7ed;
+  opacity:1;
+  transform:translateZ(0);
+  transition:opacity .72s cubic-bezier(.18,.78,.24,1);
   pointer-events:none;
 }
+.forge-intro--handoff::before {opacity:0;}
+.forge-intro--handoff {pointer-events:none;}
 .forge-intro--ending {opacity:0;pointer-events:none;}
-.forge-intro-layout {width:min(1420px,91vw);position:relative;}
+ .forge-intro-layout {width:min(1420px,91vw);position:relative;z-index:1;}
 .forge-intro-label {
   position:absolute;top:clamp(-50px,-4vw,-32px);left:0;
   font:650 10px/1.5 "Plus Jakarta Sans",sans-serif;
@@ -5504,7 +5515,7 @@ body.forge-opening.forge-home-arriving .forge-hero-bottom {
 .forge-intro-glyphs {
   position:absolute;inset:0;pointer-events:none;
   opacity:1;
-  transition:opacity .16s linear;
+  transition:opacity .11s linear;
 }
 .forge-intro-glyph {
   position:absolute;left:0;top:0;
@@ -5524,12 +5535,12 @@ body.forge-opening.forge-home-arriving .forge-hero-bottom {
   transform-origin:50% 50%;
 }
 .forge-intro.is-playing .forge-intro-outline {
-  animation:forge-draw-guide .34s cubic-bezier(.18,.82,.31,1) both;
-  animation-delay:calc(.04s + var(--step)*.073s);
+  animation:forge-draw-guide .31s cubic-bezier(.18,.82,.31,1) both;
+  animation-delay:calc(.04s + var(--step)*.065s);
 }
 .forge-intro.is-playing .forge-intro-fill {
-  animation:forge-draw-letter .45s cubic-bezier(.16,.86,.29,1) both;
-  animation-delay:calc(.15s + var(--step)*.073s);
+  animation:forge-draw-letter .40s cubic-bezier(.16,.86,.29,1) both;
+  animation-delay:calc(.15s + var(--step)*.065s);
 }
 @keyframes forge-draw-guide {
   from{opacity:0;transform:translate3d(0,8px,0)}
@@ -5562,14 +5573,14 @@ body.forge-opening.forge-home-arriving .forge-hero-bottom {
 .forge-intro--handoff .forge-intro-label,
 .forge-intro--handoff .forge-intro-caption {opacity:0;}
 @media(max-width:1160px) {
-  .forge-hero-middle {grid-template-columns:minmax(0,1.5fr) minmax(215px,.7fr);}
+  .forge-hero-middle {gap:clamp(24px,4vw,52px);}
   #view-home .combined-home-layout .forge-hero-name {font-size:clamp(71px,8.6vw,122px)!important;}
 }
 @media(max-width:810px) {
   #view-home .combined-home-layout .forge-hero {min-height:320px;padding:27px 4px;}
-  .forge-hero-middle {grid-template-columns:1fr;gap:20px;}
+  .forge-hero-middle {display:grid;grid-template-columns:1fr;gap:16px;}
   #view-home .combined-home-layout .forge-hero-name {font-size:clamp(62px,11vw,96px)!important}
-  .forge-hero-aside {padding-left:15px;}
+  .forge-hero-aside {padding-left:15px;width:min(100%,500px);}
   .forge-hero-aside p {max-width:570px;}
 }
 @media(max-width:550px) {
@@ -5592,6 +5603,54 @@ body.forge-opening.forge-home-arriving .forge-hero-bottom {
   body.forge-opening .forge-hero-top,
   body.forge-opening .forge-hero-bottom{opacity:1!important;}
   .forge-intro * {animation:none!important;transition:none!important;}
+}
+
+
+/* FORGE FINISH — quiet, deliberately scoped treatment for existing cards.
+   Preserve every tile's markup, illustration, placement and navigation.
+   Hover feedback uses a small transform, never filter, scale or shadow tween. */
+#view-home .combined-home-grid > .home-card {
+  transition:background-color .18s ease,border-color .18s ease!important;
+}
+#view-home .combined-home-grid > .home-card:hover {
+  box-shadow:none!important;
+  filter:none!important;
+  scale:1!important;
+}
+#view-home .combined-home-grid > .home-card:focus-visible {
+  outline:2px solid #357358!important;
+  outline-offset:-3px!important;
+}
+#view-home .combined-home-grid > .home-card .home-card-go {
+  translate:0 0!important;
+  transform:translate3d(0,0,0);
+  transition:transform .24s cubic-bezier(.22,.85,.26,1),color .18s ease!important;
+}
+#view-home .combined-home-grid > .home-card:hover .home-card-go,
+#view-home .combined-home-grid > .home-card:focus-visible .home-card-go {
+  translate:0 0!important;
+  transform:translate3d(2px,-2px,0);
+}
+#view-home .combined-home-grid > .home-card > .home-card-art {
+  translate:0 0!important;
+  transition:transform .26s cubic-bezier(.22,.85,.26,1)!important;
+}
+#view-home .combined-home-grid > .home-card:hover > .home-card-art {
+  translate:0 0!important;
+  transform:translate3d(0,-2px,0);
+}
+/* Legibility at QHD without adding any card content or changing tile scale. */
+#view-home .combined-home-grid > .home-card .home-card-desc {
+  line-height:1.6!important;
+}
+@media(prefers-reduced-motion:reduce) {
+  #view-home .combined-home-grid > .home-card,
+  #view-home .combined-home-grid > .home-card .home-card-go,
+  #view-home .combined-home-grid > .home-card > .home-card-art {
+    animation:none!important;
+    transition:none!important;
+    transform:none!important;
+  }
 }
 </style>
 </head>
@@ -13821,7 +13880,7 @@ const CTKDownloadRenamer = (() => {
     window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var seen = false, activeTool = null;
   try {
-    seen = sessionStorage.getItem('forge_intro_seen_v3') === '1';
+    seen = sessionStorage.getItem('forge_intro_seen_v4') === '1';
     activeTool = localStorage.getItem('cts_activeTool');
   } catch (_) {}
   if (reduced || seen || (activeTool && activeTool !== 'home')) {
@@ -13862,7 +13921,7 @@ const CTKDownloadRenamer = (() => {
   if (skip) skip.addEventListener('click',cleanup,{once:true});
   document.addEventListener('keydown',onKey);
   // Failsafe for background tabs / disconnected animations.
-  after(3400,cleanup);
+  after(3200,cleanup);
 
   function layoutGlyphs() {
     // A single Kola text run has kerning that separate characters do not.
@@ -13905,8 +13964,8 @@ const CTKDownloadRenamer = (() => {
       {transform:'translate3d(0,0,0) scale(1)'},
       {transform:'translate3d('+dx+'px,'+dy+'px,0) scale('+scale+')'}
     ],{
-      duration:820,
-      easing:'cubic-bezier(.22,.82,.24,1)',
+      duration:760,
+      easing:'cubic-bezier(.24,.86,.30,1)',
       fill:'forwards'
     });
     flight.onfinish=cleanup;
@@ -13914,7 +13973,7 @@ const CTKDownloadRenamer = (() => {
   function settle() {
     if (finished) return;
     intro.classList.add('is-settled');
-    after(165,function(){
+    after(115,function(){
       if (!finished) requestAnimationFrame(moveToHome);
     });
   }
@@ -13922,9 +13981,9 @@ const CTKDownloadRenamer = (() => {
     if (finished) return;
     if (!layoutGlyphs()) { cleanup(); return; }
     intro.classList.add('is-playing');
-    // Letter 8 completes at ~1.10s; the ink-to-wordmark crossfade is
-    // kept under one tenth of a second of visual stillness.
-    after(1110,settle);
+    // The last letter settles near 1.07s. The wordmark crossfades
+    // immediately, then flies without a long static hold.
+    after(1100,settle);
   }
   // Start only with Kola ready. If the external font is unavailable,
   // show the usable homepage instead of animating fallback and snapping.
