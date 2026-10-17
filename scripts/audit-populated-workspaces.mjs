@@ -9,12 +9,13 @@ fs.mkdirSync(out,{recursive:true});
 const browser=await chromium.launch({headless:true,args:['--no-sandbox','--autoplay-policy=no-user-gesture-required']});
 const rows=[];
 function samplePdf(){
+ const stream='BT /F1 30 Tf 72 700 Td (THE FORGE QA DOCUMENT) Tj ET';
  const objects=[
   '<< /Type /Catalog /Pages 2 0 R >>',
   '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
   '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>',
   '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',
-  '<< /Length 88 >>\nstream\nBT /F1 30 Tf 72 700 Td (THE FORGE QA DOCUMENT) Tj ET\nendstream'
+  `<< /Length ${Buffer.byteLength(stream)} >>\nstream\n${stream}\nendstream`
  ];
  let data='%PDF-1.4\n',positions=[0];
  for(let i=0;i<objects.length;i++){positions.push(Buffer.byteLength(data));data+=`${i+1} 0 obj\n${objects[i]}\nendobj\n`;}
@@ -150,7 +151,6 @@ try{
         if(n===19)routeStarts.push({name:'story',at:performance.now(),start:performance.now(),target:'section-stills-boards',mode:'story'});
         if(n===29)routeStarts.push({name:'logo',at:performance.now(),start:performance.now(),target:'section-logo',mode:null});
         if(n===39)routeStarts.push({name:'story-return',at:performance.now(),start:performance.now(),target:'section-stills-boards',mode:'story'});
-        const turn=routeStarts.find(x=>x.at===t);
         if([9,19,29,39].includes(n)){
           const r=routeStarts[routeStarts.length-1];UI.openTool(r.target,r.mode);
           r.latency=performance.now()-r.start;
