@@ -581,3 +581,16 @@ body:has(#nav-adlinks-dl.active) .nav-sidebar .nav-item:hover{
   filter:none!important;
   transform:none!important;
 }
+
+/* Selected hover paint safeguard: an inset fill is inside the border,
+   beneath button contents, and eliminates Chromium's black background
+   rasterization without an outer glow or moving geometry. */
+#view-app #section-stills-boards #storySubModeToggle .liquid-btn.active-mode:hover{
+  box-shadow:inset 0 0 0 100px var(--sb-panel)!important;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader #adlinksDlHeaderControls #adDlDropZone label:hover{
+  box-shadow:inset 0 0 0 100px var(--ad-primary)!important;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader #adlinksDlHeaderControls #adDlBulkButton:hover:not(:disabled){
+  box-shadow:inset 0 0 0 100px var(--ad-primary)!important;
+}
