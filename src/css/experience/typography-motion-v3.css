@@ -548,3 +548,12 @@ body:has(#nav-adlinks-dl.active) .nav-sidebar .nav-item:hover{
  outline:1px solid var(--sb-line)!important;
  outline-offset:-1px!important;
 }
+
+@media(prefers-reduced-motion:reduce){
+  #view-app #section-adlinks #adlinksTabContentDownloader .liquid-btn,
+  #view-app #section-adlinks #adlinksTabContentDownloader #adlinksDlHeaderControls :is(label,button),
+  #view-app #section-adlinks #adlinksTabContentDownloader .ctk-row-menu > summary{
+    transition:none!important;
+    animation:none!important;
+  }
+}
