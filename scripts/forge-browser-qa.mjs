@@ -19,7 +19,23 @@ try {
  await intro.waitFor({state:'visible',timeout:8000});
  await page.screenshot({path:'artifacts/forge-browser/intro.png'});
  check(await page.locator('.forge-intro-glyph').count()===8,'Intro should have eight constructed glyphs');
+ const trajectoryPromise=page.evaluate(()=>new Promise(resolve=>{
+   const samples=[];
+   const loop=()=>{
+     const element=document.getElementById('forgeIntroWordmark');
+     const overlay=document.getElementById('forgeIntro');
+     if(!element||!overlay){resolve(samples);return;}
+     if(overlay.classList.contains('forge-intro--handoff')){
+       const rect=element.getBoundingClientRect();
+       samples.push({time:performance.now(),left:rect.left,top:rect.top,width:rect.width});
+     }
+     requestAnimationFrame(loop);
+   };
+   requestAnimationFrame(loop);
+ }));
  await intro.waitFor({state:'detached',timeout:6000});
+ const trajectory=await trajectoryPromise;
+
  const cards=page.locator('button.home-card');
  check(await cards.count()===8,'All eight tool cards must exist after handoff');
  const details=await page.evaluate(()=>{
@@ -47,6 +63,16 @@ try {
  check(!details.overflow,'Homepage should not overflow horizontally at 1440px');
  check(details.titleRight < 1440,'Wordmark is clipped on the desktop viewport');
  check(details.font.includes('Kola'),'Wordmark must request Kola');
+ check(trajectory.length>=12,'Expected at least twelve compositor animation frames');
+ if(trajectory.length>=2){
+   const deltas=trajectory.slice(1).map((f,i)=>Math.abs(f.width-trajectory[i].width));
+   const maxStep=Math.max(...deltas);
+   const last=trajectory[trajectory.length-1];
+   check(maxStep<45,'Large size jump detected during shared wordmark flight: '+maxStep.toFixed(1)+'px');
+   check(Math.abs(last.width-details.titleWidth)<48,'Final shared wordmark width diverges from hero');
+   check(Math.abs(last.left-details.titleLeft)<48,'Final shared wordmark position diverges from hero');
+ }
+
  // Existing theme persistence must remain functional.
  await page.evaluate(()=>localStorage.setItem('cts_theme','dark'));
  await page.reload({waitUntil:'domcontentloaded'});
@@ -61,7 +87,7 @@ try {
  await reducedPage.waitForTimeout(120);
  check(await reducedPage.locator('#forgeIntro').count()===0,'Reduced motion should bypass intro');
  await motion.close();
- console.log('Forge browser QA',JSON.stringify({details,pageErrors,failures},null,2));
+ console.log('Forge browser QA',JSON.stringify({details,motionFrames:trajectory.length,firstFrame:trajectory[0],lastFrame:trajectory.at(-1),pageErrors,failures},null,2));
  assert.deepEqual(failures,[],'Forge browser regression failures');
 } finally {
  await browser.close();
