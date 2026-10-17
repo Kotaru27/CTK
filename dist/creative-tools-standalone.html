@@ -5390,6 +5390,8 @@ body:has(#nav-adlinks-dl.active) .nav-sidebar .nav-item:hover{
   padding:0!important;
   white-space:nowrap;
   text-wrap:nowrap;
+  width:max-content!important;
+  justify-self:start;
   min-width:0;
   transform-origin:left center;
 }
@@ -5446,25 +5448,27 @@ body:not(.light-mode) #view-home .combined-home-layout .forge-hero {
   --forge-hero-line:rgba(230,235,217,.18);
 }
 body:not(.light-mode) .forge-hero-edition::before {background:#b1d4b6;}
-/* The hero takes its position from the opener on first entry. Other UI is
-   unchanged; the opening class is removed before normal interaction. */
-body.forge-opening #forgeHeroName {opacity:0;}
+/* Shared element: the homepage heading is present in layout, but hidden
+   until the one properly-kerned opener arrives at precisely the same rect. */
+body.forge-opening #forgeHeroName {opacity:0!important;}
 body.forge-opening .forge-hero-aside,
 body.forge-opening .forge-hero-top,
-body.forge-opening .forge-hero-bottom {opacity:.12;}
+body.forge-opening .forge-hero-bottom {opacity:0;transform:translate3d(0,8px,0);}
 body.forge-opening.forge-home-arriving .forge-hero-aside,
 body.forge-opening.forge-home-arriving .forge-hero-top,
 body.forge-opening.forge-home-arriving .forge-hero-bottom {
-  opacity:1;transition:opacity .46s ease;
+  opacity:1;transform:translate3d(0,0,0);
+  transition:opacity .48s cubic-bezier(.21,.76,.31,1),
+             transform .65s cubic-bezier(.21,.76,.31,1);
 }
-/* The intro has one subject, no gratuitous circles, gradients or logo mark. */
+/* The opening is one composition: outline -> raised ink -> continuous
+   FLIP wordmark handoff. All animated letter properties are compositable. */
 .forge-intro {
-  position:fixed;inset:0;
-  z-index:2147483000;
-  display:grid;place-items:center;
-  overflow:hidden;
+  position:fixed;inset:0;z-index:2147483000;
+  display:grid;place-items:center;overflow:hidden;
   background:#f8f7ed;color:#123b2c;
-  transition:background-color .7s cubic-bezier(.25,.7,.25,1),opacity .35s ease;
+  transition:background-color .82s cubic-bezier(.17,.78,.28,1),
+             opacity .23s linear;
 }
 .forge-intro--handoff {
   background-color:rgba(248,247,237,0);
@@ -5473,80 +5477,85 @@ body.forge-opening.forge-home-arriving .forge-hero-bottom {
 .forge-intro--ending {opacity:0;pointer-events:none;}
 .forge-intro-layout {width:min(1420px,91vw);position:relative;}
 .forge-intro-label {
-  position:absolute;
-  top:clamp(-50px,-4vw,-32px);
-  left:0;
+  position:absolute;top:clamp(-50px,-4vw,-32px);left:0;
   font:650 10px/1.5 "Plus Jakarta Sans",sans-serif;
-  letter-spacing:.19em;text-transform:uppercase;
-  color:#678172;
-  transition:opacity .2s ease;
+  letter-spacing:.19em;text-transform:uppercase;color:#678172;
+  transition:opacity .23s linear;
 }
+/* The layout footprint is ALWAYS the final kerning-correct Kola string.
+   The construction layer is separately positioned and never changes width. */
 .forge-intro-type {
-  display:flex;justify-content:center;align-items:baseline;
-  width:max-content;max-width:none;margin:0 auto;
+  position:relative;
+  display:block;width:max-content;max-width:none;margin:0 auto;
   white-space:nowrap;
   font-family:"Kola","Plus Jakarta Sans",sans-serif;
   font-size:clamp(66px,10.2vw,162px);
-  font-weight:400;line-height:1.14;letter-spacing:-.028em;
+  font-weight:400;
+  line-height:1.08;letter-spacing:-.028em;
   color:#123b2c;
-  transform-origin:left center;
 }
-.forge-intro-glyph {position:relative;display:inline-block;}
-.forge-intro-gap {width:.235em;display:inline-block;}
-.forge-intro-outline,
-.forge-intro-fill {display:block;}
-.forge-intro-outline {
-  position:relative;
-  color:transparent;
-  -webkit-text-stroke:1px rgba(18,59,44,.35);
+.forge-intro-wordmark {
+  display:block;
+  white-space:nowrap;
   opacity:0;
-  transition:opacity .18s ease;
+  transform-origin:top left;
+  will-change:transform,opacity;
+}
+.forge-intro-glyphs {
+  position:absolute;inset:0;pointer-events:none;
+  opacity:1;
+  transition:opacity .16s linear;
+}
+.forge-intro-glyph {
+  position:absolute;left:0;top:0;
+  display:block;line-height:inherit;
+}
+.forge-intro-gap {display:none;}
+.forge-intro-outline,
+.forge-intro-fill {display:block;white-space:pre;}
+.forge-intro-outline {
+  position:relative;color:transparent;
+  -webkit-text-stroke:1px rgba(18,59,44,.40);
+  opacity:0;transform:translate3d(0,8px,0);
 }
 .forge-intro-fill {
-  position:absolute;inset:0;
-  color:#123b2c;
-  clip-path:inset(0 100% 0 0);
+  position:absolute;inset:0;color:#123b2c;
+  opacity:0;transform:translate3d(0,10px,0) scale(.99);
+  transform-origin:50% 50%;
 }
 .forge-intro.is-playing .forge-intro-outline {
-  animation:forge-draw-guide .78s ease both;
-  animation-delay:calc(.1s + var(--step)*.09s);
+  animation:forge-draw-guide .34s cubic-bezier(.18,.82,.31,1) both;
+  animation-delay:calc(.04s + var(--step)*.073s);
 }
 .forge-intro.is-playing .forge-intro-fill {
-  animation:forge-draw-letter .64s cubic-bezier(.18,.83,.26,1) both;
-  animation-delay:calc(.14s + var(--step)*.09s);
+  animation:forge-draw-letter .45s cubic-bezier(.16,.86,.29,1) both;
+  animation-delay:calc(.15s + var(--step)*.073s);
 }
 @keyframes forge-draw-guide {
-  0%{opacity:0} 30%{opacity:.8} 85%{opacity:.65} 100%{opacity:1}
+  from{opacity:0;transform:translate3d(0,8px,0)}
+  to{opacity:1;transform:translate3d(0,0,0)}
 }
 @keyframes forge-draw-letter {
-  0%{clip-path:polygon(0 0,0 0,0 100%,0 100%)}
-  54%{clip-path:polygon(0 0,76% 0,23% 100%,0 100%)}
-  100%{clip-path:polygon(0 0,100% 0,100% 100%,0 100%)}
+  from{opacity:0;transform:translate3d(0,10px,0) scale(.99)}
+  to{opacity:1;transform:translate3d(0,0,0) scale(1)}
 }
-.forge-intro.is-playing .forge-intro-outline {
-  animation-name:forge-draw-guide;
-}
-.forge-intro--handoff .forge-intro-outline {
-  -webkit-text-stroke:0;color:#123b2c;
+.forge-intro.is-settled .forge-intro-glyphs {opacity:0;}
+.forge-intro.is-settled .forge-intro-wordmark {
+  opacity:1;
+  transition:opacity .16s linear;
 }
 .forge-intro-caption {
   display:flex;justify-content:space-between;align-items:center;
-  gap:16px;
-  border-top:1px solid rgba(25,55,43,.2);
-  margin-top:clamp(24px,3.2vw,44px);
-  padding-top:14px;
+  gap:16px;border-top:1px solid rgba(25,55,43,.2);
+  margin-top:clamp(24px,3.2vw,44px);padding-top:14px;
   font:600 10px/1.4 "Plus Jakarta Sans",sans-serif;
-  letter-spacing:.2em;text-transform:uppercase;
-  color:#678172;
-  transition:opacity .25s ease;
+  letter-spacing:.2em;text-transform:uppercase;color:#678172;
+  transition:opacity .23s linear;
 }
 .forge-intro-skip {
   font:600 11px/1.5 "Plus Jakarta Sans",sans-serif;
-  letter-spacing:.08em;
-  padding:7px 0 7px 10px;
-  color:#123b2c;
-  background:none;border:0;
-  cursor:pointer;
+  letter-spacing:.08em;padding:7px 0 7px 10px;
+  color:#123b2c;background:none;border:0;cursor:pointer;
 }
 .forge-intro-skip:hover {text-decoration:underline;text-underline-offset:4px;}
 .forge-intro-skip:focus-visible {outline:2px solid #123b2c;outline-offset:4px;}
@@ -5591,7 +5600,10 @@ body.forge-opening.forge-home-arriving .forge-hero-bottom {
 <div class="forge-intro" id="forgeIntro" role="region" aria-label="The Forge introduction">
  <div class="forge-intro-layout">
   <div class="forge-intro-label">YOUR CREATIVE WORKSPACE</div>
-  <div class="forge-intro-type" id="forgeIntroType" role="img" aria-label="The Forge"><span class="forge-intro-glyph" style="--step:0" aria-hidden="true"><span class="forge-intro-outline">T</span><span class="forge-intro-fill">T</span></span><span class="forge-intro-glyph" style="--step:1" aria-hidden="true"><span class="forge-intro-outline">h</span><span class="forge-intro-fill">h</span></span><span class="forge-intro-glyph" style="--step:2" aria-hidden="true"><span class="forge-intro-outline">e</span><span class="forge-intro-fill">e</span></span><span class="forge-intro-gap" aria-hidden="true"></span><span class="forge-intro-glyph" style="--step:4" aria-hidden="true"><span class="forge-intro-outline">F</span><span class="forge-intro-fill">F</span></span><span class="forge-intro-glyph" style="--step:5" aria-hidden="true"><span class="forge-intro-outline">o</span><span class="forge-intro-fill">o</span></span><span class="forge-intro-glyph" style="--step:6" aria-hidden="true"><span class="forge-intro-outline">r</span><span class="forge-intro-fill">r</span></span><span class="forge-intro-glyph" style="--step:7" aria-hidden="true"><span class="forge-intro-outline">g</span><span class="forge-intro-fill">g</span></span><span class="forge-intro-glyph" style="--step:8" aria-hidden="true"><span class="forge-intro-outline">e</span><span class="forge-intro-fill">e</span></span></div>
+  <div class="forge-intro-type" id="forgeIntroType" role="img" aria-label="The Forge">
+   <div class="forge-intro-wordmark" id="forgeIntroWordmark" aria-hidden="true">The Forge</div>
+   <div class="forge-intro-glyphs" id="forgeIntroGlyphs" aria-hidden="true"><span class="forge-intro-glyph" style="--step:0" aria-hidden="true"><span class="forge-intro-outline">T</span><span class="forge-intro-fill">T</span></span><span class="forge-intro-glyph" style="--step:1" aria-hidden="true"><span class="forge-intro-outline">h</span><span class="forge-intro-fill">h</span></span><span class="forge-intro-glyph" style="--step:2" aria-hidden="true"><span class="forge-intro-outline">e</span><span class="forge-intro-fill">e</span></span><span class="forge-intro-gap" aria-hidden="true"></span><span class="forge-intro-glyph" style="--step:4" aria-hidden="true"><span class="forge-intro-outline">F</span><span class="forge-intro-fill">F</span></span><span class="forge-intro-glyph" style="--step:5" aria-hidden="true"><span class="forge-intro-outline">o</span><span class="forge-intro-fill">o</span></span><span class="forge-intro-glyph" style="--step:6" aria-hidden="true"><span class="forge-intro-outline">r</span><span class="forge-intro-fill">r</span></span><span class="forge-intro-glyph" style="--step:7" aria-hidden="true"><span class="forge-intro-outline">g</span><span class="forge-intro-fill">g</span></span><span class="forge-intro-glyph" style="--step:8" aria-hidden="true"><span class="forge-intro-outline">e</span><span class="forge-intro-fill">e</span></span></div>
+  </div>
   <div class="forge-intro-caption"><span>CREATE / TRANSFORM / DELIVER</span>
    <button type="button" class="forge-intro-skip" id="forgeIntroSkip" aria-label="Skip introduction">Skip intro ↗</button>
   </div>
@@ -13794,91 +13806,143 @@ const CTKDownloadRenamer = (() => {
   if (document.readyState==="loading") document.addEventListener("DOMContentLoaded",boot,{once:true});
   else boot();
 })();</script>
-<script id="forge-brand-intro-js">/* The Forge / V2: stroke-to-solid letter construction, then one shared
-   wordmark moving into the actual home heading. No card/tool mutations. */
+<script id="forge-brand-intro-js">/* The Forge: light, interruptible, compositor-first shared wordmark.
+   One kerned text node flies to an equal-font-metrics home heading.
+   Never touches tool cards, processing, navigation, or saved preferences. */
 (function () {
   'use strict';
   var intro = document.getElementById('forgeIntro');
-  var mark = document.getElementById('forgeIntroType');
+  var mark = document.getElementById('forgeIntroWordmark');
+  var glyphLayer = document.getElementById('forgeIntroGlyphs');
   var destination = document.getElementById('forgeHeroName');
-  if (!intro || !mark || !destination) return;
+  if (!intro || !mark || !glyphLayer || !destination) return;
+
   var reduced = window.matchMedia &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var seen = false, activeTool = null;
   try {
-    seen = sessionStorage.getItem('forge_intro_seen_v2') === '1';
+    seen = sessionStorage.getItem('forge_intro_seen_v3') === '1';
     activeTool = localStorage.getItem('cts_activeTool');
   } catch (_) {}
   if (reduced || seen || (activeTool && activeTool !== 'home')) {
     intro.remove();
     return;
   }
-  try { sessionStorage.setItem('forge_intro_seen_v2', '1'); } catch (_) {}
+  try { sessionStorage.setItem('forge_intro_seen_v3', '1'); } catch (_) {}
   document.body.classList.add('forge-opening');
 
-  var finished = false, startTimer, handoffTimer, watchdog;
-  var flight = null;
+  var finished = false, flight = null, timers = [];
   var skip = document.getElementById('forgeIntroSkip');
+  function after(ms, fn) {
+    var id = window.setTimeout(fn, ms);
+    timers.push(id);
+    return id;
+  }
   function cleanup() {
     if (finished) return;
     finished = true;
-    window.clearTimeout(startTimer);
-    window.clearTimeout(handoffTimer);
-    window.clearTimeout(watchdog);
-    document.removeEventListener('keydown', keydown);
+    timers.forEach(window.clearTimeout);
+    document.removeEventListener('keydown', onKey);
+    if (flight) {
+      flight.onfinish = null;
+      flight.cancel();
+    }
+    // The fully transformed wordmark and the hero exchange visibility
+    // in the same frame. This avoids the large-to-small snap.
+    mark.style.visibility = 'hidden';
     document.body.classList.remove('forge-opening','forge-home-arriving');
-    if (flight && flight.cancel) flight.cancel();
     intro.remove();
   }
-  function keydown(event) {
-    if (event.key === 'Escape' || event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
+  function onKey(e) {
+    if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
       cleanup();
     }
   }
-  if (skip) skip.addEventListener('click', cleanup, {once:true});
-  document.addEventListener('keydown', keydown);
-  watchdog = window.setTimeout(cleanup, 3500);
+  if (skip) skip.addEventListener('click',cleanup,{once:true});
+  document.addEventListener('keydown',onKey);
+  // Failsafe for background tabs / disconnected animations.
+  after(3400,cleanup);
 
-  function handoff() {
-    if (finished) return;
-    if (destination.getClientRects().length === 0 ||
-        !mark.animate || typeof mark.getBoundingClientRect !== 'function') {
-      intro.classList.add('forge-intro--ending');
-      window.setTimeout(cleanup, 300);
-      return;
+  function layoutGlyphs() {
+    // A single Kola text run has kerning that separate characters do not.
+    // Measure each character in that *real* wordmark with a DOM Range so
+    // every outline/ink overlay begins at the same advance position.
+    var node = mark.firstChild;
+    if (!node || node.nodeType !== 3) return false;
+    var base = mark.getBoundingClientRect();
+    if (!base.width || !base.height) return false;
+    var children = glyphLayer.children;
+    if (children.length !== node.length) return false;
+    var range = document.createRange();
+    for (var i=0; i<node.length; i++) {
+      range.setStart(node,i);
+      range.setEnd(node,i+1);
+      var glyph = children[i];
+      if (glyph.classList.contains('forge-intro-gap')) continue;
+      var rect = range.getBoundingClientRect();
+      glyph.style.left = (rect.left-base.left)+'px';
+      glyph.style.top = (rect.top-base.top)+'px';
     }
-    var from = mark.getBoundingClientRect();
-    var to = destination.getBoundingClientRect();
-    if (!from.width || !to.width) { cleanup(); return; }
-    var scale = to.width / from.width;
-    var dx = to.left - from.left;
-    var dy = to.top + to.height/2 - (from.top + from.height/2);
-    // Strip outlines after the fill, giving the letters a solid home state.
+    range.detach && range.detach();
+    return true;
+  }
+  function moveToHome() {
+    if (finished) return;
+    var from=mark.getBoundingClientRect();
+    var to=destination.getBoundingClientRect();
+    if (!from.width || !to.width || !mark.animate ||
+        destination.getClientRects().length === 0) { cleanup(); return; }
+    // Shared-element FLIP: same text run, matching font/line height,
+    // measured once after font load, then only translate+uniform scale.
+    var dx=to.left-from.left;
+    var dy=to.top-from.top;
+    var scale=to.width/from.width;
+    if (!isFinite(scale) || scale<=0) { cleanup(); return; }
     intro.classList.add('forge-intro--handoff');
     document.body.classList.add('forge-home-arriving');
-    flight = mark.animate([
+    flight=mark.animate([
       {transform:'translate3d(0,0,0) scale(1)'},
       {transform:'translate3d('+dx+'px,'+dy+'px,0) scale('+scale+')'}
-    ],{duration:670,easing:'cubic-bezier(.19,.86,.21,1)',fill:'forwards'});
-    flight.onfinish = cleanup;
-    // Fallback if animation completion is not delivered after backgrounding.
-    handoffTimer = window.setTimeout(cleanup, 900);
+    ],{
+      duration:820,
+      easing:'cubic-bezier(.22,.82,.24,1)',
+      fill:'forwards'
+    });
+    flight.onfinish=cleanup;
   }
-
-  function start() {
+  function settle() {
     if (finished) return;
-    intro.classList.add('is-playing');
-    handoffTimer = window.setTimeout(handoff, 1450);
+    intro.classList.add('is-settled');
+    after(165,function(){
+      if (!finished) requestAnimationFrame(moveToHome);
+    });
   }
-  // Avoid a branding font swap mid-reveal. Never stall the workspace for fonts.
-  var fonts = document.fonts;
-  var ready = fonts && fonts.load ?
-    fonts.load('400 120px "Kola"').catch(function(){}) : Promise.resolve();
+  function play() {
+    if (finished) return;
+    if (!layoutGlyphs()) { cleanup(); return; }
+    intro.classList.add('is-playing');
+    // Letter 8 completes at ~1.10s; the ink-to-wordmark crossfade is
+    // kept under one tenth of a second of visual stillness.
+    after(1110,settle);
+  }
+  // Start only with Kola ready. If the external font is unavailable,
+  // show the usable homepage instead of animating fallback and snapping.
+  var fonts=document.fonts;
+  if (!fonts || !fonts.load) {
+    cleanup();
+    return;
+  }
+  var timeout;
   Promise.race([
-    ready,
-    new Promise(function(resolve){ startTimer=window.setTimeout(resolve, 750); })
-  ]).then(start, start);
+    fonts.load('400 120px "Kola"').then(function(faces){return !!(faces && faces.length);},function(){return false;}),
+    new Promise(function(resolve){timeout=window.setTimeout(function(){resolve(false);},780);})
+  ]).then(function(ready){
+    window.clearTimeout(timeout);
+    if (finished) return;
+    if (!ready) { cleanup(); return; }
+    requestAnimationFrame(play);
+  },cleanup);
 })();
 </script>
 </body>
