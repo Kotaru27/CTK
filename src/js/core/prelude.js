@@ -792,7 +792,7 @@
           const headerByMode = {
             "section-pdf": { convert: "PDF to Image", split: "Image Splitter" },
             "section-stills-boards": { video: "Video Stills", story: "Storyboard", filmstrip: "Storyboard", fit: "Storyboard" },
-            "section-adlinks": { gen: "Link Gen", downloader: "Ad Link Downloader" },
+            "section-adlinks": { gen: "Link Gen", downloader: "Ad Downloader" },
           };
           let navId = navMap[id];
           const resolver = singleMode[id];
