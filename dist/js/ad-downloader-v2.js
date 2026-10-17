@@ -47,7 +47,19 @@
           body.append(fix,save);
           actions.append(menu);
           menu.addEventListener("toggle",()=>{
-            if (menu.open) closeMenus(menu);
+            if (!menu.open) return;
+            closeMenus(menu);
+            // Detect clipping against the scrolling table, not just the last
+            // three rows (which might be off screen). Keep rare actions usable
+            // in every visible row without changing their original handlers.
+            const viewport=root.querySelector("#adDlTableContainer")?.getBoundingClientRect();
+            const popover=body.getBoundingClientRect();
+            if (viewport) {
+              const downSpace=viewport.bottom-summary.getBoundingClientRect().bottom;
+              const upSpace=summary.getBoundingClientRect().top-viewport.top;
+              const preferred=downSpace>=popover.height+13 || downSpace>=upSpace ? "down":"up";
+              menu.dataset.side=preferred;
+            }
           });
           body.addEventListener("click",e=>{
             if (e.target.closest("button")) menu.open=false;

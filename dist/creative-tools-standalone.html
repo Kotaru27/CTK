@@ -4466,7 +4466,15 @@ body.light-mode #section-adlinks{
 #section-adlinks:has(#adlinksTabContentDownloader[style*="display: block"]) {color:var(--ad-ink);}
 #section-adlinks .tool-header{background:var(--ad-base)!important;border-bottom:1px solid var(--ad-line)!important;color:var(--ad-ink)!important;min-height:65px!important;padding:12px 38px!important;gap:12px!important}
 #section-adlinks .tool-header h2{font:650 14px/1.3 "Plus Jakarta Sans",sans-serif!important;letter-spacing:-.025em!important;color:var(--ad-ink)!important}
-#section-adlinks .tool-header .tool-icon{color:var(--ad-primary)!important;font-size:20px!important}
+#section-adlinks .tool-header .tool-icon{
+ color:var(--ad-primary)!important;font-size:20px!important;
+ background:var(--ad-primary-soft)!important;border:1px solid var(--ad-line)!important;
+ border-radius:10px!important;box-shadow:none!important;
+}
+body:has(#nav-adlinks-dl.active) .header .brand-title .brand-icon,
+body.light-mode:has(#nav-adlinks-dl.active) .header .brand-title .brand-icon{
+ background:#b7cbff!important;color:#11203a!important;border-radius:9px!important;
+}
 #section-adlinks #tabRowAdlinks{
   background:var(--ad-base)!important;border-bottom:1px solid var(--ad-line)!important;
   padding:0 34px!important;gap:7px!important;min-height:56px;align-items:center;
@@ -4659,6 +4667,8 @@ body:has(#nav-adlinks-dl.active) .header .brand-title{color:#f0f5ff!important}
 #section-adlinks #adlinksTabContentDownloader #adDlTableContainer tbody tr:nth-last-child(-n+3) .ctk-row-popover{
   top:auto;bottom:calc(100% + 10px);
 }
+#section-adlinks #adlinksTabContentDownloader #adDlTableContainer .ctk-row-menu[data-side="down"] .ctk-row-popover{top:calc(100% + 10px)!important;bottom:auto!important}
+#section-adlinks #adlinksTabContentDownloader #adDlTableContainer .ctk-row-menu[data-side="up"] .ctk-row-popover{top:auto!important;bottom:calc(100% + 10px)!important}
 #section-adlinks #adlinksTabContentDownloader #adDlTableContainer .ctk-row-popover button{
   border:0!important;border-radius:7px!important;background:transparent!important;color:var(--ad-ink)!important;
   font:650 11px/1.2 "Plus Jakarta Sans",sans-serif!important;
@@ -12877,7 +12887,19 @@ const CTKDownloadRenamer = (() => {
           body.append(fix,save);
           actions.append(menu);
           menu.addEventListener("toggle",()=>{
-            if (menu.open) closeMenus(menu);
+            if (!menu.open) return;
+            closeMenus(menu);
+            // Detect clipping against the scrolling table, not just the last
+            // three rows (which might be off screen). Keep rare actions usable
+            // in every visible row without changing their original handlers.
+            const viewport=root.querySelector("#adDlTableContainer")?.getBoundingClientRect();
+            const popover=body.getBoundingClientRect();
+            if (viewport) {
+              const downSpace=viewport.bottom-summary.getBoundingClientRect().bottom;
+              const upSpace=summary.getBoundingClientRect().top-viewport.top;
+              const preferred=downSpace>=popover.height+13 || downSpace>=upSpace ? "down":"up";
+              menu.dataset.side=preferred;
+            }
           });
           body.addEventListener("click",e=>{
             if (e.target.closest("button")) menu.open=false;
