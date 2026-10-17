@@ -40,7 +40,10 @@ jobs:
                 page.wait_for_timeout(450)
                 button=page.locator(sel).first
                 for stage in ('rest','hover','out'):
-                  if stage=='hover':button.hover();page.wait_for_timeout(450)
+                  if stage=='hover':
+                    rect=button.bounding_box()
+                    page.mouse.move(rect['x']+rect['width']/2,rect['y']+rect['height']/2)
+                    page.wait_for_timeout(450)
                   if stage=='out':page.mouse.move(1390,73);page.wait_for_timeout(450)
                   state=button.evaluate("""e=>{
                     let s=getComputedStyle(e),r=e.getBoundingClientRect();
