@@ -17,7 +17,7 @@ test('brand name and Kola are integrated in both releases',()=>{
   for (const s of [index,standalone]) {
     assert.match(s,/<title>The Forge — Creative Tools<\/title>/);
     assert.match(s,/id="brandText">The Forge<\/span>/);
-    assert.match(s,/class="forge-hero-name">The Forge<\/h1>/);
+    assert.match(s,/class="forge-hero-name" id="forgeHeroName">The Forge<\/h1>/);
     assert.match(s,/api\.fontshare\.com\/v2\/css\?f\[\]=kola@400&amp;display=swap/);
     assert.doesNotMatch(s,/Toolkit%20logo\.png/);
     assert.doesNotMatch(s,/<span class="material-symbols-rounded brand-icon">/);
