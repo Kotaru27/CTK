@@ -47,12 +47,14 @@ test('intro is accessible, skippable, reduced-motion friendly and session scoped
   assert.match(brandJS,/to\.width\/from\.width/);
   assert.match(index,/id="forgeIntroWordmark"/);
   assert.match(brandJS,/flight\.onfinish\s*=\s*cleanup/);
-  assert.match(brandJS,/after\(3400,cleanup\)/);
+  assert.match(brandJS,/after\(3200,cleanup\)/);
   assert.match(brandCss,/@media\(prefers-reduced-motion:reduce\)/);
 });
-test('new brand CSS does not target tool cards, cards remain untouched',()=>{
+test('card polish is strictly visual and confined to the home page',()=>{
   const cssRulesOnly = brandCss.replace(/\/\*[\s\S]*?\*\//g,'');
-  assert.doesNotMatch(cssRulesOnly,/\.home-card\b|\.home-card-art\b|\.tool-section\b|#view-app\b/);
+  assert.doesNotMatch(cssRulesOnly,/\.tool-section\b|#view-app\b|\.editor-layout\b/);
+  assert.match(cssRulesOnly,/#view-home \.combined-home-grid > \.home-card/);
+  assert.match(cssRulesOnly,/\.home-card:focus-visible/);
   assert.doesNotMatch(brandJS,/home-card|\.tool-section|openTool/);
 });
 
@@ -78,7 +80,7 @@ test('intro constructs Kola lettering rather than only fading a full wordmark',(
   assert.match(brandCss,/\.forge-intro--handoff/);
   assert.match(brandJS,/forge-home-arriving/);
   assert.match(brandJS,/prefers-reduced-motion/);
-  assert.match(brandJS,/forge_intro_seen_v3/);
+  assert.match(brandJS,/forge_intro_seen_v4/);
 });
 
 test('motion never animates polygon clipping or layout-changing font size',()=>{
@@ -91,4 +93,15 @@ test('motion never animates polygon clipping or layout-changing font size',()=>{
   assert.match(brandJS,/document\.fonts/);
   assert.match(brandJS,/isFinite\(scale\)/);
   assert.match(brandCss,/width:max-content!important/);
+});
+
+test('QHD and high refresh polish avoids expensive background color and hover shadow animations',()=>{
+  assert.match(brandCss,/\.forge-intro::before/);
+  assert.match(brandCss,/\.forge-intro--handoff::before \{opacity:0;/);
+  assert.doesNotMatch(brandCss,/transition:background-color \.82s/);
+  assert.match(brandCss,/min-height:clamp\(322px,27vw,392px\)/);
+  assert.match(brandCss,/\.home-card:hover\s*\{\s*box-shadow:none!important/);
+  assert.match(brandCss,/\.home-card-go[\s\S]*?transform:translate3d/);
+  assert.match(brandJS,/duration:760/);
+  assert.match(brandJS,/after\(115,function\(\)/);
 });
