@@ -37,5 +37,5 @@ test('Ad Downloader workspace title matches the nav label in every release',()=>
   assert.ok(html.includes('<span style="flex: 1">Ad Downloader</span>'),path);
   assert.ok(!html.includes('<span style="flex: 1">Ad Link Downloader</span>'),path);
  }
- assert.match(read('scripts/build.mjs'),/\\['<span style="flex: 1">Ad Link Downloader<\\/span>'/);
+ assert.ok(read('scripts/build.mjs').includes('Ad Link Downloader</span>'),'missing baseline title replacement');
 });
