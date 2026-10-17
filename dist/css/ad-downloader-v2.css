@@ -1,39 +1,39 @@
 /* AD DOWNLOADER / V2
    Presentation-only design system. Legacy CSS remains intact for all other tools.
-   The visual language is porcelain / deep ink / mineral blue, not the prior green atelier. */
+   Unified green design: deep forest in dark mode and pale sage in light mode. */
 #section-adlinks{
-  --ad-base:#0d1422;
-  --ad-ink:#edf3ff;
-  --ad-ink-muted:#9aaac5;
-  --ad-ink-soft:#71819d;
-  --ad-stage:#0b1220;
-  --ad-surface:#131c2b;
-  --ad-surface-alt:#192538;
-  --ad-line:rgba(192,211,248,.115);
-  --ad-line-strong:rgba(192,211,248,.23);
-  --ad-primary:#b7cbff;
-  --ad-primary-ink:#132035;
-  --ad-primary-soft:rgba(183,203,255,.12);
-  --ad-warm:#efc29d;
+  --ad-base:#17271e;
+  --ad-ink:#f0f5ef;
+  --ad-ink-muted:#b5c7b8;
+  --ad-ink-soft:#849a89;
+  --ad-stage:#14221a;
+  --ad-surface:#203127;
+  --ad-surface-alt:#2a3c30;
+  --ad-line:rgba(198,223,201,.115);
+  --ad-line-strong:rgba(198,223,201,.23);
+  --ad-primary:#c4ddba;
+  --ad-primary-ink:#1b3022;
+  --ad-primary-soft:rgba(196,221,186,.12);
+  --ad-warm:#d3b69b;
   --ad-micro:cubic-bezier(.22,1,.36,1);
   --ad-smooth:cubic-bezier(.16,1,.3,1);
   --ad-shadow:0 18px 44px -24px rgba(0,0,0,.48);
 }
 body.light-mode #section-adlinks{
-  --ad-base:#f7f8fc;
-  --ad-ink:#1c293e;
-  --ad-ink-muted:#586883;
-  --ad-ink-soft:#7785a0;
-  --ad-stage:#eff2f9;
+  --ad-base:#f6f7f2;
+  --ad-ink:#1e3527;
+  --ad-ink-muted:#5b715f;
+  --ad-ink-soft:#788d7a;
+  --ad-stage:#eef2ea;
   --ad-surface:#ffffff;
-  --ad-surface-alt:#f3f5fa;
-  --ad-line:rgba(36,55,93,.105);
-  --ad-line-strong:rgba(36,55,93,.20);
-  --ad-primary:#3157bf;
+  --ad-surface-alt:#f1f5ef;
+  --ad-line:rgba(35,81,54,.105);
+  --ad-line-strong:rgba(35,81,54,.20);
+  --ad-primary:#28543d;
   --ad-primary-ink:#ffffff;
-  --ad-primary-soft:rgba(49,87,191,.08);
-  --ad-warm:#a96835;
-  --ad-shadow:0 18px 48px -28px rgba(34,51,86,.17);
+  --ad-primary-soft:rgba(40,84,61,.08);
+  --ad-warm:#a16b45;
+  --ad-shadow:0 18px 48px -28px rgba(38,75,51,.17);
 }
 #section-adlinks:has(#adlinksTabContentDownloader[style*="display: block"]) {color:var(--ad-ink);}
 #section-adlinks .tool-header{background:var(--ad-base)!important;border-bottom:1px solid var(--ad-line)!important;color:var(--ad-ink)!important;min-height:65px!important;padding:12px 38px!important;gap:12px!important}
@@ -45,7 +45,7 @@ body.light-mode #section-adlinks{
 }
 body:has(#nav-adlinks-dl.active) .header .brand-title .brand-icon,
 body.light-mode:has(#nav-adlinks-dl.active) .header .brand-title .brand-icon{
- background:#b7cbff!important;color:#11203a!important;border-radius:9px!important;
+ background:#c4ddba!important;color:#193023!important;border-radius:9px!important;
 }
 #section-adlinks #tabRowAdlinks{
   background:var(--ad-base)!important;border-bottom:1px solid var(--ad-line)!important;
@@ -65,14 +65,14 @@ body.light-mode:has(#nav-adlinks-dl.active) .header .brand-title .brand-icon{
 /* Branded shell only while the ad downloader is selected: preserve unrelated workspaces. */
 body:has(#nav-adlinks-dl.active) .nav-sidebar.visible,
 body.light-mode:has(#nav-adlinks-dl.active) .nav-sidebar.visible{
-  background:#101927!important;border-right-color:rgba(179,200,240,.14)!important;
+  background:#15241b!important;border-right-color:rgba(190,219,194,.14)!important;
 }
-body:has(#nav-adlinks-dl.active) .nav-sidebar .nav-item{color:#94a9c3!important;transition:background-color .24s var(--ad-smooth),color .2s ease,transform .24s var(--ad-smooth)!important}
-body:has(#nav-adlinks-dl.active) .nav-sidebar .nav-item:hover{background:#1c2a40!important;color:#eff4ff!important;transform:translateX(2px)!important}
-body:has(#nav-adlinks-dl.active) .nav-sidebar .nav-item.active{background:#d5e1ff!important;color:#102039!important;border-color:transparent!important}
-body:has(#nav-adlinks-dl.active) .nav-sidebar .nav-item.active :is(.material-symbols-rounded,.nav-item-text){color:#102039!important}
-body:has(#nav-adlinks-dl.active) .header,body.light-mode:has(#nav-adlinks-dl.active) .header{background:#101927!important;border-bottom-color:rgba(179,200,240,.14)!important}
-body:has(#nav-adlinks-dl.active) .header .brand-title{color:#f0f5ff!important}
+body:has(#nav-adlinks-dl.active) .nav-sidebar .nav-item{color:#a7bca9!important;transition:background-color .24s var(--ad-smooth),color .2s ease,transform .24s var(--ad-smooth)!important}
+body:has(#nav-adlinks-dl.active) .nav-sidebar .nav-item:hover{background:#24382a!important;color:#f0f6ed!important;transform:translateX(2px)!important}
+body:has(#nav-adlinks-dl.active) .nav-sidebar .nav-item.active{background:#c5dcbc!important;color:#1b3325!important;border-color:transparent!important}
+body:has(#nav-adlinks-dl.active) .nav-sidebar .nav-item.active :is(.material-symbols-rounded,.nav-item-text){color:#1b3325!important}
+body:has(#nav-adlinks-dl.active) .header,body.light-mode:has(#nav-adlinks-dl.active) .header{background:#15241b!important;border-bottom-color:rgba(190,219,194,.14)!important}
+body:has(#nav-adlinks-dl.active) .header .brand-title{color:#f1f6f0!important}
 #section-adlinks #adlinksTabContentDownloader.ad-download-studio{
   background:var(--ad-stage)!important;color:var(--ad-ink)!important;
   --studio-main:var(--ad-stage);--studio-side:var(--ad-base);--studio-panel:var(--ad-surface);
@@ -91,7 +91,7 @@ body:has(#nav-adlinks-dl.active) .header .brand-title{color:#f0f5ff!important}
 #section-adlinks #adlinksTabContentDownloader .ad-download-top:before{
   content:"";position:absolute;right:-76px;top:-158px;width:350px;height:350px;pointer-events:none;
   border:1px solid var(--ad-line);border-radius:50%;z-index:-1;
-  box-shadow:0 0 0 54px rgba(181,202,255,.017),0 0 0 115px rgba(181,202,255,.013);
+  box-shadow:0 0 0 54px rgba(194,217,192,.017),0 0 0 115px rgba(194,217,192,.013);
 }
 #section-adlinks #adlinksTabContentDownloader .ad-download-heading{min-width:0;max-width:520px;}
 #section-adlinks #adlinksTabContentDownloader .ad-download-heading .edition-kicker{
