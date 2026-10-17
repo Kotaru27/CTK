@@ -330,6 +330,12 @@ body.light-mode #view-app :is(.split-studio-meta,.split-studio-foot,.adgen-outpu
   border-color:var(--sb-line)!important;
   transition:background-color 150ms ease,border-color 150ms ease,color 150ms ease!important;
 }
+/* Preserve the active-project border; hover must not disguise selection. */
+#stillsTabContentStory #storyProjectTabs > div:is(
+  [style*="background: var(--text-main)"],
+  [style*="--bg-main"],
+  [style*="var(--text-main)"]
+) { border-color:var(--sb-action)!important; }
 #stillsTabContentStory #storyProjectTabs > div:hover {
   border-color:var(--sb-dim)!important;
 }
