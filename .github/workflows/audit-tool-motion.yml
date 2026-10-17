@@ -1,0 +1,43 @@
+name: Forge eight-workspace motion audit
+on:
+  push:
+    branches: [audit/forge-all-tool-motion-20261017]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser instrumentation
+        run: npm install --no-save --no-package-lock playwright@1.58.2
+      - name: Install Chromium
+        run: npx playwright install chromium --with-deps
+      - name: Test source, build and standalone parity
+        run: npm test
+      - name: Start local Pages build
+        run: |
+          node scripts/dev.mjs > /tmp/forge-motion-audit.log 2>&1 &
+          for i in $(seq 1 50); do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/forge-motion-audit.log
+          exit 1
+      - name: Inspect all eight tool workspaces at desktop and QHD
+        run: node scripts/audit-tool-motion.mjs
+      - name: Inspect internal tool-to-tool navigation and tab switches
+        run: node scripts/audit-tool-internal.mjs
+      - name: Retain screenshot and telemetry report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: forge-eight-tool-motion-audit
+          path: artifacts/tool-motion/
+          if-no-files-found: ignore

@@ -68,3 +68,23 @@ test('modular and standalone shared-route assets stay identical',()=>{
  assert.ok(standalone.includes('<style id="forge-video-route-styles">'+css+'</style>'));
  assert.ok(standalone.includes('<script id="forge-video-route-js">'+js+'</script>'));
 });
+
+test('internal route and mode changes animate only presentation, never core logic',()=>{
+ assert.match(js,/function attachWorkspaceObserver\(/);
+ assert.match(js,/const observer=new MutationObserver\(reconcile\)/);
+ assert.match(js,/observer\.observe\(host,\{attributes:true,attributeFilter:\['class'\]\}\)/);
+ for(const id of [
+  'section-logo','section-pdf','section-stills-boards','section-adlinks','section-yt-helper',
+  'pdfTabContentConvert','pdfTabContentSplit','stillsTabContentStory',
+  'stillsTabContentVideo','stillsTabContentFilmstrip','stillsTabContentFit',
+  'adlinksTabContentGen','adlinksTabContentDownloader'
+ ]) assert.ok(js.includes("'"+id+"'"),'missing motion observer for '+id);
+ assert.match(js,/return !\(preference&&preference\.matches\)/);
+ assert.match(js,/document\.visibilityState==='visible'/);
+ assert.match(js,/!root\.classList\.contains\('forge-route-running'\)/);
+ assert.match(js,/distance=kind==='section'\?4:3/);
+ assert.match(js,/duration=kind==='section'\?220:180/);
+ assert.doesNotMatch(js,/UI\.(?:openTool|switchPdfTab|switchStillsTab|switchAdlinksTab)\s*=/);
+ assert.match(css,/@keyframes forge-workspace-root-in \{from\{opacity:\.94\}/);
+ assert.doesNotMatch(css, /from\{opacity:\.50\}/);
+});
