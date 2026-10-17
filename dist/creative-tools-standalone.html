@@ -4962,6 +4962,228 @@ body.light-mode #view-home .combined-home-grid > .home-card .home-card-desc{colo
     scroll-behavior:auto!important;
   }
 }
+
+
+/* =============================================================
+   PRECISION PASS / ONE coherent type and motion system.
+   This extends the EXISTING v3 sheet instead of adding a fourth
+   cascade layer. All CSS stays presentation-only.
+   ============================================================= */
+:root{
+  --ctk-type-xs:11px;
+  --ctk-type-sm:12.5px;
+  --ctk-type-md:13.5px;
+  --ctk-type-body:14px;
+  --ctk-type-subhead:16px;
+  --ctk-tracking-head:-.038em;
+  --ctk-tracking-small:.055em;
+  --ctk-focus-ring:rgba(195,223,195,.82);
+  --ctk-motion-snappy:cubic-bezier(.25,.85,.25,1);
+}
+body.light-mode{--ctk-focus-ring:rgba(34,88,66,.65)}
+
+/* Real hierarchy, not tiny tracking-heavy decorative labels. */
+#view-app .tool-header h2{
+  font-weight:720!important;
+  letter-spacing:-.041em!important;
+  line-height:1.18!important;
+}
+#view-app :is(.sidebar-panel,.right-panel,.story-sidebar,.story-right-panel) :is(h2,h3,h4):not(.material-symbols-rounded),
+#view-app :is(.adgen-intro,.adgen-output-intro,.split-studio-identity) :is(h2,h3){
+  text-wrap:balance;
+  letter-spacing:var(--ctk-tracking-head)!important;
+}
+#view-app :is(.sidebar-panel,.right-panel,.story-sidebar,.story-right-panel)
+  :is(.label-header,[class*="eyebrow"],[class*="kicker"]){
+  font-size:var(--ctk-type-xs)!important;
+  letter-spacing:var(--ctk-tracking-small)!important;
+  line-height:1.55!important;
+}
+#view-app :is(.sidebar-panel,.right-panel,.story-sidebar,.story-right-panel)
+  :is(p,.text-muted,[class*="helper"],[class*="hint"]){
+  line-height:1.7!important;
+}
+#view-app :is(.sidebar-panel,.right-panel,.story-sidebar,.story-right-panel)
+  :is(.control-group,fieldset) > label{
+  line-height:1.5!important;
+  letter-spacing:-.012em!important;
+}
+#view-app :is(.sidebar-panel,.right-panel,.story-sidebar,.story-right-panel)
+  :is(input:not([type="checkbox"]):not([type="radio"]),select,textarea){
+  font-size:var(--ctk-type-sm)!important;
+  line-height:1.55!important;
+}
+#view-app :is(.sidebar-panel,.right-panel,.story-sidebar,.story-right-panel)
+  :is(.liquid-btn,button:not(.icon-only)):not(.nav-item){
+  font-size:var(--ctk-type-sm)!important;
+  letter-spacing:-.012em!important;
+  line-height:1.35!important;
+}
+/* Media code/URL fields must retain mono, monospace numbers and copyability. */
+#view-app :is(.terminal-input,pre,code,.adgen-output-card textarea){
+  font-family:"JetBrains Mono",ui-monospace,monospace!important;
+  font-variant-ligatures:none;
+}
+
+/* High-visibility examples where old 8–9px labels reduced usability. */
+#section-logo #logoGrid #logoEmpty .logo-empty-note{font-size:10.5px!important;letter-spacing:.065em!important}
+#section-logo .logo-card-item .card-fname-lbl{font-size:13px!important;line-height:1.4!important}
+#section-pdf .label-header{font-size:11px!important}
+#section-stills-boards .story-sidebar .label-header,
+#section-stills-boards .label-header{font-size:11px!important;letter-spacing:.055em!important}
+.split-studio-meta,.split-studio-foot span:first-child{
+  font-size:10.5px!important;letter-spacing:.07em!important;
+}
+#section-adlinks #adlinksTabContentGen .adgen-output-intro h3{
+  font-size:clamp(26px,2.25vw,33px)!important;
+  letter-spacing:-.038em!important;
+}
+#section-yt-helper .label-header{font-size:11px!important}
+
+/* Repair actual Storyboard empty preview clipping: both pseudo captions
+   align to the same centered column; visible only in the empty state. */
+#storyPreview:has(> span.text-muted)::before{
+  left:50%!important;right:auto!important;
+  top:calc(50% - 66px)!important;
+  width:min(620px,calc(100% - 72px))!important;
+  max-width:100%!important;
+  transform:translateX(-50%)!important;
+  font-size:clamp(30px,2.8vw,44px)!important;
+  letter-spacing:-.025em!important;
+  line-height:1.14!important;
+  text-align:center!important;
+  white-space:normal!important;
+  z-index:2!important;
+  pointer-events:none!important;
+}
+#storyPreview:has(> span.text-muted)::after{
+  left:50%!important;right:auto!important;
+  top:calc(50% + 3px)!important;
+  width:min(530px,calc(100% - 64px))!important;
+  transform:translateX(-50%)!important;
+  font:500 13px/1.75 "Plus Jakarta Sans",sans-serif!important;
+  letter-spacing:-.01em!important;
+  text-align:center!important;
+  white-space:normal!important;
+  z-index:2!important;
+  pointer-events:none!important;
+}
+
+/* Crisp transitions make task-driven UI feel intentional.
+   No layout properties, backdrop blur, unbounded loops or JS interception. */
+#view-app .tool-section.active>.tool-header{
+  animation:ctk-header-settle 360ms var(--ctk-ease-out) both!important;
+}
+@keyframes ctk-header-settle{
+  from{opacity:.45;translate:0 -5px}
+  to{opacity:1;translate:0 0}
+}
+#view-app .tool-section.active :is(.editor-layout,.story-layout,.split-studio-workspace,.adgen-studio,.yt-studio){
+  animation:ctk-body-arrive 420ms var(--ctk-ease-out) both!important;
+}
+@keyframes ctk-body-arrive{
+  from{opacity:.72;translate:0 9px}
+  to{opacity:1;translate:0 0}
+}
+#view-app :is(.liquid-btn,[role="tab"],.nav-item):not(:disabled){
+  transition-property:background-color,border-color,color,box-shadow,translate!important;
+  transition-duration:var(--ctk-quick)!important;
+  transition-timing-function:var(--ctk-motion-snappy)!important;
+}
+/* The navigation rail is a tool selector; feedback must never feel springy. */
+.nav-sidebar .nav-item:not(.nav-toggle):active{translate:0 1px}
+#view-app :is(.liquid-btn,[role="tab"],.tab-btn):not(:disabled):active{translate:0 1px}
+/* Focus feedback matches both themes, without moving keyboard targets. */
+#view-app :is(button,input,select,textarea,[role="tab"],[role="button"]):focus-visible,
+#view-home .home-card:focus-visible{
+  outline:2px solid var(--ctk-focus-ring)!important;
+  outline-offset:3px!important;
+}
+
+/* Home / editorial refinement: actual hierarchy, fuller tile imagery,
+   physical hover feedback without a jarring scale on the whole card. */
+#view-home .combined-home-layout .home-heading{
+  font-size:clamp(3.45rem,5.7vw,6.5rem)!important;
+  line-height:.99!important;
+  letter-spacing:-.043em!important;
+}
+#view-home .combined-home-layout .home-heading em{
+  letter-spacing:-.048em!important;
+  font-style:italic!important;
+}
+#view-home .combined-home-layout .home-eyebrow{
+  font-size:11px!important;
+  letter-spacing:.12em!important;
+  font-weight:650!important;
+}
+#view-home .combined-home-layout .home-summary{
+  font-size:15px!important;
+  line-height:1.78!important;
+  max-width:570px!important;
+}
+#view-home .combined-home-grid > .home-card .home-card-title{
+  font-size:clamp(20px,1.65vw,24px)!important;
+  font-weight:700!important;
+  line-height:1.16!important;
+  letter-spacing:-.044em!important;
+}
+#view-home .combined-home-grid > .home-card .home-card-desc{
+  font-size:13.5px!important;
+  font-weight:460!important;
+  line-height:1.5!important;
+}
+#view-home .combined-home-grid > .home-card .home-card-num{
+  font-size:11px!important;
+  letter-spacing:.085em!important;
+}
+#view-home .combined-home-grid > .home-card .home-card-go{
+  font-size:24px!important;
+  transition:translate var(--ctk-standard) var(--ctk-ease-out),opacity var(--ctk-quick) ease!important;
+}
+#view-home .combined-home-grid > .home-card .home-card-art{
+  transition:translate 390ms var(--ctk-ease-out),opacity var(--ctk-quick) ease!important;
+}
+#view-home .combined-home-grid > .home-card:hover .home-card-title{
+  translate:0 -2px;
+}
+#view-home .combined-home-grid > .home-card:hover .home-card-go{
+  translate:2px -2px;
+}
+#view-home .combined-home-grid > .home-card:hover .home-card-art{
+  translate:0 -5px;
+}
+#view-home .combined-home-grid > .home-card:active{filter:brightness(.975)}
+/* Stronger card dividers help the deliberately asymmetric catalogue read. */
+#view-home .combined-home-grid{
+  border-color:color-mix(in srgb,var(--studio-border) 70%,transparent)!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card:hover{
+  box-shadow:inset 0 0 0 1px rgba(34,65,45,.24),inset 0 -3px 0 rgba(42,92,65,.16)!important;
+}
+body:not(.light-mode) #view-home .combined-home-grid > .home-card:hover{
+  box-shadow:inset 0 0 0 1px rgba(213,237,217,.25),inset 0 -3px 0 rgba(211,235,215,.12)!important;
+}
+
+/* Compact heading, tool tab and empty-state typography at all widths.
+   This remains a desktop-first deliverable. */
+@media(max-width:1180px){
+  #view-home .combined-home-layout .home-heading{font-size:clamp(48px,5.3vw,73px)!important}
+  #view-home .combined-home-grid > .home-card .home-card-title{font-size:20px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  #view-app .tool-section.active>.tool-header,
+  #view-app .tool-section.active :is(.editor-layout,.story-layout,.split-studio-workspace,.adgen-studio,.yt-studio){
+    animation:none!important;
+    transition:none!important;
+  }
+  #view-home .combined-home-grid > .home-card,
+  #view-home .combined-home-grid > .home-card .home-card-title,
+  #view-home .combined-home-grid > .home-card .home-card-art,
+  #view-home .combined-home-grid > .home-card .home-card-go {
+    animation:none!important;
+    transition:none!important;
+  }
+}
 </style>
 </head>
 <body>
