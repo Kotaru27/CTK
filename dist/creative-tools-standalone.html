@@ -5802,80 +5802,102 @@ body.light-mode #view-home .combined-home-grid > .home-card .home-card-num {
   #view-home .combined-home-layout .forge-hero {min-height:282px;}
 }
 </style>
-<style id="forge-video-route-styles">/* THE FORGE / SHARED ROUTE — Video Stills pilot only.
-   Native same-document View Transitions; no card layout or tool UI rewrites.
-   Every other route keeps its existing motion and processing unchanged. */
+<style id="forge-video-route-styles">/* THE FORGE / UNIFIED WORKSPACE ROUTES
+   Eight exact tool pairings; cards, controls and media are never re-laid out.
+   Browser View Transitions own the swap, not a fixed-delay timer.
+   Dynamic root data attribute guarantees only one selected title participates. */
 
-/* A single snapshot identity across the two mutually-exclusive visible views.
-   The complex filmstrip art is not stretched into the simple movie icon. */
-html.forge-video-route-running #view-home:not(.hidden) .home-card.tool-stills .home-card-title,
-html.forge-video-route-running #section-stills-boards.active #stillsToolTitle {
-  view-transition-name: forge-stills-title;
+html.forge-route-running[data-forge-route="logo"] #view-home:not(.hidden) .home-card.tool-logo .home-card-title,
+html.forge-route-running[data-forge-route="logo"] #section-logo.active .tool-header h2 {
+  view-transition-name: forge-workspace-title;
 }
-/* A small secondary shared transition connects recognizable imagery while
-   allowing the two different objects to crossfade, not morph or warp. */
-html.forge-video-route-running #view-home:not(.hidden) .home-card.tool-stills .home-card-art,
-html.forge-video-route-running #section-stills-boards.active #stillsToolIcon {
-  view-transition-name: forge-stills-visual;
+html.forge-route-running[data-forge-route="pdf"] #view-home:not(.hidden) .home-card.tool-pdf .home-card-title,
+html.forge-route-running[data-forge-route="pdf"] #section-pdf.active .tool-header h2 {
+  view-transition-name: forge-workspace-title;
 }
-html.forge-video-route-running #view-app #section-stills-boards.active {
-  /* Disable the independent 330ms workspace entrance during shared travel.
-     The view transition itself owns this one route's movement. */
+html.forge-route-running[data-forge-route="split"] #view-home:not(.hidden) .home-card.tool-split .home-card-title,
+html.forge-route-running[data-forge-route="split"] #section-pdf.active .tool-header h2 {
+  view-transition-name: forge-workspace-title;
+}
+html.forge-route-running[data-forge-route="stills"] #view-home:not(.hidden) .home-card.tool-stills .home-card-title,
+html.forge-route-running[data-forge-route="stills"] #section-stills-boards.active .tool-header h2 {
+  view-transition-name: forge-workspace-title;
+}
+html.forge-route-running[data-forge-route="story"] #view-home:not(.hidden) .home-card.tool-story .home-card-title,
+html.forge-route-running[data-forge-route="story"] #section-stills-boards.active .tool-header h2 {
+  view-transition-name: forge-workspace-title;
+}
+html.forge-route-running[data-forge-route="links"] #view-home:not(.hidden) .home-card.tool-links .home-card-title,
+html.forge-route-running[data-forge-route="links"] #section-adlinks.active .tool-header h2 {
+  view-transition-name: forge-workspace-title;
+}
+html.forge-route-running[data-forge-route="ads"] #view-home:not(.hidden) .home-card.tool-ads .home-card-title,
+html.forge-route-running[data-forge-route="ads"] #section-adlinks.active .tool-header h2 {
+  view-transition-name: forge-workspace-title;
+}
+html.forge-route-running[data-forge-route="video"] #view-home:not(.hidden) .home-card.tool-video .home-card-title,
+html.forge-route-running[data-forge-route="video"] #section-yt-helper.active .tool-header h2 {
+  view-transition-name: forge-workspace-title;
+}
+
+html.forge-route-running[data-forge-route="stills"] #view-home:not(.hidden) .home-card.tool-stills .home-card-art,
+html.forge-route-running[data-forge-route="stills"] #section-stills-boards.active .tool-header .tool-icon {
+  view-transition-name: forge-workspace-art;
+}
+html.forge-route-running[data-forge-route="story"] #view-home:not(.hidden) .home-card.tool-story .home-card-art,
+html.forge-route-running[data-forge-route="story"] #section-stills-boards.active .tool-header .tool-icon {
+  view-transition-name: forge-workspace-art;
+}
+
+html.forge-route-running #view-app .tool-section.active {
+  /* The old panel arrival would compete with shared title travel. */
   animation:none!important;
 }
-html.forge-video-route-running::view-transition-group(forge-stills-title) {
-  animation-duration:520ms;
-  animation-timing-function:cubic-bezier(.2,.86,.24,1);
+html.forge-route-running #view-home .combined-home-grid > .home-card {
+  /* Reversing a tool card must not retrigger its entire home entrance. */
+  animation:none!important;
 }
-html.forge-video-route-running::view-transition-group(forge-stills-visual) {
-  animation-duration:480ms;
-  animation-timing-function:cubic-bezier(.23,.81,.26,1);
+html.forge-route-running::view-transition-group(forge-workspace-title) {
+  animation-duration:510ms;
+  animation-timing-function:cubic-bezier(.20,.87,.27,1);
 }
-html.forge-video-route-running::view-transition-old(forge-stills-title),
-html.forge-video-route-running::view-transition-new(forge-stills-title) {
-  animation-duration:360ms;
-  animation-timing-function:ease-out;
+html.forge-route-running::view-transition-old(forge-workspace-title),
+html.forge-route-running::view-transition-new(forge-workspace-title) {
+  animation-duration:370ms;
+  animation-timing-function:cubic-bezier(.23,.76,.31,1);
 }
-html.forge-video-route-running::view-transition-old(forge-stills-visual) {
-  animation:forge-stills-visual-out 300ms cubic-bezier(.2,.8,.2,1) both;
+html.forge-route-running::view-transition-group(forge-workspace-art) {
+  animation-duration:430ms;
+  animation-timing-function:cubic-bezier(.22,.81,.27,1);
 }
-html.forge-video-route-running::view-transition-new(forge-stills-visual) {
-  animation:forge-stills-visual-in 400ms cubic-bezier(.2,.8,.2,1) both;
+html.forge-route-running::view-transition-old(forge-workspace-art) {
+  animation:forge-workspace-art-out 260ms ease-out both;
 }
-html.forge-video-route-running::view-transition-old(root) {
-  animation:forge-route-old 245ms cubic-bezier(.24,.78,.31,1) both;
+html.forge-route-running::view-transition-new(forge-workspace-art) {
+  animation:forge-workspace-art-in 360ms ease-out both;
 }
-html.forge-video-route-running::view-transition-new(root) {
-  animation:forge-route-new 410ms cubic-bezier(.2,.8,.24,1) both;
+html.forge-route-running::view-transition-old(root) {
+  animation:forge-workspace-root-out 225ms ease-in both;
 }
-@keyframes forge-route-old {
-  from{opacity:1}
-  to{opacity:0}
+html.forge-route-running::view-transition-new(root) {
+  animation:forge-workspace-root-in 400ms cubic-bezier(.2,.85,.3,1) both;
 }
-@keyframes forge-route-new {
-  from{opacity:.36}
-  to{opacity:1}
-}
-@keyframes forge-stills-visual-out {
-  from{opacity:1}
-  to{opacity:0}
-}
-@keyframes forge-stills-visual-in {
-  from{opacity:0}
-  to{opacity:1}
-}
-/* Respect OS accessibility preferences even when navigation is triggered by
-   keyboard or a restored session. The JS also bypasses transitions entirely. */
-@media(prefers-reduced-motion:reduce){
-  html.forge-video-route-running::view-transition-old(root),
-  html.forge-video-route-running::view-transition-new(root),
-  html.forge-video-route-running::view-transition-old(forge-stills-title),
-  html.forge-video-route-running::view-transition-new(forge-stills-title),
-  html.forge-video-route-running::view-transition-old(forge-stills-visual),
-  html.forge-video-route-running::view-transition-new(forge-stills-visual) {
-    animation-duration:0.01ms!important;
+@keyframes forge-workspace-root-out {from{opacity:1}to{opacity:0}}
+@keyframes forge-workspace-root-in {from{opacity:.50}to{opacity:1}}
+@keyframes forge-workspace-art-out {from{opacity:1}to{opacity:0}}
+@keyframes forge-workspace-art-in {from{opacity:0}to{opacity:1}}
+
+@media(prefers-reduced-motion:reduce) {
+  html.forge-route-running::view-transition-old(root),
+  html.forge-route-running::view-transition-new(root),
+  html.forge-route-running::view-transition-old(forge-workspace-title),
+  html.forge-route-running::view-transition-new(forge-workspace-title),
+  html.forge-route-running::view-transition-old(forge-workspace-art),
+  html.forge-route-running::view-transition-new(forge-workspace-art) {
+    animation-duration:.01ms!important;
   }
-}</style>
+}
+</style>
 </head>
 <body class="light-mode">
 <div class="forge-intro" id="forgeIntro" role="region" aria-label="The Forge introduction">
@@ -8617,12 +8639,11 @@ const CTKDownloadRenamer = (() => {
         showHome() {
           const core = () => this._showHome();
           if (this.els.viewApp.classList.contains("active")) {
-            // Only the Video Stills route opts into the new shared transition.
-            // Storyboard and every other tool retain the original navigation.
-            const videoSelected = document.getElementById("nav-stills-video")
-              ?.classList.contains("active");
-            if (videoSelected && window.ForgeVideoRoute) {
-              window.ForgeVideoRoute.navigate(core);
+            const motion = window.ForgeWorkspaceRoute;
+            const selectedRoute = motion && motion.selected();
+            if (selectedRoute) {
+              this._switchToken = (this._switchToken || 0) + 1;
+              motion.navigate(core, selectedRoute);
             } else {
               this.switchViews(core);
             }
@@ -8682,13 +8703,18 @@ const CTKDownloadRenamer = (() => {
           document.getElementById("brandText").textContent = "The Forge";
         },
         openTool(id, mode) {
+          const motion = window.ForgeWorkspaceRoute;
           if (this.els.viewApp.classList.contains("active")) {
+            // Changing tools inside the workspace must immediately stop any
+            // older shared-element flight; never queue pending navigation.
+            if (motion) motion.cancel();
             this._openTool(id, mode);
           } else {
             const core = () => this._openTool(id, mode);
-            if (id === "section-stills-boards" && mode === "video" &&
-                window.ForgeVideoRoute) {
-              window.ForgeVideoRoute.navigate(core);
+            const route = motion && motion.fromOpen(id, mode);
+            if (route) {
+              this._switchToken = (this._switchToken || 0) + 1;
+              motion.navigate(core, route);
             } else {
               this.switchViews(core);
             }
@@ -14225,49 +14251,80 @@ const CTKDownloadRenamer = (() => {
   },cleanup);
 })();
 </script>
-<script id="forge-video-route-js">/* The Forge / Video Stills route pilot.
-   The application still performs the original _openTool/_showHome mutation.
-   This tiny presentation wrapper only captures the before/after snapshots. */
+<script id="forge-video-route-js">/* THE FORGE / UNIFIED WORKSPACE MOTION
+   Native snapshots of unchanged home cards and real workspace headings.
+   The existing _openTool/_showHome remain the sole owners of application state.
+   No media, uploads, exports, tool modes or controls are touched. */
 (function(){
   'use strict';
-  let active=null;
-  let serial=0;
   const root=document.documentElement;
   const preference=window.matchMedia &&
     window.matchMedia('(prefers-reduced-motion: reduce)');
+  const routes=Object.freeze({
+    'section-logo': 'logo',
+    'section-yt-helper': 'video'
+  });
+  const byNav=Object.freeze({
+    'nav-logo':'logo',
+    'nav-pdf-image':'pdf',
+    'nav-pdf-split':'split',
+    'nav-stills-video':'stills',
+    'nav-stills-story':'story',
+    'nav-adlinks-gen':'links',
+    'nav-adlinks-dl':'ads',
+    'nav-yt-helper':'video'
+  });
+  const keys=new Set(Object.values(byNav));
+  let active=null;
+  let serial=0;
 
+  function fromOpen(id,mode){
+    if(routes[id])return routes[id];
+    if(id==='section-pdf')return mode==='split'?'split':'pdf';
+    if(id==='section-stills-boards')
+      return ['story','filmstrip','fit'].includes(mode)?'story':'stills';
+    if(id==='section-adlinks')return mode==='downloader'?'ads':'links';
+    return null;
+  }
+  function selected(){
+    const nav=document.querySelector('.nav-sidebar .nav-item.active');
+    return nav && byNav[nav.id] || null;
+  }
   function canTransition(){
     return typeof document.startViewTransition==='function' &&
-      !(preference && preference.matches) &&
+      !(preference&&preference.matches) &&
       document.visibilityState==='visible';
   }
-  function navigate(change){
+  function clear(){
+    root.classList.remove('forge-route-running');
+    delete root.dataset.forgeRoute;
+  }
+  function cancel(){
+    ++serial;
+    const previous=active;
+    active=null;
+    if(previous)previous.skipTransition();
+    clear();
+  }
+  function navigate(change,key){
     if(typeof change!=='function')return;
-    // Keep original synchronous navigation in older browsers, background
-    // tabs and accessibility modes. Never insert a fixed waiting period.
-    if(!canTransition()){
-      ++serial;
-      if(active) {
-        active.skipTransition();
-        active=null;
-      }
-      root.classList.remove('forge-video-route-running');
+    if(!keys.has(key)||!canTransition()){
+      cancel();
       change();
       return;
     }
-    // Interruption is immediate: no queued animations, no double navigation.
     if(active)active.skipTransition();
     const token=++serial;
-    root.classList.add('forge-video-route-running');
+    root.dataset.forgeRoute=key;
+    root.classList.add('forge-route-running');
     let transition;
     try{
       transition=document.startViewTransition(()=>{
-        // Old update callbacks may be scheduled a frame later; never allow
-        // a superseded navigation to overwrite the user's newest choice.
+        // Stale deferred callbacks never overwrite a more recent selection.
         if(token===serial)change();
       });
     }catch(_){
-      root.classList.remove('forge-video-route-running');
+      clear();
       change();
       return;
     }
@@ -14275,10 +14332,14 @@ const CTKDownloadRenamer = (() => {
     transition.finished.catch(()=>{}).then(()=>{
       if(token!==serial)return;
       if(active===transition)active=null;
-      root.classList.remove('forge-video-route-running');
+      clear();
     });
   }
-  window.ForgeVideoRoute=Object.freeze({navigate,canTransition});
-})();</script>
+  const api=Object.freeze({navigate,fromOpen,selected,canTransition,cancel});
+  window.ForgeWorkspaceRoute=api;
+  // Retain the old extension point for any existing private usage.
+  window.ForgeVideoRoute=api;
+})();
+</script>
 </body>
 </html>
