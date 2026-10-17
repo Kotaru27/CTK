@@ -1,0 +1,37 @@
+name: Forge QHD viewport visual audit
+on:
+  push:
+    branches: [audit/forge-qhd-home-20261017]
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: npm install --no-save --no-package-lock playwright@1.58.2
+      - name: Install Chromium
+        run: npx playwright install chromium --with-deps
+      - name: Start app
+        run: |
+          node scripts/dev.mjs > /tmp/forge-qhd-server.log 2>&1 &
+          for i in $(seq 1 50); do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/forge-qhd-server.log
+          exit 1
+      - name: Audit QHD and 125 percent equivalent
+        run: node scripts/forge-qhd-audit.mjs
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: forge-qhd-layout
+          path: artifacts/forge-qhd/
+          if-no-files-found: ignore
