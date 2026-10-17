@@ -38,4 +38,6 @@ test('Ad Downloader workspace title matches the nav label in every release',()=>
   assert.ok(!html.includes('<span style="flex: 1">Ad Link Downloader</span>'),path);
  }
  assert.ok(read('scripts/build.mjs').includes('Ad Link Downloader</span>'),'missing baseline title replacement');
+ assert.ok(read('src/js/core/prelude.js').includes('"section-adlinks": { gen: "Link Gen", downloader: "Ad Downloader" }'),
+   'runtime route header label must match branded tool name');
 });
