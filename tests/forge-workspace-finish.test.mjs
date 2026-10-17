@@ -13,5 +13,7 @@ test('workspace finishing CSS is identical in all release formats',()=>{
 test('finish layer is CSS-only and limits changes to specific workspaces',()=>{
  const css=read('src/css/experience/forge-workspace-finish.css');
  for(const s of ['#storyPreview:has(canvas)','.adgen-output-card textarea','#ytMetadataContent','.logo-card-item','#pdfStacksContainer'])assert.ok(css.includes(s),s);
- for(const s of ['@keyframes','animation:','backdrop-filter:','filter:blur','transform:scale','object-fit:','image-rendering:','display:none!important'])assert.ok(!css.includes(s),'undesired heavy media/motion override '+s);
+ assert.match(css,/#section-logo #logoGrid > \.logo-card-item/);
+ assert.match(css,/animation:none!important/);
+ for(const s of ['@keyframes','backdrop-filter:','filter:blur','transform:scale','object-fit:','image-rendering:','display:none!important'])assert.ok(!css.includes(s),'undesired heavy media/motion override '+s);
 });
