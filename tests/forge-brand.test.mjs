@@ -43,6 +43,9 @@ test('intro is accessible, skippable, reduced-motion friendly and session scoped
   assert.match(brandJS,/document\.fonts/);
   assert.match(brandJS,/destination\.getBoundingClientRect/);
   assert.match(brandJS,/mark\.animate/);
+  assert.match(brandJS,/document\.createRange/);
+  assert.match(brandJS,/to\.width\/from\.width/);
+  assert.match(index,/id="forgeIntroWordmark"/);
   assert.match(brandJS,/flight\.onfinish = cleanup/);
   assert.match(brandJS,/3500/);
   assert.match(brandCss,/@media\(prefers-reduced-motion:reduce\)/);
@@ -75,5 +78,16 @@ test('intro constructs Kola lettering rather than only fading a full wordmark',(
   assert.match(brandCss,/\.forge-intro--handoff/);
   assert.match(brandJS,/forge-home-arriving/);
   assert.match(brandJS,/prefers-reduced-motion/);
-  assert.match(brandJS,/forge_intro_seen_v2/);
+  assert.match(brandJS,/forge_intro_seen_v3/);
+});
+
+test('motion never animates polygon clipping or layout-changing font size',()=>{
+  assert.doesNotMatch(brandCss,/clip-path\s*:/);
+  assert.doesNotMatch(brandCss,/@keyframes\s+forge-draw-letter[\s\S]*?clip-path/);
+  assert.match(brandCss,/@keyframes forge-draw-letter\s*\{[\s\S]*?opacity:[\s\S]*?transform:/);
+  assert.match(brandCss,/\.forge-intro\.is-settled \.forge-intro-wordmark/);
+  assert.match(brandJS,/flight\.onfinish=cleanup/);
+  assert.match(brandJS,/mark\.style\.visibility = 'hidden'/);
+  assert.match(brandJS,/document\.fonts/);
+  assert.match(brandJS,/isFinite\(scale\)/);
 });
