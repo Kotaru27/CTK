@@ -55,6 +55,7 @@ try{
         return {name,mode,active:active.length,section:box(section),header:box(header),
           rail:box(sidebar),work:box(editor),
           emptyHeight:name==='logo-resizer'?Math.round(section.querySelector('#logoEmpty')?.getBoundingClientRect().height||0):null,
+          logoLayoutHeight:name==='logo-resizer'?Math.round(section.querySelector('#logoEmpty .logo-empty-layout')?.getBoundingClientRect().height||0):null,
           scrollExcess:Math.round(document.documentElement.scrollWidth-innerWidth)};
       },{name,id,mode});
       assert.equal(result.active,1,`${label} ${name}: unexpected active sections`);
@@ -63,6 +64,8 @@ try{
       if(result.rail && ['logo-resizer','pdf-to-image','link-gen','video-downloads'].includes(name)){
         assert.ok(result.rail.w>=245&&result.rail.w<=415,`${label} ${name}: rail width ${result.rail.w} out of bounds`);
       }
+      if(name==='logo-resizer')assert.ok(Math.abs(result.logoLayoutHeight-result.emptyHeight)<=3,
+        `${label}: Logo welcome artwork leaves a blank band (${result.logoLayoutHeight} / ${result.emptyHeight})`);
       if(result.work)assert.ok(result.work.w>180,`${label} ${name}: usable workspace too narrow`);
       if(result.scrollExcess>16)console.log('WARNING_DOC_HORIZONTAL_OVERFLOW',label,name,result.scrollExcess);
       await page.screenshot({path:`${out}/${name}-${label}.jpg`,type:'jpeg',quality:75});
