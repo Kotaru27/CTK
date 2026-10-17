@@ -128,6 +128,9 @@ try {
    check(values.titleRight<viewport.width,'QHD title clipped');
    check(values.heroHeight<=410,'QHD hero consumes too much vertical space');
    check(values.gridTop<590,'QHD workspace tiles begin too far down the page');
+   // First let the existing staggered tile-entry animation finish:
+   // the hover check must not mistake initial entrance travel for hover motion.
+   await wp.waitForTimeout(750);
    const tile=wp.locator('button.home-card').first();
    const before=await tile.boundingBox();
    await tile.hover();
