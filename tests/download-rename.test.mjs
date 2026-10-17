@@ -19,7 +19,14 @@ function harness(initial=[]) {
     kind:'file',name, bytes:Buffer.from(bytes), mtime:lastModified,
     async getFile(){const blob=new Blob([this.bytes]);return Object.assign(blob,{lastModified:this.mtime});},
     async move(target){if(files.has(target)){const e=new Error('file exists');e.name='InvalidModificationError';throw e;}
-      files.delete(this.name);this.name=target;files.set(target,this);}
+      files.delete(this.name);this.name=target;files.set(target,this);},
+    async createWritable(){
+      const handle=this, chunks=[];
+      return new WritableStream({
+        write(chunk){chunks.push(Buffer.from(chunk));},
+        close(){handle.bytes=Buffer.concat(chunks);handle.mtime=10000;}
+      });
+    }
   });
   for(const f of initial) files.set(f.name,mkHandle(f.name,f.bytes??Buffer.from('old'),f.modified??3000));
   const dir={kind:'directory',name:'CTK test downloads',
@@ -160,4 +167,17 @@ test('Recovery does not touch unmatched files or folder entries',async()=>{
   assert.equal((await h.rename.findExisting(h.entry)).length,0);
   await assert.rejects(h.rename.renameExisting(h.entry,'unrelated.mp4'),/does not match/);
   assert.equal(h.files.get('unrelated.mp4').bytes.toString(),'other');
+});
+
+test('When Chrome cannot move local files, the fallback copies and verifies the exact bytes before deleting (1).mp4',async()=>{
+  const duplicate='ALDI Frische Social LT3 OLV Social Pick me 22s (1).mp4';
+  const bytes=Buffer.alloc(170000);
+  for(let i=0;i<bytes.length;i++)bytes[i]=i%251;
+  const h=harness([{name:duplicate,bytes,modified:3000}]);
+  h.files.get(duplicate).move=async()=>{const e=new Error('native move unavailable');e.name='NotSupportedError';throw e;};
+  await h.rename.chooseFolder();
+  const actual=await h.rename.renameExisting(h.entry,duplicate);
+  assert.equal(actual,fixed);
+  assert.equal(h.files.has(duplicate),false);
+  assert.deepEqual(h.files.get(fixed).bytes,bytes);
 });
