@@ -1818,27 +1818,18 @@ const CTKDownloadRenamer = (() => {
           }
         },
         initTheme() {
-          const savedTheme = Core.AppState.load("theme") || "light";
-          if (savedTheme === "light") {
-            document.body.classList.add("light-mode");
-          } else {
-            document.body.classList.remove("light-mode");
-          }
+          // Light-only presentation while the appearance switch is hidden.
+          // Preserve the underlying theme engine for a future opt-in return.
+          document.body.classList.add("light-mode");
           this.updateThemeButton();
           const activeTool = Core.AppState.load("activeTool") || "home";
           this.applyTheme(activeTool);
         },
         toggleTheme() {
-          const isLight = document.body.classList.toggle("light-mode");
-          Core.AppState.save("theme", isLight ? "light" : "dark");
-          this.updateThemeButton();
-          const activeTool = Core.AppState.load("activeTool") || "home";
-          this.applyTheme(activeTool);
-
-          // Play retro audio
-          if (window.RetroAudio) {
-            window.RetroAudio.playSuccess();
-          }
+          // API retained for existing inline handlers, but dark mode is
+          // intentionally unavailable in this light-only release.
+          document.body.classList.add("light-mode");
+          this.applyTheme(Core.AppState.load("activeTool") || "home");
         },
         updateThemeButton() {
           const btn = document.getElementById("themeToggleBtn");
