@@ -79,11 +79,23 @@ try{
   await page.locator('#logoDimHeight').fill('420');
   await page.locator('#logoDimOkBtn').click();
   await page.waitForFunction(()=>Tools.Logo.cards.length>=4,{timeout:35000});
-  const logo=await page.evaluate(()=>({cards:Tools.Logo.cards.length,
-    rendered:document.querySelectorAll('#logoGrid .logo-card-item').length,
-    controlsFont:parseFloat(getComputedStyle(document.querySelector('#logoControls input:not([type=checkbox]):not([type=range]):not([type=color])')).fontSize)}));
-  assert.equal(logo.rendered,4,`${label}: logo asset cards were not rendered`);
+  const logo=await page.evaluate(()=>{
+    const grid=document.getElementById('logoGrid');
+    const inspect=e=>{const r=e.getBoundingClientRect(),c=getComputedStyle(e);return {
+      name:e.className||e.id,display:c.display,opacity:c.opacity,visibility:c.visibility,
+      width:Math.round(r.width),height:Math.round(r.height),top:Math.round(r.top),
+      transform:c.transform,position:c.position
+    }};
+    const items=[...grid.querySelectorAll('.logo-card-item')];
+    return {cards:Tools.Logo.cards.length,rendered:items.length,
+      visible:items.filter(e=>{const r=e.getBoundingClientRect(),c=getComputedStyle(e);return r.width>=80&&r.height>=80&&r.bottom>0&&r.top<innerHeight&&c.display!=='none'&&c.visibility!=='hidden'&&Number(c.opacity)>.15;}).length,
+      controlsFont:parseFloat(getComputedStyle(document.querySelector('#logoControls input:not([type=checkbox]):not([type=range]):not([type=color])')).fontSize),
+      grid:inspect(grid),empty:inspect(document.getElementById('logoEmpty')),children:items.map(inspect)};
+  });
   await snap('logo-populated');
+  console.log('FORGE_LOGO_VISIBLE_DIAGNOSTIC',label,JSON.stringify(logo));
+  assert.equal(logo.rendered,4,`${label}: logo asset cards were not rendered`);
+  assert.equal(logo.visible,4,`${label}: logo cards exist but are not visibly rendered`);
 
   // Real input and canvas render in Storyboard.
   await open('section-stills-boards','story');
