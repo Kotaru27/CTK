@@ -66,6 +66,8 @@
   padding:0!important;
   white-space:nowrap;
   text-wrap:nowrap;
+  width:max-content!important;
+  justify-self:start;
   min-width:0;
   transform-origin:left center;
 }
