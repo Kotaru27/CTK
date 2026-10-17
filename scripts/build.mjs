@@ -25,14 +25,22 @@ let output=baseline.replace(/<style>[\s\S]*?<\/style>/,'<link rel="stylesheet" h
 const scripts=['./dist/js/app.js',...cfg.presentation.map((_,i)=>`./dist/js/${['home-interactions','vector-icons','video-downloads-presentation','pdf-to-image-presentation'][i]}.js`)];
 let k=0;output=output.replace(/<script\b([^>]*)>([\s\S]*?)<\/script>/g,(full,attrs)=>attrs.includes('src=')?full:`<script${attrs} src="${scripts[k++]}"></script>`);
 if(k!==5)throw Error('Did not replace all inline scripts');
+const visualCss=read('src/css/experience/ad-downloader-v2.css');
+const visualJs=read('src/js/presentation/ad-downloader-v2.js');
+output=output.replace('<link rel="stylesheet" href="./dist/css/app.css">','<link rel="stylesheet" href="./dist/css/app.css">\n<link rel="stylesheet" href="./dist/css/ad-downloader-v2.css">');
+output=output.replace('</body>','<script id="ctk-ad-downloader-v2" src="./dist/js/ad-downloader-v2.js"></script>\n</body>');
+save('dist/css/ad-downloader-v2.css',visualCss);
+save('dist/js/ad-downloader-v2.js',visualJs);
 save('dist/css/app.css',css);save('dist/js/app.js',main);
 const targets=['home-interactions','vector-icons','video-downloads-presentation','pdf-to-image-presentation'];
 for(let i=0;i<targets.length;i++)save(`dist/js/${targets[i]}.js`,read(cfg.presentation[i]));
 save('index.html',output);
 save('dist/index.html',output.replaceAll('./dist/css/','./css/').replaceAll('./dist/js/','./js/'));
 // The standalone release includes the current engine while preserving the original HTML and CSS.
-let originalIndex=0;const standalone=baseline.replace(/<script\b([^>]*)>([\s\S]*?)<\/script>/g,(full,attrs)=>attrs.includes('src=')?full:`<script${attrs}>${originalIndex++===0?main:originals[originalIndex-1][2]}</script>`);
+let originalIndex=0;let standalone=baseline.replace(/<script\b([^>]*)>([\s\S]*?)<\/script>/g,(full,attrs)=>attrs.includes('src=')?full:`<script${attrs}>${originalIndex++===0?main:originals[originalIndex-1][2]}</script>`);
 if(originalIndex!==5)throw Error('Standalone release is missing a script');
+standalone=standalone.replace('</head>','<style id="ctk-ad-downloader-v2">'+visualCss+'</style>\n</head>');
+standalone=standalone.replace('</body>','<script id="ctk-ad-downloader-v2">'+visualJs+'</script>\n</body>');
 save('dist/creative-tools-standalone.html',standalone);
 const hash=s=>crypto.createHash('sha256').update(s).digest('hex');
 console.log('Build OK');console.log('CSS',css.length,'SHA256',hash(css));console.log('JS',main.length,'SHA256',hash(main));console.log('Standalone contains optimized engine:',standalone.includes(main));

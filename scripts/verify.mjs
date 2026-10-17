@@ -17,7 +17,14 @@ if(JSON.stringify(ext)!==JSON.stringify(ext2))throw Error('External script depen
 const standalone=rd('dist/creative-tools-standalone.html');
 const originalMain=[...a.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g)].find(m=>!m[1].includes('src='))[2];
 const newMain=rd('dist/js/app.js');
-const restored=standalone.replace(`<script>${newMain}</script>`,`<script>${originalMain}</script>`);
-if(restored!==a)throw Error('Standalone changes HTML, CSS, or scripts outside the engine');
+const visualCss=rd('src/css/experience/ad-downloader-v2.css');
+const visualJs=rd('src/js/presentation/ad-downloader-v2.js');
+const withoutVisual=standalone
+  .replace('<style id="ctk-ad-downloader-v2">'+visualCss+'</style>\n','')
+  .replace('<script id="ctk-ad-downloader-v2">'+visualJs+'</script>\n','');
+const restored=withoutVisual.replace(`<script>${newMain}</script>`,`<script>${originalMain}</script>`);
+if(restored!==a)throw Error('Standalone changes source HTML/CSS or scripts outside the intentional presentation layer');
 if(!standalone.includes(`<script>${newMain}</script>`))throw Error('Standalone does not contain current engine');
-console.log(`Verified: ${beforeIds.length} IDs, ${beforeRoutes.length} homepage links, ${ext.length} external dependencies, unchanged CSS/presentation scripts and intentional engine upgrade.`);
+if(!b.includes('./dist/css/ad-downloader-v2.css')||!b.includes('./dist/js/ad-downloader-v2.js'))throw Error('Ad Downloader experience layer missing');
+if(!standalone.includes('<style id="ctk-ad-downloader-v2">')||!standalone.includes('<script id="ctk-ad-downloader-v2">'))throw Error('Standalone experience layer missing');
+console.log(`Verified: ${beforeIds.length} IDs, ${beforeRoutes.length} homepage links, ${ext.length} external dependencies, untouched tool functionality and additive Ad Downloader visual layer.`);
