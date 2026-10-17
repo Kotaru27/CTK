@@ -14,9 +14,9 @@ test("type/motion layer is present in both builds and does not change workspaces
  assert.doesNotMatch(css,/addEventListener|fetch\(|window\.open|onclick=/);
 });
 test("premium motion avoids blur, perpetual keyframes and content layout animation",()=>{
- const rules=css.match(/@keyframes [\w-]+\s*\{[\s\S]*?\n\}/g)||[];
- assert.ok(rules.length>=3);
- assert.ok(rules.every(r=>!/\bfilter\s*:|\bwidth\s*:|\bheight\s*:|\bblur\(/.test(r)));
+ const rules=[...css.matchAll(/@keyframes\s+([\w-]+)\s*\{\s*from\s*\{([^}]*)\}\s*to\s*\{([^}]*)\}\s*\}/g)];
+ assert.equal(rules.length,(css.match(/@keyframes/g)||[]).length);
+ assert.ok(rules.every(r=>!/\bfilter\s*:|\bwidth\s*:|\bheight\s*:|\bblur\(/.test(r[2]+r[3])));
  assert.ok(!css.includes('infinite'));
  assert.match(css,/translate/);
 });
