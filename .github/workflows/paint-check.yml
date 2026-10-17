@@ -55,7 +55,7 @@ jobs:
                   ix=int(state['box']['x']+state['box']['width']-12)
                   iy=int(state['box']['y']+state['box']['height']/2)
                   state['pixel']=im.getpixel((ix,iy))
-                  state['expectedRGB']=tuple(map(int,re.findall(r'\\d+',state['bg'])[:3])) if 'bg' in state else None
+                  state['expectedRGB']=tuple(int(x) for x in state['bg'].split('(')[-1].split(')')[0].split(',')) if 'bg' in state else None
                   if stage=='hover' and state['expectedRGB']:
                     assert all(abs(a-b)<70 for a,b in zip(state['pixel'],state['expectedRGB'])), {'badPaint':stage,'button':section,'light':light,'pixel':state['pixel'],'computed':state['expectedRGB']}
                   (root/(filename+'.b64')).write_text(base64.b64encode(png.read_bytes()).decode())
