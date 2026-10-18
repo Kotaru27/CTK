@@ -39,14 +39,14 @@ test('eight workspace title pairs are strictly scoped to their own cards',()=>{
  assert.doesNotMatch(css,/infinite|backdrop-filter|blur\(/);
 });
 test('all home-to-workspace flows use original openTool/showHome mutations',()=>{
- assert.match(core,/motion\.fromOpen\(id, mode\)/);
- assert.match(core,/motion\.selected\(\)/);
+ assert.match(core,/motion\?\.fromOpen\(id,mode\)/);
+ assert.match(core,/motion\?\.selected\(\)/);
  assert.match(core,/motion\.navigate\(\(\)=>this\._openTool\(id,mode\),route\)/);
  assert.match(core,/motion\.navigate\(core, selectedRoute\)/);
  assert.match(core,/this\._openTool\(id, mode\)/);
  assert.match(core,/this\._showHome\(\)/);
  assert.match(core,/this\.switchViews\(core\)/);
- assert.match(core,/motion\.cancel\(\)/);
+ assert.match(core,/motion\?\.cancel\(\)/);
 });
 test('native motion supports last-click-wins and accessibility',()=>{
  assert.match(js,/document\.startViewTransition/);
