@@ -27,8 +27,8 @@ try {
      homeVisible:!document.getElementById('view-home').classList.contains('hidden')};
  });
  check(initial.homeVisible,'Intro incorrectly replaced the homepage');
- check(initial.backdrop==='none'&&initial.width<290&&initial.height<110,
-   'Opaque or oversized intro surface is still present: '+JSON.stringify(initial));
+ check(initial.width>=1430&&initial.height>=890&&initial.homeVisible,
+   'Wordmark intro must occupy full viewport without a boxed stage: '+JSON.stringify(initial));
  const trajectoryPromise=page.evaluate(()=>new Promise(resolve=>{
    const samples=[],start=performance.now();
    function sample(){
@@ -37,8 +37,10 @@ try {
         performance.now()-start>4700){resolve(samples);return;}
      const rect=hero.getBoundingClientRect();
      const style=getComputedStyle(hero);
+     const source=document.getElementById('forgeIntroWordmark');
+     const crop=source?getComputedStyle(source).clipPath:'none';
      samples.push({time:performance.now(),left:rect.left,top:rect.top,
-       width:rect.width,opacity:parseFloat(style.opacity)});
+       width:rect.width,opacity:parseFloat(style.opacity),crop});
      requestAnimationFrame(sample);
    }
    requestAnimationFrame(sample);
@@ -47,8 +49,8 @@ try {
  await intro.waitFor({state:'detached',timeout:6000});
  const trajectory=await trajectoryPromise;
  check(trajectory.length>=12,'Home-native physics intro produced too few frames');
- check(trajectory.some(f=>f.opacity>.5),
-   'Real heading never appeared visibly during the entrance');
+ check(new Set(trajectory.map(f=>f.crop)).size>6,
+   'Intro wordmark ink reveal did not progress across frames');
  check(trajectory.every(f=>f.width>0),
    'Wordmark disappeared or collapsed mid-animation');
  if(trajectory.length>=10){
@@ -56,13 +58,11 @@ try {
    check(Math.max(...jumps)<14,
      'Wordmark jumped rather than settling continuously: '+Math.max(...jumps).toFixed(1)+'px');
  }
- // Homepage remains unobstructed until the user opens release notes.
+ // First-launch popup follows the completed wordmark handoff automatically.
  const launch=page.locator('#forgeWhatsNew');
- check(await launch.isHidden(),'Release notes unexpectedly covered the homepage');
+ await launch.waitFor({state:'visible',timeout:2500});
  const launchTrigger=page.locator('#forgeWhatsNewTrigger');
- check(await launchTrigger.isVisible(),'Release-notes link missing');
- await launchTrigger.click();
- await launch.waitFor({state:'visible',timeout:1500});
+ check(await launchTrigger.isVisible(),'Release-notes replay link missing');
  check(await page.locator('#forgeWhatsNewTitle').innerText()!=='' ,'Launch title is missing');
  check(await launch.locator('.forge-whatsnew-change').count()===5,
    'Launch popup is missing some rebrand workflow changes');
@@ -144,10 +144,7 @@ try {
  const dismissContext=await browser.newContext({viewport:{width:1366,height:768},reducedMotion:'reduce'});
  const welcomePage=await dismissContext.newPage();
  await welcomePage.goto(base,{waitUntil:'domcontentloaded',timeout:60000});
- check(await welcomePage.locator('#forgeWhatsNew').isHidden(),
-   'Release notes auto-opened in reduced-motion session');
- await welcomePage.locator('#forgeWhatsNewTrigger').click();
- await welcomePage.locator('#forgeWhatsNew').waitFor({state:'visible',timeout:1500});
+ await welcomePage.locator('#forgeWhatsNew').waitFor({state:'visible',timeout:2500});
  await welcomePage.screenshot({path:'artifacts/forge-browser/first-rebrand-laptop.png'});
  await welcomePage.locator('#forgeWhatsNewNever').click();
  check(await welcomePage.locator('#forgeWhatsNew').isHidden(),
@@ -176,7 +173,7 @@ try {
    const wide=await browser.newContext({viewport,deviceScaleFactor:1,reducedMotion:'no-preference'});
    await wide.addInitScript(()=>{
      sessionStorage.setItem('forge_intro_suppress','1');
-     sessionStorage.setItem('forge_whatsnew_seen_session_2026_v1','1');
+     sessionStorage.setItem('forge_whatsnew_seen_launch_2026_v2','1');
    });
    const wp=await wide.newPage();
    const errs=[];
