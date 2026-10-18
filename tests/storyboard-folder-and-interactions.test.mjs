@@ -7,10 +7,12 @@ const source = read('src/js/tools/storyboard.js');
 const app = read('dist/js/app.js');
 const standalone = read('dist/creative-tools-standalone.html');
 const css = read('src/css/experience/forge-unified-workspaces.css');
+const workflowCss = read('src/css/experience/forge-workflow-interactions.css');
 
 test('Storyboard directory picker and name logic are identical in source and both releases', () => {
-  for (const fragment of ['folderInput.setAttribute("webkitdirectory", "")',
-    'folderInput.addEventListener("change"', 'folderNameFromFiles(files) {',
+  for (const fragment of ['this.els.input.setAttribute("webkitdirectory", "")',
+    'await this.importSelection(selected)', 'async importSelection(files) {',
+    'folderNameFromFiles(files) {',
     'const wasEmpty = project.images.length === 0;',
     'project.name === initialName',
     'this.els.name.value = candidate',
@@ -44,6 +46,7 @@ test('Actual Storyboard import names only previously empty boards with a shared 
         active:board,projects:[board,...otherNames.map(name=>({name,images:[]}))],
         els:{name:{value:existing}},
         folderNameFromFiles:Story.folderNameFromFiles,
+        uniqueBoardName:Story.uniqueBoardName,
         validateImage:Story.validateImage,
         getVideoFrame:async()=>({naturalWidth:120,naturalHeight:60}),
         renderTabs(){this.rendered=(this.rendered||0)+1},
@@ -59,6 +62,7 @@ test('Actual Storyboard import names only previously empty boards with a shared 
     const board={name:'Custom',images:[{file:{name:'existing'}}]};
     const ctx={active:board,projects:[board],els:{name:{value:'Custom'}},
       folderNameFromFiles:Story.folderNameFromFiles,
+      uniqueBoardName:Story.uniqueBoardName,
       validateImage:Story.validateImage,
       getVideoFrame:async()=>({naturalWidth:120,naturalHeight:60}),
       renderTabs(){},saveSettings(){},updateList(){},draw(){}};
@@ -71,18 +75,23 @@ test('Actual Storyboard import names only previously empty boards with a shared 
   }
 });
 
-test('download-table header and modern interactions preserve layout and accessibility',()=>{
+test('natural asset-page scrolling, visible actions and tool motion ship in both releases',()=>{
   for(const token of [
-    '#view-app #adlinksTabContentDownloader #adDlTableContainer thead{',
-    'position:sticky!important;top:0!important;z-index:40!important;',
-    'isolation:isolate!important;',
-    '#view-app #adlinksTabContentDownloader #adDlTableContainer thead th{',
-    '#view-app #stillsTabContentStory .story-folder-import:has(input:focus-visible)',
+    '#view-app #section-adlinks #adlinksTabContentDownloader #adDlTableContainer{',
+    'overflow:visible!important;overscroll-behavior:auto!important;',
+    'position:static!important;z-index:auto!important;',
+    '.nav-sidebar.visible .nav-item:not(.active):hover',
+    'prefers-reduced-motion:reduce'
+  ]) assert.ok(workflowCss.includes(token),'missing workflow repair: '+token);
+  for(const token of [
     '.nav-sidebar.visible .nav-item:hover:not(.active)',
     '#view-app #section-stills-boards #storySubModeToggle button.liquid-btn.active-mode',
     '#view-app .tool-section .liquid-btn::before',
     '#view-app .tool-section .liquid-btn.danger-btn:not(:disabled):hover'
-  ]) assert.ok(css.includes(token),'missing visual repair: '+token);
+  ]) assert.ok(css.includes(token),'missing base visual repair: '+token);
+  assert.ok(!css.includes('story-folder-import'),'obsolete separate folder button styling');
   assert.equal(css,read('dist/css/forge-unified-workspaces.css'));
+  assert.equal(workflowCss,read('dist/css/forge-workflow-interactions.css'));
   assert.ok(standalone.includes('<style id="forge-unified-workspaces-styles">'+css+'</style>'));
+  assert.ok(standalone.includes('<style id="forge-workflow-interactions-styles">'+workflowCss+'</style>'));
 });
