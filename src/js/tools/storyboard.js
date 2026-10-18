@@ -51,6 +51,7 @@ export default {
                       ? "none"
                       : "block";
                   }
+                  if (id === "storyCols" && this.active) this.active.defaultColumnsPending = false;
                   this.saveSettings();
                   this.draw();
                 }, 150),
@@ -157,6 +158,7 @@ export default {
               id,
               name: name || `Board_${this.projects.length + 1}`,
               images: [],
+              defaultColumnsPending: true,
               settings: {
                 gap: 0,
                 width: 1920,
@@ -168,6 +170,19 @@ export default {
             };
             this.projects.push(project);
             return project;
+          },
+          applyDefaultColumns(project) {
+            // Choose three columns only for a fresh/unconfigured board
+            // after its third still. Never override a deliberate user choice.
+            if (!project || project.images.length <= 2 ||
+                !project.defaultColumnsPending || Number(project.settings.cols) !== 0) return false;
+            project.settings.cols = 3;
+            project.defaultColumnsPending = false;
+            if (this.active === project) {
+              const cols = document.getElementById("storyCols");
+              if (cols) cols.value = "3";
+            }
+            return true;
           },
           addNewProject() {
             const project = this.makeProject();
@@ -401,6 +416,7 @@ export default {
               if (this.active === project) this.els.name.value = candidate;
               this.renderTabs();
             }
+            this.applyDefaultColumns(project);
             // An upload may have finished after the user switched boards.
             if (this.active===project) {this.saveSettings();this.updateList();this.draw();}
             return {accepted: project.images.length - beforeCount, rejected};
