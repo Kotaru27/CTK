@@ -195,7 +195,17 @@ export default {
 
                 const stack = document.createElement("div");
                 stack.className = "pdf-stack-wrapper";
-                stack.innerHTML = `<img src=""><div class="stack-meta"><div class="stack-title">${name}</div><div class="stack-count">Processing...</div></div>`;
+                stack.innerHTML = `<img src=""><div class="stack-meta"><div class="stack-title"></div><div class="stack-count">Processing...</div></div>`;
+                stack.querySelector(".stack-title").textContent = name;
+                stack.tabIndex = 0;
+                stack.setAttribute("role", "button");
+                stack.setAttribute("aria-label", "Inspect stills from " + name);
+                stack.onkeydown = (event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    stack.click();
+                  }
+                };
                 stack.onclick = () => this.openDetail(id);
                 this.els.stacks.appendChild(stack);
 
