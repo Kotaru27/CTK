@@ -26,10 +26,11 @@ function setup({font='missing',reduced=false,activeTool=false,suppress=false}={}
  const home={classList:classes()};
  const app={classList:classes(activeTool?['active']:[])};
  const body={classList:classes()};
- const document={body,visibilityState:'visible',documentElement:{dataset:{}},
+ const document={body,visibilityState:'visible',documentElement:{dataset:{},classList:classes()},
   getElementById:id=>({forgeIntro:intro,forgeIntroWordmark:mark,forgeHeroName:title,
     forgeIntroSkip:skip,'view-home':home,'view-app':app})[id]||null,
   addEventListener(){},removeEventListener(){},dispatchEvent(){}};
+ if(font==='loaded')document.fonts={load:()=>Promise.resolve([{status:'loaded'}])};
  if(font==='hang')document.fonts={load:()=>new Promise(()=>{})};
  if(font==='reject')document.fonts={load:()=>Promise.reject(Error('offline'))};
  const context={document,window:{matchMedia:()=>({matches:reduced})},
@@ -47,6 +48,8 @@ test('missing remote Kola retains the full wordmark animation and handoff',async
  assert.equal(h.intro.hidden,false);
  assert.equal(h.animations.length,1);
  assert.equal(h.animations[0].options.duration,1590);
+ assert.equal(h.document.documentElement.classList.contains('forge-launch-fallback-kola'),true);
+ assert.equal(h.intro.classList.contains('forge-intro-fallback-ui'),true);
  assert.match(h.animations[0].frames[0].clipPath,/100/);
  h.timers.at(-1)();await microtasks();
  assert.equal(h.animations.length,2);
@@ -85,4 +88,12 @@ test('markup stays hidden if intro JS cannot load, with no opaque box',()=>{
  assert.match(css,/\.forge-intro-wordmark\{/);
  assert.match(css,/forge-intro-leaving::before/);
  assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
+});
+
+test('successful Kola and interface font loads never force fallback',async()=>{
+ const h=setup({font:'loaded'});
+ await microtasks();
+ assert.equal(h.animations.length,1);
+ assert.equal(h.document.documentElement.classList.contains('forge-launch-fallback-kola'),false);
+ assert.equal(h.intro.classList.contains('forge-intro-fallback-ui'),false);
 });
