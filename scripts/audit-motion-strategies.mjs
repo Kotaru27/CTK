@@ -23,7 +23,7 @@ try{
   const context=await browser.newContext({viewport:{width:2560,height:1440},reducedMotion:'no-preference'});
   await context.addInitScript(()=>{
    sessionStorage.setItem('forge_intro_suppress','1');
-   sessionStorage.setItem('forge_whatsnew_seen_session_2026_v1','1');
+   sessionStorage.setItem('forge_whatsnew_seen_launch_2026_v2','1');
   });
   const page=await context.newPage(),errors=[];
   page.on('pageerror',e=>errors.push(String(e)));
