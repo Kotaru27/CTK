@@ -49,7 +49,7 @@ test('bulk Storyboard board navigation preserves list and editable header filena
 
 test('tool-to-tool route uses the same motion coordinator as home navigation',()=>{
   const engine=readFileSync(new URL('../src/js/core/prelude.js',import.meta.url),'utf8');
-  assert.match(engine,/motion\.navigate\(\(\) => this\._openTool\(id, mode\), route\)/);
+  assert.match(engine,/motion\.navigate\(\(\)=>this\._openTool\(id,mode\),route\)/);
   const route=readFileSync(new URL('../src/js/presentation/forge-video-route.js',import.meta.url),'utf8');
   assert.match(route,/forgeRouteTravel/);
 });
