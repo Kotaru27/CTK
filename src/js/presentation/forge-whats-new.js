@@ -96,7 +96,11 @@
     previousFocus=null;
   }
   function queueAutomatic(){
-    if(autoAttempted||safeGet(permanentKey))return;
+    // Automated browser audits intentionally suppress onboarding, but an
+    // ordinary visitor sees it on every fresh page until explicit opt-out.
+    let auditSkip=false;
+    try{auditSkip=sessionStorage.getItem('forge_whatsnew_suppress')==='1';}catch(_){}
+    if(autoAttempted||safeGet(permanentKey)||auditSkip)return;
     autoAttempted=true;
     automaticTimer=setTimeout(()=>open(true),420);
   }
