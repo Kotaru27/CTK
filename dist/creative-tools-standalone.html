@@ -6031,6 +6031,44 @@ html.forge-launch-fallback-kola #view-home .combined-home-layout .forge-hero-nam
 @media(prefers-reduced-motion:reduce){
   .forge-intro-typed::after{animation:none!important}
 }
+
+/* FORGE / FLUID TYPEWRITER V6 — independently composited caret.
+   The text itself stays fully visible; only the caret glides. */
+.forge-intro.forge-intro-ready .forge-intro-typed::after{
+  display:none!important;
+}
+.forge-intro.forge-intro-ready .forge-intro-caret{
+  position:absolute;
+  display:block;
+  left:.075em;
+  top:.24em;
+  width:2px;
+  height:.74em;
+  margin:0;
+  border-radius:2px;
+  background:currentColor;
+  opacity:0;
+  pointer-events:none;
+  transform:translate3d(0,0,0);
+  will-change:transform;
+  transition:transform 104ms cubic-bezier(.18,.73,.31,1),
+             opacity 130ms ease-out;
+}
+.forge-intro.forge-intro-playing .forge-intro-caret{
+  opacity:1;
+  animation:forge-typing-caret .76s step-end infinite;
+}
+.forge-intro.forge-intro-typed-complete .forge-intro-caret,
+.forge-intro.forge-intro-finishing .forge-intro-caret{
+  opacity:0!important;
+  animation:none!important;
+}
+@media(prefers-reduced-motion:reduce){
+  .forge-intro.forge-intro-ready .forge-intro-caret{
+    transition:none!important;
+    animation:none!important;
+  }
+}
 </style>
 <style id="forge-video-route-styles">/* THE FORGE / UNIFIED WORKSPACE ROUTES
    Eight exact tool pairings; cards, controls and media are never re-laid out.
@@ -17254,6 +17292,8 @@ const CTKDownloadRenamer = (() => {
   const home=document.getElementById('view-home');
   const app=document.getElementById('view-app');
   const body=document.body;
+  const gate=window.__forgePaintGate;
+  const caret=mark?.querySelector('.forge-intro-caret');
   const timers=new Set();
   let complete=false,observer=null,started=false;
 
@@ -17276,8 +17316,15 @@ const CTKDownloadRenamer = (() => {
     document.removeEventListener('keydown',onKey);
     document.removeEventListener('visibilitychange',onVisibility);
     observer?.disconnect();
+    // The popup curtain is armed BEFORE the intro disappears, in the
+    // same task, so even a delayed font has no exposed homepage frame.
+    const homeActive=home&&!home.classList.contains('hidden')&&
+      !app?.classList.contains('active')&&document.visibilityState!=='hidden';
+    if(homeActive)gate?.beginWelcome?.();
+    else gate?.endWelcome?.();
     body.classList.remove('forge-opening','forge-home-arriving');
     intro?.remove();
+    gate?.release?.();
     notify();
   }
   function onKey(event){
@@ -17290,7 +17337,7 @@ const CTKDownloadRenamer = (() => {
   const reduced=!!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
   let suppressed=false;
   try{suppressed=sessionStorage.getItem('forge_intro_suppress')==='1';}catch(_){}
-  if(!intro||!mark||!typed||!home||reduced||suppressed||
+  if(!intro||!mark||!typed||!home||reduced||suppressed||gate?.expired||
      home.classList.contains('hidden')||
      app?.classList.contains('active')||
      document.visibilityState==='hidden'){
@@ -17304,6 +17351,7 @@ const CTKDownloadRenamer = (() => {
   intro.hidden=false;
   intro.classList.add('forge-intro-ready');
   typed.textContent='';
+  gate?.release?.();
   document.getElementById('forgeIntroSkip')
     ?.addEventListener('click',finish,{once:true});
   document.addEventListener('keydown',onKey);
@@ -17329,21 +17377,29 @@ const CTKDownloadRenamer = (() => {
     loadFont('400 130px "Kola"').then(faces=>{available[0]=!!faces?.length;}),
     loadFont('600 12px "Plus Jakarta Sans"').then(faces=>{available[1]=!!faces?.length;})
   ];
-  // Deterministic typing rhythm with a slightly longer pause between words.
-  const intervals=[110,112,120,135,110,118,116,124,112];
+  // Tuned typing cadence: calm at the beginning, a natural pause at the
+  // word boundary, and a gentle deceleration without artificial holds.
+  const intervals=[112,116,121,150,122,118,124,130,122];
   const letters=Array.from(mark.dataset.fullName||'The Forge');
   function type(index){
     if(complete)return;
     if(index>=letters.length){
       intro.classList.add('forge-intro-typed-complete');
-      // No intermediate FLIP or composed hold. Just a 130ms dissolve,
-      // then restore the already-laid-out homepage and notify the popup.
+      // No intermediate FLIP or composed hold: one short crossfade, then
+      // the waiting welcome overlay or immediately usable homepage.
       intro.classList.add('forge-intro-finishing');
       schedule(finish,130);
       return;
     }
     typed.textContent+=letters[index];
-    const ms=intervals[index]||110;
+    // Composited cursor glides to the new character boundary; its
+    // transition is CSS-driven, never a reflowing width animation.
+    if(caret&&typeof typed.getBoundingClientRect==='function'){
+      const width=typed.getBoundingClientRect().width;
+      if(Number.isFinite(width))
+        caret.style.transform='translate3d('+width.toFixed(2)+'px,0,0)';
+    }
+    const ms=intervals[index]||118;
     schedule(()=>type(index+1),ms);
   }
   function start(){
@@ -17722,7 +17778,8 @@ const CTKDownloadRenamer = (() => {
   // A visitor must explicitly choose the present modal's opt-out.
   const permanentKey='forge_whatsnew_dismissed_2026_v3';
   let opened=false,preparing=false,previousFocus=null;
-  let automaticTimer=0,autoAttempted=false,openSerial=0,fontsReady=null;
+  let autoAttempted=false,openSerial=0,fontsReady=null;
+  const paintGate=typeof window!=='undefined'?window.__forgePaintGate:null;
   function safeGet(key){
     try{if(localStorage.getItem(key)==='1')return true;}catch(_){}
     try{return sessionStorage.getItem(key)==='1';}catch(_){return false;}
@@ -17782,7 +17839,6 @@ const CTKDownloadRenamer = (() => {
     if(!automatic&&document.body.classList.contains('forge-opening'))
       document.getElementById('forgeIntroSkip')?.click();
     if(!homeActive()||(automatic&&safeGet(permanentKey)))return;
-    clearTimeout(automaticTimer);
     autoAttempted=true;
     preparing=true;
     const token=++openSerial;
@@ -17790,10 +17846,11 @@ const CTKDownloadRenamer = (() => {
     readyTypography().then(()=>{
       if(token!==openSerial)return;
       preparing=false;
-      if(!homeActive())return;
+      if(!homeActive()){paintGate?.endWelcome?.();return;}
       opened=true;
       previousFocus=restoreFocus;
       root.hidden=false;
+      paintGate?.endWelcome?.();
       trigger?.setAttribute?.('aria-expanded','true');
       never.focus({preventScroll:true});
     });
@@ -17814,9 +17871,15 @@ const CTKDownloadRenamer = (() => {
     // ordinary visitor sees it on every fresh page until explicit opt-out.
     let auditSkip=false;
     try{auditSkip=sessionStorage.getItem('forge_whatsnew_suppress')==='1';}catch(_){}
-    if(autoAttempted||safeGet(permanentKey)||auditSkip)return;
+    if(autoAttempted||safeGet(permanentKey)||auditSkip||
+       paintGate?.expired){
+      paintGate?.endWelcome?.();
+      return;
+    }
     autoAttempted=true;
-    automaticTimer=setTimeout(()=>open(true),420);
+    // Fonts were requested during the intro, not after it. Open in the
+    // completion turn; the first-paint curtain bridges any slow font.
+    open(true);
   }
   function focusables(){
     return [...dialog.querySelectorAll(
@@ -17844,8 +17907,9 @@ const CTKDownloadRenamer = (() => {
     trigger.setAttribute?.('aria-expanded','false');
     trigger.addEventListener('click',()=>open(false));
   }
-  // The actual introduction is the source of truth; never run a
-  // competing timeout that appears over a partially animated home.
+  // Start preparing presentation fonts while the logo is still typing.
+  // This avoids the previous 420ms dead time plus network delay.
+  readyTypography();
   document.addEventListener('forge:intro-complete',queueAutomatic,{once:true});
   if(document.documentElement.dataset.forgeIntroFinished==='1'||
      (!document.body.classList.contains('forge-opening')&&
