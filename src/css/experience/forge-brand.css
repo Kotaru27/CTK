@@ -138,16 +138,15 @@ body:not(.light-mode) #view-home .combined-home-layout .forge-hero {
   --forge-hero-line:rgba(230,235,217,.18);
 }
 body:not(.light-mode) .forge-hero-edition::before {background:#b1d4b6;}
-/* Shared element: the homepage heading is present in layout, but hidden
-   until the one properly-kerned opener arrives at precisely the same rect. */
-/* Initial CSS pose matches frame zero of the WAAPI spring exactly.
-   The title never jumps when the font finishes loading. */
-body.forge-opening #forgeHeroName{
-  opacity:.12;
-  transform:translate3d(0,27px,0) scale(.982);
+/* The real home wordmark writes on in place, not through a second
+   opaque intro panel. This first frame matches the WAAPI entry pose. */
+body.forge-opening #forgeHeroName {
+  opacity:1!important;
+  clip-path:inset(0 100% 0 0);
+  transform:translate3d(0,12px,0);
   transform-origin:left center;
 }
-body.forge-opening.forge-home-arriving #forgeHeroName{opacity:1;}
+body.forge-opening.forge-home-arriving #forgeHeroName{opacity:1!important;}
 body.forge-opening .forge-hero-aside,
 body.forge-opening .forge-hero-top,
 body.forge-opening .forge-hero-bottom {opacity:.65;transform:translate3d(0,4px,0);}
@@ -219,7 +218,7 @@ body.forge-opening.forge-home-arriving #view-home .combined-home-grid{
 .forge-intro-skip:focus-visible{outline:2px solid #357358;outline-offset:3px;}
 @media(prefers-reduced-motion:reduce){
  .forge-intro{display:none!important;}
- body.forge-opening #forgeHeroName{opacity:1!important;transform:none!important;}
+ body.forge-opening #forgeHeroName{opacity:1!important;transform:none!important;clip-path:none!important;}
  body.forge-opening :is(.forge-hero-top,.forge-hero-aside,.forge-after-hero,.combined-home-grid){
    opacity:1!important;transform:none!important;transition:none!important;
  }
@@ -250,7 +249,7 @@ body.forge-opening.forge-home-arriving #view-home .combined-home-grid{
 }
 @media(prefers-reduced-motion:reduce) {
   .forge-intro{display:none!important;}
-  body.forge-opening #forgeHeroName{opacity:1!important;}
+  body.forge-opening #forgeHeroName{opacity:1!important;clip-path:none!important;}
   body.forge-opening .forge-hero-aside,
   body.forge-opening .forge-hero-top,
   body.forge-opening .forge-hero-bottom{opacity:1!important;}
