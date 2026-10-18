@@ -5750,6 +5750,78 @@ body.light-mode #view-home .combined-home-grid > .home-card .home-card-num{
  .forge-hero-top{font-size:10px;}
  .forge-hero-aside p{font-size:13px;line-height:1.58;}
 }
+
+/* Cinematic type-only Forge introduction. Never displayed until JS arms it. */
+.forge-intro[hidden],.forge-intro:not(.forge-intro-ready){display:none!important}
+.forge-intro.forge-intro-ready{
+  position:fixed;inset:0;z-index:2147483000;display:grid!important;
+  place-items:center;width:100%;height:100dvh;overflow:hidden;
+  isolation:isolate;pointer-events:auto;background:transparent!important;
+}
+.forge-intro.forge-intro-ready::before{
+  content:""!important;display:block!important;position:absolute;inset:0;
+  z-index:-1;background:radial-gradient(ellipse 70% 58% at 50% 55%,rgba(211,230,215,.32),transparent 74%),#f8f9f5;
+  opacity:1;transition:opacity 900ms cubic-bezier(.23,.75,.27,1);
+}
+.forge-intro.forge-intro-ready::after{display:none!important}
+.forge-intro-layout{position:static;display:contents}
+.forge-intro.forge-intro-ready .forge-intro-type{
+  display:grid!important;position:absolute;inset:0;place-items:center;pointer-events:none
+}
+.forge-intro-wordmark{
+  display:block;width:max-content;max-width:94vw;margin:0;padding:0;
+  font:400 clamp(82px,10.7vw,180px)/1.015 "Kola","Plus Jakarta Sans",sans-serif;
+  letter-spacing:-.028em;white-space:nowrap;color:#143c2b;
+  clip-path:inset(0 100% 0 0);opacity:1;
+  transform:translate3d(0,21px,0);transform-origin:top left;will-change:transform;
+}
+.forge-intro.forge-intro-ready .forge-intro-label{
+  display:block!important;position:absolute;top:clamp(30px,5.3vh,70px);
+  left:clamp(28px,5.2vw,88px);margin:0;opacity:0;
+  color:#526f5d;font:650 11px/1.5 "Plus Jakarta Sans",sans-serif;letter-spacing:.19em
+}
+.forge-intro.forge-intro-ready .forge-intro-caption{
+  position:absolute;inset:auto clamp(28px,5.2vw,88px) clamp(29px,5.6vh,70px);
+  display:flex!important;justify-content:space-between;align-items:center;gap:32px;
+  padding:18px 0 0;border:0;border-top:1px solid rgba(38,83,60,.21);
+  background:none!important;opacity:0
+}
+.forge-intro.forge-intro-ready .forge-intro-caption>span{
+  display:block!important;color:#496a55;font:650 11px/1.5 "Plus Jakarta Sans",sans-serif;letter-spacing:.16em
+}
+.forge-intro.forge-intro-ready .forge-intro-skip{
+  display:inline-flex;align-items:center;padding:7px 0 7px 15px;
+  border:0;border-radius:0;background:none!important;box-shadow:none;
+  color:#28583d;font:650 12px/1.5 "Plus Jakarta Sans",sans-serif;
+}
+.forge-intro.forge-intro-playing .forge-intro-label{
+  animation:forge-intro-meta 850ms cubic-bezier(.21,.73,.3,1) 200ms both
+}
+.forge-intro.forge-intro-playing .forge-intro-caption{
+  animation:forge-intro-meta 850ms cubic-bezier(.21,.73,.3,1) 1000ms both
+}
+@keyframes forge-intro-meta{from{opacity:0;transform:translate3d(0,10px,0)}to{opacity:1;transform:none}}
+.forge-intro.forge-intro-leaving::before{opacity:0}
+.forge-intro.forge-intro-leaving .forge-intro-label,
+.forge-intro.forge-intro-leaving .forge-intro-caption{
+  animation:none;opacity:0;transition:opacity 320ms ease
+}
+body.forge-opening #forgeHeroName,
+body.forge-opening.forge-home-arriving #forgeHeroName{
+  visibility:hidden!important;opacity:1!important;clip-path:none!important;transform:none!important
+}
+.forge-intro.forge-intro-fallback .forge-intro-wordmark{
+  animation:forge-intro-static 1600ms cubic-bezier(.18,.7,.22,1) both
+}
+@keyframes forge-intro-static{
+ from{opacity:.45;clip-path:inset(0 100% 0 0);transform:translate3d(0,21px,0)}
+ to{opacity:1;clip-path:inset(0 0 0 0);transform:none}
+}
+@media(max-width:750px){.forge-intro-wordmark{font-size:clamp(55px,12.2vw,94px)}}
+@media(prefers-reduced-motion:reduce){
+ .forge-intro.forge-intro-ready{display:none!important}
+ body.forge-opening #forgeHeroName{visibility:visible!important;clip-path:none!important}
+}
 </style>
 <style id="forge-video-route-styles">/* THE FORGE / UNIFIED WORKSPACE ROUTES
    Eight exact tool pairings; cards, controls and media are never re-laid out.
@@ -16888,108 +16960,175 @@ const CTKDownloadRenamer = (() => {
   if (document.readyState==="loading") document.addEventListener("DOMContentLoaded",boot,{once:true});
   else boot();
 })();</script>
-<script id="forge-brand-intro-js">/* The Forge / resilient, home-native wordmark entrance.
-   Animate the actual heading: no backdrop, duplicated wordmark, or
-   network-dependent font gate. Navigation and every tool stay interactive. */
+<script id="forge-brand-intro-js">/* The Forge / cinematic wordmark introduction.
+   Three stages: ink reveal, composed hold, measured home handoff.
+   Remote fonts are optional. Intro markup starts hidden, so a failed
+   script never leaves a blocking overlay over the tools. */
 (function(){
   'use strict';
   const intro=document.getElementById('forgeIntro');
+  const mark=document.getElementById('forgeIntroWordmark');
   const destination=document.getElementById('forgeHeroName');
-  if(!destination){intro?.remove();return;}
-  const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   const home=document.getElementById('view-home');
   const app=document.getElementById('view-app');
-  const onHome=home && !home.classList.contains('hidden') &&
-    !app?.classList.contains('active');
-  // Explicit suppression is reserved for unattended QA/embeds; ordinary
-  // page reloads never inherit an old auto-seen session flag.
-  let suppressed=false;
-  try{suppressed=sessionStorage.getItem('forge_intro_suppress')==='1';}catch(_){}
-  let complete=false,flight=null,safety=0,observer=null;
-  function notify(){
+  const body=document.body;
+  let done=false,observer=null,safety=0,hold=0;
+  const flights=new Set();
+  const reduced=!!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+  let suppress=false;
+  try{suppress=sessionStorage.getItem('forge_intro_suppress')==='1';}catch(_){}
+
+  function notify(reason){
     document.documentElement.dataset.forgeIntroFinished='1';
     document.dispatchEvent(new Event('forge:intro-complete'));
   }
-  function cleanup(){
-    if(complete)return;
-    complete=true;
+  function complete(reason){
+    if(done)return;
+    done=true;
     clearTimeout(safety);
+    clearTimeout(hold);
     document.removeEventListener('keydown',onKey);
     document.removeEventListener('visibilitychange',onVisibility);
     observer?.disconnect();
-    flight?.cancel();
-    document.body.classList.remove('forge-opening','forge-home-arriving');
+    for(const animation of flights){try{animation.cancel();}catch(_){}}
+    flights.clear();
+    body.classList.remove('forge-opening','forge-home-arriving');
     intro?.remove();
-    notify();
+    notify(reason);
   }
   function onKey(event){
-    if(event.key==='Escape'){event.preventDefault();cleanup();}
+    if(event.key==='Escape'){event.preventDefault();complete('skip');}
   }
   function onVisibility(){
-    if(document.visibilityState==='hidden')cleanup();
+    if(document.visibilityState==='hidden')complete('hidden');
   }
-  // Saved tool preferences and session history are not evidence that a
-  // visible homepage should skip its opening. Reload always replays it.
-  if(reduced||suppressed||!onHome||document.visibilityState==='hidden'){
-    intro?.remove();notify();return;
+  if(!intro||!mark||!destination||!home||reduced||suppress||
+     home.classList.contains('hidden')||
+     app?.classList.contains('active')||
+     document.visibilityState==='hidden'){
+    complete('bypass');
+    return;
   }
-  document.body.classList.add('forge-opening');
-  document.getElementById('forgeIntroSkip')?.addEventListener('click',cleanup,{once:true});
+
+  // Launch only after script initialization: never expose an unstyled,
+  // blocking splash if a network request interrupts page execution.
+  body.classList.add('forge-opening');
+  intro.hidden=false;
+  intro.classList.add('forge-intro-ready');
+  document.getElementById('forgeIntroSkip')?.addEventListener('click',()=>complete('skip'),{once:true});
   document.addEventListener('keydown',onKey);
   document.addEventListener('visibilitychange',onVisibility);
   if(typeof MutationObserver==='function'&&app){
     observer=new MutationObserver(()=>{
       if(app.classList.contains('active')||home.classList.contains('hidden'))
-        cleanup();
+        complete('navigation');
     });
     observer.observe(app,{attributes:true,attributeFilter:['class']});
     observer.observe(home,{attributes:true,attributeFilter:['class']});
   }
-  safety=setTimeout(cleanup,3900);
+  safety=setTimeout(()=>complete('safety'),5400);
 
-  // Slow-to-fast ink reveal, followed by a critically damped settle.
-  // The actual glyphs stay laid out in one position; only the heading's
-  // clip and composited translation change, avoiding a white mask rectangle.
-  function progress(t){
-    const x=Math.min(1,Math.max(0,(t-.08)/.88));
-    const omega=6.4;
-    const end=1-(1+omega)*Math.exp(-omega);
-    return Math.min(1,(1-(1+omega*x)*Math.exp(-omega*x))/end);
+  // Smooth but never overshooting; the last sampled pose is exact.
+  function settle(t,omega){
+    const denom=1-(1+omega)*Math.exp(-omega);
+    return Math.min(1,Math.max(0,(1-(1+omega*t)*Math.exp(-omega*t))/denom));
   }
-  function play(){
-    if(complete)return;
-    document.body.classList.add('forge-home-arriving');
-    if(typeof destination.animate!=='function'){cleanup();return;}
+  function animate(el,frames,options){
+    try{
+      const a=el.animate(frames,options);
+      flights.add(a);
+      return a;
+    }catch(_){return null;}
+  }
+  function handoff(){
+    if(done)return;
+    if(typeof mark.animate!=='function'){
+      complete('fallback');return;
+    }
+    // Finish the reveal in-place before measuring. These same font
+    // settings exist on the destination, including when Kola is offline.
+    mark.style.opacity='1';
+    mark.style.clipPath='none';
+    mark.style.transform='none';
+    const from=mark.getBoundingClientRect();
+    const to=destination.getBoundingClientRect();
+    if(!from.width||!from.height||!to.width||!to.height){
+      complete('geometry');return;
+    }
+    const dx=to.left-from.left,dy=to.top-from.top;
+    const sx=to.width/from.width,sy=to.height/from.height;
+    if(![dx,dy,sx,sy].every(Number.isFinite)||
+       sx<=0||sy<=0||sx>4||sy>4){
+      complete('geometry');return;
+    }
+    body.classList.add('forge-home-arriving');
+    intro.classList.add('forge-intro-leaving');
     const frames=[];
     for(let i=0;i<=64;i++){
-      const t=i/64,p=progress(t);
+      const t=i/64,p=settle(t,8.4);
       frames.push({
         offset:t,
-        opacity:1,
-        clipPath:'inset(0 '+((1-p)*100).toFixed(3)+'% 0 0)',
-        transform:'translate3d(0,'+((1-p)*12).toFixed(3)+'px,0)'
+        transform:'translate3d('+(dx*p).toFixed(3)+'px,'+
+          (dy*p).toFixed(3)+'px,0) scale('+
+          (1+(sx-1)*p).toFixed(6)+','+
+          (1+(sy-1)*p).toFixed(6)+')'
       });
     }
-    try{
-      flight=destination.animate(frames,{duration:2250,easing:'linear',fill:'both'});
-      flight.finished.then(cleanup,cleanup);
-    }catch(_){cleanup();}
+    const flight=animate(mark,frames,{
+      duration:1080,easing:'linear',fill:'both'
+    });
+    if(!flight){complete('fallback');return;}
+    flight.finished.then(()=>complete('finished'),()=>complete('interrupted'));
   }
+  function reveal(){
+    if(done)return;
+    intro.classList.add('forge-intro-playing');
+    if(typeof mark.animate!=='function'){
+      intro.classList.add('forge-intro-fallback');
+      hold=setTimeout(()=>complete('fallback'),2850);
+      return;
+    }
+    const frames=[];
+    for(let i=0;i<=55;i++){
+      const t=i/55;
+      // Delay the ink by a fraction of a beat, then ease it into place.
+      const p=settle(Math.max(0,Math.min(1,(t-.09)/.91)),6.2);
+      frames.push({
+        offset:t,
+        opacity:Math.min(1,.45+p*.55),
+        clipPath:'inset(0 '+((1-p)*100).toFixed(3)+'% 0 0)',
+        transform:'translate3d(0,'+((1-p)*21).toFixed(3)+'px,0)'
+      });
+    }
+    const first=animate(mark,frames,{
+      duration:1590,easing:'linear',fill:'both'
+    });
+    if(first){
+      first.finished.then(()=>{
+        if(done)return;
+        mark.style.opacity='1';
+        mark.style.clipPath='none';
+        mark.style.transform='none';
+        first.cancel();
+        flights.delete(first);
+      }).catch(()=>{});
+    }
+    hold=setTimeout(handoff,2220);
+  }
+  // A cached Kola loads immediately. A missing/offline Kola still gets
+  // the full ceremony using matching fallback typography, never a skip.
   let started=false;
-  function begin(){
-    if(started||complete)return;
+  const begin=()=>{
+    if(started||done)return;
     started=true;
-    // Keep the first frame stable even when the font arrived from cache.
-    requestAnimationFrame(()=>requestAnimationFrame(play));
-  }
-  // Wait briefly for Kola, but NEVER cancel the intro when offline, if the
-  // CSS font fails, or when document.fonts is missing. The fallback draws.
-  const fontReady=(()=>{try{
-    return document.fonts?.load?.('400 120px "Kola"')||Promise.resolve();
-  }catch(_){return Promise.resolve();}})();
+    requestAnimationFrame(()=>requestAnimationFrame(reveal));
+  };
+  let fontRequest=Promise.resolve();
+  try{fontRequest=Promise.resolve(document.fonts?.load?.('400 130px "Kola"'));}
+  catch(_){}
   Promise.race([
-    Promise.resolve(fontReady).catch(()=>null),
-    new Promise(resolve=>setTimeout(resolve,650))
+    fontRequest.catch(()=>null),
+    new Promise(resolve=>setTimeout(resolve,720))
   ]).then(begin,begin);
 })();
 </script>
@@ -17337,9 +17476,9 @@ const CTKDownloadRenamer = (() => {
   window.ForgeVideoRoute=api;
 })();
 </script>
-<script id="forge-whats-new-js">/* The Forge launch notes / independent from tool engines.
-   Wait for the existing wordmark handoff, not an arbitrary timeout.
-   No modal is opened over a restored active tool. */
+<script id="forge-whats-new-js">/* The Forge welcome / first-launch announcement and manual replay.
+   Intro completion controls timing; no fonts, images or network requests.
+   Every close path is usable and preserves keyboard focus. */
 (function(){
   'use strict';
   const root=document.getElementById('forgeWhatsNew');
@@ -17350,46 +17489,64 @@ const CTKDownloadRenamer = (() => {
   const never=root.querySelector('#forgeWhatsNewNever');
   const close=root.querySelector('#forgeWhatsNewClose');
   if(!dialog||!enter||!never||!close)return;
+
+  const seenKey='forge_whatsnew_seen_launch_2026_v2';
   const permanentKey='forge_whatsnew_dismissed_2026_v1';
-  let opened=false,previousFocus=null;
-  // Storage getters themselves can throw in private/sandboxed browsers.
-  const safeSet=key=>{
-    try{localStorage.setItem(key,'1');}catch(_){}
-  };
-  function eligible(){
-    if(opened)return false;
-    // A restoring workspace takes precedence over promotional content.
+  let opened=false,previousFocus=null,automaticTimer=0,autoAttempted=false;
+  function safeGet(key){
+    try{return localStorage.getItem(key)==='1'||
+      sessionStorage.getItem(key)==='1';}catch(_){return false;}
+  }
+  function safeSet(key){
+    try{localStorage.setItem(key,'1');return;}catch(_){}
+    try{sessionStorage.setItem(key,'1');}catch(_){}
+  }
+  function homeActive(){
     const home=document.getElementById('view-home');
     const app=document.getElementById('view-app');
-    return !!home && !home.classList.contains('hidden') &&
-      !app?.classList.contains('active') &&
-      !document.body.classList.contains('forge-opening');
+    return !!home&&!home.classList.contains('hidden')&&
+      !app?.classList.contains('active')&&
+      !document.body.classList.contains('forge-opening')&&
+      document.visibilityState!=='hidden';
   }
-  function open(){
-    // An intentional click always works, even while the intro is drawing.
-    // Finish the optional intro first instead of silently discarding it.
-    if(document.body.classList.contains('forge-opening'))
+  function open(automatic=false){
+    if(opened)return;
+    // A requested popup is never lost behind the optional intro.
+    if(!automatic&&document.body.classList.contains('forge-opening'))
       document.getElementById('forgeIntroSkip')?.click();
-    if(!eligible())return;
+    if(!homeActive())return;
+    if(automatic&&safeGet(seenKey))return;
+    clearTimeout(automaticTimer);
     opened=true;
-    previousFocus=document.activeElement;
+    previousFocus=automatic?null:document.activeElement;
     root.hidden=false;
     trigger?.setAttribute?.('aria-expanded','true');
+    safeSet(seenKey);
     enter.focus({preventScroll:true});
   }
   function dismiss(permanent=false){
     if(!opened)return;
     if(permanent)safeSet(permanentKey);
-    opened=false;root.hidden=true;
+    safeSet(seenKey);
+    opened=false;
+    root.hidden=true;
     trigger?.setAttribute?.('aria-expanded','false');
-    if(previousFocus && previousFocus.isConnected &&
-       typeof previousFocus.focus==='function')
+    if(previousFocus?.isConnected&&typeof previousFocus.focus==='function')
       previousFocus.focus({preventScroll:true});
-    else document.getElementById('homeContent')?.focus?.({preventScroll:true});
+    else trigger?.focus?.({preventScroll:true});
+    previousFocus=null;
+  }
+  function queueAutomatic(){
+    if(autoAttempted)return;
+    autoAttempted=true;
+    if(safeGet(seenKey))return;
+    automaticTimer=setTimeout(()=>open(true),420);
   }
   function focusables(){
-    return [...dialog.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),[tabindex]:not([tabindex="-1"])')]
-      .filter(el=>el.getClientRects().length && getComputedStyle(el).visibility!=='hidden');
+    return [...dialog.querySelectorAll(
+      'button:not([disabled]),a[href],input:not([disabled]),[tabindex]:not([tabindex="-1"])'
+    )].filter(el=>el.getClientRects().length&&
+      getComputedStyle(el).visibility!=='hidden');
   }
   root.addEventListener('keydown',event=>{
     if(event.key==='Escape'){event.preventDefault();dismiss();return;}
@@ -17397,9 +17554,9 @@ const CTKDownloadRenamer = (() => {
     const items=focusables();
     if(!items.length)return;
     const first=items[0],last=items[items.length-1];
-    if(event.shiftKey && document.activeElement===first){
+    if(event.shiftKey&&document.activeElement===first){
       event.preventDefault();last.focus();
-    }else if(!event.shiftKey && document.activeElement===last){
+    }else if(!event.shiftKey&&document.activeElement===last){
       event.preventDefault();first.focus();
     }
   });
@@ -17409,14 +17566,16 @@ const CTKDownloadRenamer = (() => {
   root.addEventListener('pointerdown',event=>{
     if(event.target===root)dismiss();
   });
-  // Release notes are opt-in and never intercept tool clicks.
   if(trigger){
-    // Never hide the user-invoked updates entry. "Don't show again"
-    // records a preference against automatic prompts, not manual access.
     trigger.hidden=false;
     trigger.setAttribute?.('aria-expanded','false');
-    trigger.addEventListener('click',open);
+    trigger.addEventListener('click',()=>open(false));
   }
+  // The actual introduction is the source of truth; never run a
+  // competing timeout that appears over a partially animated home.
+  document.addEventListener('forge:intro-complete',queueAutomatic,{once:true});
+  if(document.documentElement.dataset.forgeIntroFinished==='1')
+    queueAutomatic();
 })();
 </script>
 </body>
