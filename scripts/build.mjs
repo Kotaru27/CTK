@@ -39,6 +39,8 @@ const forgeSpecimensCss=read('src/css/experience/forge-tool-specimens.css');
 const forgeUnifiedCss=read('src/css/experience/forge-unified-workspaces.css');
 const forgeWorkflowCss=read('src/css/experience/forge-workflow-interactions.css');
 const forgeVideoRouteJs=read('src/js/presentation/forge-video-route.js');
+const forgeWhatsNewCss=read('src/css/experience/forge-whats-new.css');
+const forgeWhatsNewJs=read('src/js/presentation/forge-whats-new.js');
 const forgeHero=[
   '<section class="forge-hero" aria-labelledby="forgeHeroName">',
   ' <div class="forge-hero-top">',
@@ -71,6 +73,48 @@ const forgeIntro=[
   '   <button type="button" class="forge-intro-skip" id="forgeIntroSkip" aria-label="Skip introduction">Skip intro ↗</button>',
   '  </div>',
   ' </div>',
+  '</div>'
+].join('\n');
+const forgeWhatsNew=[
+  '<div class="forge-whatsnew" id="forgeWhatsNew" hidden>',
+  ' <section class="forge-whatsnew-dialog" role="dialog" aria-modal="true" aria-labelledby="forgeWhatsNewTitle" aria-describedby="forgeWhatsNewDescription">',
+  '  <div class="forge-whatsnew-opening">',
+  '   <div class="forge-whatsnew-edition">FIRST MAJOR REBRAND / 2026</div>',
+  '   <div>',
+  '    <span class="forge-whatsnew-brand" aria-label="The Forge">The Forge</span>',
+  '    <h2 id="forgeWhatsNewTitle">Same purpose.<br><em>A new beginning.</em></h2>',
+  '    <p class="forge-whatsnew-intro" id="forgeWhatsNewDescription">Creative Tool Kit is now The Forge. The tools you know, with a more focused way to get things done.</p>',
+  '   </div>',
+  '   <p class="forge-whatsnew-foot">CREATE / TRANSFORM / DELIVER</p>',
+  '  </div>',
+  '  <div class="forge-whatsnew-content">',
+  '   <div class="forge-whatsnew-topline">',
+  '    <span class="forge-whatsnew-section-label">WHAT\'S NEW / THE FORGE</span>',
+  '    <button type="button" class="forge-whatsnew-close" id="forgeWhatsNewClose" aria-label="Close What\'s New">×</button>',
+  '   </div>',
+  '   <div class="forge-whatsnew-changes">',
+  '    <article class="forge-whatsnew-change"><span class="forge-whatsnew-number">01</span><div>',
+  '     <h3>A fresh identity</h3><p>New name, refined interface, and smoother navigation across all eight tools.</p>',
+  '    </div></article>',
+  '    <article class="forge-whatsnew-change"><span class="forge-whatsnew-number">02</span><div>',
+  '     <h3>One Send to Board</h3><p>Select stills across multiple videos. Send them to separate storyboards with one click.</p>',
+  '    </div></article>',
+  '    <article class="forge-whatsnew-change"><span class="forge-whatsnew-number">03</span><div>',
+  '     <h3>Boards from folders</h3><p>Choose one campaign folder. Each ad\'s stills folder becomes its own storyboard.</p>',
+  '    </div></article>',
+  '    <article class="forge-whatsnew-change"><span class="forge-whatsnew-number">04</span><div>',
+  '     <h3>Automatic file naming</h3><p>Choose a download folder before importing Excel. Supported SharePoint files are tracked for automatic renaming.</p>',
+  '    </div></article>',
+  '    <article class="forge-whatsnew-change"><span class="forge-whatsnew-number">05</span><div>',
+  '     <h3>A clearer download queue</h3><p>See what is pending, requested, or confirmed. Download again whenever needed.</p>',
+  '    </div></article>',
+  '   </div>',
+  '   <div class="forge-whatsnew-actions">',
+  '    <button type="button" id="forgeWhatsNewNever" class="forge-whatsnew-never">Don\'t show again</button>',
+  '    <button type="button" id="forgeWhatsNewEnter" class="forge-whatsnew-enter">Explore The Forge <span aria-hidden="true">→</span></button>',
+  '   </div>',
+  '  </div>',
+  ' </section>',
   '</div>'
 ].join('\n');
 function forgeBrand(html,standaloneRelease){
@@ -112,14 +156,18 @@ function forgeBrand(html,standaloneRelease){
     '<link rel="stylesheet" href="./dist/css/forge-unified-workspaces.css">\n';
   const workflowStyle=standaloneRelease?'<style id="forge-workflow-interactions-styles">'+forgeWorkflowCss+'</style>\n':
     '<link rel="stylesheet" href="./dist/css/forge-workflow-interactions.css">\n';
-  html=html.replace('</head>',fontLink+brandStyle+routeStyle+adaptiveStyle+workspaceFinishStyle+specimenStyle+unifiedStyle+workflowStyle+'</head>');
+  const welcomeStyle=standaloneRelease?'<style id="forge-whats-new-styles">'+forgeWhatsNewCss+'</style>\n':
+    '<link rel="stylesheet" href="./dist/css/forge-whats-new.css">\n';
+  html=html.replace('</head>',fontLink+brandStyle+routeStyle+adaptiveStyle+workspaceFinishStyle+specimenStyle+unifiedStyle+workflowStyle+welcomeStyle+'</head>');
   // Light-only presentation: do not read an old dark preference on first paint.
-  html=html.replace('<body>','<body class="light-mode">\n'+forgeIntro+'\n');
+  html=html.replace('<body>','<body class="light-mode">\n'+forgeIntro+'\n'+forgeWhatsNew+'\n');
   const brandScript=standaloneRelease?'<script id="forge-brand-intro-js">'+forgeBrandJs+'</script>':
     '<script id="forge-brand-intro-js" src="./dist/js/forge-brand.js"></script>';
   const routeScript=standaloneRelease?'<script id="forge-video-route-js">'+forgeVideoRouteJs+'</script>':
     '<script id="forge-video-route-js" src="./dist/js/forge-video-route.js"></script>';
-  html=html.replace('</body>',brandScript+'\n'+routeScript+'\n</body>');
+  const welcomeScript=standaloneRelease?'<script id="forge-whats-new-js">'+forgeWhatsNewJs+'</script>':
+    '<script id="forge-whats-new-js" src="./dist/js/forge-whats-new.js"></script>';
+  html=html.replace('</body>',brandScript+'\n'+routeScript+'\n'+welcomeScript+'\n</body>');
   return html;
 }
 
@@ -136,6 +184,8 @@ save('dist/css/forge-workspace-finish.css',forgeWorkspaceFinishCss);
 save('dist/css/forge-tool-specimens.css',forgeSpecimensCss);
 save('dist/css/forge-unified-workspaces.css',forgeUnifiedCss);
 save('dist/css/forge-workflow-interactions.css',forgeWorkflowCss);
+save('dist/css/forge-whats-new.css',forgeWhatsNewCss);
+save('dist/js/forge-whats-new.js',forgeWhatsNewJs);
 save('dist/js/forge-video-route.js',forgeVideoRouteJs);
 save('dist/css/ad-downloader-v2.css',visualCss);
 save('dist/js/ad-downloader-v2.js',visualJs);
