@@ -2,98 +2,87 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import fs from 'node:fs';
-
-const code=fs.readFileSync(new URL('../src/js/presentation/forge-brand.js',import.meta.url),'utf8');
+const js=fs.readFileSync(new URL('../src/js/presentation/forge-brand.js',import.meta.url),'utf8');
 const css=fs.readFileSync(new URL('../src/css/experience/forge-brand.css',import.meta.url),'utf8');
+const build=fs.readFileSync(new URL('../scripts/build.mjs',import.meta.url),'utf8');
 
-function fixture({font='missing',reduced=false,restored=false}={}){
-  const timers=[],flights=[];
-  const names=new Set();
-  const makeClasses=(initial=[])=>{
-    const set=new Set(initial);
-    return {contains:name=>set.has(name),add:(...values)=>values.forEach(v=>set.add(v)),
-      remove:(...values)=>values.forEach(v=>set.delete(v))};
-  };
-  const intro={removed:false,remove(){this.removed=true;}};
-  const skip={click(){for(const fn of this.callbacks)fn();},callbacks:[],
-    addEventListener(_event,fn){this.callbacks.push(fn);}};
-  const heading={animate(frames,options){
-    const flight={frames,options,cancelled:false,cancel(){this.cancelled=true;},
-      finished:new Promise(()=>{})};
-    flights.push(flight);
-    return flight;
+function setup({font='missing',reduced=false,activeTool=false,suppress=false}={}){
+ const timers=[],animations=[];
+ const classes=(initial=[])=>{
+  const s=new Set(initial);
+  return {contains:x=>s.has(x),add:(...x)=>x.forEach(v=>s.add(v)),
+   remove:(...x)=>x.forEach(v=>s.delete(v))};
+ };
+ const intro={hidden:true,removed:false,classList:classes(),remove(){this.removed=true;}};
+ const skip={handlers:[],addEventListener(_type,fn){this.handlers.push(fn);},
+  click(){for(const fn of this.handlers)fn();}};
+ const mark={style:{},getBoundingClientRect:()=>({left:410,top:350,width:550,height:140}),
+  animate(frames,options){
+   const a={frames,options,cancelled:false,cancel(){this.cancelled=true;},
+     finished:Promise.resolve()};
+   animations.push(a);return a;
   }};
-  const home={classList:makeClasses()};
-  const app={classList:makeClasses(restored?['active']:[])};
-  const body={classList:{contains:name=>names.has(name),
-    add:(...values)=>values.forEach(v=>names.add(v)),
-    remove:(...values)=>values.forEach(v=>names.delete(v))}};
-  const doc={
-    body,visibilityState:'visible',documentElement:{dataset:{}},
-    getElementById(id){
-      return {'forgeIntro':intro,'forgeHeroName':heading,
-        'forgeIntroSkip':skip,'view-home':home,'view-app':app}[id]||null;
-    },
-    addEventListener(){},removeEventListener(){},dispatchEvent(){}
-  };
-  if(font==='hang')doc.fonts={load:()=>new Promise(()=>{})};
-  if(font==='reject')doc.fonts={load:()=>Promise.reject(new Error('offline'))};
-  const context={
-    document:doc,window:{matchMedia:()=>({matches:reduced})},
-    Event:class {constructor(type){this.type=type;}},
-    setTimeout:fn=>{timers.push(fn);return timers.length;},
-    clearTimeout(){},requestAnimationFrame:fn=>fn(),
-    Promise,Math,MutationObserver:undefined
-  };
-  vm.runInNewContext(code,context,{filename:'forge-brand.js'});
-  return {timers,flights,intro,skip,doc,names};
+ const title={getBoundingClientRect:()=>({left:215,top:245,width:450,height:115})};
+ const home={classList:classes()};
+ const app={classList:classes(activeTool?['active']:[])};
+ const body={classList:classes()};
+ const document={body,visibilityState:'visible',documentElement:{dataset:{}},
+  getElementById:id=>({forgeIntro:intro,forgeIntroWordmark:mark,forgeHeroName:title,
+    forgeIntroSkip:skip,'view-home':home,'view-app':app})[id]||null,
+  addEventListener(){},removeEventListener(){},dispatchEvent(){}};
+ if(font==='hang')document.fonts={load:()=>new Promise(()=>{})};
+ if(font==='reject')document.fonts={load:()=>Promise.reject(Error('offline'))};
+ const context={document,window:{matchMedia:()=>({matches:reduced})},
+  sessionStorage:{getItem:()=>suppress?'1':null},
+  Event:class{constructor(type){this.type=type;}},
+  setTimeout:fn=>{timers.push(fn);return timers.length;},clearTimeout(){},
+  requestAnimationFrame:fn=>fn(),MutationObserver:undefined,Promise,Math};
+ vm.runInNewContext(js,context,{filename:'forge-brand.js'});
+ return {document,intro,skip,timers,animations,body};
 }
-async function settle(){
-  for(let i=0;i<8;i++)await Promise.resolve();
-}
-test('missing remote font still animates real hero heading',async()=>{
-  const f=fixture();
-  await settle();
-  assert.equal(f.flights.length,1);
-  const flight=f.flights[0];
-  assert.equal(flight.options.duration,2250);
-  assert.match(flight.frames[0].clipPath,/100/);
-  assert.match(flight.frames.at(-1).clipPath,/0\.000/);
-  assert.equal(f.names.has('forge-opening'),true);
-  f.skip.click();
-  assert.equal(f.names.has('forge-opening'),false);
-  assert.equal(f.doc.documentElement.dataset.forgeIntroFinished,'1');
+const microtasks=async()=>{for(let i=0;i<9;i++)await Promise.resolve();};
+test('missing remote Kola retains the full wordmark animation and handoff',async()=>{
+ const h=setup();
+ await microtasks();
+ assert.equal(h.intro.hidden,false);
+ assert.equal(h.animations.length,1);
+ assert.equal(h.animations[0].options.duration,1590);
+ assert.match(h.animations[0].frames[0].clipPath,/100/);
+ h.timers.at(-1)();await microtasks();
+ assert.equal(h.animations.length,2);
+ assert.equal(h.animations[1].options.duration,1080);
+ assert.equal(h.intro.removed,true);
+ assert.equal(h.document.documentElement.dataset.forgeIntroFinished,'1');
 });
-test('hung font request times out into an animated entrance',async()=>{
-  const f=fixture({font:'hang'});
-  assert.equal(f.flights.length,0);
-  assert.equal(f.timers.length,2);
-  f.timers[1]();
-  await settle();
-  assert.equal(f.flights.length,1);
-  f.skip.click();
+test('hung font request cannot cancel opening',async()=>{
+ const h=setup({font:'hang'});
+ assert.equal(h.animations.length,0);
+ assert.equal(h.timers.length,2);
+ h.timers[1]();await microtasks();
+ assert.equal(h.animations.length,1);
+ h.skip.click();
+ assert.equal(h.intro.removed,true);
+ assert.equal(h.body.classList.contains('forge-opening'),false);
 });
-test('rejected font request still animates; reduced motion does not',async()=>{
-  const rejected=fixture({font:'reject'});
-  await settle();
-  assert.equal(rejected.flights.length,1);
-  rejected.skip.click();
-  const reduced=fixture({reduced:true});
-  await settle();
-  assert.equal(reduced.flights.length,0);
-  assert.equal(reduced.intro.removed,true);
-  assert.equal(reduced.doc.documentElement.dataset.forgeIntroFinished,'1');
+test('rejected font draws fallback and reduced motion bypasses',async()=>{
+ const h=setup({font:'reject'});await microtasks();
+ assert.equal(h.animations.length,1);
+ const reduced=setup({reduced:true});
+ assert.equal(reduced.intro.hidden,true);
+ assert.equal(reduced.intro.removed,true);
+ assert.equal(reduced.animations.length,0);
 });
-test('restored active tool bypasses splash, without changing tool state',async()=>{
-  const f=fixture({restored:true});
-  await settle();
-  assert.equal(f.flights.length,0);
-  assert.equal(f.intro.removed,true);
-  assert.equal(f.doc.documentElement.dataset.forgeIntroFinished,'1');
+test('restored tool and explicit test suppression never block workspaces',()=>{
+ for(const opts of [{activeTool:true},{suppress:true}]){
+  const h=setup(opts);
+  assert.equal(h.intro.removed,true);
+  assert.equal(h.animations.length,0);
+ }
 });
-test('intro has no opaque stage and respects reduced motion',()=>{
-  assert.match(css,/body\.forge-opening #forgeHeroName \{/);
-  assert.match(css,/clip-path:inset\(0 100% 0 0\)/);
-  assert.match(css,/clip-path:none!important/);
-  assert.match(css,/\.forge-intro::before,\.forge-intro::after/);
+test('markup stays hidden if intro JS cannot load, with no opaque box',()=>{
+ assert.match(build,/The Forge introduction" hidden/);
+ assert.match(css,/\.forge-intro\[hidden\]/);
+ assert.match(css,/\.forge-intro-wordmark\{/);
+ assert.match(css,/forge-intro-leaving::before/);
+ assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
 });
