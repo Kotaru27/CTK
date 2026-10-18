@@ -13,6 +13,7 @@
   const gate=window.__forgePaintGate;
   const caret=mark?.querySelector('.forge-intro-caret');
   const timers=new Set();
+  const kineticGlyphs=new Set();
   let complete=false,observer=null,started=false;
 
   const notify=()=>{
@@ -31,6 +32,8 @@
     complete=true;
     for(const id of timers)clearTimeout(id);
     timers.clear();
+    for(const glyph of kineticGlyphs)glyph.remove?.();
+    kineticGlyphs.clear();
     document.removeEventListener('keydown',onKey);
     document.removeEventListener('visibilitychange',onVisibility);
     observer?.disconnect();
@@ -95,6 +98,40 @@
     loadFont('400 130px "Kola"').then(faces=>{available[0]=!!faces?.length;}),
     loadFont('600 12px "Plus Jakarta Sans"').then(faces=>{available[1]=!!faces?.length;})
   ];
+  // Adapted from kinetic typography: each new character leaves a tiny,
+  // deterministic 3D ink settle. The actual name remains ONE native text
+  // run, so Kola's kerning and descenders are never split or masked.
+  // The transient glyph echoes are decorative and never alter layout.
+  function kineticArrival(char,index){
+    if(!char.trim()||complete||typeof document.createElement!=='function'||
+       typeof typed.getBoundingClientRect!=='function')return;
+    const glyph=document.createElement('span');
+    glyph.className='forge-intro-kinetic-glyph';
+    glyph.setAttribute('aria-hidden','true');
+    glyph.textContent=char;
+    mark.appendChild(glyph);
+    kineticGlyphs.add(glyph);
+    const nativeWidth=typed.getBoundingClientRect().width;
+    const glyphWidth=glyph.getBoundingClientRect().width;
+    if(!Number.isFinite(nativeWidth)||!Number.isFinite(glyphWidth)){
+      glyph.remove();kineticGlyphs.delete(glyph);return;
+    }
+    glyph.style.left='calc(.075em + '+Math.max(0,nativeWidth-glyphWidth).toFixed(2)+'px)';
+    const release=()=>{glyph.remove();kineticGlyphs.delete(glyph);};
+    const direction=index%2===0?-1:1;
+    if(typeof glyph.animate!=='function'){release();return;}
+    try{
+      const flight=glyph.animate([
+        {offset:0,opacity:.30,
+         transform:'translate3d('+(direction*8)+'px,12px,-15px) rotateX(10deg) rotateY('+(direction*9)+'deg)'},
+        {offset:.55,opacity:.16,
+         transform:'translate3d('+(direction*3)+'px,3px,-3px) rotateX(3deg) rotateY('+(direction*3)+'deg)'},
+        {offset:1,opacity:0,
+         transform:'translate3d(0,0,0) rotateX(0deg) rotateY(0deg)'}
+      ],{duration:245,easing:'cubic-bezier(.2,.72,.26,1)',fill:'forwards'});
+      flight.finished.then(release,release);
+    }catch(_){release();}
+  }
   // Tuned typing cadence: calm at the beginning, a natural pause at the
   // word boundary, and a gentle deceleration without artificial holds.
   const intervals=[112,116,121,150,122,118,124,130,122];
@@ -110,6 +147,7 @@
       return;
     }
     typed.textContent+=letters[index];
+    kineticArrival(letters[index],index);
     // Composited cursor glides to the new character boundary; its
     // transition is CSS-driven, never a reflowing width animation.
     if(caret&&typeof typed.getBoundingClientRect==='function'){
