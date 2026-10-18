@@ -20,6 +20,29 @@ export default {
               this.handleFiles([...e.target.files]);
               this.els.input.value = "";
             };
+            // A multi-file picker cannot reveal its parent directory.
+            // The directory picker supplies File.webkitRelativePath instead.
+            const projectPanel = this.els.tabs?.parentElement;
+            if (projectPanel?.appendChild && !document.getElementById("storyFolderInput")) {
+              const folderLabel = document.createElement("label");
+              folderLabel.className = "liquid-btn story-folder-import";
+              folderLabel.textContent = "Import stills folder";
+              folderLabel.title = "Import a folder of stills and name an empty board after it.";
+              const folderInput = document.createElement("input");
+              folderInput.id = "storyFolderInput";
+              folderInput.type = "file";
+              folderInput.multiple = true;
+              folderInput.accept = "image/*,video/*";
+              folderInput.hidden = true;
+              folderInput.setAttribute("webkitdirectory", "");
+              folderInput.addEventListener("change", event => {
+                const selected = [...(event.target.files || [])];
+                event.target.value = "";
+                if (selected.length) this.handleFiles(selected);
+              });
+              folderLabel.appendChild(folderInput);
+              projectPanel.appendChild(folderLabel);
+            }
             this.els.name.oninput = () => {
               this.els.name.value = Core.Utils.sanitize(this.els.name.value);
               this.saveSettings();
@@ -222,9 +245,19 @@ export default {
             document.body.appendChild(a);a.click();a.remove();
             setTimeout(()=>URL.revokeObjectURL(url),60000);
           },
+          folderNameFromFiles(files) {
+            const paths = Array.from(files || [], file => String(file?.webkitRelativePath || ""));
+            if (!paths.length || !paths[0].includes("/")) return "";
+            const root = paths[0].split("/")[0];
+            if (!root || paths.some(path => !path.includes("/") || path.split("/")[0] !== root)) return "";
+            return Core.Utils.sanitize(root).trim().slice(0, 80);
+          },
           async handleFiles(files) {
             const project = this.active;
             if (!project) return;
+            const initialName = project.name;
+            const wasEmpty = project.images.length === 0;
+            const folderName = this.folderNameFromFiles(files);
             let rejected=0;
             for (const file of files) {
               if (project.images.length >= 200) {rejected++;continue;}
@@ -245,6 +278,18 @@ export default {
               project.images.push({file,img});
             }
             if (rejected) UI.showError(`${rejected} unsupported, damaged or oversized storyboard files skipped.`);
+            // Rename only a previously empty board that actually received files.
+            // Respect edited names and prevent duplicate board names.
+            if (wasEmpty && project.images.length && folderName && project.name === initialName) {
+              let candidate = folderName;
+              for (let n = 2; this.projects.some(other =>
+                other !== project && other.name.toLowerCase() === candidate.toLowerCase()); n++) {
+                candidate = folderName + " " + n;
+              }
+              project.name = candidate;
+              if (this.active === project) this.els.name.value = candidate;
+              this.renderTabs();
+            }
             // An upload may have finished after the user switched boards.
             if (this.active===project) {this.saveSettings();this.updateList();this.draw();}
           },
