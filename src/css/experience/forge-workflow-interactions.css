@@ -10,6 +10,9 @@
 #view-app #section-adlinks #adlinksTabContentDownloader #adDlTableContainer{
  flex:0 0 auto!important;height:auto!important;max-height:none!important;
  overflow:visible!important;overscroll-behavior:auto!important;
+ /* Rows belong to the workspace, not to a framed mini-app. */
+ margin:0 0 28px!important;padding:0!important;border:0!important;
+ border-radius:0!important;box-shadow:none!important;background:transparent!important;
 }
 #view-app #section-adlinks #adlinksTabContentDownloader #adDlTableContainer table{
  min-width:0!important;
