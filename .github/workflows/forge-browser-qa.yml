@@ -1,5 +1,17 @@
 name: Forge desktop browser QA
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/css/experience/forge-whats-new.css'
+      - 'src/js/presentation/forge-whats-new.js'
+      - 'src/css/experience/forge-workflow-interactions.css'
+      - 'src/css/experience/forge-video-route.css'
+      - 'src/js/presentation/forge-video-route.js'
+      - 'src/js/presentation/forge-brand.js'
+      - 'scripts/build.mjs'
+      - 'scripts/forge-browser-qa.mjs'
+      - '.github/workflows/forge-browser-qa.yml'
   pull_request:
     branches: [main]
     paths:
