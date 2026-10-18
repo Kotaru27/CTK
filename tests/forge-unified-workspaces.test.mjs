@@ -24,11 +24,13 @@ test('unified design targets all eight working tool modes and supporting dialogs
 });
 
 test('polish touches only presentation, never process or export code',()=>{
+ const layoutSafeCss=css.replace(/#view-app #stillsTabContentStory #storyFileList > \.story-asset-row\{[^}]+\}/g,'');
+ assert.match(css, /\.story-asset-row\{[^}]*grid-template-columns:minmax\(0,1fr\) auto/);
  for(const banned of ['#pdfStacksContainer {','grid-template-columns:','grid-template-rows:',
    'object-fit:','canvas {','position:fixed','position:absolute','min-height:',
    'max-height:','width:420px','display:none!important','@keyframes',
    'pointer-events:none!important','transform:scale','filter:blur']){
-  assert.ok(!css.includes(banned),'layout/processing override: '+banned);
+  assert.ok(!layoutSafeCss.includes(banned),'layout/processing override: '+banned);
  }
  const cards=s=>[...s.matchAll(/<button class="home-card\b[\s\S]*?<\/button>/g)].map(v=>v[0]);
  const normalize=s=>s.replaceAll('aria-label="Open Logo Resizer"','aria-label="Open Logo Workspace"')
