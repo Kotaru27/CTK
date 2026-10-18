@@ -17,7 +17,7 @@
       if (intro) intro.textContent="Organize every campaign file. Copy clean names, track downloads, and keep the workspace moving.";
     }
     const empty=root.querySelector("#adDlEmptyState p");
-    if (empty) empty.textContent="Import an Excel workbook to prepare neatly named assets and a clean download queue.";
+    if (empty) empty.textContent="Choose an Auto-name folder first, then import an Excel workbook.";
     const opened=()=>rows.querySelectorAll(".ctk-row-menu[open]");
     const closeMenus=(except)=>{
       for (const details of opened()) if (details!==except) details.open=false;

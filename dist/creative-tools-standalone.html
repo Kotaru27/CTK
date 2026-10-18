@@ -7728,6 +7728,25 @@ html.forge-route-running::view-transition-new(root){
    transition:none!important;
  }
 }
+
+/* Before an authorized Auto-name directory is chosen, the Excel input stays
+   genuinely disabled; visual affordance matches that locked native state. */
+#section-adlinks #adlinksTabContentDownloader #adDlDropZone.ad-excel-locked label{
+  opacity:.48!important;
+  cursor:not-allowed!important;
+  box-shadow:none!important;
+  transform:none!important;
+  translate:none!important;
+}
+#section-adlinks #adlinksTabContentDownloader #adDlDropZone.ad-excel-locked label:hover{
+  box-shadow:none!important;
+  transform:none!important;
+  translate:none!important;
+}
+#section-adlinks #adlinksTabContentDownloader #adDlRenameFolder:focus-visible{
+  outline:2px solid var(--ad-primary,#285a43)!important;
+  outline-offset:2px!important;
+}
 </style>
 </head>
 <body class="light-mode">
@@ -16439,7 +16458,7 @@ const CTKDownloadRenamer = (() => {
       if (intro) intro.textContent="Organize every campaign file. Copy clean names, track downloads, and keep the workspace moving.";
     }
     const empty=root.querySelector("#adDlEmptyState p");
-    if (empty) empty.textContent="Import an Excel workbook to prepare neatly named assets and a clean download queue.";
+    if (empty) empty.textContent="Choose an Auto-name folder first, then import an Excel workbook.";
     const opened=()=>rows.querySelectorAll(".ctk-row-menu[open]");
     const closeMenus=(except)=>{
       for (const details of opened()) if (details!==except) details.open=false;
