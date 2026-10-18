@@ -17,3 +17,10 @@ jobs:
           node-version: '20'
       - name: Validate bundled release and run tests
         run: npm test
+      - name: Ensure GitHub Pages artifacts match modular source
+        run: |
+          if ! git diff --quiet -- index.html dist/; then
+            echo '::error::Pages artifacts are stale. Run npm run build and commit index.html and dist/ alongside source changes.'
+            git diff --stat -- index.html dist/
+            exit 1
+          fi
