@@ -817,13 +817,16 @@
           const motion=window.ForgeWorkspaceRoute;
           const route=motion?.fromOpen(id,mode);
           const inside=this.els.viewApp.classList.contains("active");
+          const currentSection=inside?document.querySelector('#view-app .tool-section.active'):null;
+          const sharedSection=inside && currentSection?.id===id;
           const sameRoute=inside && motion?.selected()===route;
-          // Shared sections represent distinct tools. PDF/Split,
-          // Stills/Storyboard and Link Gen/Downloader all need the SAME
-          // transition ownership as every other workspace switch.
-          // Switching Board / Filmstrip / Fit within Storyboard remains a
-          // mode-only change, using the shorter internal panel motion.
-          if(sameRoute){
+          // Shared-section pairs (PDF/Split, Stills/Storyboard,
+          // Link Gen/Downloader) retain one stable section. Updating a
+          // named root View Transition around that same DOM element can
+          // deadlock the browser snapshot lifecycle. The owned WAAPI
+          // panel spring handles these in place with no blank frame.
+          // Board/Filmstrip/Fit remain the same internal mode workflow.
+          if(sameRoute||sharedSection){
             motion?.cancel();
             this._openTool(id,mode);
           }else if(route&&motion){
