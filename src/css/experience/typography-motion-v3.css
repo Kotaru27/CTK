@@ -474,10 +474,7 @@ body.light-mode #view-app #section-stills-boards{
  transform:none!important;translate:none!important;
  scale:none!important;filter:none!important;box-shadow:none!important;
 }
-#view-app .tool-section .liquid-btn:not(:disabled),
-#view-app .tool-section label.liquid-btn{
- transition:background-color 180ms ease,border-color 180ms ease,color 180ms ease!important;
-}
+/* Timing is owned by forge-workflow-interactions.css. */
 #view-app .tool-section .liquid-btn:hover:not(:disabled):not(.active-mode):not(.danger-btn),
 #view-app .tool-section label.liquid-btn:hover:not(.active-mode){
  background:var(--studio-hover)!important;
