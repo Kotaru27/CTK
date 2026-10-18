@@ -551,3 +551,47 @@ html.forge-launch-fallback-kola #view-home .combined-home-layout .forge-hero-nam
 .forge-intro.forge-intro-ready .forge-intro-skip {
   font-family:Arial,Helvetica,sans-serif!important;
 }
+
+/* FORGE / INTACT WORD ENTRANCE (2026-10-18)
+   Kola has a distinctive descender on g. Never reveal its letters through
+   a clipping rectangle or a tight line-height; animate two whole words
+   instead. Natural spacing between words preserves glyph kerning. */
+.forge-intro.forge-intro-ready .forge-intro-type{
+  overflow:visible!important;
+}
+.forge-intro.forge-intro-ready #forgeIntroWordmark{
+  clip-path:none!important;
+  overflow:visible!important;
+  line-height:1.26!important;
+  padding:.055em .075em .16em!important;
+  margin:-.055em -.075em -.16em!important;
+  opacity:1!important;
+  transform:none!important;
+  white-space:nowrap;
+  font-kerning:normal;
+  text-rendering:optimizeLegibility;
+}
+.forge-intro.forge-intro-ready .forge-intro-word{
+  display:inline-block;
+  overflow:visible;
+  clip-path:none!important;
+  vertical-align:baseline;
+  white-space:nowrap;
+  opacity:0;
+  transform:translate3d(0,23px,0);
+  will-change:opacity,transform;
+}
+.forge-intro.forge-intro-ready .forge-intro-word:last-child{
+  padding-bottom:.08em;
+  margin-bottom:-.08em;
+}
+.forge-intro.forge-intro-leaving .forge-intro-word{
+  will-change:auto;
+}
+@media(prefers-reduced-motion:reduce){
+  .forge-intro.forge-intro-ready .forge-intro-word{
+    opacity:1!important;
+    transform:none!important;
+    animation:none!important;
+  }
+}
