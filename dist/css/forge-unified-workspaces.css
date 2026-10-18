@@ -1,0 +1,264 @@
+/* THE FORGE / UNIFIED WORKSPACE SYSTEM — 2026.10
+   FINISHING PASS: Typography, semantic hierarchy, interaction precision,
+   eight-workspace consistency, reduced-motion support and dialog parity.
+   Desktop-first. NEVER resize a workspace, canvas, media output, editor
+   layout, Focus inspector, control hit-area or scroll container.
+   No JS hooks and no alteration of tool logic. */
+
+/* 01 / Shared product language. Keep Kola exclusively for the wordmark,
+   Plus Jakarta Sans for UI and JetBrains Mono for codes and technical data. */
+#view-app {
+  --forge-label-tracking:.035em;
+  --forge-ui-ease:cubic-bezier(.22,.78,.28,1);
+  --forge-ui-fast:150ms;
+  --forge-focus-color:var(--studio-accent,#2d6949);
+}
+#view-app .tool-section :is(.label-header,.edition-kicker,.edition-rule-label,
+  .pdf-eyebrow,.pdf-stage-topline,.split-studio-meta,.yt-terminal-caption,
+  .vs-collection-kicker,.vs-overline,.vs-gallery-bar){
+  letter-spacing:var(--forge-label-tracking)!important;
+  line-height:1.55!important;
+  font-weight:650!important;
+}
+#view-app .tool-section .tool-header h2 {
+  letter-spacing:-.043em!important;
+  font-weight:720!important;
+  text-wrap:balance;
+}
+#view-app .tool-section :is(.label-header,.edition-kicker,.edition-rule-label){
+  font-size:11.5px!important;
+}
+/* Technical data and tool help deserve clarity, not decorative faintness. */
+body.light-mode #view-app .tool-section :is(.edition-rule-label,
+  .split-studio-meta,.yt-terminal-caption,.vs-gallery-bar){
+  color:var(--studio-muted,#526b5a)!important;
+}
+#view-app .tool-section :is(input.liquid-input:not([type="color"]),
+   textarea.liquid-input,select.liquid-input){
+  font-size:13px!important;
+  line-height:1.5!important;
+  caret-color:var(--forge-focus-color);
+}
+/* Native inputs for dimensions should keep tabular data stable. */
+#view-app .tool-section input[type="number"] {
+  font-variant-numeric:tabular-nums;
+}
+#view-app .tool-section :is(input.liquid-input,textarea.liquid-input)::placeholder{
+  opacity:1;
+  color:var(--studio-faint,#748778);
+}
+#view-app .tool-section :is(.terminal-input,#ytUrlInput,#alg-input){
+  letter-spacing:-.012em!important;
+  font-variant-ligatures:none;
+}
+
+/* 02 / Action states — one surface response, no lifts, scale, glow or
+   full-area filtering. Primary remains primary and danger remains danger. */
+#view-app .tool-section :is(.liquid-btn,button,[role="tab"],[role="button"],summary) {
+  -webkit-tap-highlight-color:transparent;
+}
+#view-app .tool-section .liquid-btn:not(.active-mode):not(.danger-btn):not(:disabled),
+#view-app .tool-section [role="tab"]:not(.active-mode):not(:disabled){
+  transition:background-color var(--forge-ui-fast) ease,
+     border-color var(--forge-ui-fast) ease,
+     color var(--forge-ui-fast) ease!important;
+}
+#view-app .tool-section .liquid-btn:not(.active-mode):not(.danger-btn):not(:disabled):hover {
+  background:var(--studio-hover)!important;
+  color:var(--studio-title)!important;
+  border-color:var(--studio-accent)!important;
+  box-shadow:none!important;
+  filter:none!important;
+}
+#view-app .tool-section .liquid-btn:active:not(:disabled),
+#view-app .tool-section .liquid-btn:hover:not(:disabled){
+  transform:none!important;translate:none!important;
+  filter:none!important;
+}
+#view-app .tool-section .liquid-btn:disabled,
+#view-app .tool-section button:disabled {
+  cursor:not-allowed!important;
+  filter:none!important;
+  box-shadow:none!important;
+}
+/* Focus must be visible for keyboard users, regardless of tool or field.
+   Visual rings do not move the pointer target or mutate the DOM. */
+#view-app .tool-section :is(button,.liquid-btn,input:not([type="hidden"]):not([type="file"]),
+  select,textarea,[role="tab"],[role="button"],summary):focus-visible{
+  outline:2px solid var(--forge-focus-color)!important;
+  outline-offset:2px!important;
+}
+#view-app .tool-section label:has(>input[type="file"]:focus-visible) {
+  outline:2px solid var(--forge-focus-color)!important;
+  outline-offset:2px!important;
+}
+#view-app .tool-section :is(input.liquid-input,select.liquid-input,textarea.liquid-input):focus-visible{
+  border-color:var(--forge-focus-color)!important;
+  box-shadow:0 0 0 1px var(--forge-focus-color)!important;
+}
+#view-app .nav-sidebar .nav-item:focus-visible,
+.nav-sidebar .nav-item:focus-visible {
+  outline:2px solid #397454!important;
+  outline-offset:-3px!important;
+}
+#view-app .tool-section [role="tab"][aria-selected="true"]{
+  font-weight:700!important;
+}
+
+/* 03 / Logo Resizer — distinguish editable filename from metadata without
+   affecting logo card, canvas, Focus sidebar width or export controls. */
+#section-logo #logoControls :is(.label-header,label){
+  letter-spacing:.02em!important;
+}
+#section-logo #logoGrid .logo-card-item :is(.card-fname-lbl,.card-text){
+  line-height:1.55!important;
+  letter-spacing:-.015em!important;
+}
+#section-logo #logoDetailOverlay #logoDetailFname{
+  letter-spacing:-.025em!important;
+  font-weight:700!important;
+}
+#section-logo #logoDetailOverlay .label-header {
+  letter-spacing:.025em!important;
+}
+#section-logo #logoDetailOverlay :is(button,input,textarea,select):focus-visible{
+  outline:2px solid var(--lr-cta,#2e6746)!important;
+  outline-offset:2px!important;
+}
+
+/* 04 / PDF to Image & Image Splitter — supporting labels are legible,
+   conversion/export remain visually primary, and technical settings quiet. */
+#section-pdf :is(.pdf-format-note,.pdf-step,.pdf-side-identity p,
+  .split-studio-meta,.split-studio-foot){
+  line-height:1.6!important;
+}
+#section-pdf .pdf-stack-wrapper .stack-title{
+  font-weight:650!important;
+  letter-spacing:-.015em!important;
+}
+#section-pdf #splitGrid .logo-card-item :is(.card-text,.card-fname-lbl){
+  font-size:12.5px!important;
+  line-height:1.5!important;
+}
+
+/* 05 / Video Stills: the image still leads. Only gallery controls and
+   metadata typography are refined, never preview zoom, media dimensions,
+   output order, still extraction or the contact-sheet overlay layout. */
+#stillsTabContentVideo :is(.vs-collection-kicker,.vs-overline){
+  letter-spacing:.045em!important;
+}
+#stillsDetailOverlay.vs-contact-sheet .vs-gallery-bar{
+  font-size:11.5px!important;letter-spacing:.03em!important;
+}
+#stillsDetailOverlay.vs-contact-sheet :is(button,[role="button"]):focus-visible{
+  outline:2px solid #397454!important;
+  outline-offset:3px!important;
+}
+
+/* 06 / Storyboard: one visual grammar across board/filmstrip/fit modes.
+   Selected projects stay stronger than hover, with no changes to assets,
+   canvas rendering, project tabs or their bounding boxes. */
+#section-stills-boards #storyBoardControls .label-header {
+  font-size:12px!important;
+  letter-spacing:.025em!important;
+}
+#section-stills-boards :is(#stillsTabContentStory,#stillsTabContentFilmstrip,#stillsTabContentFit)
+  :is(input.liquid-input,select.liquid-input,textarea.liquid-input){
+  color:var(--sb-text)!important;
+}
+#stillsTabContentStory #storyProjectTabs > div:focus-within {
+  border-color:var(--sb-focus)!important;
+}
+#stillsTabContentStory #storyFileList > div {
+  line-height:1.5!important;
+}
+#stillsTabContentStory #storyFileList > div:focus-within{
+  outline:2px solid var(--sb-focus)!important;
+  outline-offset:1px!important;
+}
+#section-stills-boards #storySubModeToggle .liquid-btn.active-mode {
+  font-weight:700!important;
+}
+
+/* 07 / Link Gen & Ad Downloader. Readable generated output, legible table
+   actions; no result expansion, row reordering or download interception. */
+#section-adlinks #adlinksTabContentGen :is(#alg-out-ads,#alg-out-story) {
+  font-size:12.5px!important;line-height:1.66!important;
+  tab-size:2!important;
+}
+#section-adlinks #adlinksTabContentGen .adgen-output-card .label-header{
+  font-weight:700!important;
+}
+#section-adlinks #adlinksTabContentDownloader #adDlTableContainer th{
+  font-size:11px!important;letter-spacing:.065em!important;
+}
+#section-adlinks #adlinksTabContentDownloader #adDlTableContainer tbody td{
+  line-height:1.52!important;
+}
+#section-adlinks #adlinksTabContentDownloader #adDlTableContainer
+  :is(button,summary):hover:not(:disabled) {
+  border-color:var(--ad-line-strong)!important;
+}
+#section-adlinks #adlinksTabContentDownloader #adDlTableContainer
+  :is(button,summary,input[type="checkbox"]):focus-visible {
+  outline-color:var(--ad-primary)!important;
+}
+
+/* 08 / Video Downloads: command text stays copyable and primary button
+   hierarchy stays visible; no changes to command strings or preview stage. */
+#section-yt-helper #ytMetadataContent :is(h4,.yt-terminal-caption){
+  letter-spacing:-.018em!important;
+}
+#section-yt-helper #ytMetadataContent .copy-cmd-btn:hover:not(:disabled){
+  border-color:var(--studio-accent)!important;
+  transform:none!important;filter:none!important;
+}
+#section-yt-helper #ytMetadataContent .copy-cmd-btn:focus-visible{
+  outline:2px solid var(--studio-accent)!important;
+  outline-offset:2px!important;
+}
+
+/* 09 / Global dialogs, confirmations, presets and transient feedback.
+   They are outside a tool section in the DOM, hence separate styling. */
+body.light-mode :is(.confirm-dialog,.presets-dialog,
+  #commandPaletteOverlay > .glass-panel){
+  border-color:var(--studio-border,#b8c7b9)!important;
+  box-shadow:0 18px 55px rgba(17,52,33,.12)!important;
+}
+body.light-mode :is(.confirm-dialog,.presets-dialog) :is(h2,h3,.label-header){
+  color:var(--studio-title,#1d3629)!important;
+  letter-spacing:-.025em!important;
+}
+body.light-mode :is(.confirm-dialog,.presets-dialog) :is(p,.text-muted){
+  color:var(--studio-muted,#496455)!important;
+  line-height:1.6!important;
+}
+body.light-mode :is(.confirm-dialog,.presets-dialog,.undo-toast)
+  :is(button,input,select,textarea):focus-visible {
+  outline:2px solid #2d6c49!important;
+  outline-offset:2px!important;
+}
+body.light-mode .undo-toast {
+  border-color:var(--studio-border,#b8c7b9)!important;
+}
+
+/* 10 / Stable, intentional motion. Entrances are quick and only affect
+   the chrome, not generated image cards/canvases or content processing. */
+#view-app .tool-section.active > .tool-header {
+  animation-duration:280ms!important;
+}
+#view-app .tool-section.active :is(.editor-layout,.story-layout,
+  .split-studio-workspace,.adgen-studio,.yt-studio){
+  animation-duration:280ms!important;
+}
+@media(prefers-reduced-motion:reduce){
+ #view-app .tool-section.active > .tool-header,
+ #view-app .tool-section.active :is(.editor-layout,.story-layout,
+    .split-studio-workspace,.adgen-studio,.yt-studio){
+   animation:none!important;
+ }
+ #view-app .tool-section :is(.liquid-btn,button,input,select,textarea,[role="tab"],summary),
+ #view-app .tool-section #storyFileList > div{
+   transition:none!important;
+ }
+}
