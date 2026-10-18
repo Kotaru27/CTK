@@ -224,8 +224,8 @@
    Tool-specific CSS retains only semantic color states, focus, and selection.
    Legacy baseline remains byte-identical for regression safety. */
 :root {
-  --forge-interaction-time:190ms;
-  --forge-interaction-ease:cubic-bezier(.22,.8,.28,1);
+  --forge-interaction-time:225ms;
+  --forge-interaction-ease:cubic-bezier(.18,.78,.26,1);
 }
 .nav-sidebar.visible .nav-item:not(.nav-toggle),
 #view-app .tool-section :is(.liquid-btn,button,[role="tab"],[role="button"],summary):not(:disabled),
@@ -288,6 +288,28 @@
   }
 }
 
+/* Deliberate desktop tactile feedback: surface light, not geometry motion.
+   Keep file previews, canvases, selected cards and layout dimensions still.
+   Hover and keyboard focus remain independently accessible. */
+@media(hover:hover) and (pointer:fine){
+  #view-home .combined-home-grid > .home-card:hover{
+    border-color:rgba(35,93,59,.40)!important;
+    box-shadow:inset 0 0 0 1px rgba(36,96,60,.10)!important;
+  }
+  .nav-sidebar.visible .nav-item:not(.active):not(.nav-toggle):hover{
+    background-color:rgba(39,93,59,.075)!important;
+  }
+  #view-app .tool-section .liquid-btn:not(:disabled):hover,
+  #view-app .tool-section label.liquid-btn:hover{
+    box-shadow:inset 0 0 0 1px rgba(39,104,66,.14),0 3px 12px rgba(18,56,35,.055)!important;
+  }
+}
+.nav-sidebar.visible .nav-item:not(.nav-toggle):focus-visible,
+#view-app .tool-section .liquid-btn:focus-visible,
+#view-app .tool-section label.liquid-btn:focus-within{
+  outline:2px solid #37714f!important;
+  outline-offset:3px!important;
+}
 /* Before an authorized Auto-name directory is chosen, the Excel input stays
    genuinely disabled; visual affordance matches that locked native state. */
 #section-adlinks #adlinksTabContentDownloader #adDlDropZone.ad-excel-locked label{
