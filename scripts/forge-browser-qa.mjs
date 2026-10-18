@@ -37,27 +37,35 @@ try {
         performance.now()-start>4700){resolve(samples);return;}
      const rect=hero.getBoundingClientRect();
      const style=getComputedStyle(hero);
-     const words=[...document.querySelectorAll('#forgeIntroWordmark .forge-intro-word')];
-     const opacities=words.map(el=>parseFloat(getComputedStyle(el).opacity));
      const source=document.getElementById('forgeIntroWordmark');
+     const typed=source?.querySelector('.forge-intro-typed');
      const crop=source?getComputedStyle(source).clipPath:'none';
+     const fixedWidth=source?.getBoundingClientRect().width||0;
      samples.push({time:performance.now(),left:rect.left,top:rect.top,
-       width:rect.width,opacity:parseFloat(style.opacity),crop,opacities});
+       width:rect.width,opacity:parseFloat(style.opacity),
+       crop,fixedWidth,visibleText:typed?.textContent||''});
      requestAnimationFrame(sample);
    }
    requestAnimationFrame(sample);
  }));
+ await page.waitForFunction(()=>
+   (document.querySelector('#forgeIntroWordmark .forge-intro-typed')?.textContent.length||0)>=3,
+   {timeout:4000});
  await page.screenshot({path:'artifacts/forge-browser/intro.png'});
  await intro.waitFor({state:'detached',timeout:6000});
  const trajectory=await trajectoryPromise;
  check(trajectory.length>=12,'Home-native physics intro produced too few frames');
  check(trajectory.every(f=>f.crop==='none'),
    'Intro clipped the Kola g during the wordmark reveal');
- check(trajectory.some(f=>f.opacities?.length===2),
-   'Two complete animated word spans missing');
- check(trajectory.some(f=>f.opacities?.[0]<.5)&&
-       trajectory.some(f=>f.opacities?.[0]>.95),
-   'Wordmark first word did not fade in smoothly');
+ check(new Set(trajectory.map(f=>f.visibleText)).size>=7,
+   'Typing animation did not reveal characters one by one');
+ check(trajectory.some(f=>f.visibleText==='The Forge'),
+   'Final complete wordmark never appeared');
+ check(trajectory.every(f=>f.fixedWidth>0),
+   'Typing wordmark lost its reserved width');
+ const stableWidths=trajectory.map(f=>f.fixedWidth);
+ check(Math.max(...stableWidths)-Math.min(...stableWidths)<2,
+   'Typing text is shifting its reserved wordmark container');
  check(trajectory.every(f=>f.width>0),
    'Wordmark disappeared or collapsed mid-animation');
  if(trajectory.length>=10){
@@ -132,13 +140,13 @@ try {
  check(details.titleRight < 1440,'Wordmark is clipped on the desktop viewport');
  check(details.font.includes('Kola'),'Wordmark must request Kola');
  check(Math.abs(details.titleWidth-details.inkWidth)<7,'Hero heading box must match actual kerned text width');
- check(trajectory.length>=12,'Expected at least twelve actual heading animation frames');
+ check(trajectory.length>=12,'Expected at least twelve typing frames');
  if(trajectory.length>=2){
    const last=trajectory[trajectory.length-1];
    check(Math.abs(last.width-details.titleWidth)<8,
-     'Actual wordmark changed physical width during entrance');
+     'Home heading should keep a stable width throughout typing');
    check(Math.abs(last.left-details.titleLeft)<5,
-     'Actual wordmark shifted horizontally during entrance');
+     'Home heading should not move while the typed overlay is displayed');
  }
  // Legacy dark preference must not strand users in dark mode after hiding the toggle.
  await page.evaluate(()=>localStorage.setItem('cts_theme','dark'));
