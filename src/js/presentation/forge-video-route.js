@@ -45,6 +45,7 @@
   function clear(){
     root.classList.remove('forge-route-running');
     delete root.dataset.forgeRoute;
+    delete root.dataset.forgeRouteTravel;
   }
   function cancel(){
     ++serial;
