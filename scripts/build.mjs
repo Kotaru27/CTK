@@ -63,7 +63,7 @@ const forgeIntro=[
   ' <div class="forge-intro-layout">',
   '  <div class="forge-intro-label">CREATIVE TOOL KIT / REIMAGINED</div>',
   '  <div class="forge-intro-type" id="forgeIntroType" role="img" aria-label="The Forge">',
-  '   <div class="forge-intro-wordmark" id="forgeIntroWordmark" data-full-name="The Forge" aria-hidden="true"><span class="forge-intro-typed"></span></div>',
+  '   <div class="forge-intro-wordmark" id="forgeIntroWordmark" data-full-name="The Forge" aria-hidden="true"><span class="forge-intro-typed"></span><span class="forge-intro-caret" aria-hidden="true"></span></div>',
   '  </div>',
   '  <div class="forge-intro-caption"><span>EIGHT TOOLS / ONE WORKSPACE</span>',
   '   <button type="button" class="forge-intro-skip" id="forgeIntroSkip" aria-label="Skip introduction">Skip intro ↗</button>',
