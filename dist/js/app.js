@@ -4301,13 +4301,21 @@ const CTKDownloadRenamer = (() => {
           },
           init() {
             const controls = document.getElementById("videoHeaderControls");
-            if (controls && !document.getElementById("stillsSmartMode")) {
-              const label = document.createElement("label");
-              label.style.cssText = "display:inline-flex; gap:7px; align-items:center; font-size:12px; cursor:pointer; white-space:nowrap;";
-              label.title = "Optional: sample content and discard near-duplicate, blank or likely blurry frames. Normal extraction remains unchanged when off.";
-              const toggle = document.createElement("input"); toggle.type="checkbox"; toggle.id="stillsSmartMode";
-              label.append(toggle,document.createTextNode("Smart frame selection"));
-              controls.appendChild(label);
+            // Launch workflow: deterministic uniform extraction only. The
+            // experimental smart selector is not exposed or used.
+            document.getElementById("stillsSmartMode")?.closest("label")?.remove();
+            if(controls && !document.getElementById("stillsSendAllBoardsBtn")) {
+              const send=document.createElement("button");
+              send.id="stillsSendAllBoardsBtn";
+              send.type="button";
+              send.className="liquid-btn";
+              send.disabled=true;
+              send.textContent="Send to Board";
+              send.title="Create one storyboard for each video collection, using only its checked stills.";
+              send.onclick=()=>this.sendAllSelectedToBoards();
+              const primary=controls.querySelector("#downloadStillsBtn");
+              if(primary) primary.closest("div")?.insertAdjacentElement("beforebegin",send);
+              else controls.appendChild(send);
             }
             Core.Utils.createDropZone(this.els.drop, (f) =>
               this.handleFiles(f),
@@ -4338,13 +4346,23 @@ const CTKDownloadRenamer = (() => {
               document
                 .querySelectorAll("#stillsOverlayGrid .detail-check")
                 .forEach((cb) => (cb.checked = e.target.checked));
+              this.updateBulkBoardButton();
             };
             this.els.dlSel.onclick = () => this.downloadSelected();
             this.els.dlBtn.onclick = () => this.downloadAll();
-            this.els.toBoardBtn.onclick = (e) => {
-              e.stopPropagation();
-              this.toggleBoardMenu();
-            };
+            // Keep the existing Filmstrip hand-off, but remove the per-video
+            // Send to Board menu. Boards are now transferred only in bulk.
+            if(this.els.toBoardBtn) {
+              this.els.toBoardBtn.textContent="Send to Filmstrip";
+              this.els.toBoardBtn.onclick=()=>{
+                if(!this.currentId)return;
+                const selected=this.collection[this.currentId]?.frames.filter(f=>f.checked&&f.type!=="storyboard")||[];
+                if(!selected.length){UI.showError("Select at least one still.");return;}
+                this.closeDetail();
+                Tools.Filmstrip.addFromStills(selected);
+                UI.switchStillsTab("filmstrip");
+              };
+            }
             document.addEventListener("click", () => this.closeBoardMenu());
             document.addEventListener("keydown", (e) => {
               if (
@@ -4360,11 +4378,6 @@ const CTKDownloadRenamer = (() => {
                 !this.els.overlay.classList.contains("active")
               )
                 return;
-              if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "b") {
-                e.preventDefault();
-                this.toggleBoardMenu();
-                return;
-              }
               if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
                 const active = Array.from(this.els.grid.children).findIndex(
                   (el) => el.classList.contains("active-still"),
@@ -4400,6 +4413,95 @@ const CTKDownloadRenamer = (() => {
             this.els.stacks.innerHTML = "";
             this.els.stacks.appendChild(this.els.empty);
             UI.toggleEmptyState(this.els.stacks, true);
+            this.updateBulkBoardButton();
+          },
+          selectedGroups() {
+            return Object.entries(this.collection).map(([id,data])=>({
+              id,name:data.name,
+              frames:data.frames.filter(f=>f.checked&&f.type==="still"&&f.blob)
+            })).filter(group=>group.frames.length);
+          },
+          updateBulkBoardButton() {
+            const button=document.getElementById("stillsSendAllBoardsBtn");
+            if(!button)return;
+            const groups=this.selectedGroups();
+            const count=groups.reduce((sum,group)=>sum+group.frames.length,0);
+            button.disabled=!!this._bulkBoardBusy||!count;
+            button.textContent="Send to Board";
+            button.title=count
+              ? `Send ${count} selected stills from ${groups.length} video collection(s) into separate storyboards`
+              : "Select stills inside video collections to create storyboards";
+          },
+          async sendAllSelectedToBoards() {
+            if(this._bulkBoardBusy)return;
+            const groups=this.selectedGroups();
+            if(!groups.length){UI.showError("Select at least one still from a video collection.");return;}
+            const story=Tools.Story;
+            if(!story||typeof story.makeProject!=="function"){
+              UI.showError("Storyboard is unavailable.");return;
+            }
+            this._bulkBoardBusy=true;
+            this.updateBulkBoardButton();
+            let imported=0,created=0,rejected=0,firstId=null;
+            try{
+              // Preserve the user's active board settings and name before
+              // importing into potentially many independent projects.
+              if(story.active)story.saveSettings();
+              for(const group of groups){
+                let target=story.projects.find(p=>p.stillsSourceId===group.id);
+                const missing=group.frames.filter(frame=>!target?.images.some(item=>
+                  item.stillsSourceId===group.id&&item.stillsFrameNum===frame.num));
+                if(!missing.length)continue;
+                let newBoard=false;
+                if(!target){
+                  const blank=story.active&&story.active.images.length===0&&
+                    /^Board_\d+$/.test(story.active.name)&&!story.active.stillsSourceId;
+                  target=blank?story.active:story.makeProject(story.uniqueBoardName(group.name));
+                  target.stillsSourceId=group.id;
+                  target.name=story.uniqueBoardName(group.name,target);
+                  if(target===story.active&&story.els?.name)story.els.name.value=target.name;
+                  newBoard=true;
+                }
+                const initial=target.images.length;
+                for(const frame of missing){
+                  const url=Core.BlobRegistry.create(frame.blob,"story");
+                  const img=new Image();
+                  const ok=await new Promise(resolve=>{
+                    img.onload=()=>resolve(true);
+                    img.onerror=()=>resolve(false);
+                    img.src=url;
+                  });
+                  if(!ok||!story.validateImage(img)){
+                    Core.BlobRegistry.release(url);rejected++;continue;
+                  }
+                  target.images.push({
+                    file:frame.blob,img,
+                    label:`${group.name} #${frame.num}`,
+                    stillsSourceId:group.id,stillsFrameNum:frame.num
+                  });
+                  imported++;
+                }
+                if(target.images.length>initial){
+                  if(newBoard)created++;
+                  if(firstId===null)firstId=target.id;
+                }else if(newBoard){
+                  target.stillsSourceId=null;
+                  if(target!==story.active)story.projects.splice(story.projects.indexOf(target),1);
+                }
+              }
+              if(firstId!==null){
+                this.closeDetail();
+                story.switchProject(firstId);
+                UI.switchStillsTab("story");
+                UI.toast(`${imported} stills sent to ${created} new board(s)${rejected?`; ${rejected} could not be decoded`:""}.`);
+              }else if(!rejected){
+                UI.toast("Selected stills are already in their boards.");
+              }else UI.showError(`${rejected} still(s) could not be decoded.`);
+            }catch(error){
+              UI.showError("Bulk storyboard transfer failed: "+error.message);
+            }finally{
+              this._bulkBoardBusy=false;this.updateBulkBoardButton();
+            }
           },
           handleFiles(files) {
             const valid = files.filter((f) => f.type.startsWith("video/"));
@@ -4442,7 +4544,7 @@ const CTKDownloadRenamer = (() => {
             UI.toggleEmptyState(this.els.stacks, false);
 
             const genAllStills = this.els.xlBtn ? this.els.xlBtn.checked : true;
-            const smartMode = !!document.getElementById("stillsSmartMode")?.checked;
+            const smartMode = false; // Standard uniform extraction only.
             const genStory = this.els.storyBtn ? this.els.storyBtn.checked : false;
             const storyFramesCount = this.els.storyGrid ? parseInt(this.els.storyGrid.value, 10) : 4;
 
@@ -4607,9 +4709,8 @@ const CTKDownloadRenamer = (() => {
                     stack.querySelector("img").src = compUrl;
                 }
 
-                stack.querySelector(".stack-count").innerText = smartMode
-                  ? `${this.collection[id].frames.length} Items · ${skipped} skipped`
-                  : `${this.collection[id].frames.length} Items`;
+                stack.querySelector(".stack-count").innerText = `${this.collection[id].frames.length} Items`;
+                this.updateBulkBoardButton();
               } catch (e) {
                 if (generation === (this._generation || 0)) {
                   console.error(e);
@@ -4623,6 +4724,7 @@ const CTKDownloadRenamer = (() => {
             } finally {
               this._processing = false;
               this.els.dlBtn.disabled = !Object.values(this.collection).some(v => v.frames.length);
+              this.updateBulkBoardButton();
               if (this.queue.length) this.process();
             }
           },
@@ -4703,8 +4805,10 @@ const CTKDownloadRenamer = (() => {
                   previewArea.innerHTML = `<img src="${f.url}" style="max-width:100%; max-height:100%; object-fit:contain; border-radius:0;">`;
                 }
               };
-              card.querySelector(".detail-check").onchange = (e) =>
-                (f.checked = e.target.checked);
+              card.querySelector(".detail-check").onchange = (e) => {
+                f.checked=e.target.checked;
+                this.updateBulkBoardButton();
+              };
               this.els.grid.appendChild(card);
             });
 
