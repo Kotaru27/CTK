@@ -253,9 +253,8 @@ export default {
             for (const file of filesInFolder) {
               const parts = String(file.webkitRelativePath || "").split("/");
               const rawName = parts.length >= 3 ? parts[1] : root;
-              const name = Core.Utils.sanitize(rawName).trim().slice(0, 80) || "Board";
-              if (!groups.has(name)) groups.set(name, []);
-              groups.get(name).push(file);
+              if (!groups.has(rawName)) groups.set(rawName, []);
+              groups.get(rawName).push(file);
             }
             let firstBoard = null, made = 0;
             for (const [folderName, groupFiles] of groups) {
