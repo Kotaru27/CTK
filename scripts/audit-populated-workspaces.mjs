@@ -42,7 +42,7 @@ const quantile=(nums,q)=>nums.length?nums[Math.min(nums.length-1,Math.floor(q*(n
 try{
  for(const [label,width,height]of [['compact',1366,768],['fullhd',1920,1080],['qhd',2560,1440]]){
   const context=await browser.newContext({viewport:{width,height},reducedMotion:'no-preference'});
-  await context.addInitScript(()=>(sessionStorage.setItem('forge_whatsnew_seen_launch_2026_v2','1'),sessionStorage.setItem('forge_intro_suppress','1')));
+  await context.addInitScript(()=>(sessionStorage.setItem('forge_whatsnew_suppress','1'),sessionStorage.setItem('forge_intro_suppress','1')));
   const page=await context.newPage(),errors=[];
   page.on('pageerror',e=>errors.push(String(e)));
   await page.goto('http://127.0.0.1:4173/',{waitUntil:'domcontentloaded',timeout:60000});
