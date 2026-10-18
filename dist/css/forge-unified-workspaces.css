@@ -262,3 +262,31 @@ body.light-mode .undo-toast {
    transition:none!important;
  }
 }
+
+/* 11 / Context-sensitive action hierarchy in Storyboard modes.
+   While empty, uploading remains the primary step. Once an output is
+   available, the upload affordance is quieter than Save/Export. CSS-only:
+   no disabled-state mutation, no mode change and no new controls. */
+#view-app #section-stills-boards:has(#storyFileList > div)
+  #storyHeaderControls #storyDropZone label.liquid-btn.active-mode,
+#view-app #section-stills-boards:has(#filmstripFileList > div)
+  #filmstripHeaderControls #filmstripDropZone label.liquid-btn.active-mode,
+#view-app #section-stills-boards #fitHeaderControls:has(#fitExportPngBtn:not(:disabled))
+  > label.liquid-btn.active-mode {
+  background:var(--sb-panel)!important;
+  color:var(--sb-action)!important;
+  border:1px solid var(--sb-line)!important;
+  box-shadow:none!important;
+}
+#view-app #section-stills-boards:has(#storyFileList > div)
+  #storyHeaderControls #storyDropZone label.liquid-btn.active-mode:hover,
+#view-app #section-stills-boards:has(#filmstripFileList > div)
+  #filmstripHeaderControls #filmstripDropZone label.liquid-btn.active-mode:hover,
+#view-app #section-stills-boards #fitHeaderControls:has(#fitExportPngBtn:not(:disabled))
+  > label.liquid-btn.active-mode:hover {
+  background:var(--sb-shell)!important;
+  color:var(--sb-text)!important;
+  border-color:var(--sb-dim)!important;
+  transform:none!important;
+  box-shadow:none!important;
+}
