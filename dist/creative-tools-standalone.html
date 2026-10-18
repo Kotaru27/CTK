@@ -5509,12 +5509,12 @@ body.forge-opening.forge-home-arriving .forge-hero-bottom {
   transform-origin:50% 50%;
 }
 .forge-intro.is-playing .forge-intro-outline {
-  animation:forge-draw-guide .31s cubic-bezier(.18,.82,.31,1) both;
-  animation-delay:calc(.04s + var(--step)*.065s);
+  animation:forge-draw-guide .29s cubic-bezier(.18,.82,.31,1) both;
+  animation-delay:calc(.03s + var(--step)*.05s);
 }
 .forge-intro.is-playing .forge-intro-fill {
-  animation:forge-draw-letter .40s cubic-bezier(.16,.86,.29,1) both;
-  animation-delay:calc(.15s + var(--step)*.065s);
+  animation:forge-draw-letter .42s cubic-bezier(.16,.86,.29,1) both;
+  animation-delay:calc(.10s + var(--step)*.05s);
 }
 @keyframes forge-draw-guide {
   from{opacity:0;transform:translate3d(0,8px,0)}
@@ -5523,6 +5523,23 @@ body.forge-opening.forge-home-arriving .forge-hero-bottom {
 @keyframes forge-draw-letter {
   from{opacity:0;transform:translate3d(0,10px,0) scale(.99)}
   to{opacity:1;transform:translate3d(0,0,0) scale(1)}
+}
+/* A single hairline follows the wordmark's writing rhythm; it exits
+   with the wordmark rather than flashing after the home handoff. */
+.forge-intro-type::after{
+  content:"";position:absolute;left:0;bottom:-12px;
+  width:100%;height:1px;background:rgba(27,79,52,.34);
+  transform-origin:left center;transform:scaleX(0);opacity:0;
+  pointer-events:none;
+}
+.forge-intro.is-playing .forge-intro-type::after{
+  animation:forge-ink-rule .82s cubic-bezier(.22,.82,.27,1) both;
+}
+.forge-intro--handoff .forge-intro-type::after{opacity:0!important;}
+@keyframes forge-ink-rule{
+  0%{opacity:0;transform:scaleX(0)}
+  16%{opacity:.9}
+  100%{opacity:.9;transform:scaleX(1)}
 }
 .forge-intro.is-settled .forge-intro-glyphs {opacity:0;}
 .forge-intro.is-settled .forge-intro-wordmark {
@@ -5684,99 +5701,96 @@ body.forge-opening.forge-home-arriving .forge-hero-bottom {
 }
 
 
-/* THE FORGE / EXECUTIVE EDITION — decisions, not more decoration.
-   One product statement, one explanation, then the tool index.
-   Workspaces and processing styles deliberately remain untouched. */
-
-/* The legacy header's generated tagline introduced a detached third brand
-   claim and incorrectly suggested a privacy promise. Remove it everywhere. */
-.header::after,
-body.light-mode .header::after {
-  content:none!important;
-  display:none!important;
+/* THE FORGE / HOME — ONE FOCAL BRAND COMPOSITION
+   The final hero is one coherent hierarchy: rebrand context, a real Kola
+   wordmark, then a useful sentence. No badges, separate artwork, dashboards
+   or alterations to the eight established home cards. The source glyph
+   handoff still measures the real heading rectangle. */
+.header::after, body.light-mode .header::after{
+  content:none!important;display:none!important;
 }
-/* Align the header wordmark to the same 1536px content grid as the homepage;
-   leave the workspace header's established layout unchanged. */
-body:has(#view-home:not(.hidden)) .header {
+body:has(#view-home:not(.hidden)) .header{
   padding-left:max(46px,calc((100vw - 1536px)/2))!important;
   padding-right:max(46px,calc((100vw - 1536px)/2))!important;
 }
-body:has(#view-home:not(.hidden)) .header .brand-title {
-  padding-inline:0!important;
-}
-/* A single clear hierarchy replaces the former three-tier slogan stack.
-   Keep an intrinsic wordmark box for the already-verified FLIP intro. */
-#view-home .combined-home-layout .forge-hero {
+body:has(#view-home:not(.hidden)) .header .brand-title{padding-inline:0!important;}
+#view-home .combined-home-layout .forge-hero{
+  display:grid;
   grid-template-rows:auto 1fr;
-  min-height:clamp(285px,23.6vw,332px);
-  padding-top:clamp(27px,2.5vw,35px);
-  padding-bottom:clamp(24px,2vw,30px);
-  margin-bottom:clamp(22px,2vw,30px);
+  min-height:clamp(290px,24vw,352px);
+  padding:clamp(25px,2.35vw,36px) clamp(4px,1.3vw,19px) clamp(25px,2.2vw,34px);
+  margin-bottom:clamp(22px,2vw,31px);
+  background:transparent;
+  box-shadow:none;
 }
-.forge-hero-top {
+.forge-hero-top{
   justify-content:flex-start;
   color:#365748;
-  letter-spacing:.085em;
   font-size:11.5px;
   font-weight:700;
+  letter-spacing:.095em;
 }
-.forge-hero-edition {gap:10px;}
-.forge-hero-edition::before {
-  width:5px;
-  height:5px;
-  background:#357452;
+.forge-hero-edition{gap:11px;}
+.forge-hero-edition::before{width:5px;height:5px;background:#357452;}
+.forge-hero-middle{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:center;
+  gap:clamp(12px,1.4vw,20px);
+  padding:clamp(24px,2.4vw,34px) 0 0;
+  min-height:0;
 }
-.forge-hero-middle {
-  gap:clamp(40px,5vw,102px);
-  padding:clamp(24px,2.5vw,34px) 0 0;
-  min-height:186px;
-}
-.forge-hero-aside {
-  border-left:1px solid rgba(27,65,46,.24);
-  width:clamp(290px,25vw,390px);
-  padding-left:clamp(20px,1.8vw,28px);
+#view-home .combined-home-layout .forge-hero-name{
   max-width:100%;
+  line-height:1.015!important;
+  letter-spacing:-.028em!important;
+  margin:0!important;
 }
-.forge-hero-aside p {
-  max-width:350px;
-  font-size:clamp(16px,1.16vw,18px);
-  line-height:1.65;
-  letter-spacing:-.018em;
-  color:#1a3c2e;
+.forge-hero-aside{
+  display:block;
+  flex:none;
+  width:min(720px,100%);
+  max-width:100%;
+  padding:0;
+  border:0;
+  margin:0;
 }
-.forge-after-hero {
-  margin:0 0 19px;
-  align-items:center;
+.forge-hero-aside p{
+  max-width:720px;
+  font-size:clamp(15px,1.19vw,18px);
+  line-height:1.58;
+  letter-spacing:-.025em;
+  font-weight:460;
+  color:#315b45;
+  text-wrap:pretty;
 }
-.forge-after-hero strong {
-  font-size:clamp(21px,1.8vw,26px);
+.forge-after-hero{margin:0 0 18px;align-items:center;}
+.forge-after-hero strong{
+  font-size:clamp(21px,1.7vw,26px);
+  font-weight:650;
+  letter-spacing:-.046em;
   color:#1a3228;
-  letter-spacing:-.045em;
 }
-/* The numerals convey sequence, so they need contrast comparable to labels. */
 #view-home .combined-home-grid > .home-card .home-card-num,
-body.light-mode #view-home .combined-home-grid > .home-card .home-card-num {
-  color:#405b4b!important;
-  font-size:11px!important;
+body.light-mode #view-home .combined-home-grid > .home-card .home-card-num{
+  color:#405b4b!important;font-size:11px!important;
 }
-/* Keep the existing illustrations, backgrounds and tile geometry unchanged. */
-@media(max-width:1170px) {
-  .forge-hero-middle {gap:clamp(25px,3vw,48px);}
-  .forge-hero-aside {width:clamp(250px,27vw,325px);}
+@media(max-width:1170px){
+ .forge-hero-middle{gap:14px;}
+ #view-home .combined-home-layout .forge-hero{min-height:310px;}
 }
-@media(max-width:810px) {
-  body:has(#view-home:not(.hidden)) .header {padding-inline:24px!important;}
-  #view-home .combined-home-layout .forge-hero {
-    min-height:296px;
-    padding-top:24px;
-  }
-  .forge-hero-middle {gap:18px;padding-top:22px;}
-  .forge-hero-aside {width:min(100%,560px);}
+@media(max-width:810px){
+ body:has(#view-home:not(.hidden)) .header{padding-inline:24px!important;}
+ #view-home .combined-home-layout .forge-hero{min-height:300px;padding-top:24px;}
+ .forge-hero-middle{gap:13px;padding-top:23px;}
+ .forge-hero-aside{width:min(100%,560px);}
 }
-@media(max-width:550px) {
-  body:has(#view-home:not(.hidden)) .header {padding-inline:18px!important;}
-  .forge-hero-top {font-size:10px;}
-  #view-home .combined-home-layout .forge-hero {min-height:282px;}
+@media(max-width:550px){
+ body:has(#view-home:not(.hidden)) .header{padding-inline:18px!important;}
+ #view-home .combined-home-layout .forge-hero{min-height:275px;}
+ .forge-hero-top{font-size:10px;}
+ .forge-hero-aside p{font-size:13px;line-height:1.58;}
 }
 </style>
 <style id="forge-video-route-styles">/* THE FORGE / UNIFIED WORKSPACE ROUTES
@@ -5898,23 +5912,8 @@ html.forge-route-running::view-transition-old(root) {
 html.forge-route-running::view-transition-new(root) {
   animation:forge-workspace-root-in 250ms cubic-bezier(.2,.7,.2,1) both;
 }
-/* A real tool-to-tool transition is now coordinated in UI.openTool.
-   Keep the stage change short and spatially restrained; do not animate
-   canvases, tool buttons or sidebar independently. */
-html.forge-route-running[data-forge-route-travel="tool"]::view-transition-old(root){
-  animation:forge-tool-root-out 160ms cubic-bezier(.32,.02,.6,1) both;
-}
-html.forge-route-running[data-forge-route-travel="tool"]::view-transition-new(root){
-  animation:forge-tool-root-in 270ms cubic-bezier(.16,1,.3,1) both;
-}
-@keyframes forge-tool-root-out{
-  from{opacity:1}
-  to{opacity:.68}
-}
-@keyframes forge-tool-root-in{
-  from{opacity:.68;transform:translate3d(0,6px,0)}
-  to{opacity:1;transform:translate3d(0,0,0)}
-}
+/* The only tool-to-tool root animation is the overlay at the end of this
+   stylesheet. Older competing root fade/translate animations are retired. */
 @keyframes forge-workspace-root-out {from{opacity:1}to{opacity:0}}
 @keyframes forge-workspace-root-in {from{opacity:.94}to{opacity:1}}
 @keyframes forge-workspace-art-out {from{opacity:1}to{opacity:0}}
@@ -5949,6 +5948,49 @@ html.forge-route-running[data-forge-route-travel="tool"]::view-transition-new(ro
   html.forge-route-running[data-forge-route-travel="tool"]::view-transition-new(root){
     animation-duration:.01ms!important;
   }
+}
+
+/* In an internal workspace switch the navigation chrome is one stable,
+   unanimated visual layer. Only the actual tool content crossfades; the
+   sidebar and global header don't blink at 60 Hz when the route changes. */
+html.forge-route-running[data-forge-route-travel="tool"] .nav-sidebar.visible{
+  view-transition-name:forge-shell-nav;
+}
+html.forge-route-running[data-forge-route-travel="tool"] .header{
+  view-transition-name:forge-shell-header;
+}
+html.forge-route-running::view-transition-old(forge-shell-nav),
+html.forge-route-running::view-transition-new(forge-shell-nav),
+html.forge-route-running::view-transition-old(forge-shell-header),
+html.forge-route-running::view-transition-new(forge-shell-header){
+  animation:none!important;
+  opacity:1!important;
+}
+html.forge-route-running::view-transition-group(forge-shell-nav),
+html.forge-route-running::view-transition-group(forge-shell-header){
+  animation-duration:0ms!important;
+}
+/* Storyboard internal modes: a persistent 2px marker follows the selected
+   button's *real* bounds. No per-button scaling or moving the workspace. */
+#section-stills-boards #storySubModeToggle{position:relative;}
+#section-stills-boards #forgeStoryModeIndicator{
+  position:absolute;
+  bottom:2px;left:0;
+  display:block;
+  height:2px;
+  width:0;
+  z-index:3;
+  border-radius:10px;
+  background:var(--sb-action,#28543d);
+  opacity:0;
+  pointer-events:none;
+  transform:translate3d(0,0,0);
+  transition:transform 270ms cubic-bezier(.22,.8,.28,1),
+             width 270ms cubic-bezier(.22,.8,.28,1),
+             opacity 150ms ease;
+}
+@media(prefers-reduced-motion:reduce){
+  #section-stills-boards #forgeStoryModeIndicator{transition:none!important;}
 }
 </style>
 <style id="forge-adaptive-styles">/* THE FORGE / ADAPTIVE DESKTOP — 1366 / Full HD / QHD
@@ -7962,12 +8004,12 @@ html:has(.forge-whatsnew:not([hidden])){overflow:hidden;scrollbar-gutter:stable;
 <body class="light-mode">
 <div class="forge-intro" id="forgeIntro" role="region" aria-label="The Forge introduction">
  <div class="forge-intro-layout">
-  <div class="forge-intro-label">YOUR CREATIVE WORKSPACE</div>
+  <div class="forge-intro-label">CREATIVE TOOL KIT / REIMAGINED</div>
   <div class="forge-intro-type" id="forgeIntroType" role="img" aria-label="The Forge">
    <div class="forge-intro-wordmark" id="forgeIntroWordmark" aria-hidden="true">The Forge</div>
    <div class="forge-intro-glyphs" id="forgeIntroGlyphs" aria-hidden="true"><span class="forge-intro-glyph" style="--step:0" aria-hidden="true"><span class="forge-intro-outline">T</span><span class="forge-intro-fill">T</span></span><span class="forge-intro-glyph" style="--step:1" aria-hidden="true"><span class="forge-intro-outline">h</span><span class="forge-intro-fill">h</span></span><span class="forge-intro-glyph" style="--step:2" aria-hidden="true"><span class="forge-intro-outline">e</span><span class="forge-intro-fill">e</span></span><span class="forge-intro-gap" aria-hidden="true"></span><span class="forge-intro-glyph" style="--step:4" aria-hidden="true"><span class="forge-intro-outline">F</span><span class="forge-intro-fill">F</span></span><span class="forge-intro-glyph" style="--step:5" aria-hidden="true"><span class="forge-intro-outline">o</span><span class="forge-intro-fill">o</span></span><span class="forge-intro-glyph" style="--step:6" aria-hidden="true"><span class="forge-intro-outline">r</span><span class="forge-intro-fill">r</span></span><span class="forge-intro-glyph" style="--step:7" aria-hidden="true"><span class="forge-intro-outline">g</span><span class="forge-intro-fill">g</span></span><span class="forge-intro-glyph" style="--step:8" aria-hidden="true"><span class="forge-intro-outline">e</span><span class="forge-intro-fill">e</span></span></div>
   </div>
-  <div class="forge-intro-caption"><span>CREATE / TRANSFORM / DELIVER</span>
+  <div class="forge-intro-caption"><span>EIGHT TOOLS / ONE WORKSPACE</span>
    <button type="button" class="forge-intro-skip" id="forgeIntroSkip" aria-label="Skip introduction">Skip intro ↗</button>
   </div>
  </div>
@@ -8068,7 +8110,7 @@ html:has(.forge-whatsnew:not([hidden])){overflow:hidden;scrollbar-gutter:stable;
  <div class="forge-hero-middle">
   <h1 class="forge-hero-name" id="forgeHeroName">The Forge</h1>
   <div class="forge-hero-aside">
-   <p>Resize images, convert PDFs, capture video stills, build storyboards and prepare links — all from one place.</p>
+   <p>Resize images, convert PDFs, capture stills and build storyboards. One focused workspace from start to finish.</p>
   </div>
  </div>
 </section>
@@ -16903,9 +16945,9 @@ const CTKDownloadRenamer = (() => {
     if (finished) return;
     if (!layoutGlyphs()) { cleanup(); return; }
     intro.classList.add('is-playing');
-    // The last letter settles near 1.07s. The wordmark crossfades
+    // The last letter settles near .92s. The wordmark crossfades
     // immediately, then flies without a long static hold.
-    after(1100,settle);
+    after(995,settle);
   }
   // Start only with Kola ready. If the external font is unavailable,
   // show the usable homepage instead of animating fallback and snapping.
@@ -17094,6 +17136,64 @@ const CTKDownloadRenamer = (() => {
       });
   }
   attachWorkspaceObserver();
+
+  // Storyboard's Board / Filmstrip / Fit buttons share one active indicator.
+  // This is a visual overlay only; existing button handlers still own state,
+  // focus, export and panel visibility. Positions are measured from the real
+  // buttons so no tool geometry, breakpoints or order are hardcoded.
+  function attachStoryModeIndicator(){
+    const host=document.getElementById('storySubModeToggle');
+    if(!host || typeof MutationObserver!=='function')return;
+    const buttons=[
+      document.getElementById('subModeBtnBoard'),
+      document.getElementById('subModeBtnFilmstrip'),
+      document.getElementById('subModeBtnFit')
+    ].filter(Boolean);
+    if(buttons.length!==3 || document.getElementById('forgeStoryModeIndicator'))return;
+    const indicator=document.createElement('span');
+    indicator.id='forgeStoryModeIndicator';
+    indicator.className='forge-story-mode-indicator';
+    indicator.setAttribute('aria-hidden','true');
+    host.appendChild(indicator);
+    let frame=0,initialized=false;
+    const update=()=>{
+      frame=0;
+      const activeButton=buttons.find(button=>button.classList.contains('active-mode'));
+      if(!activeButton || !host.getClientRects().length){
+        indicator.style.opacity='0';return;
+      }
+      // First placement is instantaneous; subsequent changes animate.
+      const width=Math.max(0,activeButton.offsetWidth-16);
+      const x=activeButton.offsetLeft+8;
+      if(!initialized){
+        indicator.style.transition='none';
+        indicator.style.width=width+'px';
+        indicator.style.transform='translate3d('+x+'px,0,0)';
+        indicator.style.opacity='1';
+        initialized=true;
+        requestAnimationFrame(()=>{indicator.style.removeProperty('transition');});
+      }else{
+        indicator.style.width=width+'px';
+        indicator.style.transform='translate3d('+x+'px,0,0)';
+        indicator.style.opacity='1';
+      }
+    };
+    const schedule=()=>{
+      if(frame)cancelAnimationFrame(frame);
+      frame=requestAnimationFrame(update);
+    };
+    const observer=new MutationObserver(schedule);
+    for(const button of buttons)
+      observer.observe(button,{attributes:true,attributeFilter:['class','style']});
+    observer.observe(host,{attributes:true,attributeFilter:['style']});
+    if(typeof ResizeObserver==='function'){
+      const resize=new ResizeObserver(schedule);
+      resize.observe(host);
+      for(const button of buttons)resize.observe(button);
+    }else window.addEventListener('resize',schedule,{passive:true});
+    schedule();
+  }
+  attachStoryModeIndicator();
 
   const api=Object.freeze({navigate,fromOpen,selected,canTransition,cancel});
   window.ForgeWorkspaceRoute=api;

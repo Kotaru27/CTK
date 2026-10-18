@@ -117,23 +117,8 @@ html.forge-route-running::view-transition-old(root) {
 html.forge-route-running::view-transition-new(root) {
   animation:forge-workspace-root-in 250ms cubic-bezier(.2,.7,.2,1) both;
 }
-/* A real tool-to-tool transition is now coordinated in UI.openTool.
-   Keep the stage change short and spatially restrained; do not animate
-   canvases, tool buttons or sidebar independently. */
-html.forge-route-running[data-forge-route-travel="tool"]::view-transition-old(root){
-  animation:forge-tool-root-out 160ms cubic-bezier(.32,.02,.6,1) both;
-}
-html.forge-route-running[data-forge-route-travel="tool"]::view-transition-new(root){
-  animation:forge-tool-root-in 270ms cubic-bezier(.16,1,.3,1) both;
-}
-@keyframes forge-tool-root-out{
-  from{opacity:1}
-  to{opacity:.68}
-}
-@keyframes forge-tool-root-in{
-  from{opacity:.68;transform:translate3d(0,6px,0)}
-  to{opacity:1;transform:translate3d(0,0,0)}
-}
+/* The only tool-to-tool root animation is the overlay at the end of this
+   stylesheet. Older competing root fade/translate animations are retired. */
 @keyframes forge-workspace-root-out {from{opacity:1}to{opacity:0}}
 @keyframes forge-workspace-root-in {from{opacity:.94}to{opacity:1}}
 @keyframes forge-workspace-art-out {from{opacity:1}to{opacity:0}}
@@ -168,4 +153,47 @@ html.forge-route-running[data-forge-route-travel="tool"]::view-transition-new(ro
   html.forge-route-running[data-forge-route-travel="tool"]::view-transition-new(root){
     animation-duration:.01ms!important;
   }
+}
+
+/* In an internal workspace switch the navigation chrome is one stable,
+   unanimated visual layer. Only the actual tool content crossfades; the
+   sidebar and global header don't blink at 60 Hz when the route changes. */
+html.forge-route-running[data-forge-route-travel="tool"] .nav-sidebar.visible{
+  view-transition-name:forge-shell-nav;
+}
+html.forge-route-running[data-forge-route-travel="tool"] .header{
+  view-transition-name:forge-shell-header;
+}
+html.forge-route-running::view-transition-old(forge-shell-nav),
+html.forge-route-running::view-transition-new(forge-shell-nav),
+html.forge-route-running::view-transition-old(forge-shell-header),
+html.forge-route-running::view-transition-new(forge-shell-header){
+  animation:none!important;
+  opacity:1!important;
+}
+html.forge-route-running::view-transition-group(forge-shell-nav),
+html.forge-route-running::view-transition-group(forge-shell-header){
+  animation-duration:0ms!important;
+}
+/* Storyboard internal modes: a persistent 2px marker follows the selected
+   button's *real* bounds. No per-button scaling or moving the workspace. */
+#section-stills-boards #storySubModeToggle{position:relative;}
+#section-stills-boards #forgeStoryModeIndicator{
+  position:absolute;
+  bottom:2px;left:0;
+  display:block;
+  height:2px;
+  width:0;
+  z-index:3;
+  border-radius:10px;
+  background:var(--sb-action,#28543d);
+  opacity:0;
+  pointer-events:none;
+  transform:translate3d(0,0,0);
+  transition:transform 270ms cubic-bezier(.22,.8,.28,1),
+             width 270ms cubic-bezier(.22,.8,.28,1),
+             opacity 150ms ease;
+}
+@media(prefers-reduced-motion:reduce){
+  #section-stills-boards #forgeStoryModeIndicator{transition:none!important;}
 }
