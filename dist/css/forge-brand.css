@@ -41,7 +41,7 @@
   color:var(--forge-hero-muted);
 }
 .forge-hero-updates{
-  padding:5px 0;border:0;background:transparent;
+  padding:0;border:0;background:transparent;
   color:var(--forge-hero-muted);
   font:inherit;letter-spacing:.045em;text-transform:none;
   cursor:pointer;text-decoration:underline;text-underline-offset:4px;
