@@ -71,18 +71,52 @@ test('Actual Storyboard import names only previously empty boards with a shared 
   }
 });
 
-test('download-table header and modern interactions preserve layout and accessibility',()=>{
-  for(const token of [
-    '#view-app #adlinksTabContentDownloader #adDlTableContainer thead{',
-    'position:sticky!important;top:0!important;z-index:40!important;',
-    'isolation:isolate!important;',
-    '#view-app #adlinksTabContentDownloader #adDlTableContainer thead th{',
-    '#view-app #stillsTabContentStory .story-folder-import:has(input:focus-visible)',
-    '.nav-sidebar.visible .nav-item:hover:not(.active)',
-    '#view-app #section-stills-boards #storySubModeToggle button.liquid-btn.active-mode',
-    '#view-app .tool-section .liquid-btn::before',
-    '#view-app .tool-section .liquid-btn.danger-btn:not(:disabled):hover'
-  ]) assert.ok(css.includes(token),'missing visual repair: '+token);
-  assert.equal(css,read('dist/css/forge-unified-workspaces.css'));
-  assert.ok(standalone.includes('<style id="forge-unified-workspaces-styles">'+css+'</style>'));
+
+test('one Add Assets menu replaces standalone folder buttons and supports nested ad folders',async()=>{
+ const prevCore=globalThis.Core,prevDocument=globalThis.document;
+ try {
+  globalThis.Core={Utils:{sanitize: value=>String(value).replace(/[^a-zA-Z0-9_-]/g,'_')}};
+  globalThis.document={getElementById:()=>null};
+  const Story=(await import('../src/js/tools/storyboard.js')).default.Story;
+  const sample=(dir,name)=>({name,type:'image/png',webkitRelativePath:dir+'/'+name,size:24});
+  const one=Story.folderGroups([sample('Campaign_Stills','still_1.png'),sample('Campaign_Stills','still_2.png')]);
+  assert.deepEqual(one.map(item=>item.name),['Campaign_Stills']);
+  const groups=Story.folderGroups([
+    sample('Campaign/AD10','still_10.png'),sample('Campaign/AD2','still_10.png'),
+    sample('Campaign/AD2','still_2.png'),sample('Campaign/AD10','still_2.png'),
+    sample('Campaign/AD2/stills','still_1.png')
+  ]);
+  assert.deepEqual(groups.map(item=>item.name),['AD2','AD10']);
+  assert.deepEqual(groups[0].items.map(item=>item.name),['still_1.png','still_2.png','still_10.png']);
+  assert.ok(source.includes('this.importFolder(files)'));
+  assert.ok(source.includes('storyImportMenu'));
+  assert.ok(source.includes('menu.setAttribute("role", "menu")'));
+  assert.ok(!source.includes('className = "liquid-btn story-folder-import"'));
+  for(const token of ['storyImportMenu','folderGroups(files)','async importFolder(files)']) {
+    assert.ok(app.includes(token));assert.ok(standalone.includes(token));
+  }
+ } finally {globalThis.Core=prevCore;globalThis.document=prevDocument;}
+});
+
+test('Downloader scrolls as one workspace and preserves requested/completed states',()=>{
+ for(const selector of [
+   '#view-app #adlinksTabContentDownloader .ad-download-inner{',
+   '#view-app #adlinksTabContentDownloader #adDlTableContainer{',
+   'position:static!important;top:auto!important;z-index:auto!important;',
+   '#view-app #adlinksTabContentDownloader #adDlStatus{',
+   '#view-app #adlinksTabContentDownloader #adDlRequestedHeaderRow',
+   '#view-app #section-stills-boards .story-import-menu[hidden]',
+   '.nav-sidebar.visible>.forge-nav-indicator',
+   '#view-app .tool-section .forge-switch-indicator',
+   '@media(prefers-reduced-motion:reduce)'
+ ])assert.ok(css.includes(selector),'missing scroll/motion change '+selector);
+ const ad=read('src/js/tools/ad-downloader.js');
+ for(const token of ['ensureQueue()','markRequested(entry)','markDownloaded(entry)',
+   'this.markRequested(entry);','this.markDownloaded(entry);',
+   'this.confirmDownloaded(entry)','entry.renamedFilename && !isError']){
+    assert.ok(ad.includes(token),'missing queue state '+token);
+    assert.ok(app.includes(token));assert.ok(standalone.includes(token));
+ }
+ assert.equal(css,read('dist/css/forge-unified-workspaces.css'));
+ assert.ok(standalone.includes('<style id="forge-unified-workspaces-styles">'+css+'</style>'));
 });
