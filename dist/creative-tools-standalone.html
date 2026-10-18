@@ -7304,99 +7304,143 @@ body.light-mode .undo-toast {
  outline-offset:2px!important;
 }
 
-/* FORGE / table & navigation interaction repair — current design, no geometry changes.
-   The entire sticky table header must paint above previously scrolled action buttons. */
-#view-app #adlinksTabContentDownloader #adDlTableContainer thead{
-  position:sticky!important;top:0!important;z-index:40!important;
-  isolation:isolate!important;
-  background:var(--studio-raised,#edf1e9)!important;
+/* FORGE / workflow-first asset desk & fluid interactions
+   Single scroll owner: column headings move with the campaign rows. */
+#view-app #section-adlinks #adlinksTabContentDownloader #adDlTableContainer thead{
+  position:static!important;top:auto!important;z-index:auto!important;
+  isolation:auto!important;background:var(--studio-raised)!important;
 }
-#view-app #adlinksTabContentDownloader #adDlTableContainer thead tr,
-#view-app #adlinksTabContentDownloader #adDlTableContainer thead th{
-  background:var(--studio-raised,#edf1e9)!important;
-  background-clip:padding-box!important;
+#view-app #section-adlinks #adlinksTabContentDownloader #adDlTableContainer thead tr,
+#view-app #section-adlinks #adlinksTabContentDownloader #adDlTableContainer thead th{
+  position:static!important;background:var(--studio-raised)!important;
 }
-#view-app #adlinksTabContentDownloader #adDlTableContainer tbody tr{
-  z-index:auto!important;
+#view-app #section-adlinks #adlinksTabContentDownloader #adDlSummaryBar{
+  display:flex;align-items:center;flex-wrap:nowrap;gap:14px;
+  min-width:0;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader #adDlCount{
+  flex:0 0 auto;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader #adDlStatus{
+  display:block!important;flex:1 1 auto;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  margin:0!important;text-align:left;font-size:12px!important;
+  line-height:1.5!important;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader #adDlDownloadedHeaderRow td{
+  position:static!important;
+  background:var(--studio-raised)!important;
+  border-top:1px solid var(--studio-border)!important;
+  border-bottom:1px solid var(--studio-border)!important;
+  color:var(--studio-title)!important;
+  padding-block:12px!important;font-weight:700!important;
+  letter-spacing:.03em!important;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader tbody tr.download-requested td{
+  background:color-mix(in srgb,var(--studio-panel) 86%,var(--studio-main))!important;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader tbody tr.downloaded td{
+  background:color-mix(in srgb,var(--studio-panel) 88%,var(--studio-hover))!important;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader tbody tr.download-requested:hover td,
+#view-app #section-adlinks #adlinksTabContentDownloader tbody tr.downloaded:hover td{
+  background:var(--studio-hover)!important;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader .ad-dl-state{
+  display:block;margin-top:5px;color:var(--studio-muted);
+  font:550 11px/1.5 "Plus Jakarta Sans",sans-serif;
+  letter-spacing:.008em;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader #adDlDownloadedBody :is(tr.download-requested,tr.downloaded) input[type="checkbox"]{
+  visibility:hidden!important;pointer-events:none!important;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader #adDlDownloadedBody tr td:nth-child(3) button{
+  white-space:nowrap;
 }
 
-/* Folder import complements Add Assets: it is the only reliable way to
-   receive the user-selected parent folder name through webkitRelativePath. */
-#view-app #stillsTabContentStory .story-import-actions{
-  display:flex!important;align-items:stretch!important;gap:6px!important;
-}
-#view-app #stillsTabContentStory .story-import-actions > button.liquid-btn{
-  flex:1 1 0!important;width:auto!important;min-width:0!important;
-}
-#view-app #stillsTabContentStory .story-folder-import{
-  box-sizing:border-box!important;display:flex!important;align-items:center!important;
-  justify-content:center!important;gap:5px!important;flex:1 1 0!important;
-  width:auto!important;min-width:0!important;white-space:nowrap!important;
-  margin-top:0!important;padding:8px 6px!important;
-  border:1px solid var(--sb-line)!important;border-radius:6px!important;
-  background:var(--sb-shell)!important;color:var(--sb-text)!important;
-  cursor:pointer!important;font:650 12px/1.4 "Plus Jakarta Sans",sans-serif!important;
-  transition:background-color 155ms ease,border-color 155ms ease,color 155ms ease!important;
-}
-#view-app #stillsTabContentStory .story-folder-import:hover{
-  background:var(--sb-panel)!important;border-color:var(--sb-action)!important;
-  color:var(--sb-action)!important;
-}
-#view-app #stillsTabContentStory .story-folder-import:has(input:focus-visible){
+/* Existing Add Assets opens a directory; no extra folder-import control. */
+#view-app #stillsTabContentStory #storyDropZone label:has(#storyInput:focus-visible){
   outline:2px solid var(--sb-focus)!important;outline-offset:2px!important;
 }
 
-/* Tool navigation — remove legacy diagonal shifts, icon enlargements and
-   contrast-flash hover. Selected state and keyboard focus stay distinct. */
-.nav-sidebar.visible .nav-item:not(.active){
-  transition:background-color 165ms ease,color 165ms ease,border-color 165ms ease!important;
+/* Fluid states use eased color/border/indicator only: no positional jumps,
+   multiplying badges or overlay washes over tool content. */
+:root{
+  --forge-control-ease:cubic-bezier(.20,.78,.20,1);
+  --forge-control-duration:255ms;
 }
-.nav-sidebar.visible .nav-item:hover{
-  transform:none!important;translate:none!important;
-  box-shadow:none!important;filter:none!important;
+.nav-sidebar.visible .nav-item{
+  transition:background-color 290ms var(--forge-control-ease),
+    color 250ms var(--forge-control-ease),
+    box-shadow 290ms var(--forge-control-ease)!important;
+  transform:none!important;
 }
-.nav-sidebar.visible .nav-item:hover:not(.active){
-  background:#20372c!important;color:#eaf2e9!important;
-  border-color:transparent!important;
+.nav-sidebar.visible .nav-item:not(.active):hover{
+  background:#22382e!important;color:#eef3ea!important;
+  box-shadow:inset 3px 0 0 #6aa27b!important;
 }
 .nav-sidebar.visible .nav-item:hover :is(svg,.material-symbols-rounded){
-  transform:none!important;scale:none!important;
-  color:inherit!important;
+  transform:none!important;scale:none!important;color:inherit!important;
 }
 .nav-sidebar.visible .nav-item.active:hover{
   background:#e5ece4!important;color:#172822!important;
+  box-shadow:inset 3px 0 0 #286349!important;
 }
 
-/* Flat, connected internal tool tabs. Selected mode is quietly but clearly
-   green; unselected mode reacts as one surface, without glow or scaling. */
+/* Tool tab underline draws in place with controlled easing rather than
+   abruptly changing an existing inset-shadow line. */
 #view-app .tool-section :is(#tabRowPdf,#tabRowStills,#tabRowAdlinks) button[role="tab"]{
-  transition:background-color 155ms ease,color 155ms ease,box-shadow 155ms ease!important;
+  position:relative!important;
+  background:transparent!important;box-shadow:none!important;
+  transition:color var(--forge-control-duration) var(--forge-control-ease),
+    background-color var(--forge-control-duration) var(--forge-control-ease)!important;
   transform:none!important;filter:none!important;
-  border:0!important;box-shadow:none!important;
-  color:var(--studio-muted)!important;
+}
+#view-app .tool-section :is(#tabRowPdf,#tabRowStills,#tabRowAdlinks) button[role="tab"]::after{
+  content:"";position:absolute;left:9%;right:9%;bottom:0;height:2px;
+  border-radius:2px 2px 0 0;background:var(--studio-accent);
+  opacity:0;transform:scaleX(.3);transform-origin:center;
+  transition:transform 310ms var(--forge-control-ease),
+    opacity 220ms var(--forge-control-ease);
+  pointer-events:none;
 }
 #view-app .tool-section :is(#tabRowPdf,#tabRowStills,#tabRowAdlinks) button[role="tab"]:hover:not(.active-mode){
-  background:var(--studio-hover)!important;
-  color:var(--studio-title)!important;
-  box-shadow:inset 0 -2px 0 var(--studio-border)!important;
+  background:var(--studio-hover)!important;color:var(--studio-title)!important;
+  box-shadow:none!important;
+}
+#view-app .tool-section :is(#tabRowPdf,#tabRowStills,#tabRowAdlinks) button[role="tab"]:hover::after{
+  opacity:.48;transform:scaleX(.68);
 }
 #view-app .tool-section :is(#tabRowPdf,#tabRowStills,#tabRowAdlinks) button[role="tab"].active-mode{
-  background:transparent!important;
-  color:var(--studio-accent)!important;
-  box-shadow:inset 0 -2px 0 var(--studio-accent)!important;
+  background:transparent!important;color:var(--studio-accent)!important;
+  box-shadow:none!important;
+}
+#view-app .tool-section :is(#tabRowPdf,#tabRowStills,#tabRowAdlinks) button[role="tab"].active-mode::after{
+  opacity:1;transform:scaleX(1);
 }
 #view-app .tool-section :is(#tabRowPdf,#tabRowStills,#tabRowAdlinks) button[role="tab"].active-mode:hover{
   background:var(--studio-hover)!important;
 }
 
-/* Storyboard modes are an independent segmented switch, not action buttons. */
+/* Storyboard mode selection: soft surface and an animated inset track.
+   Real buttons retain their dimensions and pointer targets. */
 #view-app #section-stills-boards #storySubModeToggle{
   box-shadow:none!important;filter:none!important;
   border-color:var(--sb-line)!important;background:var(--sb-shell)!important;
 }
 #view-app #section-stills-boards #storySubModeToggle button.liquid-btn{
-  transition:background-color 155ms ease,color 155ms ease,border-color 155ms ease!important;
+  position:relative!important;overflow:hidden!important;
   transform:none!important;filter:none!important;box-shadow:none!important;
+  transition:background-color 265ms var(--forge-control-ease),
+    color 265ms var(--forge-control-ease),
+    box-shadow 265ms var(--forge-control-ease)!important;
+}
+#view-app #section-stills-boards #storySubModeToggle button.liquid-btn::after{
+  content:"";position:absolute;left:30%;right:30%;bottom:3px;height:2px;
+  border-radius:2px;background:var(--sb-action);
+  opacity:0;transform:scaleX(.35);
+  transition:transform 310ms var(--forge-control-ease),
+    opacity 225ms var(--forge-control-ease);pointer-events:none;
 }
 #view-app #section-stills-boards #storySubModeToggle button.liquid-btn:hover:not(.active-mode){
   background:var(--sb-panel)!important;color:var(--sb-text)!important;
@@ -7405,46 +7449,49 @@ body.light-mode .undo-toast {
   background:var(--sb-panel)!important;color:var(--sb-action)!important;
   box-shadow:inset 0 0 0 1px var(--sb-line)!important;
 }
-#view-app #section-stills-boards #storySubModeToggle button.liquid-btn.active-mode:hover{
-  background:var(--sb-panel)!important;color:var(--sb-action)!important;
+#view-app #section-stills-boards #storySubModeToggle button.liquid-btn.active-mode::after{
+  opacity:1;transform:scaleX(1);
 }
 
-/* Actual upload/export/secondary actions: a short color transition only.
-   Exclude internal tabs so their selection design cannot be overwritten. */
+/* Every action shares the same timing; primary/secondary/danger still have
+   distinct meaning. No scale, jump, glow or large pseudo-overlay. */
 #view-app .tool-section .liquid-btn:not(:disabled){
-  transition:background-color 155ms ease,color 155ms ease,border-color 155ms ease!important;
+  transition:background-color var(--forge-control-duration) var(--forge-control-ease),
+    color var(--forge-control-duration) var(--forge-control-ease),
+    border-color var(--forge-control-duration) var(--forge-control-ease),
+    box-shadow var(--forge-control-duration) var(--forge-control-ease)!important;
 }
 #view-app .tool-section .liquid-btn:not(:disabled):is(:hover,:active){
   transform:none!important;translate:none!important;scale:none!important;
-  filter:none!important;text-shadow:none!important;box-shadow:none!important;
+  filter:none!important;text-shadow:none!important;
 }
 #view-app .tool-section .liquid-btn::before{
   opacity:0!important;transition:none!important;
 }
 #view-app .tool-section .liquid-btn.active-mode:not([role="tab"]):not(#subModeBtnBoard):not(#subModeBtnFilmstrip):not(#subModeBtnFit):hover:not(:disabled){
-  background:#20583d!important;color:#fff!important;
-  border-color:#20583d!important;
+  background:#20583d!important;color:#fff!important;border-color:#20583d!important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.16)!important;
 }
 #view-app .tool-section .liquid-btn:not(.active-mode):not(.danger-btn):not([role="tab"]):hover:not(:disabled){
   background:var(--studio-hover)!important;
   border-color:var(--studio-accent)!important;color:var(--studio-title)!important;
+  box-shadow:inset 0 0 0 1px rgba(33,102,67,.10)!important;
 }
 #view-app .tool-section .liquid-btn.danger-btn:not(:disabled):hover{
   background:#fff0ed!important;color:#a44842!important;
-  border-color:#d8a29e!important;
+  border-color:#d8a29e!important;box-shadow:none!important;
+}
+@media(prefers-reduced-motion:reduce){
+  .nav-sidebar.visible .nav-item,
+  #view-app .tool-section .liquid-btn,
+  #view-app .tool-section :is(#tabRowPdf,#tabRowStills,#tabRowAdlinks) button[role="tab"],
+  #view-app .tool-section :is(#tabRowPdf,#tabRowStills,#tabRowAdlinks) button[role="tab"]::after,
+  #view-app #section-stills-boards #storySubModeToggle button.liquid-btn,
+  #view-app #section-stills-boards #storySubModeToggle button.liquid-btn::after{
+    transition:none!important;
+  }
 }
 
-/* Small hover polish should never override focus accessibility or animate
-   independent thumbnails/canvases. */
-@media(prefers-reduced-motion:reduce){
- .nav-sidebar.visible .nav-item,
- #view-app .tool-section .liquid-btn,
- #view-app .tool-section :is(#tabRowPdf,#tabRowStills,#tabRowAdlinks) button[role="tab"],
- #view-app #section-stills-boards #storySubModeToggle button.liquid-btn,
- #view-app #stillsTabContentStory .story-folder-import{
-   transition:none!important;
- }
-}
 </style>
 </head>
 <body class="light-mode">
