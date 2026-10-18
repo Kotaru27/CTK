@@ -172,6 +172,16 @@ try{
   assert.equal(await projectButton.first().getAttribute('aria-current'),'true');
   await page.evaluate(()=>Tools.Story.addNewProject());
   assert.equal(await projectButton.count(),2,label+': new project not created');
+  // The compact board selector is the default when importing many folders.
+  // Exercise it before restoring the original keyboard-accessible pill list.
+  const boardSelect=page.locator('#storyBoardSelect');
+  assert.equal(await boardSelect.isVisible(),true,label+': compact board selector missing');
+  const originalId=await page.evaluate(()=>String(Tools.Story.projects[0].id));
+  const nextId=await page.evaluate(()=>String(Tools.Story.projects[1].id));
+  await boardSelect.selectOption(originalId);
+  await page.waitForFunction(()=>Tools.Story.active?.images.length===6 && !!document.querySelector('#storyPreview canvas'));
+  await boardSelect.selectOption(nextId);
+  await page.locator('#storyBoardNavigator [data-layout="list"]').click();
   await projectButton.first().focus();
   await page.keyboard.press('Enter');
   await page.waitForFunction(()=>Tools.Story.active?.images.length===6 && !!document.querySelector('#storyPreview canvas'));
