@@ -43,3 +43,10 @@ test('visible primary states remain distinct; generated media does not receive b
  assert.match(css,/#logoDetailOverlay/);
  assert.doesNotMatch(css,/backdrop-filter:|blur\(/);
 });
+test('Storyboard, Filmstrip and Fit distinguish import from export once content exists',()=>{
+ for(const s of ['#storyFileList > div','#filmstripFileList > div',
+   '#fitExportPngBtn:not(:disabled)','#storyDropZone label.liquid-btn.active-mode',
+   '#filmstripDropZone label.liquid-btn.active-mode']){
+  assert.ok(css.includes(s),'missing contextual priority '+s);
+ }
+});
