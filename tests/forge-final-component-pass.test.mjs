@@ -20,10 +20,12 @@ test('all eight existing tools have scoped populated-component refinements', () 
     '#section-adlinks #adlinksTabContentDownloader #adDlTableContainer tbody',
     '#section-yt-helper #ytMetadataContent'
   ]) assert.ok(finish.includes(selector), 'missing actual tool component ' + selector);
+  // Animated underlines are pseudo-elements, not canvas/workspace geometry.
+  const safeFinish=finish.replace(/[^{}]+::after\\{[^{}]*\\}/g,'');
   for (const dangerous of ['grid-template-columns:', 'position:fixed', 'position:absolute',
     'max-width:100vw', 'transform:scale', 'filter:blur', 'object-fit:',
     'canvas {', 'pointer-events:none!important', '@keyframes']) {
-    assert.ok(!finish.includes(dangerous), 'unexpected geometry/process override ' + dangerous);
+    assert.ok(!safeFinish.includes(dangerous), 'unexpected geometry/process override ' + dangerous);
   }
   assert.equal(read('dist/css/forge-unified-workspaces.css'), css);
   assert.ok(standalone.includes('<style id="forge-unified-workspaces-styles">' + css + '</style>'));
