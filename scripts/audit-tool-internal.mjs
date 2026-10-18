@@ -119,6 +119,35 @@ try{
    assert.equal(await page.evaluate(()=>window.__internalViewTransitions),routeBefore,
      mode+' triggered an unnecessary whole-screen transition');
  }
+ // Navigation is no longer one full-screen fade. Verify the coordinator
+ // selects a specific animation for each user action, while the existing
+ // tool state and active nav stay correct after the transition.
+ await page.evaluate(()=>UI.showHome());
+ await page.waitForFunction(()=>!document.getElementById('view-app').classList.contains('active'));
+ await page.waitForTimeout(570);
+ const openingMode=await page.evaluate(()=>{
+   UI.openTool('section-stills-boards','story');
+   return document.documentElement.dataset.forgeRouteTravel;
+ });
+ assert.equal(openingMode,'home','Opening from Home did not use the dedicated launch transition');
+ await page.waitForFunction(()=>document.querySelector('#section-stills-boards.active .tool-header h2')?.textContent.trim()==='Storyboard');
+ await page.waitForTimeout(560);
+ const switchingMode=await page.evaluate(()=>{
+   UI.openTool('section-adlinks','downloader');
+   return document.documentElement.dataset.forgeRouteTravel;
+ });
+ assert.equal(switchingMode,'tool','Tool-to-tool navigation did not use stable-shell surface motion');
+ await page.waitForFunction(()=>document.querySelector('#section-adlinks.active .tool-header h2')?.textContent.trim()==='Ad Downloader');
+ await page.waitForTimeout(510);
+ const returningMode=await page.evaluate(()=>{
+   UI.showHome();
+   return document.documentElement.dataset.forgeRouteTravel;
+ });
+ assert.equal(returningMode,'return','Returning home did not use dedicated reverse navigation');
+ await page.waitForFunction(()=>!document.getElementById('view-app').classList.contains('active'));
+ await page.waitForTimeout(520);
+ assert.equal(await page.locator('.combined-home-grid > .home-card').count(),8,
+   'Tool return replaced or obscured the original eight home cards');
  assert.deepEqual(errors,[],'Internal motion audit produced runtime errors');
  console.log('FORGE_TOOL_INTERNAL_MEASURED '+JSON.stringify(observedTabs));
  console.log('FORGE_TOOL_INTERNAL_MOTION '+JSON.stringify({record,tabs,errors}));
