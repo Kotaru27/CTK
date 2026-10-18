@@ -32,7 +32,9 @@ try{
         .filter(a=>a.playState==='running'&&a.effect?.target===element);
       const frames=flights[0]?.effect?.getKeyframes()||[];
       const sample={animated:flights.length>0,frames:frames.length,
-        first:frames[0],last:frames.at(-1),duration:flights[0]?.effect?.getTiming().duration||0};
+        firstY:frames.length?new DOMMatrixReadOnly(frames[0].transform).m42:null,
+        lastY:frames.length?new DOMMatrixReadOnly(frames.at(-1).transform).m42:null,
+        duration:flights[0]?.effect?.getTiming().duration||0};
       element.remove();
       flights.forEach(a=>a.cancel());
       return sample;
@@ -42,8 +44,8 @@ try{
     if(!reduced){
       assert.equal(single.duration,300,'Generated card uses only the short bounded spring');
       assert.equal(single.frames,21);
-      assert.match(single.first.transform,/translate3d\(0,5\.000px,0\)/);
-      assert.match(single.last.transform,/translate3d\(0,0\.000px,0\)/);
+      assert.ok(Math.abs(single.firstY-5)<.001,'Initial displacement must be five pixels');
+      assert.ok(Math.abs(single.lastY)<.001,'Last frame must return exactly to rest');
     }
 
     const batch=await page.evaluate(async()=>{
