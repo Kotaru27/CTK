@@ -452,3 +452,75 @@ body.light-mode #view-home .combined-home-grid > .home-card .home-card-num{
  .forge-hero-top{font-size:10px;}
  .forge-hero-aside p{font-size:13px;line-height:1.58;}
 }
+
+/* Cinematic type-only Forge introduction. Never displayed until JS arms it. */
+.forge-intro[hidden],.forge-intro:not(.forge-intro-ready){display:none!important}
+.forge-intro.forge-intro-ready{
+  position:fixed;inset:0;z-index:2147483000;display:grid!important;
+  place-items:center;width:100%;height:100dvh;overflow:hidden;
+  isolation:isolate;pointer-events:auto;background:transparent!important;
+}
+.forge-intro.forge-intro-ready::before{
+  content:""!important;display:block!important;position:absolute;inset:0;
+  z-index:-1;background:radial-gradient(ellipse 70% 58% at 50% 55%,rgba(211,230,215,.32),transparent 74%),#f8f9f5;
+  opacity:1;transition:opacity 900ms cubic-bezier(.23,.75,.27,1);
+}
+.forge-intro.forge-intro-ready::after{display:none!important}
+.forge-intro-layout{position:static;display:contents}
+.forge-intro.forge-intro-ready .forge-intro-type{
+  display:grid!important;position:absolute;inset:0;place-items:center;pointer-events:none
+}
+.forge-intro-wordmark{
+  display:block;width:max-content;max-width:94vw;margin:0;padding:0;
+  font:400 clamp(82px,10.7vw,180px)/1.015 "Kola","Plus Jakarta Sans",sans-serif;
+  letter-spacing:-.028em;white-space:nowrap;color:#143c2b;
+  clip-path:inset(0 100% 0 0);opacity:1;
+  transform:translate3d(0,21px,0);transform-origin:top left;will-change:transform;
+}
+.forge-intro.forge-intro-ready .forge-intro-label{
+  display:block!important;position:absolute;top:clamp(30px,5.3vh,70px);
+  left:clamp(28px,5.2vw,88px);margin:0;opacity:0;
+  color:#526f5d;font:650 11px/1.5 "Plus Jakarta Sans",sans-serif;letter-spacing:.19em
+}
+.forge-intro.forge-intro-ready .forge-intro-caption{
+  position:absolute;inset:auto clamp(28px,5.2vw,88px) clamp(29px,5.6vh,70px);
+  display:flex!important;justify-content:space-between;align-items:center;gap:32px;
+  padding:18px 0 0;border:0;border-top:1px solid rgba(38,83,60,.21);
+  background:none!important;opacity:0
+}
+.forge-intro.forge-intro-ready .forge-intro-caption>span{
+  display:block!important;color:#496a55;font:650 11px/1.5 "Plus Jakarta Sans",sans-serif;letter-spacing:.16em
+}
+.forge-intro.forge-intro-ready .forge-intro-skip{
+  display:inline-flex;align-items:center;padding:7px 0 7px 15px;
+  border:0;border-radius:0;background:none!important;box-shadow:none;
+  color:#28583d;font:650 12px/1.5 "Plus Jakarta Sans",sans-serif;
+}
+.forge-intro.forge-intro-playing .forge-intro-label{
+  animation:forge-intro-meta 850ms cubic-bezier(.21,.73,.3,1) 200ms both
+}
+.forge-intro.forge-intro-playing .forge-intro-caption{
+  animation:forge-intro-meta 850ms cubic-bezier(.21,.73,.3,1) 1000ms both
+}
+@keyframes forge-intro-meta{from{opacity:0;transform:translate3d(0,10px,0)}to{opacity:1;transform:none}}
+.forge-intro.forge-intro-leaving::before{opacity:0}
+.forge-intro.forge-intro-leaving .forge-intro-label,
+.forge-intro.forge-intro-leaving .forge-intro-caption{
+  animation:none;opacity:0;transition:opacity 320ms ease
+}
+body.forge-opening #forgeHeroName,
+body.forge-opening.forge-home-arriving #forgeHeroName{
+  visibility:hidden!important;opacity:1!important;clip-path:none!important;transform:none!important
+}
+.forge-intro.forge-intro-fallback .forge-intro-wordmark{
+  animation:forge-intro-static 1600ms cubic-bezier(.18,.7,.22,1) both
+}
+@keyframes forge-intro-static{
+ from{opacity:.45;clip-path:inset(0 100% 0 0);transform:translate3d(0,21px,0)}
+ to{opacity:1;clip-path:inset(0 0 0 0);transform:none}
+}
+@media(max-width:750px){.forge-intro-wordmark{font-size:clamp(55px,12.2vw,94px)}}
+@media(prefers-reduced-motion:reduce){
+ .forge-intro.forge-intro-ready{display:none!important}
+ body.forge-opening #forgeHeroName{visibility:visible!important;clip-path:none!important}
+}
