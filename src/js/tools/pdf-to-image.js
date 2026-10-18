@@ -145,7 +145,17 @@ export default {
               if (signal.aborted) throw new DOMException("Aborted", "AbortError");
               const stack = document.createElement("div");
               stack.className = "pdf-stack-wrapper";
-              stack.innerHTML = `<div class="processing-pulse" style="width:100%; height:200px; background:var(--bg-input); display:flex; align-items:center; justify-content:center; color:var(--text-muted);">Processing...</div><div class="stack-meta"><div class="stack-title">${file.name}</div><div class="stack-count">0/${pdf.numPages}</div></div>`;
+              stack.innerHTML = `<div class="processing-pulse" style="width:100%; height:200px; background:var(--bg-input); display:flex; align-items:center; justify-content:center; color:var(--text-muted);">Processing...</div><div class="stack-meta"><div class="stack-title"></div><div class="stack-count">0/${pdf.numPages}</div></div>`;
+              stack.querySelector(".stack-title").textContent = file.name;
+              stack.tabIndex = 0;
+              stack.setAttribute?.("role", "button");
+              stack.setAttribute?.("aria-label", "Inspect PDF " + file.name);
+              stack.onkeydown = (event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  stack.click();
+                }
+              };
               stack.onclick = () => this.openDetail(pdfId);
               this.els.stacks.prepend(stack);
               this.collection[pdfId] = {

@@ -97,7 +97,10 @@ export default {
             this.items.forEach((item) => {
               const card = document.createElement("div");
               card.className = "logo-card-item";
-              card.innerHTML = `<div class="preview-box"><img src="${item.url}"><div class="split-preview-overlay"></div></div><div class="card-controls" style="padding: 12px; display: flex; align-items: center; gap: 10px; justify-content: space-between;"><div style="font-size:0.8rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600; flex: 1;">${item.file.name}</div><div style="display: flex; align-items: center; gap: 15px;"><div class="split-status" style="font-size:0.75rem; color:var(--text-muted); font-weight: 500;">${item.splitBlobs.length > 0 ? "Done" : "Ready"}</div><label style="display:flex; gap:8px; align-items:center; font-size:0.75rem; font-weight: bold; cursor: pointer;"><input type="checkbox" class="split-check toggle-switch small" ${item.checked ? "checked" : ""}> Split</label></div></div>`;
+              card.dataset.ready = item.splitBlobs.length ? "done" : "ready";
+              card.innerHTML = `<div class="preview-box"><img src="${item.url}"><div class="split-preview-overlay"></div></div><div class="card-controls" style="padding: 12px; display: flex; align-items: center; gap: 10px; justify-content: space-between;"><div class="split-file-name" style="font-size:0.8rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600; flex: 1;"></div><div style="display: flex; align-items: center; gap: 15px;"><div class="split-status" style="font-size:0.75rem; color:var(--text-muted); font-weight: 500;">${item.splitBlobs.length > 0 ? "Done" : "Ready"}</div><label style="display:flex; gap:8px; align-items:center; font-size:0.75rem; font-weight: bold; cursor: pointer;"><input type="checkbox" class="split-check toggle-switch small" ${item.checked ? "checked" : ""}> Split</label></div></div>`;
+              card.querySelector(".split-file-name").textContent = item.file.name;
+              card.querySelector(".split-file-name").title = item.file.name;
               this.els.grid.appendChild(card);
               item.card = card;
               card.querySelector(".split-check").onchange = (e) => {
@@ -139,6 +142,7 @@ export default {
               }
               item.card.querySelector(".split-status").innerText =
                 `Done (${cols})`;
+              item.card.dataset.ready = "done";
             }
             this.els.splitBtn.innerHTML = '<span class="material-symbols-rounded" style="font-size: 14px;">content_cut</span> Split Images';
             this.els.splitBtn.disabled = false;

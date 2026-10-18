@@ -7106,9 +7106,202 @@ body.light-mode .undo-toast {
   color:var(--sb-muted)!important;
 }
 #stillsTabContentFit .fit-render-status{
+  /* Fit renderer owns its warning/error color. */
   font-size:12px!important;
   line-height:1.55!important;
-  color:var(--sb-muted)!important;
+}
+
+/* THE FORGE / FINAL EIGHT-TOOL COMPONENT PASS
+   Each rule follows the existing populated workflow. Do not change workspace
+   width, canvas geometry, crop, scroll owner, or original export behavior. */
+
+/* 01 — Logo Resizer: editable filenames, overlay control and card actions. */
+#section-logo #logoGrid .logo-card-item .card-fname-lbl{
+ font:650 12.5px/1.45 "Plus Jakarta Sans",sans-serif!important;
+ letter-spacing:-.018em!important;color:var(--studio-title)!important;
+ border-color:transparent!important;background:transparent!important;
+}
+#section-logo #logoGrid .logo-card-item .card-fname-lbl:hover{
+ border-color:var(--lr-line)!important;background:var(--studio-hover)!important;
+}
+#section-logo #logoGrid .logo-card-item .card-fname-lbl:focus-visible{
+ border-color:var(--lr-cta)!important;background:var(--studio-panel)!important;
+}
+#section-logo #logoGrid .logo-card-item .card-text{
+ font-size:12.5px!important;line-height:1.5!important;
+ border-color:var(--lr-line)!important;background:var(--studio-panel)!important;
+ color:var(--studio-title)!important;
+}
+#section-logo #logoGrid .logo-card-item .card-rm:not(:hover){
+ color:var(--studio-muted)!important;
+}
+#section-logo #logoGrid .logo-card-item .card-dl:hover:not(:disabled){
+ box-shadow:none!important;background:var(--studio-title)!important;color:#fff!important;
+}
+#section-logo #logoDetailOverlay :is(#logoDetailFname,#logoDetailText){
+ font-size:13px!important;line-height:1.55!important;
+}
+
+/* 02 — PDF to Image: pages and document cards are the actual output. */
+#section-pdf #pdfStacksContainer .pdf-stack-wrapper{
+ border-color:var(--studio-border)!important;box-shadow:none!important;
+ transition:border-color 160ms ease,background-color 160ms ease!important;
+}
+#section-pdf #pdfStacksContainer .pdf-stack-wrapper:hover{
+ border-color:var(--studio-accent)!important;background:var(--studio-hover)!important;
+}
+#section-pdf #pdfStacksContainer .stack-meta{
+ background:var(--studio-panel)!important;border-color:var(--studio-border)!important;
+}
+#section-pdf #pdfStacksContainer .stack-title{
+ font-size:12.5px!important;font-weight:700!important;
+ letter-spacing:-.018em!important;color:var(--studio-title)!important;
+}
+#section-pdf #pdfStacksContainer .stack-count{
+ font:650 11px/1.4 "JetBrains Mono",monospace!important;
+ color:var(--studio-muted)!important;
+}
+#section-pdf .pdf-work-status{
+ color:var(--studio-muted)!important;font-size:12px!important;line-height:1.55!important;
+}
+#section-pdf .pdf-download-all:disabled{opacity:.48!important;cursor:not-allowed!important;}
+
+/* 03 — Image Splitter: a named source with a true Ready/Done state. */
+#pdfTabContentSplit #splitGrid .split-file-name{
+ color:var(--studio-title)!important;font-size:12.5px!important;
+ font-weight:700!important;letter-spacing:-.017em!important;
+}
+#pdfTabContentSplit #splitGrid .logo-card-item .card-controls{
+ background:var(--studio-panel)!important;border-top:1px solid var(--studio-border)!important;
+}
+#pdfTabContentSplit #splitGrid .logo-card-item .split-status{
+ font:650 11px/1.4 "JetBrains Mono",monospace!important;
+ color:var(--studio-muted)!important;
+}
+#pdfTabContentSplit #splitGrid .logo-card-item[data-ready="done"] .split-status{
+ color:var(--studio-accent)!important;
+}
+#pdfTabContentSplit #splitGrid .split-check:focus-visible{
+ outline:2px solid var(--studio-accent)!important;outline-offset:3px!important;
+}
+
+/* 04 — Video Stills: a browsable, keyboard-operable vertical frame reviewer. */
+#stillsTabContentVideo #stillsStacksContainer .pdf-stack-wrapper{
+ border-color:var(--studio-border)!important;
+ transition:border-color 160ms ease,background-color 160ms ease!important;
+}
+#stillsTabContentVideo #stillsStacksContainer .pdf-stack-wrapper:hover{
+ border-color:var(--studio-accent)!important;
+}
+#stillsDetailOverlay #stillsOverlayGrid>.vs-frame-row{
+ border-color:transparent!important;
+ transition:background-color 150ms ease,border-color 150ms ease!important;
+}
+#stillsDetailOverlay #stillsOverlayGrid>.vs-frame-row:focus-visible{
+ outline:2px solid var(--vs-primary,var(--studio-accent))!important;
+ outline-offset:-2px!important;
+}
+#stillsDetailOverlay #stillsOverlayGrid>.vs-frame-row.active-still{
+ border-color:var(--vs-primary,var(--studio-accent))!important;
+}
+#stillsDetailOverlay #stillsOverlayGrid>.vs-frame-row .detail-check:focus-visible{
+ outline:2px solid var(--vs-primary,var(--studio-accent))!important;
+ outline-offset:2px!important;
+}
+
+/* 05 — Storyboard, Filmstrip and Fit: controls readable, canvas unchanged. */
+#stillsTabContentStory #storyBoardControls .control-group>.label-header,
+#stillsTabContentFilmstrip .sidebar-panel .glass-panel>.label-header,
+#stillsTabContentFit .fit-controls .control-group>.label-header{
+ font-size:11.5px!important;font-weight:700!important;
+ color:var(--sb-text)!important;letter-spacing:.025em!important;
+}
+#stillsTabContentStory #storyBoardControls :is(#storyNameInput,#storyCols,#storyWidth),
+#stillsTabContentFilmstrip :is(#filmstripTitleInput,#filmstripRowsSelect,#filmstripFramesPerRowSelect){
+ border-color:var(--sb-line)!important;color:var(--sb-text)!important;
+}
+#stillsTabContentStory #storyBoardControls #storyProjectTabs .story-project-switch{
+ letter-spacing:-.01em!important;
+}
+#stillsTabContentFilmstrip #filmstripFileList>.story-asset-row:hover{
+ background:var(--studio-hover)!important;
+}
+
+/* 06 — Link Gen: source parameters and generated copy-ready code. */
+#section-adlinks #adlinksTabContentGen :is(#alg-input,#alg-folder,#alg-server){
+ border-color:var(--studio-border)!important;color:var(--studio-title)!important;
+}
+#section-adlinks #adlinksTabContentGen .adgen-output-card{
+ border-color:var(--studio-border)!important;box-shadow:none!important;
+}
+#section-adlinks #adlinksTabContentGen .adgen-output-card:focus-within{
+ border-color:var(--studio-accent)!important;
+}
+#section-adlinks #adlinksTabContentGen :is(#alg-out-ads,#alg-out-story){
+ background:var(--studio-stage)!important;color:var(--studio-title)!important;
+ border-color:var(--studio-border)!important;
+ font:500 12px/1.7 "JetBrains Mono",monospace!important;
+ letter-spacing:-.01em!important;
+}
+#section-adlinks #adlinksTabContentGen .adgen-output-card .liquid-btn{
+ font-size:11.5px!important;font-weight:700!important;
+}
+
+/* 07 — Ad Downloader: dense filename tables remain readable and actionable. */
+#section-adlinks #adlinksTabContentDownloader #adDlTableContainer tbody tr{
+ transition:background-color 140ms ease!important;
+}
+#section-adlinks #adlinksTabContentDownloader #adDlTableContainer tbody tr:hover{
+ background:var(--studio-hover)!important;
+}
+#section-adlinks #adlinksTabContentDownloader #adDlTableContainer tbody td{
+ /* Keep source-defined success/error and downloaded-state colors. */
+ font-size:12px!important;line-height:1.55!important;
+}
+#section-adlinks #adlinksTabContentDownloader #adDlTableContainer tbody td :is(button,a){
+ font-weight:650!important;
+}
+#section-adlinks #adlinksTabContentDownloader #adDlTableContainer tbody td input[type="checkbox"]{
+ accent-color:var(--studio-accent)!important;
+}
+#section-adlinks #adDlStatus{
+ /* JavaScript owns normal versus error color. */
+ line-height:1.6!important;
+}
+#section-adlinks #adDlBulkButton:disabled{opacity:.5!important;cursor:not-allowed!important;}
+
+/* 08 — Video Downloads: URLs, metadata, and real command strings. */
+#section-yt-helper #ytUrlInput{
+ font:500 13px/1.65 "Plus Jakarta Sans",sans-serif!important;
+ color:var(--studio-title)!important;border-color:var(--studio-border)!important;
+}
+#section-yt-helper #ytMetadataContent :is(.glass-panel,.yt-result-card){
+ border-color:var(--studio-border)!important;background:var(--studio-panel)!important;
+}
+#section-yt-helper #ytMetadataContent :is(pre,code,textarea){
+ font-family:"JetBrains Mono",monospace!important;
+ font-size:12px!important;line-height:1.65!important;
+ color:var(--studio-title)!important;
+}
+#section-yt-helper #ytMetadataContent .copy-cmd-btn:not(:disabled):hover{
+ background:var(--studio-hover)!important;border-color:var(--studio-accent)!important;
+ box-shadow:none!important;
+}
+@media(prefers-reduced-motion:reduce){
+ #section-pdf #pdfStacksContainer .pdf-stack-wrapper,
+ #stillsTabContentVideo #stillsStacksContainer .pdf-stack-wrapper,
+ #stillsDetailOverlay #stillsOverlayGrid>.vs-frame-row,
+ #section-adlinks #adlinksTabContentDownloader #adDlTableContainer tbody tr{
+  transition:none!important;
+ }
+}
+
+/* Inspect actions are genuine keyboard targets, without moving media. */
+#section-logo #logoGrid .logo-card-item .card-preview-area:focus-visible,
+#section-pdf #pdfStacksContainer .pdf-stack-wrapper:focus-visible,
+#stillsTabContentVideo #stillsStacksContainer .pdf-stack-wrapper:focus-visible{
+ outline:2px solid var(--studio-accent)!important;
+ outline-offset:2px!important;
 }
 </style>
 </head>
@@ -11207,6 +11400,15 @@ const CTKDownloadRenamer = (() => {
               window.applyThanosSnap(obj.card).then(() => this.removeCard(obj));
             };
             const previewArea = card.querySelector(".card-preview-area");
+            previewArea.tabIndex = 0;
+            previewArea.setAttribute?.("role", "button");
+            previewArea.setAttribute?.("aria-label", "Open Focus Mode for " + file.name);
+            previewArea.onkeydown = (event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                previewArea.click();
+              }
+            };
             previewArea.onmouseenter = () => (hoverOverlay.style.opacity = "1");
             previewArea.onmouseleave = () => (hoverOverlay.style.opacity = "0");
             previewArea.onclick = () =>
@@ -11851,7 +12053,17 @@ const CTKDownloadRenamer = (() => {
               if (signal.aborted) throw new DOMException("Aborted", "AbortError");
               const stack = document.createElement("div");
               stack.className = "pdf-stack-wrapper";
-              stack.innerHTML = `<div class="processing-pulse" style="width:100%; height:200px; background:var(--bg-input); display:flex; align-items:center; justify-content:center; color:var(--text-muted);">Processing...</div><div class="stack-meta"><div class="stack-title">${file.name}</div><div class="stack-count">0/${pdf.numPages}</div></div>`;
+              stack.innerHTML = `<div class="processing-pulse" style="width:100%; height:200px; background:var(--bg-input); display:flex; align-items:center; justify-content:center; color:var(--text-muted);">Processing...</div><div class="stack-meta"><div class="stack-title"></div><div class="stack-count">0/${pdf.numPages}</div></div>`;
+              stack.querySelector(".stack-title").textContent = file.name;
+              stack.tabIndex = 0;
+              stack.setAttribute?.("role", "button");
+              stack.setAttribute?.("aria-label", "Inspect PDF " + file.name);
+              stack.onkeydown = (event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  stack.click();
+                }
+              };
               stack.onclick = () => this.openDetail(pdfId);
               this.els.stacks.prepend(stack);
               this.collection[pdfId] = {
@@ -12042,7 +12254,10 @@ const CTKDownloadRenamer = (() => {
             this.items.forEach((item) => {
               const card = document.createElement("div");
               card.className = "logo-card-item";
-              card.innerHTML = `<div class="preview-box"><img src="${item.url}"><div class="split-preview-overlay"></div></div><div class="card-controls" style="padding: 12px; display: flex; align-items: center; gap: 10px; justify-content: space-between;"><div style="font-size:0.8rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600; flex: 1;">${item.file.name}</div><div style="display: flex; align-items: center; gap: 15px;"><div class="split-status" style="font-size:0.75rem; color:var(--text-muted); font-weight: 500;">${item.splitBlobs.length > 0 ? "Done" : "Ready"}</div><label style="display:flex; gap:8px; align-items:center; font-size:0.75rem; font-weight: bold; cursor: pointer;"><input type="checkbox" class="split-check toggle-switch small" ${item.checked ? "checked" : ""}> Split</label></div></div>`;
+              card.dataset.ready = item.splitBlobs.length ? "done" : "ready";
+              card.innerHTML = `<div class="preview-box"><img src="${item.url}"><div class="split-preview-overlay"></div></div><div class="card-controls" style="padding: 12px; display: flex; align-items: center; gap: 10px; justify-content: space-between;"><div class="split-file-name" style="font-size:0.8rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600; flex: 1;"></div><div style="display: flex; align-items: center; gap: 15px;"><div class="split-status" style="font-size:0.75rem; color:var(--text-muted); font-weight: 500;">${item.splitBlobs.length > 0 ? "Done" : "Ready"}</div><label style="display:flex; gap:8px; align-items:center; font-size:0.75rem; font-weight: bold; cursor: pointer;"><input type="checkbox" class="split-check toggle-switch small" ${item.checked ? "checked" : ""}> Split</label></div></div>`;
+              card.querySelector(".split-file-name").textContent = item.file.name;
+              card.querySelector(".split-file-name").title = item.file.name;
               this.els.grid.appendChild(card);
               item.card = card;
               card.querySelector(".split-check").onchange = (e) => {
@@ -12084,6 +12299,7 @@ const CTKDownloadRenamer = (() => {
               }
               item.card.querySelector(".split-status").innerText =
                 `Done (${cols})`;
+              item.card.dataset.ready = "done";
             }
             this.els.splitBtn.innerHTML = '<span class="material-symbols-rounded" style="font-size: 14px;">content_cut</span> Split Images';
             this.els.splitBtn.disabled = false;
@@ -13044,7 +13260,17 @@ const CTKDownloadRenamer = (() => {
 
                 const stack = document.createElement("div");
                 stack.className = "pdf-stack-wrapper";
-                stack.innerHTML = `<img src=""><div class="stack-meta"><div class="stack-title">${name}</div><div class="stack-count">Processing...</div></div>`;
+                stack.innerHTML = `<img src=""><div class="stack-meta"><div class="stack-title"></div><div class="stack-count">Processing...</div></div>`;
+                stack.querySelector(".stack-title").textContent = name;
+                stack.tabIndex = 0;
+                stack.setAttribute?.("role", "button");
+                stack.setAttribute?.("aria-label", "Inspect stills from " + name);
+                stack.onkeydown = (event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    stack.click();
+                  }
+                };
                 stack.onclick = () => this.openDetail(id);
                 this.els.stacks.appendChild(stack);
 
@@ -13239,15 +13465,28 @@ const CTKDownloadRenamer = (() => {
               card.style.cssText =
                 "display:flex; align-items:center; gap:10px; padding:10px; border-bottom:1px solid var(--border); cursor:pointer; transition:background 0.2s; border-radius:0; margin-bottom:4px;";
               card.innerHTML = `<img src="${f.url}" style="width:50px; height:50px; object-fit:cover; border-radius:0; flex-shrink:0;"><div style="flex:1; font-size:0.85rem; font-family:var(--font-mono); color:var(--text-main);">${f.type === "storyboard" ? "Storyboard" : "#" + f.num}</div><input data-guide="Select or deselect this frame for batch downloading." type="checkbox" class="detail-check toggle-switch small" ${f.checked ? "checked" : ""}>`;
+              card.classList.add("vs-frame-row");
+              card.tabIndex = 0;
+              card.setAttribute?.("role", "group");
+              card.setAttribute?.("aria-label", "Preview " + (f.type === "storyboard" ? "storyboard" : "frame " + f.num));
+              card.setAttribute?.("aria-current", "false");
+              card.onkeydown = (event) => {
+                if (event.target === card && (event.key === "Enter" || event.key === " ")) {
+                  event.preventDefault();
+                  card.click();
+                }
+              };
 
               card.onclick = (e) => {
                 if (e.target.tagName !== "INPUT") {
                   Array.from(this.els.grid.children).forEach((el) => {
                     el.classList.remove("active-still");
+                    el.setAttribute?.("aria-current", "false");
                     el.style.background = "transparent";
                     el.querySelector("div").style.color = "var(--text-main)";
                   });
                   card.classList.add("active-still");
+                  card.setAttribute?.("aria-current", "true");
                   card.style.background = "var(--text-main)";
                   card.querySelector("div").style.color = "var(--bg-main)";
                   previewArea.innerHTML = `<img src="${f.url}" style="max-width:100%; max-height:100%; object-fit:contain; border-radius:0;">`;
@@ -15231,8 +15470,8 @@ const CTKDownloadRenamer = (() => {
     const docs=contents(), pages=totalPages(docs);
     stacks.querySelectorAll('.pdf-stack-wrapper').forEach(card=>{
       if(!card.hasAttribute('role')){
-        card.setAttribute('role','button'); card.tabIndex=0;
-        card.setAttribute('aria-label','Inspect pages in '+(card.querySelector('.stack-title')?.textContent||'PDF document'));
+        card.setAttribute?.('role','button'); card.tabIndex=0;
+        card.setAttribute?.('aria-label','Inspect pages in '+(card.querySelector('.stack-title')?.textContent||'PDF document'));
         card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();card.click();}});
       }
     });

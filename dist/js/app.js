@@ -2439,6 +2439,15 @@ const CTKDownloadRenamer = (() => {
               window.applyThanosSnap(obj.card).then(() => this.removeCard(obj));
             };
             const previewArea = card.querySelector(".card-preview-area");
+            previewArea.tabIndex = 0;
+            previewArea.setAttribute?.("role", "button");
+            previewArea.setAttribute?.("aria-label", "Open Focus Mode for " + file.name);
+            previewArea.onkeydown = (event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                previewArea.click();
+              }
+            };
             previewArea.onmouseenter = () => (hoverOverlay.style.opacity = "1");
             previewArea.onmouseleave = () => (hoverOverlay.style.opacity = "0");
             previewArea.onclick = () =>
@@ -3083,7 +3092,17 @@ const CTKDownloadRenamer = (() => {
               if (signal.aborted) throw new DOMException("Aborted", "AbortError");
               const stack = document.createElement("div");
               stack.className = "pdf-stack-wrapper";
-              stack.innerHTML = `<div class="processing-pulse" style="width:100%; height:200px; background:var(--bg-input); display:flex; align-items:center; justify-content:center; color:var(--text-muted);">Processing...</div><div class="stack-meta"><div class="stack-title">${file.name}</div><div class="stack-count">0/${pdf.numPages}</div></div>`;
+              stack.innerHTML = `<div class="processing-pulse" style="width:100%; height:200px; background:var(--bg-input); display:flex; align-items:center; justify-content:center; color:var(--text-muted);">Processing...</div><div class="stack-meta"><div class="stack-title"></div><div class="stack-count">0/${pdf.numPages}</div></div>`;
+              stack.querySelector(".stack-title").textContent = file.name;
+              stack.tabIndex = 0;
+              stack.setAttribute?.("role", "button");
+              stack.setAttribute?.("aria-label", "Inspect PDF " + file.name);
+              stack.onkeydown = (event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  stack.click();
+                }
+              };
               stack.onclick = () => this.openDetail(pdfId);
               this.els.stacks.prepend(stack);
               this.collection[pdfId] = {
@@ -3274,7 +3293,10 @@ const CTKDownloadRenamer = (() => {
             this.items.forEach((item) => {
               const card = document.createElement("div");
               card.className = "logo-card-item";
-              card.innerHTML = `<div class="preview-box"><img src="${item.url}"><div class="split-preview-overlay"></div></div><div class="card-controls" style="padding: 12px; display: flex; align-items: center; gap: 10px; justify-content: space-between;"><div style="font-size:0.8rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600; flex: 1;">${item.file.name}</div><div style="display: flex; align-items: center; gap: 15px;"><div class="split-status" style="font-size:0.75rem; color:var(--text-muted); font-weight: 500;">${item.splitBlobs.length > 0 ? "Done" : "Ready"}</div><label style="display:flex; gap:8px; align-items:center; font-size:0.75rem; font-weight: bold; cursor: pointer;"><input type="checkbox" class="split-check toggle-switch small" ${item.checked ? "checked" : ""}> Split</label></div></div>`;
+              card.dataset.ready = item.splitBlobs.length ? "done" : "ready";
+              card.innerHTML = `<div class="preview-box"><img src="${item.url}"><div class="split-preview-overlay"></div></div><div class="card-controls" style="padding: 12px; display: flex; align-items: center; gap: 10px; justify-content: space-between;"><div class="split-file-name" style="font-size:0.8rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600; flex: 1;"></div><div style="display: flex; align-items: center; gap: 15px;"><div class="split-status" style="font-size:0.75rem; color:var(--text-muted); font-weight: 500;">${item.splitBlobs.length > 0 ? "Done" : "Ready"}</div><label style="display:flex; gap:8px; align-items:center; font-size:0.75rem; font-weight: bold; cursor: pointer;"><input type="checkbox" class="split-check toggle-switch small" ${item.checked ? "checked" : ""}> Split</label></div></div>`;
+              card.querySelector(".split-file-name").textContent = item.file.name;
+              card.querySelector(".split-file-name").title = item.file.name;
               this.els.grid.appendChild(card);
               item.card = card;
               card.querySelector(".split-check").onchange = (e) => {
@@ -3316,6 +3338,7 @@ const CTKDownloadRenamer = (() => {
               }
               item.card.querySelector(".split-status").innerText =
                 `Done (${cols})`;
+              item.card.dataset.ready = "done";
             }
             this.els.splitBtn.innerHTML = '<span class="material-symbols-rounded" style="font-size: 14px;">content_cut</span> Split Images';
             this.els.splitBtn.disabled = false;
@@ -4276,7 +4299,17 @@ const CTKDownloadRenamer = (() => {
 
                 const stack = document.createElement("div");
                 stack.className = "pdf-stack-wrapper";
-                stack.innerHTML = `<img src=""><div class="stack-meta"><div class="stack-title">${name}</div><div class="stack-count">Processing...</div></div>`;
+                stack.innerHTML = `<img src=""><div class="stack-meta"><div class="stack-title"></div><div class="stack-count">Processing...</div></div>`;
+                stack.querySelector(".stack-title").textContent = name;
+                stack.tabIndex = 0;
+                stack.setAttribute?.("role", "button");
+                stack.setAttribute?.("aria-label", "Inspect stills from " + name);
+                stack.onkeydown = (event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    stack.click();
+                  }
+                };
                 stack.onclick = () => this.openDetail(id);
                 this.els.stacks.appendChild(stack);
 
@@ -4471,15 +4504,28 @@ const CTKDownloadRenamer = (() => {
               card.style.cssText =
                 "display:flex; align-items:center; gap:10px; padding:10px; border-bottom:1px solid var(--border); cursor:pointer; transition:background 0.2s; border-radius:0; margin-bottom:4px;";
               card.innerHTML = `<img src="${f.url}" style="width:50px; height:50px; object-fit:cover; border-radius:0; flex-shrink:0;"><div style="flex:1; font-size:0.85rem; font-family:var(--font-mono); color:var(--text-main);">${f.type === "storyboard" ? "Storyboard" : "#" + f.num}</div><input data-guide="Select or deselect this frame for batch downloading." type="checkbox" class="detail-check toggle-switch small" ${f.checked ? "checked" : ""}>`;
+              card.classList.add("vs-frame-row");
+              card.tabIndex = 0;
+              card.setAttribute?.("role", "group");
+              card.setAttribute?.("aria-label", "Preview " + (f.type === "storyboard" ? "storyboard" : "frame " + f.num));
+              card.setAttribute?.("aria-current", "false");
+              card.onkeydown = (event) => {
+                if (event.target === card && (event.key === "Enter" || event.key === " ")) {
+                  event.preventDefault();
+                  card.click();
+                }
+              };
 
               card.onclick = (e) => {
                 if (e.target.tagName !== "INPUT") {
                   Array.from(this.els.grid.children).forEach((el) => {
                     el.classList.remove("active-still");
+                    el.setAttribute?.("aria-current", "false");
                     el.style.background = "transparent";
                     el.querySelector("div").style.color = "var(--text-main)";
                   });
                   card.classList.add("active-still");
+                  card.setAttribute?.("aria-current", "true");
                   card.style.background = "var(--text-main)";
                   card.querySelector("div").style.color = "var(--bg-main)";
                   previewArea.innerHTML = `<img src="${f.url}" style="max-width:100%; max-height:100%; object-fit:contain; border-radius:0;">`;

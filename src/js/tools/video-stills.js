@@ -195,7 +195,17 @@ export default {
 
                 const stack = document.createElement("div");
                 stack.className = "pdf-stack-wrapper";
-                stack.innerHTML = `<img src=""><div class="stack-meta"><div class="stack-title">${name}</div><div class="stack-count">Processing...</div></div>`;
+                stack.innerHTML = `<img src=""><div class="stack-meta"><div class="stack-title"></div><div class="stack-count">Processing...</div></div>`;
+                stack.querySelector(".stack-title").textContent = name;
+                stack.tabIndex = 0;
+                stack.setAttribute?.("role", "button");
+                stack.setAttribute?.("aria-label", "Inspect stills from " + name);
+                stack.onkeydown = (event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    stack.click();
+                  }
+                };
                 stack.onclick = () => this.openDetail(id);
                 this.els.stacks.appendChild(stack);
 
@@ -390,15 +400,28 @@ export default {
               card.style.cssText =
                 "display:flex; align-items:center; gap:10px; padding:10px; border-bottom:1px solid var(--border); cursor:pointer; transition:background 0.2s; border-radius:0; margin-bottom:4px;";
               card.innerHTML = `<img src="${f.url}" style="width:50px; height:50px; object-fit:cover; border-radius:0; flex-shrink:0;"><div style="flex:1; font-size:0.85rem; font-family:var(--font-mono); color:var(--text-main);">${f.type === "storyboard" ? "Storyboard" : "#" + f.num}</div><input data-guide="Select or deselect this frame for batch downloading." type="checkbox" class="detail-check toggle-switch small" ${f.checked ? "checked" : ""}>`;
+              card.classList.add("vs-frame-row");
+              card.tabIndex = 0;
+              card.setAttribute?.("role", "group");
+              card.setAttribute?.("aria-label", "Preview " + (f.type === "storyboard" ? "storyboard" : "frame " + f.num));
+              card.setAttribute?.("aria-current", "false");
+              card.onkeydown = (event) => {
+                if (event.target === card && (event.key === "Enter" || event.key === " ")) {
+                  event.preventDefault();
+                  card.click();
+                }
+              };
 
               card.onclick = (e) => {
                 if (e.target.tagName !== "INPUT") {
                   Array.from(this.els.grid.children).forEach((el) => {
                     el.classList.remove("active-still");
+                    el.setAttribute?.("aria-current", "false");
                     el.style.background = "transparent";
                     el.querySelector("div").style.color = "var(--text-main)";
                   });
                   card.classList.add("active-still");
+                  card.setAttribute?.("aria-current", "true");
                   card.style.background = "var(--text-main)";
                   card.querySelector("div").style.color = "var(--bg-main)";
                   previewArea.innerHTML = `<img src="${f.url}" style="max-width:100%; max-height:100%; object-fit:contain; border-radius:0;">`;
