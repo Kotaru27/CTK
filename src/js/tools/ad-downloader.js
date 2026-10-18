@@ -135,7 +135,7 @@ export default {
             Array.from(downloadedBody.children).filter(el => el !== downloadedHead).forEach(el => el.remove());
             downloadedHead.style.display = "none";
             const statusCell=downloadedHead.querySelector("td");
-            if (statusCell) statusCell.textContent="Download started";
+            if (statusCell) statusCell.textContent="Downloaded / download requested";
             this.entries = []; this.allNames = []; this.adTypeMap = {};
             const seen = new Set();
             let skipped = 0, inferred = 0;
@@ -285,12 +285,25 @@ export default {
             document.body.appendChild(a); a.click(); a.remove();
             setTimeout(() => URL.revokeObjectURL(url), 60000);
           },
-          markDownloaded(entry) {
+          markDownloaded(entry, verified = false) {
+            // A CORS-accessible Blob lets us verify file preparation, not the
+            // user's browser download manager. Native SharePoint downloads
+            // are only confirmed when the folder renamer observes the file.
             entry.downloaded = true;
+            entry.downloadVerified = !!(entry.downloadVerified || verified);
+            if (entry.downloadButton) {
+              entry.downloadButton.textContent = "Download again";
+              entry.downloadButton.disabled = false;
+            }
             if (entry.row) {
               entry.row.classList.add("downloaded");
-              entry.row.style.opacity = "0.65";
+              entry.row.style.removeProperty("opacity");
+              entry.row.title = entry.downloadVerified
+                ? "File confirmed in the selected folder. Download again if needed."
+                : "Download requested. Browser save completion is not observable here; Download again is available.";
               document.getElementById("adDlDownloadedHeaderRow").style.display = "table-row";
+              // appendChild safely keeps a previously downloaded row at the
+              // bottom, even after repeated download requests.
               document.getElementById("adDlDownloadedBody").appendChild(entry.row);
             }
             this.updateBulkButton();
@@ -307,6 +320,7 @@ export default {
             const renamer = typeof CTKDownloadRenamer !== 'undefined' ? CTKDownloadRenamer : null;
             // The tracking starts synchronously from the same user gesture, preserving the
             // native download's trusted click. The chosen folder is never uploaded.
+            entry.renameComplete = () => this.markDownloaded(entry, true);
             entry.renameStatus = (message,isError=false) => {
               const progress=renamer?.stats?.();
               const suffix=progress ? ` · ${progress.renamed} named · ${progress.waiting} waiting · ${progress.failed} failed` : '';
@@ -355,6 +369,7 @@ export default {
                 selected=candidates[index-1].name;
               }
               const target=await CTKDownloadRenamer.renameExisting(entry,selected);
+              this.markDownloaded(entry, true);
               this.status("Renamed existing file in place: "+selected+" → "+target+". There is no extra copy.");
               if (button) button.textContent="Name fixed";
             } catch(error) {
@@ -397,7 +412,8 @@ export default {
             picker.click();
           },
           async downloadFile(entry) {
-            if (entry.downloaded || entry.inProgress) return;
+            // Completed/previously requested rows intentionally stay usable.
+            if (entry.inProgress) return;
             if (CTKSharePoint.isSharePoint(entry.url)) {
               try { this.downloadSharePoint(entry); }
               catch (error) { this.status(`${entry.displayName}: ${error.message}`,true); }

@@ -216,6 +216,7 @@ const CTKDownloadRenamer = (() => {
           known.add(actual);
           renamedCount++;
           entry.renamedFilename=target;
+          entry.renameComplete?.(target);
           entry.renameStatus?.('Downloaded with the correct filename: '+target);
           continue;
         }
@@ -225,6 +226,7 @@ const CTKDownloadRenamer = (() => {
           entry.renamedFilename=target;
           cancel(entry);
           renamedCount++;
+          entry.renameComplete?.(target);
           entry.renameStatus?.('Saved as '+target);
         } catch(error) {
           cancel(entry);
