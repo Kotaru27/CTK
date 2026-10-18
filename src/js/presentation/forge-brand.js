@@ -64,7 +64,7 @@
     observer.observe(app,{attributes:true,attributeFilter:['class']});
     observer.observe(home,{attributes:true,attributeFilter:['class']});
   }
-  safety=setTimeout(()=>complete('safety'),5400);
+  safety=setTimeout(()=>complete('safety'),6700);
 
   // Smooth but never overshooting; the last sampled pose is exact.
   function settle(t,omega){
@@ -153,19 +153,30 @@
     }
     hold=setTimeout(handoff,2220);
   }
-  // A cached Kola loads immediately. A missing/offline Kola still gets
-  // the full ceremony using matching fallback typography, never a skip.
+  // Resolve ALL introductory typefaces before showing a single letter.
+  // FontFaceSet.load resolves with [] if the face is not declared: that
+  // is not proof the intended font was loaded. Freeze system fallback
+  // instead of letting a late download visibly replace live typography.
+  function loadFont(specimen){
+    try{return Promise.resolve(document.fonts?.load?.(specimen)||[])
+      .catch(()=>[]);}
+    catch(_){return Promise.resolve([]);}
+  }
   let started=false;
-  const begin=()=>{
+  function begin(results){
     if(started||done)return;
     started=true;
+    if(!results?.[0]?.length)
+      document.documentElement.classList.add('forge-launch-fallback-kola');
+    if(!results?.[1]?.length)
+      intro.classList.add('forge-intro-fallback-ui');
     requestAnimationFrame(()=>requestAnimationFrame(reveal));
-  };
-  let fontRequest=Promise.resolve();
-  try{fontRequest=Promise.resolve(document.fonts?.load?.('400 130px "Kola"'));}
-  catch(_){}
+  }
   Promise.race([
-    fontRequest.catch(()=>null),
-    new Promise(resolve=>setTimeout(resolve,720))
-  ]).then(begin,begin);
+    Promise.all([
+      loadFont('400 130px "Kola"'),
+      loadFont('600 12px "Plus Jakarta Sans"')
+    ]),
+    new Promise(resolve=>setTimeout(()=>resolve(null),1650))
+  ]).then(begin,()=>begin(null));
 })();
