@@ -647,7 +647,7 @@ body.light-mode .undo-toast {
 /* Tool navigation — remove legacy diagonal shifts, icon enlargements and
    contrast-flash hover. Selected state and keyboard focus stay distinct. */
 .nav-sidebar.visible .nav-item:not(.active){
-  transition:background-color 165ms ease,color 165ms ease,border-color 165ms ease!important;
+  /* Motion cadence owned by forge-workflow-interactions.css. */
 }
 .nav-sidebar.visible .nav-item:hover{
   transform:none!important;translate:none!important;
@@ -668,7 +668,7 @@ body.light-mode .undo-toast {
 /* Flat, connected internal tool tabs. Selected mode is quietly but clearly
    green; unselected mode reacts as one surface, without glow or scaling. */
 #view-app .tool-section :is(#tabRowPdf,#tabRowStills,#tabRowAdlinks) button[role="tab"]{
-  transition:background-color 155ms ease,color 155ms ease,box-shadow 155ms ease!important;
+  /* Motion cadence owned by forge-workflow-interactions.css. */
   transform:none!important;filter:none!important;
   border:0!important;box-shadow:none!important;
   color:var(--studio-muted)!important;
@@ -693,7 +693,7 @@ body.light-mode .undo-toast {
   border-color:var(--sb-line)!important;background:var(--sb-shell)!important;
 }
 #view-app #section-stills-boards #storySubModeToggle button.liquid-btn{
-  transition:background-color 155ms ease,color 155ms ease,border-color 155ms ease!important;
+  /* Motion cadence owned by forge-workflow-interactions.css. */
   transform:none!important;filter:none!important;box-shadow:none!important;
 }
 #view-app #section-stills-boards #storySubModeToggle button.liquid-btn:hover:not(.active-mode){
@@ -710,7 +710,7 @@ body.light-mode .undo-toast {
 /* Actual upload/export/secondary actions: a short color transition only.
    Exclude internal tabs so their selection design cannot be overwritten. */
 #view-app .tool-section .liquid-btn:not(:disabled){
-  transition:background-color 155ms ease,color 155ms ease,border-color 155ms ease!important;
+  /* Motion cadence owned by forge-workflow-interactions.css. */
 }
 #view-app .tool-section .liquid-btn:not(:disabled):is(:hover,:active){
   transform:none!important;translate:none!important;scale:none!important;
