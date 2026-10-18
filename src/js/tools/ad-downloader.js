@@ -307,7 +307,7 @@ export default {
               entry.requested=true;
               if(entry.row){
                 entry.row.classList.add("download-requested");
-                entry.row.classList.remove("downloaded");
+                entry.row.classList.remove?.("downloaded");
                 entry.row.title="Download requested. Completion cannot be verified from GitHub Pages.";
                 const requested=document.getElementById("adDlRequestedBody");
                 const header=document.getElementById("adDlRequestedHeaderRow");
@@ -319,7 +319,7 @@ export default {
               }
             }
             if(entry.downloadButton){entry.downloadButton.textContent="Download again";entry.downloadButton.disabled=false;}
-            this.updateBulkButton();
+            if(typeof document.getElementById==="function")this.updateBulkButton();
           },
           markDownloaded(entry, verified = false) {
             // A CORS-accessible Blob lets us verify file preparation, not the
@@ -333,7 +333,7 @@ export default {
               entry.downloadButton.disabled = false;
             }
             if (entry.row) {
-              entry.row.classList.remove("download-requested");
+              entry.row.classList.remove?.("download-requested");
               entry.row.classList.add("downloaded");
               entry.row.style.removeProperty("opacity");
               entry.row.title = entry.downloadVerified
