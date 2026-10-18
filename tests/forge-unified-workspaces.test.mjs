@@ -28,10 +28,10 @@ test('polish touches only presentation, never process or export code',()=>{
  // cover-cropped 36px thumbnails and 28px button hit areas. Tool workspaces,
  // previews, canvases and other interfaces remain excluded from changes.
  const allowedSmallComponents=[
-  /#view-app #stillsTabContentStory #storyFileList > \.story-asset-row\{[^}]+\}/g,
-  /#view-app #stillsTabContentStory \.story-asset-thumb\{[^}]+\}/g,
+  /#view-app :is\(#stillsTabContentStory,#stillsTabContentFilmstrip\) :is\(#storyFileList,#filmstripFileList\) > \.story-asset-row\{[^}]+\}/g,
+  /#view-app :is\(#stillsTabContentStory,#stillsTabContentFilmstrip\) \.story-asset-thumb\{[^}]+\}/g,
   /#view-app #stillsTabContentStory #storyProjectTabs \.story-project-delete\{[^}]+\}/g,
-  /#view-app #stillsTabContentStory \.story-asset-action\.liquid-btn\{[^}]+\}/g
+  /#view-app :is\(#stillsTabContentStory,#stillsTabContentFilmstrip\) \.story-asset-action\.liquid-btn\{[^}]+\}/g
  ];
  const layoutSafeCss=allowedSmallComponents.reduce((s,re)=>s.replace(re,''),css);
  assert.match(css, /\.story-asset-row\{[^}]*grid-template-columns:minmax\(0,1fr\) auto/);
