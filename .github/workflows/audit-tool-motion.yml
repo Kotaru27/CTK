@@ -42,6 +42,10 @@ jobs:
         run: node scripts/audit-control-motion.mjs
       - name: Inspect physics-based generated results and reduced motion
         run: node scripts/audit-result-motion.mjs
+      - name: Measure isolated Full HD and QHD route frame pacing
+        run: node scripts/audit-isolated-frame-pacing.mjs
+      - name: Diagnose native snapshot compositing overhead at QHD
+        run: node scripts/audit-motion-strategies.mjs
       - name: Inspect responsive desktop layouts at laptop, Full HD and QHD
         run: node scripts/audit-responsive-desktop.mjs
       - name: Exercise populated workspaces and collect rendering telemetry
