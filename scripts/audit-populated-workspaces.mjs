@@ -147,6 +147,34 @@ try{
     fileEntries:document.querySelector('#storyFileList')?.children.length}));
   assert.ok(storyboard.hasCanvas&&storyboard.assets===6,`${label}: storyboard canvas not populated`);
 
+  // Actual Storyboard asset behavior: real names, keyboard controls and
+  // first/last move boundaries, not merely a screenshot of synthetic rows.
+  const gridRows=page.locator('#storyFileList > .story-asset-row');
+  assert.equal(await gridRows.count(),6,label+': missing rendered asset rows');
+  const assetNames=await page.locator('#storyFileList .story-asset-filename').allTextContents();
+  assert.deepEqual(assetNames,imgs.slice(0,6).map(i=>i.name),label+': asset filenames differ from input');
+  assert.equal(await gridRows.first().locator('button[aria-label^="Move up"]').isDisabled(),true);
+  assert.equal(await gridRows.last().locator('button[aria-label^="Move down"]').isDisabled(),true);
+  assert.equal(await gridRows.first().locator('button[aria-label^="Remove"]').count(),1);
+  await gridRows.first().locator('button[aria-label^="Move down"]').click();
+  assert.equal(await gridRows.first().locator('.story-asset-filename').innerText(),imgs[1].name,
+    label+': reordering changed');
+  await gridRows.nth(1).locator('button[aria-label^="Move up"]').click();
+  assert.equal(await gridRows.first().locator('.story-asset-filename').innerText(),imgs[0].name,
+    label+': original image order not restored');
+  const projectButton=page.locator('#storyProjectTabs .story-project-switch');
+  assert.equal(await projectButton.count(),1,label+': first board missing');
+  assert.equal(await projectButton.first().getAttribute('aria-current'),'true');
+  await page.evaluate(()=>Tools.Story.addNewProject());
+  assert.equal(await projectButton.count(),2,label+': new project not created');
+  await projectButton.first().focus();
+  await page.keyboard.press('Enter');
+  await page.waitForFunction(()=>Tools.Story.active?.images.length===6 && !!document.querySelector('#storyPreview canvas'));
+  assert.equal(await projectButton.first().getAttribute('aria-current'),'true',
+    label+': keyboard project switch did not update selection');
+  assert.equal(await page.locator('#storyProjectTabs .story-project-delete').count(),2,
+    label+': accessible project deletion disappeared');
+
   const storyHierarchy=await page.evaluate(()=>{
     const add=document.querySelector('#storyDropZone label.liquid-btn.active-mode');
     const save=document.getElementById('downloadStoryBtn');
