@@ -17,7 +17,7 @@ const routes=[
 try {
   const context=await browser.newContext({viewport:{width:1920,height:1080},reducedMotion:'no-preference'});
   await context.addInitScript(()=>{
-    sessionStorage.setItem('forge_intro_seen_v4','1');
+    sessionStorage.setItem('forge_intro_suppress','1');
     sessionStorage.setItem('forge_whatsnew_seen_session_2026_v1','1');
   });
   const page=await context.newPage();
