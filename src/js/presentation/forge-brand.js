@@ -120,9 +120,9 @@
     if (finished) return;
     if (!layoutGlyphs()) { cleanup(); return; }
     intro.classList.add('is-playing');
-    // The last letter settles near 1.07s. The wordmark crossfades
+    // The last letter settles near .92s. The wordmark crossfades
     // immediately, then flies without a long static hold.
-    after(1100,settle);
+    after(995,settle);
   }
   // Start only with Kola ready. If the external font is unavailable,
   // show the usable homepage instead of animating fallback and snapping.
