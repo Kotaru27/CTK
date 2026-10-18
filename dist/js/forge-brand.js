@@ -16,8 +16,13 @@
     seen = sessionStorage.getItem('forge_intro_seen_v4') === '1';
     activeTool = localStorage.getItem('cts_activeTool');
   } catch (_) {}
+  function notifyIntroFinished() {
+    document.documentElement.dataset.forgeIntroFinished='1';
+    document.dispatchEvent(new Event('forge:intro-complete'));
+  }
   if (reduced || seen || (activeTool && activeTool !== 'home')) {
     intro.remove();
+    notifyIntroFinished();
     return;
   }
   try { sessionStorage.setItem('forge_intro_seen_v4', '1'); } catch (_) {}
@@ -44,6 +49,7 @@
     mark.style.visibility = 'hidden';
     document.body.classList.remove('forge-opening','forge-home-arriving');
     intro.remove();
+    notifyIntroFinished();
   }
   function onKey(e) {
     if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {

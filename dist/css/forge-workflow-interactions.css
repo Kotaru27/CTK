@@ -24,52 +24,6 @@
 #view-app #section-adlinks #adlinksTabContentDownloader #adDlDownloadedHeaderRow td{
  font-weight:750!important;letter-spacing:.075em!important;
 }
-/* The existing Forge view-transition coordinator owns section arrivals.
-   Refine only its easing; never run a second CSS section animation. */
-html.forge-route-running::view-transition-group(forge-workspace-title),
-html.forge-route-running::view-transition-old(root),
-html.forge-route-running::view-transition-new(root){
- animation-timing-function:cubic-bezier(.22,.78,.28,1)!important;
-}
-.nav-sidebar.visible .nav-item:not(.nav-toggle){
- transition:background-color 230ms cubic-bezier(.22,.78,.28,1),
- border-color 230ms cubic-bezier(.22,.78,.28,1),color 230ms cubic-bezier(.22,.78,.28,1)!important;
-}
-.nav-sidebar.visible .nav-item > :is(.material-symbols-rounded,svg){
- transition:translate 230ms cubic-bezier(.22,.78,.28,1),color 230ms ease!important;
-}
-.nav-sidebar.visible .nav-item:not(.active):hover :is(.material-symbols-rounded,svg){translate:2px 0!important;}
-.nav-sidebar.visible .nav-item.active :is(.material-symbols-rounded,svg){translate:0 0!important;}
-#view-app .tool-section .liquid-btn:not(:disabled),
-#view-app .tool-section label.liquid-btn,
-#view-app .tool-section .ctk-row-menu > summary,
-#view-app .tool-section [role="tab"]:not(:disabled){
- transition:background-color 220ms cubic-bezier(.22,.78,.28,1),
- color 220ms cubic-bezier(.22,.78,.28,1),
- border-color 220ms cubic-bezier(.22,.78,.28,1),
- box-shadow 220ms cubic-bezier(.22,.78,.28,1),
- translate 220ms cubic-bezier(.22,.78,.28,1)!important;
-}
-#view-app .tool-section .liquid-btn:hover:not(:disabled),
-#view-app .tool-section label.liquid-btn:hover,
-#view-app .tool-section .ctk-row-menu > summary:hover{translate:0 -1px!important;}
-#view-app .tool-section .liquid-btn:active:not(:disabled),
-#view-app .tool-section label.liquid-btn:active,
-#view-app .tool-section .ctk-row-menu > summary:active{translate:0 0!important;}
-@media(prefers-reduced-motion:reduce){
- .nav-sidebar.visible .nav-item,.nav-sidebar.visible .nav-item > :is(.material-symbols-rounded,svg),
- #view-app .tool-section .liquid-btn,#view-app .tool-section label.liquid-btn,
- #view-app .tool-section [role="tab"],#view-app .tool-section .ctk-row-menu > summary{
-  transition:none!important;translate:none!important;
- }
- .nav-sidebar.visible .nav-item:not(.active):hover > :is(.material-symbols-rounded,svg),
- #view-app .tool-section .liquid-btn:hover:not(:disabled),
- #view-app .tool-section label.liquid-btn:hover,
- #view-app .tool-section .ctk-row-menu > summary:hover{
-  transition:none!important;translate:none!important;
- }
-}
-
 /* Storyboard / 2026-10-18: give long imported folder names the unused
    centre of the toolbar, while the sidebar handles navigation and settings. */
 #section-stills-boards .tool-header:has(.story-header-name:not([hidden])) #stillsToolTitle{
@@ -265,45 +219,54 @@ html.forge-route-running::view-transition-new(root){
   flex:0 0 auto!important;
 }
 
-/* Launch motion final: no hopping icons or shifting action buttons.
-   Surface feedback uses only compositor-safe color/border transitions.
-   Keep all existing colors, layout, focus rings and modes unchanged. */
-.nav-sidebar.visible .nav-item:not(.nav-toggle){
-  transition:background-color 200ms cubic-bezier(.22,1,.36,1),
-             border-color 200ms cubic-bezier(.22,1,.36,1),
-             color 200ms cubic-bezier(.22,1,.36,1)!important;
+/* THE FORGE / interaction owner.
+   One duration and easing for navigation and all ordinary tool actions.
+   Tool-specific CSS retains only semantic color states, focus, and selection.
+   Legacy baseline remains byte-identical for regression safety. */
+:root {
+  --forge-interaction-time:190ms;
+  --forge-interaction-ease:cubic-bezier(.22,.8,.28,1);
 }
-.nav-sidebar.visible .nav-item:not(.nav-toggle) > :is(.material-symbols-rounded,svg),
-.nav-sidebar.visible .nav-item:not(.active):hover > :is(.material-symbols-rounded,svg),
-.nav-sidebar.visible .nav-item.active > :is(.material-symbols-rounded,svg){
-  translate:none!important;
-  transform:none!important;
-  transition:color 200ms cubic-bezier(.22,1,.36,1)!important;
-}
-#view-app .tool-section .liquid-btn:not(:disabled),
+.nav-sidebar.visible .nav-item:not(.nav-toggle),
+#view-app .tool-section :is(.liquid-btn,button,[role="tab"],[role="button"],summary):not(:disabled),
 #view-app .tool-section label.liquid-btn,
-#view-app .tool-section .ctk-row-menu > summary,
-#view-app .tool-section [role="tab"]:not(:disabled){
-  transition:background-color 200ms cubic-bezier(.22,1,.36,1),
-             color 200ms cubic-bezier(.22,1,.36,1),
-             border-color 200ms cubic-bezier(.22,1,.36,1),
-             box-shadow 200ms cubic-bezier(.22,1,.36,1)!important;
+#stillsDetailOverlay :is(button,[role="button"]):not(:disabled),
+#view-home .combined-home-grid > .home-card {
+  transition-property:background-color,color,border-color,box-shadow,opacity!important;
+  transition-duration:var(--forge-interaction-time)!important;
+  transition-timing-function:var(--forge-interaction-ease)!important;
+  transition-delay:0ms!important;
 }
-#view-app .tool-section .liquid-btn:hover:not(:disabled),
-#view-app .tool-section label.liquid-btn:hover,
-#view-app .tool-section .ctk-row-menu > summary:hover,
-#view-app .tool-section .liquid-btn:active:not(:disabled),
-#view-app .tool-section label.liquid-btn:active,
-#view-app .tool-section .ctk-row-menu > summary:active{
+.nav-sidebar.visible .nav-item,
+.nav-sidebar.visible .nav-item :is(svg,.material-symbols-rounded),
+#view-app .tool-section :is(.liquid-btn,button,[role="tab"],summary),
+#view-app .tool-section label.liquid-btn,
+#view-home .combined-home-grid > .home-card {
   translate:none!important;
+}
+.nav-sidebar.visible .nav-item:hover,
+.nav-sidebar.visible .nav-item:active,
+.nav-sidebar.visible .nav-item:not(.active):hover,
+#view-app .tool-section :is(.liquid-btn,button,[role="tab"],summary):is(:hover,:active),
+#view-app .tool-section label.liquid-btn:is(:hover,:active) {
   transform:none!important;
+  translate:none!important;
+  filter:none!important;
+}
+.nav-sidebar.visible .nav-item:hover :is(svg,.material-symbols-rounded){
+  transform:none!important;translate:none!important;scale:none!important;
+}
+#view-app .tool-section :is(.liquid-btn,button,[role="tab"],summary):disabled{
+  transition:none!important;transform:none!important;translate:none!important;
 }
 @media(prefers-reduced-motion:reduce){
- .nav-sidebar.visible .nav-item:not(.nav-toggle),
- .nav-sidebar.visible .nav-item > :is(.material-symbols-rounded,svg),
- #view-app .tool-section :is(.liquid-btn,label.liquid-btn,[role="tab"],.ctk-row-menu > summary){
-   transition:none!important;
- }
+  .nav-sidebar.visible .nav-item,
+  #view-app .tool-section :is(.liquid-btn,button,[role="tab"],[role="button"],summary),
+  #view-app .tool-section label.liquid-btn,
+  #stillsDetailOverlay :is(button,[role="button"]),
+  #view-home .combined-home-grid > .home-card{
+    transition:none!important;animation:none!important;translate:none!important;
+  }
 }
 
 /* Before an authorized Auto-name directory is chosen, the Excel input stays

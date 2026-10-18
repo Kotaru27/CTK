@@ -28,6 +28,7 @@
 <link rel="stylesheet" href="./css/forge-tool-specimens.css">
 <link rel="stylesheet" href="./css/forge-unified-workspaces.css">
 <link rel="stylesheet" href="./css/forge-workflow-interactions.css">
+<link rel="stylesheet" href="./css/forge-whats-new.css">
 </head>
 <body class="light-mode">
 <div class="forge-intro" id="forgeIntro" role="region" aria-label="The Forge introduction">
@@ -41,6 +42,46 @@
    <button type="button" class="forge-intro-skip" id="forgeIntroSkip" aria-label="Skip introduction">Skip intro ↗</button>
   </div>
  </div>
+</div>
+<div class="forge-whatsnew" id="forgeWhatsNew" hidden>
+ <section class="forge-whatsnew-dialog" role="dialog" aria-modal="true" aria-labelledby="forgeWhatsNewTitle" aria-describedby="forgeWhatsNewDescription">
+  <div class="forge-whatsnew-opening">
+   <div class="forge-whatsnew-edition">FIRST MAJOR REBRAND / 2026</div>
+   <div>
+    <span class="forge-whatsnew-brand" aria-label="The Forge">The Forge</span>
+    <h2 id="forgeWhatsNewTitle">Same purpose.<br><em>A new beginning.</em></h2>
+    <p class="forge-whatsnew-intro" id="forgeWhatsNewDescription">Creative Tool Kit is now The Forge. The tools you know, with a more focused way to get things done.</p>
+   </div>
+   <p class="forge-whatsnew-foot">CREATE / TRANSFORM / DELIVER</p>
+  </div>
+  <div class="forge-whatsnew-content">
+   <div class="forge-whatsnew-topline">
+    <span class="forge-whatsnew-section-label">WHAT'S NEW / THE FORGE</span>
+    <button type="button" class="forge-whatsnew-close" id="forgeWhatsNewClose" aria-label="Close What's New">×</button>
+   </div>
+   <div class="forge-whatsnew-changes">
+    <article class="forge-whatsnew-change"><span class="forge-whatsnew-number">01</span><div>
+     <h3>A fresh identity</h3><p>New name, refined interface, and smoother navigation across all eight tools.</p>
+    </div></article>
+    <article class="forge-whatsnew-change"><span class="forge-whatsnew-number">02</span><div>
+     <h3>One Send to Board</h3><p>Select stills across multiple videos. Send them to separate storyboards with one click.</p>
+    </div></article>
+    <article class="forge-whatsnew-change"><span class="forge-whatsnew-number">03</span><div>
+     <h3>Boards from folders</h3><p>Choose one campaign folder. Each ad's stills folder becomes its own storyboard.</p>
+    </div></article>
+    <article class="forge-whatsnew-change"><span class="forge-whatsnew-number">04</span><div>
+     <h3>Automatic file naming</h3><p>Choose a download folder before importing Excel. Supported SharePoint files are tracked for automatic renaming.</p>
+    </div></article>
+    <article class="forge-whatsnew-change"><span class="forge-whatsnew-number">05</span><div>
+     <h3>A clearer download queue</h3><p>See what is pending, requested, or confirmed. Download again whenever needed.</p>
+    </div></article>
+   </div>
+   <div class="forge-whatsnew-actions">
+    <button type="button" id="forgeWhatsNewNever" class="forge-whatsnew-never">Don't show again</button>
+    <button type="button" id="forgeWhatsNewEnter" class="forge-whatsnew-enter">Explore The Forge <span aria-hidden="true">→</span></button>
+   </div>
+  </div>
+ </section>
 </div>
 
 <header class="header">
@@ -1692,5 +1733,6 @@ Brand C" rows="8" style="
 <script id="ctk-ad-downloader-v2" src="./js/ad-downloader-v2.js"></script>
 <script id="forge-brand-intro-js" src="./js/forge-brand.js"></script>
 <script id="forge-video-route-js" src="./js/forge-video-route.js"></script>
+<script id="forge-whats-new-js" src="./js/forge-whats-new.js"></script>
 </body>
 </html>
