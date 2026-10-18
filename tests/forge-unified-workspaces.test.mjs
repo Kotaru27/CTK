@@ -33,7 +33,14 @@ test('polish touches only presentation, never process or export code',()=>{
   /#view-app #stillsTabContentStory #storyProjectTabs \.story-project-delete\{[^}]+\}/g,
   /#view-app :is\(#stillsTabContentStory,#stillsTabContentFilmstrip\) \.story-asset-action\.liquid-btn\{[^}]+\}/g
  ];
- const layoutSafeCss=allowedSmallComponents.reduce((s,re)=>s.replace(re,''),css);
+ const baseline=css.split('/* FORGE / WORKFLOW MOTION & ASSET-QUEUE REFINEMENT')[0];
+ const scoped=css.split('/* FORGE / WORKFLOW MOTION & ASSET-QUEUE REFINEMENT')[1] || '';
+ // New layout adjustments apply only to the Downloader's scroll owner and a
+ // contextual Storyboard menu. Existing media/canvas rules stay protected.
+ const layoutSafeCss=allowedSmallComponents.reduce((s,re)=>s.replace(re,''),baseline);
+ for(const banned of ['canvas {','filter:blur','transform:scale','grid-template-columns:']){
+  assert.ok(!scoped.includes(banned),'new interaction layer changed media geometry: '+banned);
+ }
  assert.match(css, /\.story-asset-row\{[^}]*grid-template-columns:minmax\(0,1fr\) auto/);
  for(const banned of ['#pdfStacksContainer {','grid-template-columns:','grid-template-rows:',
    'object-fit:','canvas {','position:fixed','position:absolute','min-height:',

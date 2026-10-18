@@ -7,7 +7,7 @@ const bundle = read('dist/js/app.js');
 const standalone = read('dist/creative-tools-standalone.html');
 
 test('all eight existing tools have scoped populated-component refinements', () => {
-  const finish = css.slice(css.indexOf('/* THE FORGE / FINAL EIGHT-TOOL COMPONENT PASS'));
+  const finish = css.slice(css.indexOf('/* THE FORGE / FINAL EIGHT-TOOL COMPONENT PASS'), css.indexOf('/* FORGE / WORKFLOW MOTION & ASSET-QUEUE REFINEMENT'));
   assert.ok(finish.length > 2500, 'final component pass missing');
   for (const selector of [
     '#section-logo #logoGrid .logo-card-item .card-fname-lbl',

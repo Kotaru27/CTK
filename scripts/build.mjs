@@ -38,6 +38,7 @@ const forgeWorkspaceFinishCss=read('src/css/experience/forge-workspace-finish.cs
 const forgeSpecimensCss=read('src/css/experience/forge-tool-specimens.css');
 const forgeUnifiedCss=read('src/css/experience/forge-unified-workspaces.css');
 const forgeVideoRouteJs=read('src/js/presentation/forge-video-route.js');
+const forgeSwitchMotionJs=read('src/js/presentation/forge-switch-motion.js');
 const forgeHero=[
   '<section class="forge-hero" aria-labelledby="forgeHeroName">',
   ' <div class="forge-hero-top">',
@@ -116,7 +117,9 @@ function forgeBrand(html,standaloneRelease){
     '<script id="forge-brand-intro-js" src="./dist/js/forge-brand.js"></script>';
   const routeScript=standaloneRelease?'<script id="forge-video-route-js">'+forgeVideoRouteJs+'</script>':
     '<script id="forge-video-route-js" src="./dist/js/forge-video-route.js"></script>';
-  html=html.replace('</body>',brandScript+'\n'+routeScript+'\n</body>');
+  const switchScript=standaloneRelease?'<script id="forge-switch-motion-js">'+forgeSwitchMotionJs+'</script>':
+    '<script id="forge-switch-motion-js" src="./dist/js/forge-switch-motion.js"></script>';
+  html=html.replace('</body>',brandScript+'\n'+routeScript+'\n'+switchScript+'\n</body>');
   return html;
 }
 
@@ -133,6 +136,7 @@ save('dist/css/forge-workspace-finish.css',forgeWorkspaceFinishCss);
 save('dist/css/forge-tool-specimens.css',forgeSpecimensCss);
 save('dist/css/forge-unified-workspaces.css',forgeUnifiedCss);
 save('dist/js/forge-video-route.js',forgeVideoRouteJs);
+save('dist/js/forge-switch-motion.js',forgeSwitchMotionJs);
 save('dist/css/ad-downloader-v2.css',visualCss);
 save('dist/js/ad-downloader-v2.js',visualJs);
 save('dist/css/app.css',css);save('dist/js/app.js',main);

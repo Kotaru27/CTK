@@ -34,6 +34,7 @@ export default {
               folderButton.onclick = () => this.chooseRenameFolder();
               header.appendChild(folderButton);
             }
+            this.ensureQueue();
             const bar = document.getElementById("adDlSummaryBar");
             if (bar && !document.getElementById("adDlStatus")) {
               const status = document.createElement("span");
@@ -44,9 +45,56 @@ export default {
               bar.appendChild(status);
             }
           },
+          ensureQueue() {
+            if (typeof document.getElementById !== "function") return;
+            const pending = document.getElementById("adDlTableBody");
+            const completed = document.getElementById("adDlDownloadedBody");
+            if (!pending || !completed?.parentNode?.insertBefore || document.getElementById("adDlRequestedBody")) return;
+            const tbody = document.createElement("tbody");
+            tbody.id = "adDlRequestedBody";
+            const header = document.createElement("tr");
+            header.id = "adDlRequestedHeaderRow";
+            header.style.display = "none";
+            const cell = document.createElement("td");
+            cell.colSpan = 3;
+            cell.textContent = "Requested / awaiting confirmation";
+            header.appendChild(cell);
+            tbody.appendChild(header);
+            completed.parentNode.insertBefore(tbody,completed);
+          },
+          updateQueueCounts() {
+            if (typeof document.getElementById !== "function") return;
+            const counts = {ready:0,requested:0,downloaded:0};
+            for (const item of this.entries) counts[item.statusKind || "ready"]++;
+            const text = document.getElementById("adDlCountText");
+            if (text) text.textContent = `${this.entries.length} valid ads · ${counts.ready} remaining · ${counts.requested} checking · ${counts.downloaded} downloaded`;
+            const requested = document.getElementById("adDlRequestedHeaderRow");
+            if (requested) requested.style.display = counts.requested ? "table-row" : "none";
+            const complete = document.getElementById("adDlDownloadedHeaderRow");
+            if (complete) complete.style.display = counts.downloaded ? "table-row" : "none";
+          },
+          markRequested(entry) {
+            this.ensureQueue();
+            entry.statusKind = "requested"; entry.downloaded = false; entry.selected = false;
+            entry.row?.classList.remove("downloaded");
+            entry.row?.classList.add("download-requested");
+            if (entry.row) {entry.row.style.opacity="1";document.getElementById("adDlRequestedBody")?.appendChild(entry.row);}
+            if (entry.downloadButton) entry.downloadButton.textContent = "Download again";
+            if (entry.confirmButton) entry.confirmButton.hidden = false;
+            if (typeof document.getElementById === "function") {
+              this.updateQueueCounts();this.updateBulkButton();
+            }
+          },
+          confirmDownloaded(entry) {
+            return UI.confirm({
+              title:"Confirm downloaded file",
+              message:"Only mark this ad downloaded after the complete media file appears in your browser Downloads.",
+              okLabel:"Mark downloaded",cancelLabel:"Keep checking"
+            }).then(yes=>{if(yes){this.markDownloaded(entry);this.status("Confirmed downloaded: "+entry.displayName);}});
+          },
           status(message, isError = false) {
             const el = document.getElementById("adDlStatus");
-            if (el) { el.textContent = message; el.style.color = isError ? "var(--danger, #b64a44)" : "var(--text-muted)"; }
+            if (el) { el.textContent = message; el.title = message; el.style.color = isError ? "var(--danger, #b64a44)" : "var(--text-muted)"; }
           },
           async chooseRenameFolder() {
             try {
@@ -131,11 +179,14 @@ export default {
             const body = document.getElementById("adDlTableBody");
             const downloadedBody = document.getElementById("adDlDownloadedBody");
             const downloadedHead = document.getElementById("adDlDownloadedHeaderRow");
+            this.ensureQueue();
+            const requestedBody = document.getElementById("adDlRequestedBody");
+            if (requestedBody) Array.from(requestedBody.children).filter(child=>child.id!=="adDlRequestedHeaderRow").forEach(child=>child.remove());
             body.replaceChildren();
             Array.from(downloadedBody.children).filter(el => el !== downloadedHead).forEach(el => el.remove());
             downloadedHead.style.display = "none";
             const statusCell=downloadedHead.querySelector("td");
-            if (statusCell) statusCell.textContent="Download started";
+            if (statusCell) statusCell.textContent="Downloaded ads";
             this.entries = []; this.allNames = []; this.adTypeMap = {};
             const seen = new Set();
             let skipped = 0, inferred = 0;
@@ -161,7 +212,7 @@ export default {
               let name = base, counter = 2;
               while (seen.has(name.toLowerCase())) name = `${base}_${counter++}`;
               seen.add(name.toLowerCase());
-              const entry = {no,url,type,displayName:name,ext:hint.ext,confidence:hint.confidence,selected:true,downloaded:false};
+              const entry = {no,url,type,displayName:name,ext:hint.ext,confidence:hint.confidence,selected:true,downloaded:false,statusKind:"ready"};
               this.entries.push(entry);
               this.allNames.push(name);
               this.adTypeMap[this.normalize(type)] = no;
@@ -205,6 +256,15 @@ export default {
                 saveNamed.onclick = () => this.saveSharePointCopy(entry);
                 actions.append(" ",saveNamed);
                 entry.renameCopyButton = saveNamed;
+                const confirmSaved = document.createElement("button");
+                confirmSaved.type = "button";
+                confirmSaved.className = "liquid-btn";
+                confirmSaved.textContent = "Mark downloaded";
+                confirmSaved.title = "Confirm only after the finished file appears in browser Downloads.";
+                confirmSaved.hidden = true;
+                confirmSaved.onclick = () => this.confirmDownloaded(entry);
+                actions.append(" ",confirmSaved);
+                entry.confirmButton = confirmSaved;
               }
               tr.append(numCell,nameCell,actions); entry.row = tr; entry.downloadButton = download;
               fragment.appendChild(tr);
@@ -212,7 +272,7 @@ export default {
             body.appendChild(fragment);
             document.getElementById("adDlTableContainer").style.display = "block";
             document.getElementById("adDlSummaryBar").style.display = "block";
-            document.getElementById("adDlCountText").innerText = `${this.entries.length} valid ads`;
+            this.updateQueueCounts();
             document.getElementById("adDlEmptyState").style.display = "none";
             this.updateBulkButton();
             this.status(`${this.entries.length} ready · ${skipped} invalid rows skipped · ${inferred} extensions inferred.${this.entries.some(e=>CTKSharePoint.isSharePoint(e.url)) ? ' SharePoint uses native downloads; click Auto-name: Choose folder for optional renamed files.' : ''}`);
@@ -286,14 +346,16 @@ export default {
             setTimeout(() => URL.revokeObjectURL(url), 60000);
           },
           markDownloaded(entry) {
-            entry.downloaded = true;
-            if (entry.row) {
+            entry.statusKind = "downloaded";entry.downloaded = true;entry.selected = false;
+            if(entry.downloadButton){entry.downloadButton.disabled=false;entry.downloadButton.textContent="Download again";}
+            if(entry.confirmButton) entry.confirmButton.hidden = true;
+            if(entry.row) {
+              entry.row.classList.remove("download-requested");
               entry.row.classList.add("downloaded");
-              entry.row.style.opacity = "0.65";
-              document.getElementById("adDlDownloadedHeaderRow").style.display = "table-row";
+              entry.row.style.opacity = "1";
               document.getElementById("adDlDownloadedBody").appendChild(entry.row);
             }
-            this.updateBulkButton();
+            this.updateQueueCounts();this.updateBulkButton();
           },
           downloadSharePoint(entry) {
             const target = CTKSharePoint.directUrl(entry.url);
@@ -311,7 +373,9 @@ export default {
               const progress=renamer?.stats?.();
               const suffix=progress ? ` · ${progress.renamed} named · ${progress.waiting} waiting · ${progress.failed} failed` : '';
               this.status(message+suffix,isError);
+              if (entry.renamedFilename && !isError) this.markDownloaded(entry);
             };
+            entry.renamedFilename = null;
             const tracking = !!(renamer?.active() && renamer.begin(entry));
             // If Auto-name is enabled but tracking is unsafe (duplicate source
             // basename / too many jobs), do not silently start an untracked download.
@@ -325,7 +389,7 @@ export default {
             catch(error) { if(tracking)renamer.cancel(entry); throw error; }
             finally { a.remove(); }
             // Do not claim an unobservable cross-origin download completed.
-            if (entry.downloadButton) entry.downloadButton.textContent = 'Download again';
+            this.markRequested(entry);
             if (entry.renameCopyButton) entry.renameCopyButton.hidden = false;
             this.status(tracking
               ? `Tracking ${entry.displayName} for auto-naming. Multiple distinct ads can download at once.`
@@ -357,6 +421,7 @@ export default {
               const target=await CTKDownloadRenamer.renameExisting(entry,selected);
               this.status("Renamed existing file in place: "+selected+" → "+target+". There is no extra copy.");
               if (button) button.textContent="Name fixed";
+              this.markDownloaded(entry);
             } catch(error) {
               if (error.name!=="AbortError") this.status("Could not rename existing download: "+error.message,true);
             } finally {
@@ -397,7 +462,7 @@ export default {
             picker.click();
           },
           async downloadFile(entry) {
-            if (entry.downloaded || entry.inProgress) return;
+            if (entry.inProgress) return;
             if (CTKSharePoint.isSharePoint(entry.url)) {
               try { this.downloadSharePoint(entry); }
               catch (error) { this.status(`${entry.displayName}: ${error.message}`,true); }

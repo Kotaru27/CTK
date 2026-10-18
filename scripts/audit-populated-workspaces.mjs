@@ -198,29 +198,40 @@ try{
   assert.ok(storyboardFocus.style==='solid'&&storyboardFocus.width>=2,
     label+': Storyboard focus invisible '+JSON.stringify(storyboardFocus));
 
-  // Directory imports must derive their real root folder name without
-  // overriding a previously populated or user-named board.
-  const folderImport=await page.evaluate(async base64=>{
-    const story=Tools.Story,prior=story.active.id;
-    const picker=document.getElementById('storyFolderInput');
-    const supported=!!picker?.hasAttribute('webkitdirectory');
-    story.addNewProject();
+  // One Add Assets control opens a contextual file/folder menu; a selected
+  // parent directory creates one named board per immediate ad subfolder.
+  await page.locator('#storyDropZone label.liquid-btn.active-mode').click();
+  assert.equal(await page.locator('#storyImportMenu').isVisible(),true,
+    label+': existing Add Assets control did not reveal directory import');
+  const batch=await page.evaluate(async base64=>{
+    const story=Tools.Story;
+    const prior=story.active;
+    const initialCount=story.projects.length;
     const bytes=Uint8Array.from(atob(base64),c=>c.charCodeAt(0));
-    const input=new File([bytes],'scene.png',{type:'image/png'});
-    Object.defineProperty(input,'webkitRelativePath',{value:'QA_Client_Stills/scene.png'});
-    await story.handleFiles([input]);
-    const name=story.active.name;
-    const namedField=document.getElementById('storyNameInput').value;
-    const imported=story.active.images.length;
-    story.switchProject(prior);
-    return {supported,name,namedField,imported};
+    const make=(relative,name)=>{
+      const file=new File([bytes],name,{type:'image/png'});
+      Object.defineProperty(file,'webkitRelativePath',{value:relative});
+      return file;
+    };
+    const files=[
+      make('Campaign_Q3/AD10/still_2.png','still_2.png'),
+      make('Campaign_Q3/AD2/still_2.png','still_2.png'),
+      make('Campaign_Q3/AD2/still_1.png','still_1.png'),
+      make('Campaign_Q3/AD10/still_1.png','still_1.png')
+    ];
+    await story.importFolder(files);
+    const created=story.projects.slice(initialCount);
+    const names=created.map(board=>board.name);
+    const frames=created.map(board=>board.images.length);
+    const originals=prior.images.length;
+    const active=story.active.name;
+    return {names,frames,originals,active,picker:document.getElementById('storyFolderInput')?.hasAttribute('webkitdirectory')};
   },bases[0]);
-  assert.ok(folderImport.supported,label+': folder import control missing');
-  assert.equal(folderImport.name,'QA_Client_Stills',
-    label+': imported folder name was not assigned to the new board');
-  assert.equal(folderImport.namedField,folderImport.name,
-    label+': board name field does not match folder name');
-  assert.equal(folderImport.imported,1,label+': imported still missing');
+  assert.ok(batch.picker,label+': folder chooser not wired to Add Assets');
+  assert.deepEqual(batch.names,['AD2','AD10'],
+    label+': imported folders were not converted into individually named boards '+JSON.stringify(batch));
+  assert.deepEqual(batch.frames,[2,2],label+': folder stills not assigned to the correct board');
+  assert.equal(batch.originals,6,label+': existing storyboard was overwritten');
 
   // Real input-to-preview path for Image Splitter.
   await open('section-pdf','split');
@@ -280,34 +291,44 @@ try{
   if(adTypography.action!==null)assert.ok(adTypography.action>=12,
     label+': campaign action caption too small '+JSON.stringify(adTypography));
 
-  // Reproduce the reported scroll overlap with synthetic repeated rows.
-  // Action buttons from rows behind the sticky header must not paint over it.
-  const stickyHeader=await page.evaluate(()=>{
-    const scroller=document.getElementById('adDlTableContainer');
-    const body=document.getElementById('adDlTableBody');
-    const template=body.querySelector('tr');
+  // The long campaign list scrolls as one work surface: even the table
+  // headings move away; there must be no sticky headings over download actions.
+  const naturalScroll=await page.evaluate(async()=>{
+    const viewport=document.querySelector('#adlinksTabContentDownloader .ad-download-inner');
+    const tbody=document.getElementById('adDlTableBody');
+    const template=tbody.querySelector('tr');
     const clones=[];
-    for(let i=0;i<20;i++){
+    for(let i=0;i<22;i++){
       const row=template.cloneNode(true);
-      row.removeAttribute('id');
-      body.appendChild(row);
-      clones.push(row);
+      row.removeAttribute('id');tbody.appendChild(row);clones.push(row);
     }
-    scroller.scrollTop=160;
-    const header=scroller.querySelector('thead');
-    const cell=header.querySelector('th:last-child');
-    const rect=cell.getBoundingClientRect();
-    const hit=document.elementFromPoint(rect.left+rect.width/2,rect.top+rect.height/2);
-    const state={position:getComputedStyle(header).position,
-      layer:parseInt(getComputedStyle(header).zIndex,10)||0,
-      hitHeader:header.contains(hit),scrollTop:scroller.scrollTop};
-    clones.forEach(row=>row.remove());
-    scroller.scrollTop=0;
-    return state;
+    const head=document.querySelector('#adDlTableContainer thead');
+    const before=head.getBoundingClientRect().top;
+    viewport.scrollTop=200;
+    await new Promise(requestAnimationFrame);
+    const after=head.getBoundingClientRect().top;
+    const data={scrollTop:viewport.scrollTop,position:getComputedStyle(head).position,
+      moved:before-after,shortStatus:getComputedStyle(document.getElementById('adDlStatus')).whiteSpace};
+    clones.forEach(node=>node.remove());
+    viewport.scrollTop=0;
+    return data;
   });
-  assert.ok(stickyHeader.scrollTop>0&&stickyHeader.hitHeader&&
-    stickyHeader.position==='sticky'&&stickyHeader.layer>=40,
-    label+': scrolled download button covers the table heading '+JSON.stringify(stickyHeader));
+  assert.ok(naturalScroll.scrollTop>0&&naturalScroll.position==='static'&&
+    naturalScroll.moved>35&&naturalScroll.shortStatus==='nowrap',
+    label+': campaign list does not scroll naturally '+JSON.stringify(naturalScroll));
+  const lifecycle=await page.evaluate(()=>{
+    const tool=Tools.AdDownloader,entry=tool.entries[0];
+    tool.markRequested(entry);
+    const pending=entry.row.parentElement?.id==='adDlRequestedBody';
+    const retry=entry.downloadButton.textContent;
+    tool.markDownloaded(entry);
+    const completed=entry.row.parentElement?.id==='adDlDownloadedBody';
+    return {pending,completed,retry,
+      label:document.getElementById('adDlCountText')?.textContent};
+  });
+  assert.ok(lifecycle.pending&&lifecycle.completed&&lifecycle.retry==='Download again'&&
+    lifecycle.label.includes('1 downloaded'),
+    label+': requested/downloaded row lifecycle failed '+JSON.stringify(lifecycle));
 
   // One genuine local WebM exercises the original Video Stills extractor.
   // Run only at Full HD to bound CPU expense. No remote videos or user data.
