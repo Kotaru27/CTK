@@ -695,7 +695,7 @@ body.light-mode .undo-toast {
   letter-spacing:.008em;
 }
 #view-app #section-adlinks #adlinksTabContentDownloader #adDlDownloadedBody :is(tr.download-requested,tr.downloaded) input[type="checkbox"]{
-  visibility:hidden!important;pointer-events:none!important;
+  visibility:hidden!important;
 }
 #view-app #section-adlinks #adlinksTabContentDownloader #adDlDownloadedBody tr td:nth-child(3) button{
   white-space:nowrap;
