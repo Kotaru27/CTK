@@ -206,6 +206,7 @@ export default {
                   imported++;
                 }
                 if(target.images.length>initial){
+                  story.applyDefaultColumns?.(target);
                   if(newBoard)created++;
                   if(firstId===null)firstId=target.id;
                 }else if(newBoard){
