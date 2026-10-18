@@ -109,6 +109,6 @@ test('build contains exactly one welcome dismissal action and real backdrop',()=
  assert.equal(build.includes('forgeWhatsNewEnter'),false);
  assert.equal(build.includes('forgeWhatsNewClose'),false);
  assert.match(css,/PERSISTENT WELCOME/);
- assert.match(css,/backdrop-filter:blur\(24px\)/);
+ assert.match(css,/backdrop-filter:blur\(18px\)/);
  assert.match(css,/place-items:center!important/);
 });
