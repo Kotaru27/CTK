@@ -28,7 +28,8 @@ function setup({local=store(),introFinished=true,opening=false,active=false,font
  const doc={visibilityState:'visible',activeElement:null,
   body:{classList:{contains:k=>k==='forge-opening'&&opening}},
   documentElement:{dataset:introFinished?{forgeIntroFinished:'1'}:{},classList:{contains:()=>false}},
-  fonts:{load(){return font==='hang'?new Promise(()=>{}):
+  fonts:{load(spec){return font==='hang'?new Promise(()=>{}):
+    font==='partial'&&!spec.includes('Kola')?new Promise(()=>{}):
     font==='fail'?Promise.reject(Error('Offline')):Promise.resolve([{status:'loaded'}])}},
   getElementById:id=>id==='forgeWhatsNew'?root:id==='view-home'?host:
     id==='view-app'?workspace:id==='forgeIntro'?intro:id==='forgeIntroSkip'?{
@@ -93,4 +94,14 @@ test('Escape closes only this visit and backdrop blurs home',async()=>{
  assert.equal(h.local.getItem('forge_whatsnew_dismissed_2026_v1'),null);
  assert.match(css,/backdrop-filter:blur\(18px\)/);
  assert.match(build,/forgeWhatsNewEnter/);
+});
+
+test('loaded popup wordmark keeps Kola when other remote fonts time out',async()=>{
+ const h=setup({font:'partial'});
+ h.fire(420);await flush();
+ assert.equal(h.root.hidden,true);
+ h.fire(1850);await flush();
+ assert.equal(h.root.hidden,false);
+ assert.equal(h.root.classList.contains('forge-fallback-kola'),false);
+ assert.equal(h.root.classList.contains('forge-fallback-ui'),true);
 });
