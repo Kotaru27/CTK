@@ -90,7 +90,7 @@ export default {
           },
           status(message, isError = false) {
             const el = document.getElementById("adDlStatus");
-            if (el) { el.textContent = message; el.style.color = isError ? "var(--danger, #b64a44)" : "var(--text-muted)"; }
+            if (el) { el.textContent = message; el.title = message; el.style.color = isError ? "var(--danger, #b64a44)" : "var(--text-muted)"; }
           },
           async chooseRenameFolder() {
             try {
