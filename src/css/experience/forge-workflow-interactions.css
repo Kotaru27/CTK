@@ -69,3 +69,98 @@ html.forge-route-running::view-transition-new(root){
   transition:none!important;translate:none!important;
  }
 }
+
+/* Storyboard / 2026-10-18: give long imported folder names the unused
+   centre of the toolbar, while the sidebar handles navigation and settings. */
+#section-stills-boards .tool-header:has(.story-header-name:not([hidden])) #stillsToolTitle{
+  flex:0 0 auto!important;white-space:nowrap;
+}
+#section-stills-boards .tool-header .story-header-name{
+  display:flex;align-items:center;gap:12px;flex:1 1 180px;
+  min-width:130px;max-width:520px;margin:0 22px 0 clamp(14px,3vw,48px);
+}
+#section-stills-boards .tool-header .story-header-name[hidden]{display:none!important;}
+#section-stills-boards .story-header-name > span{
+  flex:none;white-space:nowrap;font:650 10px/1.2 "JetBrains Mono",monospace;
+  letter-spacing:.11em;color:var(--sb-muted,var(--text-muted));
+}
+#section-stills-boards #storyHeaderName #storyNameInput{
+  flex:1;min-width:0;width:100%;max-width:100%;height:38px!important;
+  margin:0!important;padding:0 13px!important;border-radius:7px!important;
+  font-size:13px!important;font-weight:650!important;letter-spacing:0!important;
+  text-overflow:ellipsis;background:var(--bg-input)!important;
+}
+#section-stills-boards #storyHeaderName #storyNameInput:focus{
+  text-overflow:clip;outline:2px solid var(--sb-focus,#2d6b50)!important;outline-offset:1px;
+}
+/* Compact board picker by default for bulk imports; List recovers every
+   legacy pill and its per-board delete action without a crowded sidebar. */
+#stillsTabContentStory .story-board-navigator{display:grid;gap:10px;margin-bottom:12px;}
+#stillsTabContentStory .story-board-navigator-heading{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+}
+#stillsTabContentStory #storyBoardCount{
+  white-space:nowrap;font:650 10px/1.4 "JetBrains Mono",monospace;
+  letter-spacing:.085em;color:var(--sb-muted,var(--text-muted));
+}
+#stillsTabContentStory .story-board-layout-options{
+  display:inline-flex;gap:2px;padding:2px;border:1px solid var(--sb-line,var(--border));
+  border-radius:7px;background:var(--bg-input);
+}
+#stillsTabContentStory .story-board-layout-choice{
+  padding:6px 9px;border:0;border-radius:5px;background:transparent;
+  font:650 11px/1.2 inherit;color:var(--sb-muted,var(--text-muted));cursor:pointer;
+  transition:background-color 170ms ease,color 170ms ease;
+}
+#stillsTabContentStory .story-board-layout-choice.selected{
+  background:var(--sb-action,#285a43);color:#fff;
+}
+#stillsTabContentStory .story-board-quick-select{display:flex;gap:7px;align-items:stretch;}
+#stillsTabContentStory .story-board-quick-select.story-board-quick-hidden,
+#stillsTabContentStory #storyProjectTabs.story-board-list-hidden{display:none!important;}
+#stillsTabContentStory #storyBoardSelect{
+  flex:1;min-width:0;width:100%;font-size:12px!important;
+  text-overflow:ellipsis;height:39px!important;
+}
+#stillsTabContentStory .story-board-remove-current{
+  flex:none;width:39px;border:1px solid var(--sb-line,var(--border));border-radius:7px;
+  background:var(--sb-panel,#fff);color:var(--sb-text,#26392e);
+  cursor:pointer;font-size:19px;line-height:1;
+}
+#stillsTabContentStory .story-board-remove-current:hover{background:var(--sb-stage,#edf4ee);}
+#stillsTabContentStory #storyProjectTabs:not(.story-board-list-hidden){
+  display:flex!important;flex-direction:column!important;flex-wrap:nowrap!important;
+  max-height:min(42vh,390px);overflow-y:auto;padding:0 5px 6px 0;
+  scrollbar-width:thin;
+}
+#stillsTabContentStory #storyProjectTabs .story-project-pill{width:100%;min-width:0!important;}
+#stillsTabContentStory #storyProjectTabs .story-project-switch{
+  flex:1;min-width:0!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+#stillsTabContentStory .story-board-layout-choice:focus-visible,
+#stillsTabContentStory .story-board-remove-current:focus-visible{
+  outline:2px solid var(--sb-focus,#2d6b50);outline-offset:2px;
+}
+/* One clear queue: files still needing attention first, then requested
+   browser downloads, then prepared/verified files. */
+#section-adlinks #adDlRequestedHeaderRow td{
+  padding:16px!important;font-size:11px!important;font-weight:750!important;
+  letter-spacing:.06em!important;color:var(--ad-muted,var(--text-muted))!important;
+  background:var(--bg-input)!important;border-top:1px solid var(--ad-line,var(--border))!important;
+}
+#section-adlinks #adDlDownloadedHeaderRow td{
+  border-top:1px solid var(--ad-line,var(--border))!important;
+}
+#section-adlinks #adDlRequestedBody tr.download-requested{
+  background:color-mix(in srgb,var(--bg-input) 74%,transparent)!important;
+}
+#section-adlinks #adDlRequestedBody tr.download-requested td{
+  border-color:var(--ad-line,var(--border))!important;
+}
+@media(max-width:1250px){
+  #section-stills-boards .tool-header .story-header-name{max-width:300px;margin-inline:12px;}
+  #section-stills-boards .story-header-name > span{display:none;}
+}
+@media(prefers-reduced-motion:reduce){
+  #stillsTabContentStory .story-board-layout-choice{transition:none!important;}
+}
