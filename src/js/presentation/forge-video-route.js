@@ -167,6 +167,64 @@
   }
   attachWorkspaceObserver();
 
+  // Storyboard's Board / Filmstrip / Fit buttons share one active indicator.
+  // This is a visual overlay only; existing button handlers still own state,
+  // focus, export and panel visibility. Positions are measured from the real
+  // buttons so no tool geometry, breakpoints or order are hardcoded.
+  function attachStoryModeIndicator(){
+    const host=document.getElementById('storySubModeToggle');
+    if(!host || typeof MutationObserver!=='function')return;
+    const buttons=[
+      document.getElementById('subModeBtnBoard'),
+      document.getElementById('subModeBtnFilmstrip'),
+      document.getElementById('subModeBtnFit')
+    ].filter(Boolean);
+    if(buttons.length!==3 || document.getElementById('forgeStoryModeIndicator'))return;
+    const indicator=document.createElement('span');
+    indicator.id='forgeStoryModeIndicator';
+    indicator.className='forge-story-mode-indicator';
+    indicator.setAttribute('aria-hidden','true');
+    host.appendChild(indicator);
+    let frame=0,initialized=false;
+    const update=()=>{
+      frame=0;
+      const activeButton=buttons.find(button=>button.classList.contains('active-mode'));
+      if(!activeButton || !host.getClientRects().length){
+        indicator.style.opacity='0';return;
+      }
+      // First placement is instantaneous; subsequent changes animate.
+      const width=Math.max(0,activeButton.offsetWidth-16);
+      const x=activeButton.offsetLeft+8;
+      if(!initialized){
+        indicator.style.transition='none';
+        indicator.style.width=width+'px';
+        indicator.style.transform='translate3d('+x+'px,0,0)';
+        indicator.style.opacity='1';
+        initialized=true;
+        requestAnimationFrame(()=>{indicator.style.removeProperty('transition');});
+      }else{
+        indicator.style.width=width+'px';
+        indicator.style.transform='translate3d('+x+'px,0,0)';
+        indicator.style.opacity='1';
+      }
+    };
+    const schedule=()=>{
+      if(frame)cancelAnimationFrame(frame);
+      frame=requestAnimationFrame(update);
+    };
+    const observer=new MutationObserver(schedule);
+    for(const button of buttons)
+      observer.observe(button,{attributes:true,attributeFilter:['class','style']});
+    observer.observe(host,{attributes:true,attributeFilter:['style']});
+    if(typeof ResizeObserver==='function'){
+      const resize=new ResizeObserver(schedule);
+      resize.observe(host);
+      for(const button of buttons)resize.observe(button);
+    }else window.addEventListener('resize',schedule,{passive:true});
+    schedule();
+  }
+  attachStoryModeIndicator();
+
   const api=Object.freeze({navigate,fromOpen,selected,canTransition,cancel});
   window.ForgeWorkspaceRoute=api;
   // Retain the old extension point for any existing private usage.
