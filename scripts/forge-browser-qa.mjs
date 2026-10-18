@@ -18,44 +18,56 @@ try {
  const intro=page.locator('#forgeIntro');
  await intro.waitFor({state:'visible',timeout:8000});
  check(await page.locator('#forgeHeroName').innerText()==='The Forge',
-   'Real Kola homepage wordmark missing at first paint');
+   'Homepage wordmark missing beneath the introduction');
  const initial=await page.evaluate(()=>{
    const intro=document.getElementById('forgeIntro');
+   const mark=document.getElementById('forgeIntroWordmark');
    const rect=intro.getBoundingClientRect();
+   const ink=mark.getBoundingClientRect();
    return {width:rect.width,height:rect.height,
-     backdrop:getComputedStyle(intro,'::before').content,
+     viewportWidth:innerWidth,viewportHeight:innerHeight,
+     labelVisible:getComputedStyle(document.querySelector('.forge-intro-label')).display!=='none',
+     wordmarkVisible:getComputedStyle(mark).display!=='none' && ink.width>150,
+     background:getComputedStyle(intro).backgroundColor,
      homeVisible:!document.getElementById('view-home').classList.contains('hidden')};
  });
- check(initial.homeVisible,'Intro incorrectly replaced the homepage');
- check(initial.backdrop==='none'&&initial.width<290&&initial.height<110,
-   'Opaque or oversized intro surface is still present: '+JSON.stringify(initial));
- const trajectoryPromise=page.evaluate(()=>new Promise(resolve=>{
-   const samples=[],start=performance.now();
-   function sample(){
-     const hero=document.getElementById('forgeHeroName');
-     if(!hero||!document.body.classList.contains('forge-opening')||
-        performance.now()-start>4700){resolve(samples);return;}
-     const rect=hero.getBoundingClientRect();
-     const style=getComputedStyle(hero);
-     samples.push({time:performance.now(),left:rect.left,top:rect.top,
-       width:rect.width,opacity:parseFloat(style.opacity)});
-     requestAnimationFrame(sample);
-   }
-   requestAnimationFrame(sample);
+ check(initial.homeVisible,'The opening unmounted the homepage');
+ check(initial.width>=initial.viewportWidth-2 && initial.height>=initial.viewportHeight-2 &&
+   initial.wordmarkVisible && initial.labelVisible,
+   'Real full-viewport wordmark opening did not render: '+JSON.stringify(initial));
+ // Capture visible letter reveal, not an empty static home screenshot.
+ await page.waitForTimeout(550);
+ const reveal=await page.locator('#forgeIntroWordmark').evaluate(el=>({
+   clip:getComputedStyle(el).clipPath,animation:getComputedStyle(el).animationName
  }));
+ check(reveal.animation==='forge-wordmark-write',
+   'Wordmark writing animation never started: '+JSON.stringify(reveal));
  await page.screenshot({path:'artifacts/forge-browser/intro.png'});
- await intro.waitFor({state:'detached',timeout:6000});
- const trajectory=await trajectoryPromise;
- check(trajectory.length>=12,'Home-native physics intro produced too few frames');
- check(trajectory.some(f=>f.opacity>.5),
-   'Real heading never appeared visibly during the entrance');
- check(trajectory.every(f=>f.width>0),
-   'Wordmark disappeared or collapsed mid-animation');
- if(trajectory.length>=10){
-   const jumps=trajectory.slice(1).map((f,i)=>Math.abs(f.top-trajectory[i].top));
-   check(Math.max(...jumps)<14,
-     'Wordmark jumped rather than settling continuously: '+Math.max(...jumps).toFixed(1)+'px');
- }
+ await intro.waitFor({state:'detached',timeout:6500});
+ check(await page.evaluate(()=>document.documentElement.dataset.forgeIntroFinished)==='1',
+   'The intro did not finish cleanly');
+ check(await page.locator('#forgeHeroName').isVisible(),
+   'The home heading was left hidden after handoff');
+ // Replays must be visible in the SAME session. Escaping is a real cancel,
+ // with no leftover overlay that intercepts tool selection.
+ await page.locator('#forgeIntroReplay').click();
+ await intro.waitFor({state:'visible',timeout:1500});
+ await page.locator('#forgeIntroSkip').click();
+ await intro.waitFor({state:'detached',timeout:1500});
+ check(await page.locator('#forgeHeroName').isVisible(),
+   'Skip or replay left the homepage invisible');
+ // The prior intro implementation silently skipped the opening if Kola
+ // failed to load. Simulate font-network failure in a clean browser session.
+ const offlineContext=await browser.newContext({viewport:{width:1440,height:900}});
+ await offlineContext.route('**/api.fontshare.com/**',route=>route.abort());
+ const offlinePage=await offlineContext.newPage();
+ await offlinePage.goto(base,{waitUntil:'domcontentloaded',timeout:60000});
+ check(await offlinePage.locator('#forgeIntroWordmark').isVisible(),
+   'Font-network failure suppressed the introduction');
+ await offlinePage.locator('#forgeIntroSkip').click();
+ check(await offlinePage.locator('#forgeIntro').count()===0,
+   'Font-fallback intro could not be dismissed');
+ await offlineContext.close();
  // Homepage remains unobstructed until the user opens release notes.
  const launch=page.locator('#forgeWhatsNew');
  check(await launch.isHidden(),'Release notes unexpectedly covered the homepage');
