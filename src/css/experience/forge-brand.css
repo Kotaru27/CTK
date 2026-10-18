@@ -229,15 +229,15 @@ body.forge-opening.forge-home-arriving #view-home .combined-home-grid{
 }
 .forge-intro.is-playing .forge-intro-wordmark{opacity:1;}
 .forge-intro.is-playing .forge-intro-type::before{
-  animation:forge-mask-unveil 795ms cubic-bezier(.68,0,.22,1) 75ms both;
+  animation:forge-mask-unveil 1120ms cubic-bezier(.74,0,.18,1) 340ms both;
 }
 @keyframes forge-mask-unveil{
   from{transform:translate3d(0,0,0)}
-  to{transform:translate3d(105%,0,0)}
+  to{transform:translate3d(0,-106%,0)}
 }
 .forge-intro.is-settled .forge-intro-type::before,
 .forge-intro--handoff .forge-intro-type::before{
-  transform:translate3d(105%,0,0);
+  transform:translate3d(0,-106%,0);
 }
 /* A measured hairline follows the wordmark rather than adding decorative
    particles, spinning marks or an extra loading state. */
@@ -245,13 +245,13 @@ body.forge-opening.forge-home-arriving #view-home .combined-home-grid{
   content:"";position:absolute;left:0;bottom:-11px;
   width:100%;height:1px;
   background:rgba(27,79,52,.32);
-  transform-origin:left center;
+  transform-origin:center center;
   transform:scaleX(0);
   opacity:0;
   pointer-events:none;
 }
 .forge-intro.is-playing .forge-intro-type::after{
-  animation:forge-ink-rule 795ms cubic-bezier(.68,0,.22,1) 75ms both;
+  animation:forge-ink-rule 1010ms cubic-bezier(.29,.68,.19,1) 200ms both;
 }
 .forge-intro--handoff .forge-intro-type::after{
   animation:none!important;opacity:0!important;
@@ -265,6 +265,12 @@ body.forge-opening.forge-home-arriving #view-home .combined-home-grid{
   opacity:1;
   transition:opacity .16s linear;
 }
+/* The fully revealed name rests in place before the actual shared-element
+   transition. A tiny line fades during the hold; there is no second loader. */
+.forge-intro.is-settled .forge-intro-type::after{
+  opacity:.24;
+  transition:opacity 380ms cubic-bezier(.22,.8,.28,1);
+}
 .forge-intro-caption {
   display:flex;justify-content:space-between;align-items:center;
   gap:16px;border-top:1px solid rgba(25,55,43,.2);
@@ -273,7 +279,7 @@ body.forge-opening.forge-home-arriving #view-home .combined-home-grid{
   letter-spacing:.2em;text-transform:uppercase;color:#678172;
   opacity:0;
   transform:translate3d(0,7px,0);
-  transition:opacity .36s cubic-bezier(.22,.8,.28,1) .26s,transform .4s cubic-bezier(.22,.8,.28,1) .26s;
+  transition:opacity .46s cubic-bezier(.22,.8,.28,1) .62s,transform .5s cubic-bezier(.22,.8,.28,1) .62s;
 }
 .forge-intro.is-playing .forge-intro-caption{
   opacity:1;transform:translate3d(0,0,0);
