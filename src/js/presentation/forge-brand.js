@@ -163,20 +163,23 @@
     catch(_){return Promise.resolve([]);}
   }
   let started=false;
-  function begin(results){
+  // Keep successful Kola even when the secondary caption face times out.
+  const available=[false,false];
+  const requests=[
+    loadFont('400 130px "Kola"').then(faces=>{available[0]=!!faces?.length;}),
+    loadFont('600 12px "Plus Jakarta Sans"').then(faces=>{available[1]=!!faces?.length;})
+  ];
+  function begin(){
     if(started||done)return;
     started=true;
-    if(!results?.[0]?.length)
+    if(!available[0])
       document.documentElement.classList.add('forge-launch-fallback-kola');
-    if(!results?.[1]?.length)
+    if(!available[1])
       intro.classList.add('forge-intro-fallback-ui');
     requestAnimationFrame(()=>requestAnimationFrame(reveal));
   }
   Promise.race([
-    Promise.all([
-      loadFont('400 130px "Kola"'),
-      loadFont('600 12px "Plus Jakarta Sans"')
-    ]),
-    new Promise(resolve=>setTimeout(()=>resolve(null),1650))
-  ]).then(begin,()=>begin(null));
+    Promise.all(requests),
+    new Promise(resolve=>setTimeout(resolve,1650))
+  ]).then(begin,begin);
 })();
