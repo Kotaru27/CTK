@@ -446,9 +446,9 @@ body.light-mode .undo-toast {
   color:var(--sb-muted)!important;
 }
 #stillsTabContentFit .fit-render-status{
+  /* Fit renderer owns its warning/error color. */
   font-size:12px!important;
   line-height:1.55!important;
-  color:var(--sb-muted)!important;
 }
 
 /* THE FORGE / FINAL EIGHT-TOOL COMPONENT PASS
@@ -595,8 +595,8 @@ body.light-mode .undo-toast {
  background:var(--studio-hover)!important;
 }
 #section-adlinks #adlinksTabContentDownloader #adDlTableContainer tbody td{
+ /* Keep source-defined success/error and downloaded-state colors. */
  font-size:12px!important;line-height:1.55!important;
- color:var(--studio-title)!important;
 }
 #section-adlinks #adlinksTabContentDownloader #adDlTableContainer tbody td :is(button,a){
  font-weight:650!important;
@@ -605,7 +605,8 @@ body.light-mode .undo-toast {
  accent-color:var(--studio-accent)!important;
 }
 #section-adlinks #adDlStatus{
- color:var(--studio-muted)!important;line-height:1.6!important;
+ /* JavaScript owns normal versus error color. */
+ line-height:1.6!important;
 }
 #section-adlinks #adDlBulkButton:disabled{opacity:.5!important;cursor:not-allowed!important;}
 
