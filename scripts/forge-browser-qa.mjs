@@ -17,7 +17,15 @@ try {
  await page.goto(base,{waitUntil:'domcontentloaded',timeout:60000});
  const intro=page.locator('#forgeIntro');
  await intro.waitFor({state:'visible',timeout:8000});
- check(await page.locator('.forge-intro-glyph').count()===8,'Intro should have eight constructed glyphs');
+ check(await page.locator('#forgeIntroWordmark').innerText()==='The Forge','Intro must use one correctly kerned Kola wordmark');
+ check(await page.locator('.forge-intro-glyph').count()===0,'Retired per-letter loader unexpectedly rendered');
+ // A masked, compositor-driven wordmark is the sole branded focal point.
+ const revealStyle=await page.locator('#forgeIntroType').evaluate(el=>{
+   const cover=getComputedStyle(el,'::before');
+   return {mask:cover.content,position:cover.position,background:cover.backgroundColor};
+ });
+ check(revealStyle.mask!=='none'&&revealStyle.position==='absolute',
+   'Precision wordmark cover was not rendered: '+JSON.stringify(revealStyle));
  const trajectoryPromise=page.evaluate(()=>new Promise(resolve=>{
    const samples=[];
    const loop=()=>{
