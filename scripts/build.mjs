@@ -55,19 +55,12 @@ const forgeHero=[
   '</section>',
   '<div class="forge-after-hero"><strong>Choose a tool</strong></div>'
 ].join('\n');
-const forgeIntroLetters='The Forge'.split('').map((ch,i)=>
-  ch===' '?'<span class="forge-intro-gap" aria-hidden="true"></span>':
-  '<span class="forge-intro-glyph" style="--step:'+i+'" aria-hidden="true">'+
-   '<span class="forge-intro-outline">'+ch+'</span>'+
-   '<span class="forge-intro-fill">'+ch+'</span></span>'
-).join('');
 const forgeIntro=[
   '<div class="forge-intro" id="forgeIntro" role="region" aria-label="The Forge introduction">',
   ' <div class="forge-intro-layout">',
   '  <div class="forge-intro-label">CREATIVE TOOL KIT / REIMAGINED</div>',
   '  <div class="forge-intro-type" id="forgeIntroType" role="img" aria-label="The Forge">',
   '   <div class="forge-intro-wordmark" id="forgeIntroWordmark" aria-hidden="true">The Forge</div>',
-  '   <div class="forge-intro-glyphs" id="forgeIntroGlyphs" aria-hidden="true">'+forgeIntroLetters+'</div>',
   '  </div>',
   '  <div class="forge-intro-caption"><span>EIGHT TOOLS / ONE WORKSPACE</span>',
   '   <button type="button" class="forge-intro-skip" id="forgeIntroSkip" aria-label="Skip introduction">Skip intro ↗</button>',
