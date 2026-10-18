@@ -64,7 +64,11 @@
     if(active)active.skipTransition();
     const token=++serial;
     root.dataset.forgeRoute=key;
-    root.dataset.forgeRouteTravel=document.getElementById('view-app')?.classList.contains('active')?'tool':'home';
+    // The user is doing one of three fundamentally different things.
+    // Home -> tool and tool -> home keep the shared title; tool -> tool
+    // keeps the shell stationary and exchanges only the working surface.
+    const inside=document.getElementById('view-app')?.classList.contains('active');
+    root.dataset.forgeRouteTravel=inside?(selected()===key?'return':'tool'):'home';
     root.classList.add('forge-route-running');
     let transition;
     try{
