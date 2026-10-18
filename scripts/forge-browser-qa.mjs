@@ -56,9 +56,13 @@ try {
    check(Math.max(...jumps)<14,
      'Wordmark jumped rather than settling continuously: '+Math.max(...jumps).toFixed(1)+'px');
  }
- // First major rebrand: popup appears AFTER the intro wordmark handoff.
+ // Homepage remains unobstructed until the user opens release notes.
  const launch=page.locator('#forgeWhatsNew');
- await launch.waitFor({state:'visible',timeout:3500});
+ check(await launch.isHidden(),'Release notes unexpectedly covered the homepage');
+ const launchTrigger=page.locator('#forgeWhatsNewTrigger');
+ check(await launchTrigger.isVisible(),'Release-notes link missing');
+ await launchTrigger.click();
+ await launch.waitFor({state:'visible',timeout:1500});
  check(await page.locator('#forgeWhatsNewTitle').innerText()!=='' ,'Launch title is missing');
  check(await launch.locator('.forge-whatsnew-change').count()===5,
    'Launch popup is missing some rebrand workflow changes');
@@ -140,7 +144,10 @@ try {
  const dismissContext=await browser.newContext({viewport:{width:1366,height:768},reducedMotion:'reduce'});
  const welcomePage=await dismissContext.newPage();
  await welcomePage.goto(base,{waitUntil:'domcontentloaded',timeout:60000});
- await welcomePage.locator('#forgeWhatsNew').waitFor({state:'visible',timeout:4500});
+ check(await welcomePage.locator('#forgeWhatsNew').isHidden(),
+   'Release notes auto-opened in reduced-motion session');
+ await welcomePage.locator('#forgeWhatsNewTrigger').click();
+ await welcomePage.locator('#forgeWhatsNew').waitFor({state:'visible',timeout:1500});
  await welcomePage.screenshot({path:'artifacts/forge-browser/first-rebrand-laptop.png'});
  await welcomePage.locator('#forgeWhatsNewNever').click();
  check(await welcomePage.locator('#forgeWhatsNew').isHidden(),
@@ -151,6 +158,8 @@ try {
  await welcomePage.waitForTimeout(120);
  check(await welcomePage.locator('#forgeWhatsNew').isHidden(),
    'Dismissed rebrand popup reappeared after a reload');
+ check(await welcomePage.locator('#forgeWhatsNewTrigger').isHidden(),
+   'Persisted opt-out did not hide release-notes trigger');
  await dismissContext.close();
 
  const motion=await browser.newContext({viewport:{width:1440,height:900},reducedMotion:'reduce'});

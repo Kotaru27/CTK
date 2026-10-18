@@ -25,6 +25,7 @@ function launch({introFinished=true,toolActive=false,local=store(),session=store
   };
  };
  const buttons={
+  '#forgeWhatsNewTrigger':makeButton('trigger'),
   '#forgeWhatsNewEnter':makeButton('enter'),
   '#forgeWhatsNewNever':makeButton('never'),
   '#forgeWhatsNewClose':makeButton('close')
@@ -42,6 +43,7 @@ function launch({introFinished=true,toolActive=false,local=store(),session=store
   readyState:'complete',
   documentElement:{dataset:introFinished?{forgeIntroFinished:'1'}:{}},
   getElementById:id=>id==='forgeWhatsNew'?root:
+    id==='forgeWhatsNewTrigger'?buttons['#forgeWhatsNewTrigger']:
     id==='view-home'?{classList:{contains:()=>false}}:
     id==='view-app'?{classList:{contains:()=>toolActive}}:
     id==='homeContent'?{focus(){}}:null,
@@ -55,40 +57,46 @@ function launch({introFinished=true,toolActive=false,local=store(),session=store
  vm.runInNewContext(code,context,{filename:'forge-whats-new.js'});
  return {root,buttons,doc,local,session};
 }
-test('post-intro popup appears once per session and closes with primary action',()=>{
+test('release notes stay closed until clicked and may be reopened',()=>{
  const h=launch();
+ assert.equal(h.root.hidden,true);
+ h.buttons['#forgeWhatsNewTrigger'].click();
  assert.equal(h.root.hidden,false);
- assert.equal(h.session.getItem('forge_whatsnew_seen_session_2026_v1'),'1');
  h.buttons['#forgeWhatsNewEnter'].click();
  assert.equal(h.root.hidden,true);
- assert.notEqual(h.local.getItem('forge_whatsnew_dismissed_2026_v1'),'1');
- const again=launch({session:h.session,local:h.local});
- assert.equal(again.root.hidden,true);
+ h.buttons['#forgeWhatsNewTrigger'].click();
+ assert.equal(h.root.hidden,false);
 });
-test('Do not show again saves durable choice and prevents future popup',()=>{
+test('durable opt-out hides the optional trigger',()=>{
  const local=store();
  const h=launch({local});
+ assert.equal(h.root.hidden,true);
+ h.buttons['#forgeWhatsNewTrigger'].click();
  assert.equal(h.root.hidden,false);
  h.buttons['#forgeWhatsNewNever'].click();
  assert.equal(local.getItem('forge_whatsnew_dismissed_2026_v1'),'1');
  assert.equal(h.root.hidden,true);
+ assert.equal(h.buttons['#forgeWhatsNewTrigger'].hidden,true);
  const next=launch({local,session:store()});
  assert.equal(next.root.hidden,true);
+ assert.equal(next.buttons['#forgeWhatsNewTrigger'].hidden,true);
 });
-test('intro event determines launch time; restored working tool never interrupted',()=>{
+test('intro completion never opens notes and restored workspace stays uninterrupted',()=>{
  const pending=launch({introFinished:false});
  assert.equal(pending.root.hidden,true);
  pending.doc.documentElement.dataset.forgeIntroFinished='1';
  pending.doc.dispatch('forge:intro-complete');
- assert.equal(pending.root.hidden,false);
+ assert.equal(pending.root.hidden,true);
  const active=launch({toolActive:true});
+ active.buttons['#forgeWhatsNewTrigger'].click();
  assert.equal(active.root.hidden,true);
 });
-test('keyboard Escape closes and focus stays inside modal on Tab',()=>{
+test('keyboard Escape closes user-opened notes',()=>{
  const h=launch();
+ h.buttons['#forgeWhatsNewTrigger'].click();
+ assert.equal(h.root.hidden,false);
  let prevented=false;
  h.root.keydown({key:'Tab',shiftKey:false,preventDefault(){prevented=true;}});
- assert.equal(h.root.hidden,false);
  h.root.keydown({key:'Escape',preventDefault(){prevented=true;}});
  assert.equal(h.root.hidden,true);
  assert.equal(prevented,true);

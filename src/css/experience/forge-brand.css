@@ -40,6 +40,18 @@
   letter-spacing:.17em;text-transform:uppercase;
   color:var(--forge-hero-muted);
 }
+.forge-hero-updates{
+  padding:5px 0;border:0;background:transparent;
+  color:var(--forge-hero-muted);
+  font:inherit;letter-spacing:.045em;text-transform:none;
+  cursor:pointer;text-decoration:underline;text-underline-offset:4px;
+  text-decoration-color:transparent;
+  transition:color .19s ease,text-decoration-color .19s ease;
+}
+.forge-hero-updates:hover{color:var(--forge-hero-fg);text-decoration-color:currentColor;}
+.forge-hero-updates:focus-visible{outline:2px solid #397357;outline-offset:4px;border-radius:2px;}
+.forge-hero-updates[hidden]{display:none!important;}
+@media(prefers-reduced-motion:reduce){.forge-hero-updates{transition:none!important;}}
 .forge-hero-edition {display:inline-flex;align-items:center;gap:11px;}
 .forge-hero-edition::before {
   content:"";display:block;width:7px;height:7px;

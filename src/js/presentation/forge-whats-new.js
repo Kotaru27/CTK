@@ -6,13 +6,13 @@
   const root=document.getElementById('forgeWhatsNew');
   if(!root)return;
   const dialog=root.querySelector('.forge-whatsnew-dialog');
+  const trigger=document.getElementById('forgeWhatsNewTrigger');
   const enter=root.querySelector('#forgeWhatsNewEnter');
   const never=root.querySelector('#forgeWhatsNewNever');
   const close=root.querySelector('#forgeWhatsNewClose');
   if(!dialog||!enter||!never||!close)return;
   const permanentKey='forge_whatsnew_dismissed_2026_v1';
-  const sessionKey='forge_whatsnew_seen_session_2026_v1';
-  let opened=false,finished=false,previousFocus=null;
+  let opened=false,previousFocus=null;
   const safeGet=(store,key)=>{
     try{return store.getItem(key)==='1';}catch(_){return false;}
   };
@@ -20,8 +20,8 @@
     try{store.setItem(key,'1');}catch(_){}
   };
   function eligible(){
-    if(opened||finished)return false;
-    if(safeGet(localStorage,permanentKey)||safeGet(sessionStorage,sessionKey))return false;
+    if(opened)return false;
+    if(safeGet(localStorage,permanentKey))return false;
     // A restoring workspace takes precedence over promotional content.
     const home=document.getElementById('view-home');
     const app=document.getElementById('view-app');
@@ -32,20 +32,15 @@
   function open(){
     if(!eligible())return;
     opened=true;
-    safeSet(sessionStorage,sessionKey);
     previousFocus=document.activeElement;
     root.hidden=false;
     enter.focus({preventScroll:true});
   }
-  function settled(){
-    // Two paint frames give the Kola-to-home handoff time to settle, without
-    // a fixed delay and without a transition coupled to a tool operation.
-    requestAnimationFrame(()=>requestAnimationFrame(open));
-  }
   function dismiss(permanent=false){
     if(!opened)return;
     if(permanent)safeSet(localStorage,permanentKey);
-    opened=false;finished=true;root.hidden=true;
+    opened=false;root.hidden=true;
+    if(permanent&&trigger)trigger.hidden=true;
     if(previousFocus && previousFocus.isConnected &&
        typeof previousFocus.focus==='function')
       previousFocus.focus({preventScroll:true});
@@ -73,10 +68,9 @@
   root.addEventListener('pointerdown',event=>{
     if(event.target===root)dismiss();
   });
-  function ready(){
-    if(document.documentElement.dataset.forgeIntroFinished==='1')settled();
-    else document.addEventListener('forge:intro-complete',settled,{once:true});
+  // Release notes are opt-in and never intercept tool clicks.
+  if(trigger){
+    if(safeGet(localStorage,permanentKey))trigger.hidden=true;
+    trigger.addEventListener('click',open);
   }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ready,{once:true});
-  else ready();
 })();
