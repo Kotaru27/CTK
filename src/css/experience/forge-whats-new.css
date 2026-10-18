@@ -199,9 +199,11 @@
 }
 .forge-whatsnew-enter:hover{background:#143927;border-color:#143927;}
 .forge-whatsnew-enter span{font-size:19px;font-weight:450;line-height:1;}
-.forge-whatsnew :is(button):focus-visible{
-  outline:2px solid #83b08b;
-  outline-offset:3px;
+#forgeWhatsNew :is(button):focus-visible,
+#forgeWhatsNew :is(button):focus{
+  outline:2px solid #719b7b!important;
+  outline-offset:3px!important;
+  box-shadow:none!important;
 }
 html:has(.forge-whatsnew:not([hidden])){overflow:hidden;scrollbar-gutter:stable;}
 @keyframes forge-wn-shade{from{opacity:0}to{opacity:1}}
