@@ -16398,7 +16398,7 @@ const CTKDownloadRenamer = (() => {
     const wasShown=new Map(panels.map(el=>[el,shown(el)]));
     let sectionFlight=null, panelFlight=null;
     function play(element,kind){
-      if(!element || !element.animate || !canAnimateWorkspace())return null;
+      if(!element || !element.animate || !canAnimateWorkspace(kind==='panel'))return null;
       const distance=kind==='section'?4:3;
       const duration=kind==='section'?220:180;
       try{
@@ -16408,10 +16408,12 @@ const CTKDownloadRenamer = (() => {
         ],{duration,easing:'cubic-bezier(.2,.7,.2,1)'});
       }catch(_){return null;}
     }
-    function canAnimateWorkspace(){
+    function canAnimateWorkspace(isPanel=false){
+      // Native route snapshots suppress section entrances, not an explicit
+      // user-triggered mode switch that can occur while a snapshot finishes.
       return !(preference&&preference.matches) &&
         document.visibilityState==='visible' &&
-        !root.classList.contains('forge-route-running');
+        (isPanel || !root.classList.contains('forge-route-running'));
     }
     function reconcile(){
       const nextSection=activeSection();
@@ -16428,7 +16430,7 @@ const CTKDownloadRenamer = (() => {
       for(const panel of panels){
         const now=shown(panel),previous=wasShown.get(panel);
         wasShown.set(panel,now);
-        if(now&&!previous&&!changed&&canAnimateWorkspace()){
+        if(now&&!previous&&!changed&&canAnimateWorkspace(true)){
           if(panelFlight)panelFlight.cancel();
           panelFlight=play(panel,'panel');
         }
