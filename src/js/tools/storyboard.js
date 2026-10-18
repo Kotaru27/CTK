@@ -21,6 +21,7 @@ export default {
             this.els.input.setAttribute("webkitdirectory", "");
             this.els.input.setAttribute("directory", "");
             this.els.input.multiple = true;
+            this.els.input.parentElement.title = "Select a stills folder, or a parent folder containing one folder per ad. Drag individual files into this area.";
             this.els.input.onchange = async (event) => {
               const selected = [...(event.target.files || [])];
               event.target.value = "";
@@ -275,6 +276,11 @@ export default {
             const imported = [];
             let rejected = 0;
             for (const [folder,groupFiles] of ordered) {
+              // FileList traversal order varies by OS. Preserve story sequence
+              // by sorting frame names naturally (2 before 10).
+              groupFiles.sort((a,b) =>
+                String(a.webkitRelativePath || a.name).localeCompare(
+                  String(b.webkitRelativePath || b.name),undefined,{numeric:true,sensitivity:"base"}));
               const project = !imported.length && initialBoard
                 ? initialBoard : this.makeProject(this.uniqueBoardName(folder));
               const countBefore = project.images.length;
