@@ -6,12 +6,12 @@ import {chromium} from 'playwright';
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 const routes=[
  {key:'logo',id:'section-logo',mode:null,nav:'nav-logo',heading:'Logo Resizer'},
- {key:'pdf',id:'section-pdf',mode:'convert',nav:'nav-pdf-image',heading:'PDF to Image'},
- {key:'split',id:'section-pdf',mode:'split',nav:'nav-pdf-split',heading:'Image Splitter'},
- {key:'stills',id:'section-stills-boards',mode:'video',nav:'nav-stills-video',heading:'Video Stills'},
- {key:'story',id:'section-stills-boards',mode:'story',nav:'nav-stills-story',heading:'Storyboard'},
- {key:'links',id:'section-adlinks',mode:'gen',nav:'nav-adlinks-gen',heading:'Link Gen'},
- {key:'ads',id:'section-adlinks',mode:'downloader',nav:'nav-adlinks-dl',heading:'Ad Downloader'},
+ {key:'pdf',id:'section-pdf',mode:'convert',nav:'nav-pdf-image',heading:'PDF to Image',panel:'pdfTabContentConvert'},
+ {key:'split',id:'section-pdf',mode:'split',nav:'nav-pdf-split',heading:'Image Splitter',panel:'pdfTabContentSplit'},
+ {key:'stills',id:'section-stills-boards',mode:'video',nav:'nav-stills-video',heading:'Video Stills',panel:'stillsTabContentVideo'},
+ {key:'story',id:'section-stills-boards',mode:'story',nav:'nav-stills-story',heading:'Storyboard',panel:'stillsTabContentStory'},
+ {key:'links',id:'section-adlinks',mode:'gen',nav:'nav-adlinks-gen',heading:'Link Gen',panel:'adlinksTabContentGen'},
+ {key:'ads',id:'section-adlinks',mode:'downloader',nav:'nav-adlinks-dl',heading:'Ad Downloader',panel:'adlinksTabContentDownloader'},
  {key:'video',id:'section-yt-helper',mode:null,nav:'nav-yt-helper',heading:'Video Downloads'}
 ];
 try {
@@ -58,7 +58,22 @@ try {
         hidden:document.querySelector('#view-home').classList.contains('hidden'),
         locked:document.documentElement.classList.contains('forge-route-running')
       }));
-      assert.equal(state.snapshots,before+1,`${from.key}→${to.key}: skipped coordinated transition`);
+      if(from.id===to.id){
+        // Shared DOM section: the incoming panel gets a damped WAAPI spring,
+        // not a native root snapshot (which can leave Chrome stuck).
+        assert.equal(state.snapshots,before,
+          `${from.key}→${to.key}: inappropriate root snapshot for shared section`);
+        await page.waitForTimeout(35);
+        const spring=await page.evaluate(id=>{
+          const panel=document.getElementById(id);
+          return document.getAnimations({subtree:true}).filter(a=>
+            a.playState==='running'&&a.effect?.target===panel).length;
+        },to.panel);
+        assert.ok(spring>0,`${from.key}→${to.key}: missing shared-section spring`);
+      }else{
+        assert.equal(state.snapshots,before+1,
+          `${from.key}→${to.key}: skipped native surface transition`);
+      }
       assert.equal(state.nav,to.nav,`${from.key}→${to.key}: wrong selected navigation`);
       assert.equal(state.heading,to.heading,`${from.key}→${to.key}: wrong destination header`);
       assert.equal(state.sections,1,`${from.key}→${to.key}: multiple active sections`);
