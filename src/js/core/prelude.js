@@ -814,34 +814,25 @@
           document.getElementById("brandText").textContent = "The Forge";
         },
         openTool(id, mode) {
-          const motion = window.ForgeWorkspaceRoute;
-          if (this.els.viewApp.classList.contains("active")) {
-            const currentSection=document.querySelector("#view-app .tool-section.active");
-            // Panels within one tool already have their own precise WAAPI
-            // transitions; a root snapshot would suppress that panel motion.
-            if (currentSection?.id === id) {
-              if (motion) motion.cancel();
-              this._openTool(id, mode);
-            } else {
-              // Cross-workspace navigation was previously an instant cut.
-              const route = motion && motion.fromOpen(id, mode);
-              if (route) {
-                this._switchToken = (this._switchToken || 0) + 1;
-                motion.navigate(() => this._openTool(id, mode), route);
-              } else {
-                if (motion) motion.cancel();
-                this._openTool(id, mode);
-              }
-            }
-          } else {
-            const core = () => this._openTool(id, mode);
-            const route = motion && motion.fromOpen(id, mode);
-            if (route) {
-              this._switchToken = (this._switchToken || 0) + 1;
-              motion.navigate(core, route);
-            } else {
-              this.switchViews(core);
-            }
+          const motion=window.ForgeWorkspaceRoute;
+          const route=motion?.fromOpen(id,mode);
+          const inside=this.els.viewApp.classList.contains("active");
+          const sameRoute=inside && motion?.selected()===route;
+          // Shared sections represent distinct tools. PDF/Split,
+          // Stills/Storyboard and Link Gen/Downloader all need the SAME
+          // transition ownership as every other workspace switch.
+          // Switching Board / Filmstrip / Fit within Storyboard remains a
+          // mode-only change, using the shorter internal panel motion.
+          if(sameRoute){
+            motion?.cancel();
+            this._openTool(id,mode);
+          }else if(route&&motion){
+            this._switchToken=(this._switchToken||0)+1;
+            motion.navigate(()=>this._openTool(id,mode),route);
+          }else{
+            motion?.cancel();
+            const core=()=>this._openTool(id,mode);
+            if(inside)core();else this.switchViews(core);
           }
         },
         switchPdfTab(tabId) {
