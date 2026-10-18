@@ -37,6 +37,7 @@ const forgeAdaptiveCss=read('src/css/experience/forge-adaptive-desktop.css');
 const forgeWorkspaceFinishCss=read('src/css/experience/forge-workspace-finish.css');
 const forgeSpecimensCss=read('src/css/experience/forge-tool-specimens.css');
 const forgeUnifiedCss=read('src/css/experience/forge-unified-workspaces.css');
+const forgeWorkflowCss=read('src/css/experience/forge-workflow-interactions.css');
 const forgeVideoRouteJs=read('src/js/presentation/forge-video-route.js');
 const forgeHero=[
   '<section class="forge-hero" aria-labelledby="forgeHeroName">',
@@ -109,7 +110,9 @@ function forgeBrand(html,standaloneRelease){
     '<link rel="stylesheet" href="./dist/css/forge-tool-specimens.css">\n';
   const unifiedStyle=standaloneRelease?'<style id="forge-unified-workspaces-styles">'+forgeUnifiedCss+'</style>\n':
     '<link rel="stylesheet" href="./dist/css/forge-unified-workspaces.css">\n';
-  html=html.replace('</head>',fontLink+brandStyle+routeStyle+adaptiveStyle+workspaceFinishStyle+specimenStyle+unifiedStyle+'</head>');
+  const workflowStyle=standaloneRelease?'<style id="forge-workflow-interactions-styles">'+forgeWorkflowCss+'</style>\n':
+    '<link rel="stylesheet" href="./dist/css/forge-workflow-interactions.css">\n';
+  html=html.replace('</head>',fontLink+brandStyle+routeStyle+adaptiveStyle+workspaceFinishStyle+specimenStyle+unifiedStyle+workflowStyle+'</head>');
   // Light-only presentation: do not read an old dark preference on first paint.
   html=html.replace('<body>','<body class="light-mode">\n'+forgeIntro+'\n');
   const brandScript=standaloneRelease?'<script id="forge-brand-intro-js">'+forgeBrandJs+'</script>':
@@ -132,6 +135,7 @@ save('dist/css/forge-adaptive-desktop.css',forgeAdaptiveCss);
 save('dist/css/forge-workspace-finish.css',forgeWorkspaceFinishCss);
 save('dist/css/forge-tool-specimens.css',forgeSpecimensCss);
 save('dist/css/forge-unified-workspaces.css',forgeUnifiedCss);
+save('dist/css/forge-workflow-interactions.css',forgeWorkflowCss);
 save('dist/js/forge-video-route.js',forgeVideoRouteJs);
 save('dist/css/ad-downloader-v2.css',visualCss);
 save('dist/js/ad-downloader-v2.js',visualJs);
