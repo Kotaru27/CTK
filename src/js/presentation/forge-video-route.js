@@ -63,6 +63,7 @@
     if(active)active.skipTransition();
     const token=++serial;
     root.dataset.forgeRoute=key;
+    root.dataset.forgeRouteTravel=document.getElementById('view-app')?.classList.contains('active')?'tool':'home';
     root.classList.add('forge-route-running');
     let transition;
     try{
