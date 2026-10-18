@@ -1,0 +1,21 @@
+/* The Forge first-paint guard.
+   Inlined before any network CSS/script so the homepage cannot flash
+   ahead of the branded intro. The guard is always released on failure. */
+html.forge-preflight{background:#f8f9f5!important}
+html.forge-preflight body{
+  opacity:0!important;
+  transition:none!important;
+}
+html.forge-welcome-pending body::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:2147483050;
+  pointer-events:auto;
+  background:rgba(20,36,27,.68);
+  -webkit-backdrop-filter:blur(24px) saturate(.68);
+  backdrop-filter:blur(24px) saturate(.68);
+}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  html.forge-welcome-pending body::after{background:rgba(20,36,27,.93)}
+}
