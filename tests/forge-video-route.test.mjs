@@ -90,6 +90,8 @@ test('internal route and mode changes animate only presentation, never core logi
  assert.match(js,/distance=kind==='section'\?4:3/);
  assert.match(js,/duration=kind==='section'\?220:180/);
  assert.doesNotMatch(js,/UI\.(?:openTool|switchPdfTab|switchStillsTab|switchAdlinksTab)\s*=/);
- assert.match(css,/@keyframes forge-workspace-root-in \{from\{opacity:\.94\}/);
+ assert.match(css,/@keyframes forge-open-workspace/);
+ assert.match(css,/view-transition-name:forge-tool-surface/);
+ assert.match(css,/forge-return-home 440ms/);
  assert.doesNotMatch(css, /from\{opacity:\.50\}/);
 });
