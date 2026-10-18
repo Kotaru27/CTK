@@ -5901,6 +5901,23 @@ html.forge-route-running::view-transition-old(root) {
 html.forge-route-running::view-transition-new(root) {
   animation:forge-workspace-root-in 250ms cubic-bezier(.2,.7,.2,1) both;
 }
+/* A real tool-to-tool transition is now coordinated in UI.openTool.
+   Keep the stage change short and spatially restrained; do not animate
+   canvases, tool buttons or sidebar independently. */
+html.forge-route-running[data-forge-route-travel="tool"]::view-transition-old(root){
+  animation:forge-tool-root-out 160ms cubic-bezier(.32,.02,.6,1) both;
+}
+html.forge-route-running[data-forge-route-travel="tool"]::view-transition-new(root){
+  animation:forge-tool-root-in 270ms cubic-bezier(.16,1,.3,1) both;
+}
+@keyframes forge-tool-root-out{
+  from{opacity:1}
+  to{opacity:.68}
+}
+@keyframes forge-tool-root-in{
+  from{opacity:.68;transform:translate3d(0,6px,0)}
+  to{opacity:1;transform:translate3d(0,0,0)}
+}
 @keyframes forge-workspace-root-out {from{opacity:1}to{opacity:0}}
 @keyframes forge-workspace-root-in {from{opacity:.94}to{opacity:1}}
 @keyframes forge-workspace-art-out {from{opacity:1}to{opacity:0}}
@@ -7454,6 +7471,101 @@ html.forge-route-running::view-transition-new(root){
  #view-app .tool-section .ctk-row-menu > summary:hover{
   transition:none!important;translate:none!important;
  }
+}
+
+/* Storyboard / 2026-10-18: give long imported folder names the unused
+   centre of the toolbar, while the sidebar handles navigation and settings. */
+#section-stills-boards .tool-header:has(.story-header-name:not([hidden])) #stillsToolTitle{
+  flex:0 0 auto!important;white-space:nowrap;
+}
+#section-stills-boards .tool-header .story-header-name{
+  display:flex;align-items:center;gap:12px;flex:1 1 180px;
+  min-width:130px;max-width:520px;margin:0 22px 0 clamp(14px,3vw,48px);
+}
+#section-stills-boards .tool-header .story-header-name[hidden]{display:none!important;}
+#section-stills-boards .story-header-name > span{
+  flex:none;white-space:nowrap;font:650 10px/1.2 "JetBrains Mono",monospace;
+  letter-spacing:.11em;color:var(--sb-muted,var(--text-muted));
+}
+#section-stills-boards #storyHeaderName #storyNameInput{
+  flex:1;min-width:0;width:100%;max-width:100%;height:38px!important;
+  margin:0!important;padding:0 13px!important;border-radius:7px!important;
+  font-size:13px!important;font-weight:650!important;letter-spacing:0!important;
+  text-overflow:ellipsis;background:var(--bg-input)!important;
+}
+#section-stills-boards #storyHeaderName #storyNameInput:focus{
+  text-overflow:clip;outline:2px solid var(--sb-focus,#2d6b50)!important;outline-offset:1px;
+}
+/* Compact board picker by default for bulk imports; List recovers every
+   legacy pill and its per-board delete action without a crowded sidebar. */
+#stillsTabContentStory .story-board-navigator{display:grid;gap:10px;margin-bottom:12px;}
+#stillsTabContentStory .story-board-navigator-heading{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+}
+#stillsTabContentStory #storyBoardCount{
+  white-space:nowrap;font:650 10px/1.4 "JetBrains Mono",monospace;
+  letter-spacing:.085em;color:var(--sb-muted,var(--text-muted));
+}
+#stillsTabContentStory .story-board-layout-options{
+  display:inline-flex;gap:2px;padding:2px;border:1px solid var(--sb-line,var(--border));
+  border-radius:7px;background:var(--bg-input);
+}
+#stillsTabContentStory .story-board-layout-choice{
+  padding:6px 9px;border:0;border-radius:5px;background:transparent;
+  font-size:11px;font-family:inherit;font-weight:650;line-height:1.2;color:var(--sb-muted,var(--text-muted));cursor:pointer;
+  transition:background-color 170ms ease,color 170ms ease;
+}
+#stillsTabContentStory .story-board-layout-choice.selected{
+  background:var(--sb-action,#285a43);color:#fff;
+}
+#stillsTabContentStory .story-board-quick-select{display:flex;gap:7px;align-items:stretch;}
+#stillsTabContentStory .story-board-quick-select.story-board-quick-hidden,
+#stillsTabContentStory #storyProjectTabs.story-board-list-hidden{display:none!important;}
+#stillsTabContentStory #storyBoardSelect{
+  flex:1;min-width:0;width:100%;font-size:12px!important;
+  text-overflow:ellipsis;height:39px!important;
+}
+#stillsTabContentStory .story-board-remove-current{
+  flex:none;width:39px;border:1px solid var(--sb-line,var(--border));border-radius:7px;
+  background:var(--sb-panel,#fff);color:var(--sb-text,#26392e);
+  cursor:pointer;font-size:19px;line-height:1;
+}
+#stillsTabContentStory .story-board-remove-current:hover{background:var(--sb-stage,#edf4ee);}
+#stillsTabContentStory #storyProjectTabs:not(.story-board-list-hidden){
+  display:flex!important;flex-direction:column!important;flex-wrap:nowrap!important;
+  max-height:min(42vh,390px);overflow-y:auto;padding:0 5px 6px 0;
+  scrollbar-width:thin;
+}
+#stillsTabContentStory #storyProjectTabs .story-project-pill{width:100%;min-width:0!important;}
+#stillsTabContentStory #storyProjectTabs .story-project-switch{
+  flex:1;min-width:0!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+#stillsTabContentStory .story-board-layout-choice:focus-visible,
+#stillsTabContentStory .story-board-remove-current:focus-visible{
+  outline:2px solid var(--sb-focus,#2d6b50);outline-offset:2px;
+}
+/* One clear queue: files still needing attention first, then requested
+   browser downloads, then prepared/verified files. */
+#section-adlinks #adDlRequestedHeaderRow td{
+  padding:16px!important;font-size:11px!important;font-weight:750!important;
+  letter-spacing:.06em!important;color:var(--ad-muted,var(--text-muted))!important;
+  background:var(--bg-input)!important;border-top:1px solid var(--ad-line,var(--border))!important;
+}
+#section-adlinks #adDlDownloadedHeaderRow td{
+  border-top:1px solid var(--ad-line,var(--border))!important;
+}
+#section-adlinks #adDlRequestedBody tr.download-requested{
+  background:color-mix(in srgb,var(--bg-input) 74%,transparent)!important;
+}
+#section-adlinks #adDlRequestedBody tr.download-requested td{
+  border-color:var(--ad-line,var(--border))!important;
+}
+@media(max-width:1250px){
+  #section-stills-boards .tool-header .story-header-name{max-width:300px;margin-inline:12px;}
+  #section-stills-boards .story-header-name > span{display:none;}
+}
+@media(prefers-reduced-motion:reduce){
+  #stillsTabContentStory .story-board-layout-choice{transition:none!important;}
 }
 </style>
 </head>
@@ -10266,10 +10378,17 @@ const CTKDownloadRenamer = (() => {
         openTool(id, mode) {
           const motion = window.ForgeWorkspaceRoute;
           if (this.els.viewApp.classList.contains("active")) {
-            // Changing tools inside the workspace must immediately stop any
-            // older shared-element flight; never queue pending navigation.
-            if (motion) motion.cancel();
-            this._openTool(id, mode);
+            // All tool-to-tool switches now use the same visual coordinator as
+            // home-to-tool navigation. Previously this path cancelled motion
+            // and swapped every workspace instantly.
+            const route = motion && motion.fromOpen(id, mode);
+            if (route) {
+              this._switchToken = (this._switchToken || 0) + 1;
+              motion.navigate(() => this._openTool(id, mode), route);
+            } else {
+              if (motion) motion.cancel();
+              this._openTool(id, mode);
+            }
           } else {
             const core = () => this._openTool(id, mode);
             const route = motion && motion.fromOpen(id, mode);
@@ -12578,6 +12697,7 @@ const CTKDownloadRenamer = (() => {
               });
             };
             this.addNewProject();
+            this.setupBoardChrome();
           },
           destroy() {
             this.active.images.forEach((i) => Core.BlobRegistry.release(i.img.src));
@@ -12586,6 +12706,52 @@ const CTKDownloadRenamer = (() => {
             this.updateList();
             this.els.preview.innerHTML =
               '<span class="text-muted">Preview</span>';
+          },
+          setupBoardChrome() {
+            const title=document.getElementById("stillsToolTitle");
+            const input=this.els.name;
+            if(title&&input&&!document.getElementById("storyHeaderName")) {
+              const label=document.createElement("label");
+              label.id="storyHeaderName";label.className="story-header-name";
+              label.htmlFor="storyNameInput";
+              const caption=document.createElement("span");caption.textContent="BOARD NAME";
+              input.style.marginBottom="0";input.title=input.value;
+              const oldCaption=input.previousElementSibling;
+              if(oldCaption?.textContent?.trim()==="Board Actions")oldCaption.remove();
+              label.append(caption,input);title.insertAdjacentElement("afterend",label);
+              const panel=document.getElementById("stillsTabContentStory");
+              const section=document.getElementById("section-stills-boards");
+              const refresh=()=>{label.hidden=!(section?.classList.contains("active")&&panel&&panel.style.display!=="none");};
+              if(typeof MutationObserver==="function"){
+                const observer=new MutationObserver(refresh);
+                if(panel)observer.observe(panel,{attributes:true,attributeFilter:["style"]});
+                if(section)observer.observe(section,{attributes:true,attributeFilter:["class"]});
+              }
+              refresh();
+            }
+            const tabs=this.els.tabs;
+            if(!tabs||document.getElementById("storyBoardNavigator"))return;
+            const container=tabs.parentElement;
+            const nav=document.createElement("div");nav.id="storyBoardNavigator";nav.className="story-board-navigator";
+            const heading=document.createElement("div");heading.className="story-board-navigator-heading";
+            const count=document.createElement("span");count.id="storyBoardCount";
+            const options=document.createElement("div");options.className="story-board-layout-options";
+            for(const [mode,text] of [["compact","Compact"],["list","List"]]){
+              const button=document.createElement("button");button.type="button";
+              button.className="story-board-layout-choice";button.dataset.layout=mode;
+              button.textContent=text;button.onclick=()=>{this.boardLayout=mode;this.renderTabs();};
+              options.appendChild(button);
+            }
+            heading.append(count,options);
+            const quick=document.createElement("div");quick.id="storyBoardQuickSelect";quick.className="story-board-quick-select";
+            const select=document.createElement("select");select.id="storyBoardSelect";select.className="liquid-input";
+            select.setAttribute("aria-label","Choose a storyboard");
+            select.onchange=()=>this.switchProject(Number(select.value));
+            const remove=document.createElement("button");remove.type="button";remove.className="story-board-remove-current";
+            remove.title="Delete selected storyboard";remove.setAttribute("aria-label","Delete selected storyboard");
+            remove.textContent="×";remove.onclick=()=>{if(this.active)this.deleteProject(this.active.id);};
+            quick.append(select,remove);nav.append(heading,quick);container.insertBefore(nav,tabs);
+            this.boardLayout="compact";this.renderTabs();
           },
           makeProject(name) {
             // Batch creation must not switch the active project while images
@@ -12659,12 +12825,32 @@ const CTKDownloadRenamer = (() => {
             document.getElementById("storyFitMode").value =
               s.fitMode || "cover";
             this.els.name.value = this.active.name;
+            this.els.name.title = this.active.name;
             document.getElementById("storyWidthContainer").style.display =
               s.autoWidth ? "none" : "block";
           },
           renderTabs() {
             const tabs = this.els.tabs;
             tabs.replaceChildren();
+            const quick=document.getElementById("storyBoardSelect");
+            if(quick?.tagName==="SELECT"){
+              quick.replaceChildren();
+              this.projects.forEach(project=>{
+                const option=document.createElement("option");
+                option.value=String(project.id);option.textContent=project.name;
+                option.title=project.name;option.selected=project.id===this.active?.id;
+                quick.appendChild(option);
+              });
+              const count=document.getElementById("storyBoardCount");
+              if(count)count.textContent="BOARDS / "+this.projects.length;
+              const compact=this.boardLayout!=="list";
+              tabs.classList.toggle("story-board-list-hidden",compact);
+              document.getElementById("storyBoardQuickSelect")?.classList.toggle("story-board-quick-hidden",!compact);
+              document.querySelectorAll("#storyBoardNavigator .story-board-layout-choice").forEach(btn=>{
+                const on=btn.dataset.layout===(compact?"compact":"list");
+                btn.classList.toggle("selected",on);btn.setAttribute("aria-pressed",String(on));
+              });
+            }
             this.projects.forEach((project) => {
               const active = project.id === this.active?.id;
               const tab = document.createElement("div");
@@ -14503,10 +14689,25 @@ const CTKDownloadRenamer = (() => {
             const downloadedBody = document.getElementById("adDlDownloadedBody");
             const downloadedHead = document.getElementById("adDlDownloadedHeaderRow");
             body.replaceChildren();
+            // A requested SharePoint download is not the same as a verified file.
+            let requestedBody=document.getElementById("adDlRequestedBody");
+            if(!requestedBody && downloadedBody?.parentNode){
+              requestedBody=document.createElement("tbody");requestedBody.id="adDlRequestedBody";
+              const header=document.createElement("tr");header.id="adDlRequestedHeaderRow";header.style.display="none";
+              const cell=document.createElement("td");cell.colSpan=3;
+              cell.textContent="Download requested · check browser downloads";
+              header.appendChild(cell);requestedBody.appendChild(header);
+              downloadedBody.parentNode.insertBefore(requestedBody,downloadedBody);
+            }
+            if(requestedBody){
+              const heading=document.getElementById("adDlRequestedHeaderRow");
+              Array.from(requestedBody.children).filter(el=>el!==heading).forEach(el=>el.remove());
+              if(heading)heading.style.display="none";
+            }
             Array.from(downloadedBody.children).filter(el => el !== downloadedHead).forEach(el => el.remove());
             downloadedHead.style.display = "none";
             const statusCell=downloadedHead.querySelector("td");
-            if (statusCell) statusCell.textContent="Downloaded / download requested";
+            if (statusCell) statusCell.textContent="Prepared or verified downloads";
             this.entries = []; this.allNames = []; this.adTypeMap = {};
             const seen = new Set();
             let skipped = 0, inferred = 0;
@@ -14590,7 +14791,7 @@ const CTKDownloadRenamer = (() => {
           },
           updateBulkButton() {
             const btn = document.getElementById("adDlBulkButton");
-            if (btn) btn.disabled = this._downloadBusy || !this.entries.some(entry => entry.selected && !entry.downloaded);
+            if (btn) btn.disabled = this._downloadBusy || !this.entries.some(entry => entry.selected && !entry.downloaded && !entry.requested);
           },
           guessType(blob, hint, signature=[]) {
             // Use the actual MIME where possible; do not trust guessed spreadsheet categories.
@@ -14656,17 +14857,40 @@ const CTKDownloadRenamer = (() => {
             document.body.appendChild(a); a.click(); a.remove();
             setTimeout(() => URL.revokeObjectURL(url), 60000);
           },
+          markRequested(entry) {
+            // The browser owns protected SharePoint downloads; mark the click,
+            // never assume success. The row stays available for Download again.
+            if(!entry.downloadVerified){
+              entry.requested=true;
+              if(entry.row){
+                entry.row.classList.add("download-requested");
+                entry.row.classList.remove?.("downloaded");
+                entry.row.title="Download requested. Completion cannot be verified from GitHub Pages.";
+                const requested=document.getElementById("adDlRequestedBody");
+                const header=document.getElementById("adDlRequestedHeaderRow");
+                if(requested){if(header)header.style.display="table-row";requested.appendChild(entry.row);}
+                else {
+                  document.getElementById("adDlDownloadedHeaderRow").style.display="table-row";
+                  document.getElementById("adDlDownloadedBody").appendChild(entry.row);
+                }
+              }
+            }
+            if(entry.downloadButton){entry.downloadButton.textContent="Download again";entry.downloadButton.disabled=false;}
+            if(typeof document.getElementById==="function")this.updateBulkButton();
+          },
           markDownloaded(entry, verified = false) {
             // A CORS-accessible Blob lets us verify file preparation, not the
             // user's browser download manager. Native SharePoint downloads
             // are only confirmed when the folder renamer observes the file.
             entry.downloaded = true;
+            entry.requested = false;
             entry.downloadVerified = !!(entry.downloadVerified || verified);
             if (entry.downloadButton) {
               entry.downloadButton.textContent = "Download again";
               entry.downloadButton.disabled = false;
             }
             if (entry.row) {
+              entry.row.classList.remove?.("download-requested");
               entry.row.classList.add("downloaded");
               entry.row.style.removeProperty("opacity");
               entry.row.title = entry.downloadVerified
@@ -14709,8 +14933,8 @@ const CTKDownloadRenamer = (() => {
             try { a.click(); }
             catch(error) { if(tracking)renamer.cancel(entry); throw error; }
             finally { a.remove(); }
-            // Do not claim an unobservable cross-origin download completed.
-            if (entry.downloadButton) entry.downloadButton.textContent = 'Download again';
+            // Move it below pending ads right after a successful native click.
+            this.markRequested(entry);
             if (entry.renameCopyButton) entry.renameCopyButton.hidden = false;
             this.status(tracking
               ? `Tracking ${entry.displayName} for auto-naming. Multiple distinct ads can download at once.`
@@ -14808,7 +15032,7 @@ const CTKDownloadRenamer = (() => {
           },
           async downloadBulk() {
             if (this._downloadBusy) return;
-            const selection = this.entries.filter(entry=>entry.selected && !entry.downloaded);
+            const selection = this.entries.filter(entry=>entry.selected && !entry.downloaded && !entry.requested);
             if (!selection.length) return;
             if (selection.some(entry => CTKSharePoint.isSharePoint(entry.url))) {
               this.status("SharePoint cannot be added to a client-side ZIP from GitHub Pages. Download SharePoint files individually with their native Download buttons. Other CORS-enabled files can still be zipped.",true);
@@ -16119,6 +16343,7 @@ const CTKDownloadRenamer = (() => {
     if(active)active.skipTransition();
     const token=++serial;
     root.dataset.forgeRoute=key;
+    root.dataset.forgeRouteTravel=document.getElementById('view-app')?.classList.contains('active')?'tool':'home';
     root.classList.add('forge-route-running');
     let transition;
     try{
