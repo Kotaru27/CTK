@@ -373,12 +373,33 @@ export default {
             document.body.appendChild(a); a.click(); a.remove();
             setTimeout(() => URL.revokeObjectURL(url), 60000);
           },
+          animateQueueMove(row,previousTop){
+            // Only a row that actually moved gets motion. Source and target
+            // positions are real measurements, never hardcoded campaign data.
+            // A long queue cannot make a row fly across the entire screen.
+            if(!row?.animate||!row.getBoundingClientRect ||
+               !Number.isFinite(previousTop) ||
+               window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)return;
+            const rect=row.getBoundingClientRect();
+            if(!rect.width||!rect.height)return;
+            const delta=previousTop-rect.top;
+            if(Math.abs(delta)<2)return;
+            const distance=Math.max(-38,Math.min(38,delta));
+            const frames=[],omega=8.8,total=1-(1+omega)*Math.exp(-omega);
+            for(let i=0;i<=24;i++){
+              const t=i/24,p=(1-(1+omega*t)*Math.exp(-omega*t))/total;
+              frames.push({offset:t,opacity:Math.min(1,.78+p),
+                transform:'translate3d(0,'+(distance*(1-p)).toFixed(3)+'px,0)'});
+            }
+            row.animate(frames,{duration:320,easing:'linear'});
+          },
           markRequested(entry) {
             // The browser owns protected SharePoint downloads; mark the click,
             // never assume success. The row stays available for Download again.
             if(!entry.downloadVerified){
               entry.requested=true;
               if(entry.row){
+                const previousTop=entry.row.getBoundingClientRect?.().top;
                 entry.row.classList.add("download-requested");
                 entry.row.classList.remove?.("downloaded");
                 entry.row.title="Download requested. Completion cannot be verified from GitHub Pages.";
@@ -389,6 +410,7 @@ export default {
                   document.getElementById("adDlDownloadedHeaderRow").style.display="table-row";
                   document.getElementById("adDlDownloadedBody").appendChild(entry.row);
                 }
+                this.animateQueueMove(entry.row,previousTop);
               }
             }
             if(entry.downloadButton){entry.downloadButton.textContent="Download again";entry.downloadButton.disabled=false;}
@@ -406,6 +428,7 @@ export default {
               entry.downloadButton.disabled = false;
             }
             if (entry.row) {
+              const previousTop=entry.row.getBoundingClientRect?.().top;
               entry.row.classList.remove?.("download-requested");
               entry.row.classList.add("downloaded");
               entry.row.style.removeProperty("opacity");
@@ -416,6 +439,7 @@ export default {
               // appendChild safely keeps a previously downloaded row at the
               // bottom, even after repeated download requests.
               document.getElementById("adDlDownloadedBody").appendChild(entry.row);
+              this.animateQueueMove(entry.row,previousTop);
             }
             this.updateBulkButton();
           },
