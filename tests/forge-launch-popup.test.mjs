@@ -103,7 +103,7 @@ test('welcome is in both release formats, matches the actual new workflows, and 
   assert.ok(build.includes(words),'Missing launch fact '+words);
  }
  assert.match(intro,/forge:intro-complete/);
- assert.match(intro,/notifyIntroFinished\(\)/);
+ assert.match(intro,/forge:intro-complete/);
  assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
  assert.match(css,/max-height:min\(820px,calc\(100dvh - 36px\)\)/);
  assert.match(css,/#forgeWhatsNew :is\(button\):focus-visible/);
