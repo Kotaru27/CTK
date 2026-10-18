@@ -56,7 +56,12 @@ test('native motion supports last-click-wins and accessibility',()=>{
  assert.match(js,/if\(token===serial\)change\(\)/);
  assert.match(js,/window\.ForgeWorkspaceRoute=api/);
  assert.match(js,/window\.ForgeVideoRoute=api/);
- assert.doesNotMatch(js,/setTimeout|requestAnimationFrame|pointermove/);
+ // Navigation itself never uses timers or pointer-driven motion. The
+ // Storyboard marker may use rAF to coalesce real class measurements.
+ const navigation=js.slice(0,js.indexOf('function attachWorkspaceObserver'));
+ assert.doesNotMatch(navigation,/setTimeout|requestAnimationFrame|pointermove/);
+ assert.match(js,/function attachStoryModeIndicator\(/);
+ assert.match(js,/indicator\.id='forgeStoryModeIndicator'/);
  for(const route of ['pdf','split','stills','story','links','ads','logo','video'])
    assert.match(js,new RegExp("'"+route+"'"));
 });
