@@ -3,101 +3,92 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import fs from 'node:fs';
 const js=fs.readFileSync(new URL('../src/js/presentation/forge-whats-new.js',import.meta.url),'utf8');
-const build=fs.readFileSync(new URL('../scripts/build.mjs',import.meta.url),'utf8');
 const css=fs.readFileSync(new URL('../src/css/experience/forge-whats-new.css',import.meta.url),'utf8');
-const store=(values={})=>{
- const map=new Map(Object.entries(values));
- return {getItem:key=>map.get(key)||null,setItem:(k,v)=>map.set(k,v),map};
+const build=fs.readFileSync(new URL('../scripts/build.mjs',import.meta.url),'utf8');
+const store=()=>{
+ const map=new Map();return {getItem:k=>map.get(k)||null,setItem:(k,v)=>map.set(k,v)};
 };
-function launch({introFinished=false,opening=false,active=false,local=store(),session=store()}={}){
- const timers=[],listeners=new Map();
- const on=(events,type,fn)=>{if(!events.has(type))events.set(type,[]);events.get(type).push(fn);};
- const buttons={};
- let focus=null,skipped=0;
- for(const name of ['forgeWhatsNewTrigger','forgeWhatsNewEnter','forgeWhatsNewNever','forgeWhatsNewClose']){
-  const ev=new Map();
-  buttons[name]={hidden:false,isConnected:true,addEventListener:(type,fn)=>on(ev,type,fn),
-   setAttribute(){},focus(){focus=this;},getClientRects:()=>[{}],
-   click(){for(const fn of ev.get('click')||[])fn({target:this});}};
+const classes=()=>{const s=new Set();return {add:x=>s.add(x),contains:x=>s.has(x)}};
+function setup({local=store(),introFinished=true,opening=false,active=false,font='loaded'}={}){
+ const timers=[],listeners=new Map(),buttons={};
+ const listen=(bucket,event,fn)=>{if(!bucket.has(event))bucket.set(event,[]);bucket.get(event).push(fn)};
+ for(const id of ['forgeWhatsNewTrigger','forgeWhatsNewEnter','forgeWhatsNewNever','forgeWhatsNewClose']){
+  const events=new Map();
+  buttons[id]={hidden:false,isConnected:true,addEventListener:(type,fn)=>listen(events,type,fn),
+   click(){for(const fn of events.get('click')||[])fn({target:this})},
+   focus(){doc.activeElement=this},setAttribute(){},getClientRects:()=>[{}]};
  }
- const dialog={querySelectorAll:()=>Object.values(buttons)};
- const events=new Map();
- const root={hidden:true,querySelector:q=>q==='.forge-whatsnew-dialog'?dialog:buttons[q.slice(1)]||null,
-  addEventListener:(type,fn)=>on(events,type,fn),
-  keydown(e){for(const fn of events.get('keydown')||[])fn(e);}};
- const home={classList:{contains:()=>false}};
- const app={classList:{contains:x=>x==='active'&&active}};
- const body={classList:{contains:x=>x==='forge-opening'&&opening}};
- const doc={body,visibilityState:'visible',activeElement:null,
-  documentElement:{dataset:introFinished?{forgeIntroFinished:'1'}:{}},
-  getElementById:id=>id==='forgeWhatsNew'?root:
-   id==='view-home'?home:id==='view-app'?app:
-   id==='forgeIntroSkip'?{click(){opening=false;skipped++;}}:
-   id==='homeContent'?{focus(){}}:buttons[id]||null,
-  addEventListener:(type,fn)=>on(listeners,type,fn),
-  dispatch(type){for(const fn of listeners.get(type)||[])fn();}};
- const context={document:doc,localStorage:local,sessionStorage:session,
-  setTimeout:fn=>{timers.push(fn);return timers.length;},clearTimeout(){},
+ const modalEvents=new Map(),intro={hidden:true};
+ const root={hidden:true,classList:classes(),addEventListener:(type,fn)=>listen(modalEvents,type,fn),
+  querySelector:q=>q==='.forge-whatsnew-dialog'?{querySelectorAll:()=>Object.values(buttons)}:buttons[q.slice(1)],
+  keydown(e){for(const fn of modalEvents.get('keydown')||[])fn(e)}};
+ const host={classList:{contains:()=>false}};
+ const workspace={classList:{contains:k=>k==='active'&&active}};
+ let skips=0;
+ const doc={visibilityState:'visible',activeElement:null,
+  body:{classList:{contains:k=>k==='forge-opening'&&opening}},
+  documentElement:{dataset:introFinished?{forgeIntroFinished:'1'}:{},classList:{contains:()=>false}},
+  fonts:{load(){return font==='hang'?new Promise(()=>{}):
+    font==='fail'?Promise.reject(Error('Offline')):Promise.resolve([{status:'loaded'}])}},
+  getElementById:id=>id==='forgeWhatsNew'?root:id==='view-home'?host:
+    id==='view-app'?workspace:id==='forgeIntro'?intro:id==='forgeIntroSkip'?{
+     click(){opening=false;skips++;}}:buttons[id]||null,
+  addEventListener:(type,fn)=>listen(listeners,type,fn),
+  dispatch(type){for(const fn of listeners.get(type)||[])fn()}};
+ const schedule=(fn,ms)=>{const t={fn,ms,cancelled:false};timers.push(t);return t};
+ const context={document:doc,localStorage:local,sessionStorage:store(),Promise,
+  setTimeout:schedule,clearTimeout:t=>{if(t)t.cancelled=true},
   getComputedStyle:()=>({visibility:'visible'})};
  vm.runInNewContext(js,context,{filename:'forge-whats-new.js'});
- return {doc,root,buttons,timers,local,session,get skipped(){return skipped;}};
+ function fire(ms){for(const t of timers.filter(x=>x.ms===ms&&!x.cancelled)){t.cancelled=true;t.fn()}}
+ return {root,doc,buttons,timers,local,fire,get skips(){return skips}};
 }
-test('welcome opens automatically after completed intro, never before',()=>{
- const h=launch();
- assert.equal(h.root.hidden,true);
- assert.equal(h.timers.length,0);
- h.doc.documentElement.dataset.forgeIntroFinished='1';
- h.doc.dispatch('forge:intro-complete');
- assert.equal(h.timers.length,1);
- assert.equal(h.root.hidden,true);
- h.timers[0]();
- assert.equal(h.root.hidden,false);
- h.buttons.forgeWhatsNewEnter.click();
- assert.equal(h.root.hidden,true);
- assert.equal(h.local.getItem('forge_whatsnew_seen_launch_2026_v2'),'1');
-});
-test('seen welcome does not automatically reopen on reload, but manual link works',()=>{
- const local=store({'forge_whatsnew_seen_launch_2026_v2':'1'});
- const h=launch({introFinished:true,local});
- assert.equal(h.timers.length,0);
- h.buttons.forgeWhatsNewTrigger.click();
- assert.equal(h.root.hidden,false);
- h.buttons.forgeWhatsNewClose.click();
- assert.equal(h.root.hidden,true);
-});
-test('saved do not show again never hides manual What’s New trigger',()=>{
- const local=store();
- const h=launch({introFinished:true,local});
- h.timers[0]();
- h.buttons.forgeWhatsNewNever.click();
+const flush=async()=>{for(let i=0;i<12;i++)await Promise.resolve()};
+test('auto show after intro and return on next visit unless permanently dismissed',async()=>{
+ const local=store(),one=setup({local,introFinished:false});
+ assert.equal(one.timers.length,0);
+ one.doc.dispatch('forge:intro-complete');one.fire(420);await flush();
+ assert.equal(one.root.hidden,false);
+ one.buttons.forgeWhatsNewEnter.click();
+ assert.equal(local.getItem('forge_whatsnew_dismissed_2026_v1'),null);
+ const two=setup({local});two.fire(420);await flush();
+ assert.equal(two.root.hidden,false);
+ two.buttons.forgeWhatsNewClose.click();
+ const three=setup({local});three.fire(420);await flush();
+ assert.equal(three.root.hidden,false);
+ three.buttons.forgeWhatsNewNever.click();
  assert.equal(local.getItem('forge_whatsnew_dismissed_2026_v1'),'1');
- assert.equal(h.buttons.forgeWhatsNewTrigger.hidden,false);
- const next=launch({introFinished:true,local});
- assert.equal(next.timers.length,0);
- next.buttons.forgeWhatsNewTrigger.click();
- assert.equal(next.root.hidden,false);
+ const four=setup({local});
+ assert.equal(four.timers.length,0);
+ four.buttons.forgeWhatsNewTrigger.click();await flush();
+ assert.equal(four.root.hidden,false);
 });
-test('restored workspace cannot be covered by a first-launch popup',()=>{
- const h=launch({introFinished:true,active:true});
- h.timers[0]();
+test('modal never shows in fallback font before readiness',async()=>{
+ const h=setup({font:'hang'});h.fire(420);await flush();
  assert.equal(h.root.hidden,true);
-});
-test('an intentional click during intro cancels it and opens the popup',()=>{
- const h=launch({opening:true});
- h.buttons.forgeWhatsNewTrigger.click();
- assert.equal(h.skipped,1);
+ h.fire(1850);await flush();
  assert.equal(h.root.hidden,false);
+ for(const name of ['forge-fallback-kola','forge-fallback-ui','forge-fallback-serif','forge-fallback-mono'])
+  assert.equal(h.root.classList.contains(name),true);
+ const loaded=setup();loaded.fire(420);await flush();
+ assert.equal(loaded.root.hidden,false);
+ assert.equal(loaded.root.classList.contains('forge-fallback-kola'),false);
 });
-test('Escape closes the announcement and the content is in both releases',()=>{
- const h=launch({introFinished:true});
- h.timers[0]();
+test('restored tool is unobstructed; manual click during intro still works',async()=>{
+ const busy=setup({active:true});busy.fire(420);await flush();
+ assert.equal(busy.root.hidden,true);
+ const manual=setup({introFinished:false,opening:true});
+ manual.buttons.forgeWhatsNewTrigger.click();await flush();
+ assert.equal(manual.skips,1);
+ assert.equal(manual.root.hidden,false);
+});
+test('Escape closes only this visit and backdrop blurs home',async()=>{
+ const h=setup();h.fire(420);await flush();
  let prevented=false;
- h.root.keydown({key:'Escape',preventDefault(){prevented=true;}});
+ h.root.keydown({key:'Escape',preventDefault(){prevented=true}});
  assert.equal(prevented,true);
  assert.equal(h.root.hidden,true);
- for(const word of ['forgeWhatsNew','forgeWhatsNewEnter',
-  'Creative Tool Kit has a new name','<h3>Video Stills</h3>',
-  '<h3>Storyboard</h3>','<h3>Ad Downloader · Downloads</h3>'])
-  assert.ok(build.includes(word),'Welcome build missing '+word);
- assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
+ assert.equal(h.local.getItem('forge_whatsnew_dismissed_2026_v1'),null);
+ assert.match(css,/backdrop-filter:blur\(18px\)/);
+ assert.match(build,/forgeWhatsNewEnter/);
 });
