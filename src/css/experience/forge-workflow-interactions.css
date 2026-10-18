@@ -24,18 +24,12 @@
 #view-app #section-adlinks #adlinksTabContentDownloader #adDlDownloadedHeaderRow td{
  font-weight:750!important;letter-spacing:.075em!important;
 }
-/* FORGE MOTION: a short compositor-friendly route arrival, avoiding
-   stacked header/body entrances and layout-affecting spring movement. */
-#view-app .tool-section.active{
- animation:forge-route-arrive 290ms cubic-bezier(.22,.78,.28,1) both!important;
-}
-#view-app .tool-section.active>.tool-header,
-#view-app .tool-section.active :is(.editor-layout,.story-layout,.split-studio-workspace,.adgen-studio,.yt-studio){
- animation:none!important;
-}
-@keyframes forge-route-arrive{
- from{opacity:.75;translate:0 5px}
- to{opacity:1;translate:0 0}
+/* The existing Forge view-transition coordinator owns section arrivals.
+   Refine only its easing; never run a second CSS section animation. */
+html.forge-route-running::view-transition-group(forge-workspace-title),
+html.forge-route-running::view-transition-old(root),
+html.forge-route-running::view-transition-new(root){
+ animation-timing-function:cubic-bezier(.22,.78,.28,1)!important;
 }
 .nav-sidebar.visible .nav-item:not(.nav-toggle){
  transition:background-color 230ms cubic-bezier(.22,.78,.28,1),
@@ -63,7 +57,6 @@
 #view-app .tool-section label.liquid-btn:active,
 #view-app .tool-section .ctk-row-menu > summary:active{translate:0 0!important;}
 @media(prefers-reduced-motion:reduce){
- #view-app .tool-section.active{animation:none!important;translate:none!important;}
  .nav-sidebar.visible .nav-item,.nav-sidebar.visible .nav-item > :is(.material-symbols-rounded,svg),
  #view-app .tool-section .liquid-btn,#view-app .tool-section label.liquid-btn,
  #view-app .tool-section [role="tab"],#view-app .tool-section .ctk-row-menu > summary{
