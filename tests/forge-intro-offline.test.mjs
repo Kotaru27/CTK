@@ -58,7 +58,7 @@ test('missing remote font still animates real hero heading',async()=>{
   const flight=f.flights[0];
   assert.equal(flight.options.duration,2250);
   assert.match(flight.frames[0].clipPath,/100/);
-  assert.match(flight.frames.at(-1).clipPath,/0\\.000/);
+  assert.match(flight.frames.at(-1).clipPath,/0\.000/);
   assert.equal(f.names.has('forge-opening'),true);
   f.skip.click();
   assert.equal(f.names.has('forge-opening'),false);
@@ -92,8 +92,8 @@ test('restored active tool bypasses splash, without changing tool state',async()
   assert.equal(f.doc.documentElement.dataset.forgeIntroFinished,'1');
 });
 test('intro has no opaque stage and respects reduced motion',()=>{
-  assert.match(css,/body\\.forge-opening #forgeHeroName \\{/);
-  assert.match(css,/clip-path:inset\\(0 100% 0 0\\)/);
+  assert.match(css,/body\.forge-opening #forgeHeroName \{/);
+  assert.match(css,/clip-path:inset\(0 100% 0 0\)/);
   assert.match(css,/clip-path:none!important/);
-  assert.match(css,/\\.forge-intro::before,\\.forge-intro::after/);
+  assert.match(css,/\.forge-intro::before,\.forge-intro::after/);
 });
