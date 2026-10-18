@@ -132,10 +132,25 @@ export default {
             const downloadedBody = document.getElementById("adDlDownloadedBody");
             const downloadedHead = document.getElementById("adDlDownloadedHeaderRow");
             body.replaceChildren();
+            // A requested SharePoint download is not the same as a verified file.
+            let requestedBody=document.getElementById("adDlRequestedBody");
+            if(!requestedBody && downloadedBody?.parentNode){
+              requestedBody=document.createElement("tbody");requestedBody.id="adDlRequestedBody";
+              const header=document.createElement("tr");header.id="adDlRequestedHeaderRow";header.style.display="none";
+              const cell=document.createElement("td");cell.colSpan=3;
+              cell.textContent="Download requested · check browser downloads";
+              header.appendChild(cell);requestedBody.appendChild(header);
+              downloadedBody.parentNode.insertBefore(requestedBody,downloadedBody);
+            }
+            if(requestedBody){
+              const heading=document.getElementById("adDlRequestedHeaderRow");
+              Array.from(requestedBody.children).filter(el=>el!==heading).forEach(el=>el.remove());
+              if(heading)heading.style.display="none";
+            }
             Array.from(downloadedBody.children).filter(el => el !== downloadedHead).forEach(el => el.remove());
             downloadedHead.style.display = "none";
             const statusCell=downloadedHead.querySelector("td");
-            if (statusCell) statusCell.textContent="Downloaded / download requested";
+            if (statusCell) statusCell.textContent="Prepared or verified downloads";
             this.entries = []; this.allNames = []; this.adTypeMap = {};
             const seen = new Set();
             let skipped = 0, inferred = 0;
@@ -219,7 +234,7 @@ export default {
           },
           updateBulkButton() {
             const btn = document.getElementById("adDlBulkButton");
-            if (btn) btn.disabled = this._downloadBusy || !this.entries.some(entry => entry.selected && !entry.downloaded);
+            if (btn) btn.disabled = this._downloadBusy || !this.entries.some(entry => entry.selected && !entry.downloaded && !entry.requested);
           },
           guessType(blob, hint, signature=[]) {
             // Use the actual MIME where possible; do not trust guessed spreadsheet categories.
@@ -285,17 +300,40 @@ export default {
             document.body.appendChild(a); a.click(); a.remove();
             setTimeout(() => URL.revokeObjectURL(url), 60000);
           },
+          markRequested(entry) {
+            // The browser owns protected SharePoint downloads; mark the click,
+            // never assume success. The row stays available for Download again.
+            if(!entry.downloadVerified){
+              entry.requested=true;
+              if(entry.row){
+                entry.row.classList.add("download-requested");
+                entry.row.classList.remove("downloaded");
+                entry.row.title="Download requested. Completion cannot be verified from GitHub Pages.";
+                const requested=document.getElementById("adDlRequestedBody");
+                const header=document.getElementById("adDlRequestedHeaderRow");
+                if(requested){if(header)header.style.display="table-row";requested.appendChild(entry.row);}
+                else {
+                  document.getElementById("adDlDownloadedHeaderRow").style.display="table-row";
+                  document.getElementById("adDlDownloadedBody").appendChild(entry.row);
+                }
+              }
+            }
+            if(entry.downloadButton){entry.downloadButton.textContent="Download again";entry.downloadButton.disabled=false;}
+            this.updateBulkButton();
+          },
           markDownloaded(entry, verified = false) {
             // A CORS-accessible Blob lets us verify file preparation, not the
             // user's browser download manager. Native SharePoint downloads
             // are only confirmed when the folder renamer observes the file.
             entry.downloaded = true;
+            entry.requested = false;
             entry.downloadVerified = !!(entry.downloadVerified || verified);
             if (entry.downloadButton) {
               entry.downloadButton.textContent = "Download again";
               entry.downloadButton.disabled = false;
             }
             if (entry.row) {
+              entry.row.classList.remove("download-requested");
               entry.row.classList.add("downloaded");
               entry.row.style.removeProperty("opacity");
               entry.row.title = entry.downloadVerified
@@ -338,8 +376,8 @@ export default {
             try { a.click(); }
             catch(error) { if(tracking)renamer.cancel(entry); throw error; }
             finally { a.remove(); }
-            // Do not claim an unobservable cross-origin download completed.
-            if (entry.downloadButton) entry.downloadButton.textContent = 'Download again';
+            // Move it below pending ads right after a successful native click.
+            this.markRequested(entry);
             if (entry.renameCopyButton) entry.renameCopyButton.hidden = false;
             this.status(tracking
               ? `Tracking ${entry.displayName} for auto-naming. Multiple distinct ads can download at once.`
@@ -437,7 +475,7 @@ export default {
           },
           async downloadBulk() {
             if (this._downloadBusy) return;
-            const selection = this.entries.filter(entry=>entry.selected && !entry.downloaded);
+            const selection = this.entries.filter(entry=>entry.selected && !entry.downloaded && !entry.requested);
             if (!selection.length) return;
             if (selection.some(entry => CTKSharePoint.isSharePoint(entry.url))) {
               this.status("SharePoint cannot be added to a client-side ZIP from GitHub Pages. Download SharePoint files individually with their native Download buttons. Other CORS-enabled files can still be zipped.",true);
