@@ -68,10 +68,17 @@ const CTKDownloadRenamer = (() => {
     const stem = String(entry.displayName || 'AD').replace(/[^a-zA-Z0-9_\-]/g,'_').slice(0,160);
     return stem + extension;
   }
-  async function currentNames() {
+  async function currentNames(folder=directory) {
     const out = new Set();
-    for await(const [name,handle] of directory.entries()) if(handle.kind === 'file')out.add(name);
+    for await(const [name,handle] of folder.entries()) if(handle.kind === 'file')out.add(name);
     return out;
+  }
+  async function permissionGranted() {
+    if(!directory)return false;
+    try {
+      return typeof directory.queryPermission !== 'function' ||
+        await directory.queryPermission({mode:'readwrite'}) === 'granted';
+    }catch { return false; }
   }
   async function chooseFolder() {
     if (pending.size) throw Error('Wait for active renames to finish before changing the tracked folder.');
@@ -81,12 +88,14 @@ const CTKDownloadRenamer = (() => {
     const selected = await window.showDirectoryPicker({id:'ctk-download-rename',mode:'readwrite',startIn:'downloads'});
     // The picker can return a handle with permission that later expires; avoid destructive writes until checked.
     if (!selected || selected.kind !== 'directory') throw Error('No folder selected.');
-    directory = selected;
-    if (typeof directory.queryPermission === 'function' && await directory.queryPermission({mode:'readwrite'}) !== 'granted') {
-      directory = null;
+    if (typeof selected.queryPermission === 'function' && await selected.queryPermission({mode:'readwrite'}) !== 'granted') {
       throw Error('Read and write permission was not granted for the chosen folder.');
     }
-    known = await currentNames();
+    // Do not activate a new folder until it is readable. A cancelled/failed
+    // selection leaves the previous authorized directory intact.
+    const names=await currentNames(selected);
+    directory=selected;
+    known=names;
     pending.clear();
     renamedCount=0; failedCount=0;
     stopTimer();
@@ -283,5 +292,5 @@ const CTKDownloadRenamer = (() => {
   function active() {return !!directory;}
   function folderName() {return directory?.name || '';}
   // scanOnce is exposed for deterministic regression tests; ordinary callers use begin().
-  return {chooseFolder,begin,cancel,active,folderName,sourceFilename,targetFilename,matchesOriginal,scanOnce,findExisting,renameExisting,stats};
+  return {chooseFolder,permissionGranted,begin,cancel,active,folderName,sourceFilename,targetFilename,matchesOriginal,scanOnce,findExisting,renameExisting,stats};
 })();
