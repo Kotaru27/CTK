@@ -17,8 +17,8 @@ try {
  await page.goto(base,{waitUntil:'domcontentloaded',timeout:60000});
  const intro=page.locator('#forgeIntro');
  await intro.waitFor({state:'visible',timeout:8000});
- check(await page.locator('#forgeHeroName').innerText()==='The Forge',
-   'Real Kola homepage wordmark missing at first paint');
+ check((await page.locator('#forgeHeroName').textContent())?.trim()==='The Forge',
+   'Underlying Kola homepage heading missing during the intro');
  const initial=await page.evaluate(()=>{
    const intro=document.getElementById('forgeIntro');
    const rect=intro.getBoundingClientRect();
