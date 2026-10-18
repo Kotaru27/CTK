@@ -150,38 +150,22 @@ html.forge-route-running[data-forge-route-travel="tool"]::view-transition-new(ro
   }
 }
 
-/* TOOL-TO-TOOL / continuous workspace exchange.
-   The old full-root opacity dip created a white/dark flash on 60 Hz screens.
-   Exclude the persistent shell from animation and fade the incoming stage
-   *over* the outgoing stage, which stays opaque until it is covered.
-   No blur, scale, filters, canvas layout animation or timer. */
-html.forge-route-running[data-forge-route-travel="tool"] #view-app.active{
-  view-transition-name:forge-workspace-stage;
-}
+/* Cross-tool: keep the previous frame opaque while the next one overlays it.
+   Root snapshots avoid named-stage interference with normal tool tab motion. */
 html.forge-route-running[data-forge-route-travel="tool"] #view-app.active .tool-section.active .tool-header h2,
-html.forge-route-running[data-forge-route-travel="tool"] #view-app.active .tool-section.active .tool-header .tool-icon{
+html.forge-route-running[data-forge-route-travel="tool"] #view-app.active .tool-section.active .tool-header .tool-icon {
   view-transition-name:none!important;
 }
-html.forge-route-running[data-forge-route-travel="tool"]::view-transition-old(root),
-html.forge-route-running[data-forge-route-travel="tool"]::view-transition-new(root){
-  animation:none!important;
-}
-html.forge-route-running[data-forge-route-travel="tool"]::view-transition-group(forge-workspace-stage){
-  animation-duration:0ms!important;
-}
-html.forge-route-running[data-forge-route-travel="tool"]::view-transition-old(forge-workspace-stage){
+html.forge-route-running[data-forge-route-travel="tool"]::view-transition-old(root) {
   animation:none!important;
   opacity:1!important;
 }
-html.forge-route-running[data-forge-route-travel="tool"]::view-transition-new(forge-workspace-stage){
-  animation:forge-stage-arrive 320ms cubic-bezier(.18,.76,.25,1) both!important;
+html.forge-route-running[data-forge-route-travel="tool"]::view-transition-new(root) {
+  animation:forge-tool-overlay 280ms cubic-bezier(.18,.76,.25,1) both!important;
 }
-@keyframes forge-stage-arrive{
-  from{opacity:0;transform:translate3d(0,4px,0)}
-  to{opacity:1;transform:translate3d(0,0,0)}
-}
+@keyframes forge-tool-overlay {from{opacity:0}to{opacity:1}}
 @media(prefers-reduced-motion:reduce){
-  html.forge-route-running[data-forge-route-travel="tool"]::view-transition-new(forge-workspace-stage){
+  html.forge-route-running[data-forge-route-travel="tool"]::view-transition-new(root){
     animation-duration:.01ms!important;
   }
 }
