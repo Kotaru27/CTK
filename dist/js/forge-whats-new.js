@@ -12,9 +12,9 @@
   const close=root.querySelector('#forgeWhatsNewClose');
   if(!dialog||!enter||!never||!close)return;
 
-  const seenKey='forge_whatsnew_seen_launch_2026_v2';
   const permanentKey='forge_whatsnew_dismissed_2026_v1';
-  let opened=false,previousFocus=null,automaticTimer=0,autoAttempted=false;
+  let opened=false,preparing=false,previousFocus=null;
+  let automaticTimer=0,autoAttempted=false,openSerial=0,fontsReady=null;
   function safeGet(key){
     try{if(localStorage.getItem(key)==='1')return true;}catch(_){}
     try{return sessionStorage.getItem(key)==='1';}catch(_){return false;}
@@ -31,25 +31,62 @@
       !document.body.classList.contains('forge-opening')&&
       document.visibilityState!=='hidden';
   }
+  // Hide the *entire dialog* while resolving the exact typefaces it
+  // uses. Never display fallback glyphs and then replace them in place.
+  // If a network request stalls, freeze the appropriate system family
+  // for this popup so a late download cannot cause a second layout.
+  function readyTypography(){
+    if(fontsReady)return fontsReady;
+    const specs=[
+      ['400 80px "Kola"','forge-fallback-kola'],
+      ['600 16px "Plus Jakarta Sans"','forge-fallback-ui'],
+      ['italic 400 38px "Instrument Serif"','forge-fallback-serif'],
+      ['600 11px "JetBrains Mono"','forge-fallback-mono']
+    ];
+    const load=spec=>{
+      try{return Promise.resolve(document.fonts?.load?.(spec)||[]).catch(()=>[]);}
+      catch(_){return Promise.resolve([]);}
+    };
+    fontsReady=Promise.race([
+      Promise.all(specs.map(([spec])=>load(spec))),
+      new Promise(resolve=>setTimeout(()=>resolve(null),1850))
+    ]).then(results=>{
+      specs.forEach(([,className],i)=>{
+        if(!results?.[i]?.length||
+           (className==='forge-fallback-kola'&&
+            document.documentElement.classList.contains('forge-launch-fallback-kola')))
+          root.classList.add(className);
+      });
+    }).catch(()=>{
+      specs.forEach(([,className])=>root.classList.add(className));
+    });
+    return fontsReady;
+  }
   function open(automatic=false){
-    if(opened)return;
-    // A requested popup is never lost behind the optional intro.
+    if(opened||preparing)return;
+    // An intentional click cancels the intro and its scheduled auto-open.
     if(!automatic&&document.body.classList.contains('forge-opening'))
       document.getElementById('forgeIntroSkip')?.click();
-    if(!homeActive())return;
-    if(automatic&&safeGet(seenKey))return;
+    if(!homeActive()||(automatic&&safeGet(permanentKey)))return;
     clearTimeout(automaticTimer);
-    opened=true;
-    previousFocus=automatic?null:document.activeElement;
-    root.hidden=false;
-    trigger?.setAttribute?.('aria-expanded','true');
-    safeSet(seenKey);
-    enter.focus({preventScroll:true});
+    autoAttempted=true;
+    preparing=true;
+    const token=++openSerial;
+    const restoreFocus=automatic?null:document.activeElement;
+    readyTypography().then(()=>{
+      if(token!==openSerial)return;
+      preparing=false;
+      if(!homeActive())return;
+      opened=true;
+      previousFocus=restoreFocus;
+      root.hidden=false;
+      trigger?.setAttribute?.('aria-expanded','true');
+      enter.focus({preventScroll:true});
+    });
   }
   function dismiss(permanent=false){
     if(!opened)return;
     if(permanent)safeSet(permanentKey);
-    safeSet(seenKey);
     opened=false;
     root.hidden=true;
     trigger?.setAttribute?.('aria-expanded','false');
@@ -59,9 +96,12 @@
     previousFocus=null;
   }
   function queueAutomatic(){
-    if(autoAttempted)return;
+    // Automated browser audits intentionally suppress onboarding, but an
+    // ordinary visitor sees it on every fresh page until explicit opt-out.
+    let auditSkip=false;
+    try{auditSkip=sessionStorage.getItem('forge_whatsnew_suppress')==='1';}catch(_){}
+    if(autoAttempted||safeGet(permanentKey)||auditSkip)return;
     autoAttempted=true;
-    if(safeGet(seenKey))return;
     automaticTimer=setTimeout(()=>open(true),420);
   }
   function focusables(){
