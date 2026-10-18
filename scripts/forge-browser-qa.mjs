@@ -17,57 +17,45 @@ try {
  await page.goto(base,{waitUntil:'domcontentloaded',timeout:60000});
  const intro=page.locator('#forgeIntro');
  await intro.waitFor({state:'visible',timeout:8000});
- check(await page.locator('#forgeIntroWordmark').innerText()==='The Forge','Intro must use one correctly kerned Kola wordmark');
- check(await page.locator('.forge-intro-glyph').count()===0,'Retired per-letter loader unexpectedly rendered');
- // A masked, compositor-driven wordmark is the sole branded focal point.
- const revealStyle=await page.locator('#forgeIntroType').evaluate(el=>{
-   const cover=getComputedStyle(el,'::before');
-   return {mask:cover.content,position:cover.position,background:cover.backgroundColor};
+ check(await page.locator('#forgeHeroName').innerText()==='The Forge',
+   'Real Kola homepage wordmark missing at first paint');
+ const initial=await page.evaluate(()=>{
+   const intro=document.getElementById('forgeIntro');
+   const rect=intro.getBoundingClientRect();
+   return {width:rect.width,height:rect.height,
+     backdrop:getComputedStyle(intro,'::before').content,
+     homeVisible:!document.getElementById('view-home').classList.contains('hidden')};
  });
- check(revealStyle.mask!=='none'&&revealStyle.position==='absolute',
-   'Precision wordmark cover was not rendered: '+JSON.stringify(revealStyle));
- const revealPromise=page.evaluate(()=>new Promise(resolve=>{
-   const positions=[],started=performance.now();
-   const tick=()=>{
-     const intro=document.getElementById('forgeIntro');
-     const word=document.getElementById('forgeIntroType');
-     if(!intro || intro.classList.contains('is-settled') || performance.now()-started>3000){
-       resolve(positions);return;
-     }
-     if(intro.classList.contains('is-playing') && word){
-       const matrix=getComputedStyle(word,'::before').transform;
-       const tx=matrix==='none'?0:new DOMMatrixReadOnly(matrix).m42;
-       positions.push({at:performance.now(),tx});
-     }
-     requestAnimationFrame(tick);
-   };
-   requestAnimationFrame(tick);
- }));
+ check(initial.homeVisible,'Intro incorrectly replaced the homepage');
+ check(initial.backdrop==='none'&&initial.width<290&&initial.height<110,
+   'Opaque or oversized intro surface is still present: '+JSON.stringify(initial));
  const trajectoryPromise=page.evaluate(()=>new Promise(resolve=>{
-   const samples=[];
-   const loop=()=>{
-     const element=document.getElementById('forgeIntroWordmark');
-     const overlay=document.getElementById('forgeIntro');
-     if(!element||!overlay){resolve(samples);return;}
-     if(overlay.classList.contains('forge-intro--handoff')){
-       const rect=element.getBoundingClientRect();
-       samples.push({time:performance.now(),left:rect.left,top:rect.top,width:rect.width});
-     }
-     requestAnimationFrame(loop);
-   };
-   requestAnimationFrame(loop);
+   const samples=[],start=performance.now();
+   function sample(){
+     const hero=document.getElementById('forgeHeroName');
+     if(!hero||!document.body.classList.contains('forge-opening')||
+        performance.now()-start>4700){resolve(samples);return;}
+     const rect=hero.getBoundingClientRect();
+     const style=getComputedStyle(hero);
+     samples.push({time:performance.now(),left:rect.left,top:rect.top,
+       width:rect.width,opacity:parseFloat(style.opacity)});
+     requestAnimationFrame(sample);
+   }
+   requestAnimationFrame(sample);
  }));
- // Collect intro rAF samples before screenshot can consume the handoff window.
  await page.screenshot({path:'artifacts/forge-browser/intro.png'});
  await intro.waitFor({state:'detached',timeout:6000});
  const trajectory=await trajectoryPromise;
- const reveal=await revealPromise;
- check(reveal.length>=10,'Kola intro mask did not produce continuous compositor samples');
- if(reveal.length>=3){
-   const travel=Math.max(...reveal.map(f=>f.tx))-Math.min(...reveal.map(f=>f.tx));
-   check(travel>80,'Kola wordmark mask did not visibly travel: '+travel.toFixed(1)+'px');
+ check(trajectory.length>=12,'Home-native physics intro produced too few frames');
+ check(trajectory.some(f=>f.opacity>.5),
+   'Real heading never appeared visibly during the entrance');
+ check(trajectory.every(f=>f.width>0),
+   'Wordmark disappeared or collapsed mid-animation');
+ if(trajectory.length>=10){
+   const jumps=trajectory.slice(1).map((f,i)=>Math.abs(f.top-trajectory[i].top));
+   check(Math.max(...jumps)<14,
+     'Wordmark jumped rather than settling continuously: '+Math.max(...jumps).toFixed(1)+'px');
  }
-
  // First major rebrand: popup appears AFTER the intro wordmark handoff.
  const launch=page.locator('#forgeWhatsNew');
  await launch.waitFor({state:'visible',timeout:3500});
@@ -128,17 +116,14 @@ try {
  check(details.titleRight < 1440,'Wordmark is clipped on the desktop viewport');
  check(details.font.includes('Kola'),'Wordmark must request Kola');
  check(Math.abs(details.titleWidth-details.inkWidth)<7,'Hero heading box must match actual kerned text width');
- check(trajectory.length>=12,'Expected at least twelve compositor animation frames');
+ check(trajectory.length>=12,'Expected at least twelve actual heading animation frames');
  if(trajectory.length>=2){
-   const deltas=trajectory.slice(1).map((f,i)=>Math.abs(f.width-trajectory[i].width));
-   const maxStep=Math.max(...deltas);
    const last=trajectory[trajectory.length-1];
-   check(maxStep<45,'Large size jump detected during shared wordmark flight: '+maxStep.toFixed(1)+'px');
-   check(trajectory[0].width>last.width,'Intro wordmark should shrink continuously into the smaller homepage wordmark');
-   check(Math.abs(last.width-details.titleWidth)<48,'Final shared wordmark width diverges from hero');
-   check(Math.abs(last.left-details.titleLeft)<48,'Final shared wordmark position diverges from hero');
+   check(Math.abs(last.width-details.titleWidth)<8,
+     'Actual wordmark changed physical width during entrance');
+   check(Math.abs(last.left-details.titleLeft)<5,
+     'Actual wordmark shifted horizontally during entrance');
  }
-
  // Legacy dark preference must not strand users in dark mode after hiding the toggle.
  await page.evaluate(()=>localStorage.setItem('cts_theme','dark'));
  await page.reload({waitUntil:'domcontentloaded'});
