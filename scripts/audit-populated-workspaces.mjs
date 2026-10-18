@@ -198,6 +198,30 @@ try{
   assert.ok(storyboardFocus.style==='solid'&&storyboardFocus.width>=2,
     label+': Storyboard focus invisible '+JSON.stringify(storyboardFocus));
 
+  // Directory imports must derive their real root folder name without
+  // overriding a previously populated or user-named board.
+  const folderImport=await page.evaluate(async base64=>{
+    const story=Tools.Story,prior=story.active.id;
+    const picker=document.getElementById('storyFolderInput');
+    const supported=!!picker?.hasAttribute('webkitdirectory');
+    story.addNewProject();
+    const bytes=Uint8Array.from(atob(base64),c=>c.charCodeAt(0));
+    const input=new File([bytes],'scene.png',{type:'image/png'});
+    Object.defineProperty(input,'webkitRelativePath',{value:'QA_Client_Stills/scene.png'});
+    await story.handleFiles([input]);
+    const name=story.active.name;
+    const namedField=document.getElementById('storyNameInput').value;
+    const imported=story.active.images.length;
+    story.switchProject(prior);
+    return {supported,name,namedField,imported};
+  },bases[0]);
+  assert.ok(folderImport.supported,label+': folder import control missing');
+  assert.equal(folderImport.name,'QA_Client_Stills',
+    label+': imported folder name was not assigned to the new board');
+  assert.equal(folderImport.namedField,folderImport.name,
+    label+': board name field does not match folder name');
+  assert.equal(folderImport.imported,1,label+': imported still missing');
+
   // Real input-to-preview path for Image Splitter.
   await open('section-pdf','split');
   await page.locator('#splitInput').setInputFiles(imgs.slice(0,1));
@@ -255,6 +279,35 @@ try{
     label+': campaign table text too small '+JSON.stringify(adTypography));
   if(adTypography.action!==null)assert.ok(adTypography.action>=12,
     label+': campaign action caption too small '+JSON.stringify(adTypography));
+
+  // Reproduce the reported scroll overlap with synthetic repeated rows.
+  // Action buttons from rows behind the sticky header must not paint over it.
+  const stickyHeader=await page.evaluate(()=>{
+    const scroller=document.getElementById('adDlTableContainer');
+    const body=document.getElementById('adDlTableBody');
+    const template=body.querySelector('tr');
+    const clones=[];
+    for(let i=0;i<20;i++){
+      const row=template.cloneNode(true);
+      row.removeAttribute('id');
+      body.appendChild(row);
+      clones.push(row);
+    }
+    scroller.scrollTop=160;
+    const header=scroller.querySelector('thead');
+    const cell=header.querySelector('th:last-child');
+    const rect=cell.getBoundingClientRect();
+    const hit=document.elementFromPoint(rect.left+rect.width/2,rect.top+rect.height/2);
+    const state={position:getComputedStyle(header).position,
+      layer:parseInt(getComputedStyle(header).zIndex,10)||0,
+      hitHeader:header.contains(hit),scrollTop:scroller.scrollTop};
+    clones.forEach(row=>row.remove());
+    scroller.scrollTop=0;
+    return state;
+  });
+  assert.ok(stickyHeader.scrollTop>0&&stickyHeader.hitHeader&&
+    stickyHeader.position==='sticky'&&stickyHeader.layer>=40,
+    label+': scrolled download button covers the table heading '+JSON.stringify(stickyHeader));
 
   // One genuine local WebM exercises the original Video Stills extractor.
   // Run only at Full HD to bound CPU expense. No remote videos or user data.
