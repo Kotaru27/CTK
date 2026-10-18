@@ -36,7 +36,7 @@ try {
      }
      if(intro.classList.contains('is-playing') && word){
        const matrix=getComputedStyle(word,'::before').transform;
-       const tx=matrix==='none'?0:new DOMMatrixReadOnly(matrix).m41;
+       const tx=matrix==='none'?0:new DOMMatrixReadOnly(matrix).m42;
        positions.push({at:performance.now(),tx});
      }
      requestAnimationFrame(tick);
