@@ -55,7 +55,7 @@ test('intro is accessible, skippable, reduced-motion friendly and session scoped
   assert.match(brandJS,/to\.width\/from\.width/);
   assert.match(index,/id="forgeIntroWordmark"/);
   assert.match(brandJS,/flight\.onfinish\s*=\s*cleanup/);
-  assert.match(brandJS,/after\(3200,cleanup\)/);
+  assert.match(brandJS,/after\(4700,cleanup\)/);
   assert.match(brandCss,/@media\(prefers-reduced-motion:reduce\)/);
 });
 test('card polish is strictly visual and confined to the home page',()=>{
@@ -111,8 +111,8 @@ test('QHD and high refresh polish avoids expensive background color and hover sh
   assert.match(brandCss,/min-height:clamp\(322px,27vw,392px\)/);
   assert.match(brandCss,/\.home-card:hover\s*\{\s*box-shadow:none!important/);
   assert.match(brandCss,/\.home-card-go[\s\S]*?transform:translate3d/);
-  assert.match(brandJS,/duration:760/);
-  assert.match(brandJS,/after\(115,function\(\)/);
+  assert.match(brandJS,/duration:840/);
+  assert.match(brandJS,/after\(170,function\(\)/);
 });
 
 test('executive hero states one purpose, one description, then tool selection',()=>{
