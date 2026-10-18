@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 try{
  const context=await browser.newContext({viewport:{width:2560,height:1440}});
- await context.addInitScript(()=>(sessionStorage.setItem('forge_whatsnew_seen_session_2026_v1','1'),sessionStorage.setItem('forge_intro_seen_v4','1')));
+ await context.addInitScript(()=>(sessionStorage.setItem('forge_whatsnew_seen_session_2026_v1','1'),sessionStorage.setItem('forge_intro_suppress','1')));
  const page=await context.newPage(),errors=[];
  page.on('pageerror',e=>errors.push(String(e)));
  await page.goto('http://127.0.0.1:4173/',{waitUntil:'domcontentloaded'});
