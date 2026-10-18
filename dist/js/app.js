@@ -5343,6 +5343,7 @@ const CTKDownloadRenamer = (() => {
             }
           },
           ensureQueue() {
+            if (typeof document.getElementById !== "function") return;
             const pending = document.getElementById("adDlTableBody");
             const completed = document.getElementById("adDlDownloadedBody");
             if (!pending || !completed?.parentNode?.insertBefore || document.getElementById("adDlRequestedBody")) return;
@@ -5359,6 +5360,7 @@ const CTKDownloadRenamer = (() => {
             completed.parentNode.insertBefore(tbody,completed);
           },
           updateQueueCounts() {
+            if (typeof document.getElementById !== "function") return;
             const counts = {ready:0,requested:0,downloaded:0};
             for (const item of this.entries) counts[item.statusKind || "ready"]++;
             const text = document.getElementById("adDlCountText");
@@ -5376,7 +5378,9 @@ const CTKDownloadRenamer = (() => {
             if (entry.row) {entry.row.style.opacity="1";document.getElementById("adDlRequestedBody")?.appendChild(entry.row);}
             if (entry.downloadButton) entry.downloadButton.textContent = "Download again";
             if (entry.confirmButton) entry.confirmButton.hidden = false;
-            this.updateQueueCounts();this.updateBulkButton();
+            if (typeof document.getElementById === "function") {
+              this.updateQueueCounts();this.updateBulkButton();
+            }
           },
           confirmDownloaded(entry) {
             return UI.confirm({
