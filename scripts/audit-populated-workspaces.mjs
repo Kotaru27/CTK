@@ -261,6 +261,22 @@ try{
   await open('section-adlinks','downloader');
   assert.equal((await page.locator('#section-adlinks .tool-header h2').innerText()).trim(),'Ad Downloader',
     label+': downloader header name regressed after navigation');
+  // New mandatory folder-first import: no Excel picker or parse until
+  // this browser tab receives a writable user-authorized directory.
+  assert.equal(await page.locator('#adDlInput').isDisabled(),true,
+    label+': Excel import must start locked without a rename folder');
+  await page.evaluate(()=>{
+    window.showDirectoryPicker=async()=>({
+      kind:'directory',name:'Synthetic QA Downloads',
+      queryPermission:async()=> 'granted',
+      async *entries(){}
+    });
+  });
+  await page.locator('#adDlRenameFolder').click();
+  await page.waitForFunction(()=>!document.getElementById('adDlInput').disabled,
+    {timeout:5000});
+  assert.equal(await page.locator('#adDlInput').isDisabled(),false,
+    label+': writable folder must unlock the Excel picker');
   const workbookBase64=await page.evaluate(()=>{
     const wb=XLSX.utils.book_new();
     const sheet=XLSX.utils.aoa_to_sheet([
