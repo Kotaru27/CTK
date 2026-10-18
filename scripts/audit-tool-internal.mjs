@@ -82,7 +82,8 @@ try{
  ];
  for(const [name,section,mode,method,destination,panel] of modeCases){
   await page.evaluate(({section,mode})=>UI.openTool(section,mode),{section,mode});
-  await page.waitForTimeout(260);
+  await page.waitForFunction(section=>document.getElementById(section)?.classList.contains('active'),section);
+  await page.waitForFunction(()=>!document.documentElement.classList.contains('forge-route-running'),null,{timeout:2000});
   await page.evaluate(({method,destination})=>UI[method](destination),{method,destination});
   await page.waitForTimeout(40);
   const measurement=await page.evaluate(panel=>{
