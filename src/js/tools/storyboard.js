@@ -16,35 +16,18 @@ export default {
             Core.Utils.createDropZone(this.els.drop, (f) =>
               this.handleFiles(f),
             );
+            // The existing Add Assets picker accepts individual ad-stills
+            // folders and a parent folder containing multiple ad folders.
+            // Drag and drop still supports ordinary individual files.
+            this.els.input.setAttribute("webkitdirectory", "");
+            this.els.input.setAttribute("directory", "");
+            this.els.input.title = "Choose a folder of stills or a main folder containing several ad folders";
             this.els.input.onchange = (e) => {
-              this.handleFiles([...e.target.files]);
+              const files = [...(e.target.files || [])];
               this.els.input.value = "";
+              if (files.length) this.importDirectory(files).catch(error =>
+                UI.showError("Storyboard import failed: " + error.message));
             };
-            // A multi-file picker cannot reveal its parent directory.
-            // The directory picker supplies File.webkitRelativePath instead.
-            const projectPanel = this.els.tabs?.parentElement;
-            const createBoardRow = projectPanel?.querySelector?.('button[onclick*="addNewProject"]')?.parentElement;
-            if (createBoardRow?.appendChild && !document.getElementById("storyFolderInput")) {
-              createBoardRow.classList.add("story-import-actions");
-              const folderLabel = document.createElement("label");
-              folderLabel.className = "liquid-btn story-folder-import";
-              folderLabel.textContent = "Import stills folder";
-              folderLabel.title = "Import a folder of stills and name an empty board after it.";
-              const folderInput = document.createElement("input");
-              folderInput.id = "storyFolderInput";
-              folderInput.type = "file";
-              folderInput.multiple = true;
-              folderInput.accept = "image/*,video/*";
-              folderInput.hidden = true;
-              folderInput.setAttribute("webkitdirectory", "");
-              folderInput.addEventListener("change", event => {
-                const selected = [...(event.target.files || [])];
-                event.target.value = "";
-                if (selected.length) this.handleFiles(selected);
-              });
-              folderLabel.appendChild(folderInput);
-              createBoardRow.appendChild(folderLabel);
-            }
             this.els.name.oninput = () => {
               this.els.name.value = Core.Utils.sanitize(this.els.name.value);
               this.saveSettings();
@@ -120,7 +103,8 @@ export default {
               '<span class="text-muted">Preview</span>';
           },
           addNewProject() {
-            const id = Date.now();
+            let id = Date.now();
+            while (this.projects.some(board => board.id === id)) id++;
             this.projects.push({
               id,
               name: `Board_${this.projects.length + 1}`,
@@ -254,12 +238,62 @@ export default {
             if (!root || paths.some(path => !path.includes("/") || path.split("/")[0] !== root)) return "";
             return Core.Utils.sanitize(root).trim().slice(0, 80);
           },
-          async handleFiles(files) {
-            const project = this.active;
+          async importDirectory(files) {
+            const filesInFolder = Array.from(files || []);
+            const root = this.folderNameFromFiles(filesInFolder);
+            if (!root) return this.handleFiles(filesInFolder);
+            const childFolders = new Set(filesInFolder.map(file => {
+              const parts = String(file.webkitRelativePath || "").split("/");
+              return parts.length >= 3 ? parts[1] : "";
+            }).filter(Boolean));
+            // One selected ad folder produces one board named for that folder.
+            // Two or more immediate subfolders indicate the bulk-ad structure.
+            if (childFolders.size < 2) return this.handleFiles(filesInFolder);
+            const groups = new Map();
+            for (const file of filesInFolder) {
+              const parts = String(file.webkitRelativePath || "").split("/");
+              const rawName = parts.length >= 3 ? parts[1] : root;
+              const name = Core.Utils.sanitize(rawName).trim().slice(0, 80) || "Board";
+              if (!groups.has(name)) groups.set(name, []);
+              groups.get(name).push(file);
+            }
+            let firstBoard = null, made = 0;
+            for (const [folderName, groupFiles] of groups) {
+              // Skip non-media folders before creating any board.
+              const media = groupFiles.filter(file =>
+                file && file.size <= 100 * 1024 * 1024 &&
+                /^(image|video)\//.test(file.type || ""));
+              if (!media.length) continue;
+              const canReuse = made === 0 && this.active && !this.active.images.length &&
+                /^Board_\d+$/.test(this.active.name);
+              if (!canReuse) this.addNewProject();
+              const target = this.active;
+              await this.handleFiles(media, target, folderName);
+              if (!target.images.length) {
+                // A damaged-only folder never leaves a blank phantom board.
+                if (!canReuse) {
+                  const index = this.projects.indexOf(target);
+                  if (index >= 0) this.projects.splice(index, 1);
+                  this.active = firstBoard || this.projects[0];
+                  if (this.active) this.loadSettings();
+                }
+                continue;
+              }
+              if (!firstBoard) firstBoard = target;
+              made++;
+            }
+            if (firstBoard) {
+              this.switchProject(firstBoard.id);
+              this.renderTabs();
+            }
+            if (!made) UI.showError("No valid image or video stills found in the selected folders.");
+          },
+          async handleFiles(files, targetProject = this.active, suggestedName = "") {
+            const project = targetProject;
             if (!project) return;
             const initialName = project.name;
             const wasEmpty = project.images.length === 0;
-            const folderName = this.folderNameFromFiles(files);
+            const folderName = suggestedName || this.folderNameFromFiles(files);
             let rejected=0;
             for (const file of files) {
               if (project.images.length >= 200) {rejected++;continue;}
