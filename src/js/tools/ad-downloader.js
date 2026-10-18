@@ -379,9 +379,10 @@ export default {
             // Move it below pending ads right after a successful native click.
             this.markRequested(entry);
             if (entry.renameCopyButton) entry.renameCopyButton.hidden = false;
-            this.status(tracking
-              ? `Tracking ${entry.displayName} for auto-naming. Multiple distinct ads can download at once.`
-              : `SharePoint download requested for ${entry.displayName}. CTK stays open. If the original SharePoint filename remains, click Fix downloaded name and choose the folder containing the file. Download completion cannot be confirmed here.`);
+            // The row itself gives progress and a repeat action. Avoid a
+            // full-width repeated explanation on every native download.
+            // Keep explicit renaming feedback, blocked cases and errors.
+            this.status(tracking ? `Auto-name tracking · ${entry.displayName}` : "");
           },
           async fixSharePointName(entry) {
             if (!CTKSharePoint.isSharePoint(entry.url)) return;
