@@ -1,6 +1,6 @@
-/* The Forge launch notes / independent from tool engines.
-   Wait for the existing wordmark handoff, not an arbitrary timeout.
-   No modal is opened over a restored active tool. */
+/* The Forge welcome / first-launch announcement and manual replay.
+   Intro completion controls timing; no fonts, images or network requests.
+   Every close path is usable and preserves keyboard focus. */
 (function(){
   'use strict';
   const root=document.getElementById('forgeWhatsNew');
@@ -11,46 +11,64 @@
   const never=root.querySelector('#forgeWhatsNewNever');
   const close=root.querySelector('#forgeWhatsNewClose');
   if(!dialog||!enter||!never||!close)return;
+
+  const seenKey='forge_whatsnew_seen_launch_2026_v2';
   const permanentKey='forge_whatsnew_dismissed_2026_v1';
-  let opened=false,previousFocus=null;
-  // Storage getters themselves can throw in private/sandboxed browsers.
-  const safeSet=key=>{
-    try{localStorage.setItem(key,'1');}catch(_){}
-  };
-  function eligible(){
-    if(opened)return false;
-    // A restoring workspace takes precedence over promotional content.
+  let opened=false,previousFocus=null,automaticTimer=0,autoAttempted=false;
+  function safeGet(key){
+    try{return localStorage.getItem(key)==='1'||
+      sessionStorage.getItem(key)==='1';}catch(_){return false;}
+  }
+  function safeSet(key){
+    try{localStorage.setItem(key,'1');return;}catch(_){}
+    try{sessionStorage.setItem(key,'1');}catch(_){}
+  }
+  function homeActive(){
     const home=document.getElementById('view-home');
     const app=document.getElementById('view-app');
-    return !!home && !home.classList.contains('hidden') &&
-      !app?.classList.contains('active') &&
-      !document.body.classList.contains('forge-opening');
+    return !!home&&!home.classList.contains('hidden')&&
+      !app?.classList.contains('active')&&
+      !document.body.classList.contains('forge-opening')&&
+      document.visibilityState!=='hidden';
   }
-  function open(){
-    // An intentional click always works, even while the intro is drawing.
-    // Finish the optional intro first instead of silently discarding it.
-    if(document.body.classList.contains('forge-opening'))
+  function open(automatic=false){
+    if(opened)return;
+    // A requested popup is never lost behind the optional intro.
+    if(!automatic&&document.body.classList.contains('forge-opening'))
       document.getElementById('forgeIntroSkip')?.click();
-    if(!eligible())return;
+    if(!homeActive())return;
+    if(automatic&&safeGet(seenKey))return;
+    clearTimeout(automaticTimer);
     opened=true;
-    previousFocus=document.activeElement;
+    previousFocus=automatic?null:document.activeElement;
     root.hidden=false;
     trigger?.setAttribute?.('aria-expanded','true');
+    safeSet(seenKey);
     enter.focus({preventScroll:true});
   }
   function dismiss(permanent=false){
     if(!opened)return;
     if(permanent)safeSet(permanentKey);
-    opened=false;root.hidden=true;
+    safeSet(seenKey);
+    opened=false;
+    root.hidden=true;
     trigger?.setAttribute?.('aria-expanded','false');
-    if(previousFocus && previousFocus.isConnected &&
-       typeof previousFocus.focus==='function')
+    if(previousFocus?.isConnected&&typeof previousFocus.focus==='function')
       previousFocus.focus({preventScroll:true});
-    else document.getElementById('homeContent')?.focus?.({preventScroll:true});
+    else trigger?.focus?.({preventScroll:true});
+    previousFocus=null;
+  }
+  function queueAutomatic(){
+    if(autoAttempted)return;
+    autoAttempted=true;
+    if(safeGet(seenKey))return;
+    automaticTimer=setTimeout(()=>open(true),420);
   }
   function focusables(){
-    return [...dialog.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),[tabindex]:not([tabindex="-1"])')]
-      .filter(el=>el.getClientRects().length && getComputedStyle(el).visibility!=='hidden');
+    return [...dialog.querySelectorAll(
+      'button:not([disabled]),a[href],input:not([disabled]),[tabindex]:not([tabindex="-1"])'
+    )].filter(el=>el.getClientRects().length&&
+      getComputedStyle(el).visibility!=='hidden');
   }
   root.addEventListener('keydown',event=>{
     if(event.key==='Escape'){event.preventDefault();dismiss();return;}
@@ -58,9 +76,9 @@
     const items=focusables();
     if(!items.length)return;
     const first=items[0],last=items[items.length-1];
-    if(event.shiftKey && document.activeElement===first){
+    if(event.shiftKey&&document.activeElement===first){
       event.preventDefault();last.focus();
-    }else if(!event.shiftKey && document.activeElement===last){
+    }else if(!event.shiftKey&&document.activeElement===last){
       event.preventDefault();first.focus();
     }
   });
@@ -70,12 +88,14 @@
   root.addEventListener('pointerdown',event=>{
     if(event.target===root)dismiss();
   });
-  // Release notes are opt-in and never intercept tool clicks.
   if(trigger){
-    // Never hide the user-invoked updates entry. "Don't show again"
-    // records a preference against automatic prompts, not manual access.
     trigger.hidden=false;
     trigger.setAttribute?.('aria-expanded','false');
-    trigger.addEventListener('click',open);
+    trigger.addEventListener('click',()=>open(false));
   }
+  // The actual introduction is the source of truth; never run a
+  // competing timeout that appears over a partially animated home.
+  document.addEventListener('forge:intro-complete',queueAutomatic,{once:true});
+  if(document.documentElement.dataset.forgeIntroFinished==='1')
+    queueAutomatic();
 })();
