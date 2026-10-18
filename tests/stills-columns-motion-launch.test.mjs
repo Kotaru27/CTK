@@ -60,7 +60,7 @@ test('Stills card filename is full-width, wrapping, and accessible without a new
 test('route motion keeps its outgoing frame opaque, and hover icons do not jump',()=>{
   const css=text('../src/css/experience/forge-video-route.css');
   const controls=text('../src/css/experience/forge-workflow-interactions.css');
-  assert.match(css,/forge-tool-overlay 340ms cubic-bezier\(\.44,0,\.16,1\)/);
+  assert.match(css,/forge-enter-tool 450ms cubic-bezier\(\.18,\.78,\.22,1\)/);
   assert.match(css,/::view-transition-old\(root\) \{\s*animation:none!important;\s*opacity:1!important;/);
   assert.match(controls,/\.nav-sidebar\.visible \.nav-item:hover :is\(svg,\.material-symbols-rounded\)/);
   assert.match(controls,/translate:none!important/);
