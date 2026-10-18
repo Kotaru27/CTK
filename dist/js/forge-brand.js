@@ -10,6 +10,8 @@
   const home=document.getElementById('view-home');
   const app=document.getElementById('view-app');
   const body=document.body;
+  const gate=window.__forgePaintGate;
+  const caret=mark?.querySelector('.forge-intro-caret');
   const timers=new Set();
   let complete=false,observer=null,started=false;
 
@@ -32,8 +34,15 @@
     document.removeEventListener('keydown',onKey);
     document.removeEventListener('visibilitychange',onVisibility);
     observer?.disconnect();
+    // The popup curtain is armed BEFORE the intro disappears, in the
+    // same task, so even a delayed font has no exposed homepage frame.
+    const homeActive=home&&!home.classList.contains('hidden')&&
+      !app?.classList.contains('active')&&document.visibilityState!=='hidden';
+    if(homeActive)gate?.beginWelcome?.();
+    else gate?.endWelcome?.();
     body.classList.remove('forge-opening','forge-home-arriving');
     intro?.remove();
+    gate?.release?.();
     notify();
   }
   function onKey(event){
@@ -46,7 +55,7 @@
   const reduced=!!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
   let suppressed=false;
   try{suppressed=sessionStorage.getItem('forge_intro_suppress')==='1';}catch(_){}
-  if(!intro||!mark||!typed||!home||reduced||suppressed||
+  if(!intro||!mark||!typed||!home||reduced||suppressed||gate?.expired||
      home.classList.contains('hidden')||
      app?.classList.contains('active')||
      document.visibilityState==='hidden'){
@@ -60,6 +69,7 @@
   intro.hidden=false;
   intro.classList.add('forge-intro-ready');
   typed.textContent='';
+  gate?.release?.();
   document.getElementById('forgeIntroSkip')
     ?.addEventListener('click',finish,{once:true});
   document.addEventListener('keydown',onKey);
@@ -85,21 +95,29 @@
     loadFont('400 130px "Kola"').then(faces=>{available[0]=!!faces?.length;}),
     loadFont('600 12px "Plus Jakarta Sans"').then(faces=>{available[1]=!!faces?.length;})
   ];
-  // Deterministic typing rhythm with a slightly longer pause between words.
-  const intervals=[110,112,120,135,110,118,116,124,112];
+  // Tuned typing cadence: calm at the beginning, a natural pause at the
+  // word boundary, and a gentle deceleration without artificial holds.
+  const intervals=[112,116,121,150,122,118,124,130,122];
   const letters=Array.from(mark.dataset.fullName||'The Forge');
   function type(index){
     if(complete)return;
     if(index>=letters.length){
       intro.classList.add('forge-intro-typed-complete');
-      // No intermediate FLIP or composed hold. Just a 130ms dissolve,
-      // then restore the already-laid-out homepage and notify the popup.
+      // No intermediate FLIP or composed hold: one short crossfade, then
+      // the waiting welcome overlay or immediately usable homepage.
       intro.classList.add('forge-intro-finishing');
       schedule(finish,130);
       return;
     }
     typed.textContent+=letters[index];
-    const ms=intervals[index]||110;
+    // Composited cursor glides to the new character boundary; its
+    // transition is CSS-driven, never a reflowing width animation.
+    if(caret&&typeof typed.getBoundingClientRect==='function'){
+      const width=typed.getBoundingClientRect().width;
+      if(Number.isFinite(width))
+        caret.style.transform='translate3d('+width.toFixed(2)+'px,0,0)';
+    }
+    const ms=intervals[index]||118;
     schedule(()=>type(index+1),ms);
   }
   function start(){
