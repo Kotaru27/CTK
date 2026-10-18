@@ -23,10 +23,10 @@
 .forge-whatsnew-dialog{
   position:relative;
   display:grid;
-  grid-template-columns:minmax(0,.87fr) minmax(0,1.13fr);
-  width:min(1040px,100%);
-  max-height:min(820px,calc(100dvh - 36px));
-  min-height:min(618px,calc(100dvh - 36px));
+  grid-template-columns:minmax(0,.84fr) minmax(0,1.16fr);
+  width:min(920px,100%);
+  max-height:min(700px,calc(100dvh - 36px));
+  min-height:0;
   overflow:hidden;
   border:1px solid #d3ded1;
   border-radius:15px;
@@ -41,7 +41,7 @@
   justify-content:space-between;
   gap:28px;
   min-width:0;
-  padding:clamp(26px,3.4vw,50px);
+  padding:clamp(24px,2.8vw,40px);
   background:var(--wn-forest);
   color:#f2f7ed;
 }
@@ -69,14 +69,14 @@
 .forge-whatsnew-brand{
   display:block;
   margin:0 0 26px;
-  font:400 clamp(56px,5.1vw,83px)/.96 "Kola","Plus Jakarta Sans",sans-serif;
+  font:400 clamp(52px,4.5vw,72px)/1.02 "Kola","Plus Jakarta Sans",sans-serif;
   letter-spacing:-.04em;
   color:#f1f6ed;
 }
 .forge-whatsnew-opening h2{
   margin:0;
   max-width:375px;
-  font:650 clamp(32px,3.1vw,46px)/1.13 "Plus Jakarta Sans",sans-serif;
+  font:650 clamp(30px,2.7vw,40px)/1.18 "Plus Jakarta Sans",sans-serif;
   letter-spacing:-.063em;
   text-wrap:balance;
   color:#f7f9f4;
@@ -87,8 +87,8 @@
 }
 .forge-whatsnew-intro{
   max-width:290px;
-  margin:20px 0 0;
-  font:450 13px/1.75 "Plus Jakarta Sans",sans-serif;
+  margin:15px 0 0;
+  font:450 13px/1.64 "Plus Jakarta Sans",sans-serif;
   color:#c9dace;
 }
 .forge-whatsnew-foot{
@@ -109,7 +109,7 @@
   align-items:center;
   justify-content:space-between;
   flex:none;
-  padding:28px 34px 15px;
+  padding:20px 28px 12px;
   border-bottom:1px solid var(--wn-line);
 }
 .forge-whatsnew-section-label{
@@ -133,15 +133,15 @@
 .forge-whatsnew-changes{
   overflow-y:auto;
   min-height:0;
-  padding:12px 34px 8px;
+  padding:4px 28px 6px;
   overscroll-behavior:contain;
   scrollbar-width:thin;
 }
 .forge-whatsnew-change{
   display:grid;
-  grid-template-columns:32px minmax(0,1fr);
-  gap:14px;
-  padding:18px 0;
+  grid-template-columns:24px minmax(0,1fr);
+  gap:12px;
+  padding:13px 0;
   border-bottom:1px solid var(--wn-line);
 }
 .forge-whatsnew-change:last-child{border-bottom:0;}
@@ -170,7 +170,7 @@
   gap:14px;
   flex:none;
   border-top:1px solid var(--wn-line);
-  padding:18px 34px 22px;
+  padding:14px 28px 18px;
   background:#fcfdf9;
 }
 .forge-whatsnew-never{
@@ -292,9 +292,9 @@ html:has(.forge-whatsnew:not([hidden])){overflow:hidden;scrollbar-gutter:stable;
   z-index:2147483100!important;
   display:grid!important;
   place-items:center!important;
-  background:rgba(20,36,27,.68)!important;
-  -webkit-backdrop-filter:blur(24px) saturate(.68)!important;
-  backdrop-filter:blur(24px) saturate(.68)!important;
+  background:rgba(20,36,27,.60)!important;
+  -webkit-backdrop-filter:blur(18px) saturate(.74)!important;
+  backdrop-filter:blur(18px) saturate(.74)!important;
 }
 #forgeWhatsNew .forge-whatsnew-dialog{
   background:#fcfdf9;
