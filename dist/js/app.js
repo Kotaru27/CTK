@@ -3393,7 +3393,9 @@ const CTKDownloadRenamer = (() => {
             // A multi-file picker cannot reveal its parent directory.
             // The directory picker supplies File.webkitRelativePath instead.
             const projectPanel = this.els.tabs?.parentElement;
-            if (projectPanel?.appendChild && !document.getElementById("storyFolderInput")) {
+            const createBoardRow = projectPanel?.querySelector?.('button[onclick*="addNewProject"]')?.parentElement;
+            if (createBoardRow?.appendChild && !document.getElementById("storyFolderInput")) {
+              createBoardRow.classList.add("story-import-actions");
               const folderLabel = document.createElement("label");
               folderLabel.className = "liquid-btn story-folder-import";
               folderLabel.textContent = "Import stills folder";
@@ -3411,7 +3413,7 @@ const CTKDownloadRenamer = (() => {
                 if (selected.length) this.handleFiles(selected);
               });
               folderLabel.appendChild(folderInput);
-              projectPanel.appendChild(folderLabel);
+              createBoardRow.appendChild(folderLabel);
             }
             this.els.name.oninput = () => {
               this.els.name.value = Core.Utils.sanitize(this.els.name.value);
