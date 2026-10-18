@@ -47,6 +47,7 @@ test('Actual Storyboard import names only previously empty boards with a shared 
         els:{name:{value:existing}},
         folderNameFromFiles:Story.folderNameFromFiles,
         uniqueBoardName:Story.uniqueBoardName,
+        applyDefaultColumns:Story.applyDefaultColumns,
         validateImage:Story.validateImage,
         getVideoFrame:async()=>({naturalWidth:120,naturalHeight:60}),
         renderTabs(){this.rendered=(this.rendered||0)+1},
@@ -63,6 +64,7 @@ test('Actual Storyboard import names only previously empty boards with a shared 
     const ctx={active:board,projects:[board],els:{name:{value:'Custom'}},
       folderNameFromFiles:Story.folderNameFromFiles,
       uniqueBoardName:Story.uniqueBoardName,
+      applyDefaultColumns:Story.applyDefaultColumns,
       validateImage:Story.validateImage,
       getVideoFrame:async()=>({naturalWidth:120,naturalHeight:60}),
       renderTabs(){},saveSettings(){},updateList(){},draw(){}};
