@@ -128,7 +128,13 @@ body:not(.light-mode) #view-home .combined-home-layout .forge-hero {
 body:not(.light-mode) .forge-hero-edition::before {background:#b1d4b6;}
 /* Shared element: the homepage heading is present in layout, but hidden
    until the one properly-kerned opener arrives at precisely the same rect. */
-body.forge-opening #forgeHeroName{opacity:0;}
+/* Initial CSS pose matches frame zero of the WAAPI spring exactly.
+   The title never jumps when the font finishes loading. */
+body.forge-opening #forgeHeroName{
+  opacity:.12;
+  transform:translate3d(0,27px,0) scale(.982);
+  transform-origin:left center;
+}
 body.forge-opening.forge-home-arriving #forgeHeroName{opacity:1;}
 body.forge-opening .forge-hero-aside,
 body.forge-opening .forge-hero-top,
