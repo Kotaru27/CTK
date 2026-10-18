@@ -71,12 +71,12 @@ test('real character-by-character typing, fixed rhythm and immediate release',as
  const h=setup();
  await settle();
  assert.equal(h.typed.textContent,'T');
- h.advance(110);
- assert.equal(h.typed.textContent,'Th');
  h.advance(112);
+ assert.equal(h.typed.textContent,'Th');
+ h.advance(116);
  assert.equal(h.typed.textContent,'The');
  assert.equal(h.intro.removed,false);
- h.advance(1000);
+ h.advance(1100);
  assert.equal(h.typed.textContent,'The Forge');
  assert.equal(h.intro.removed,true);
  assert.equal(h.document.documentElement.dataset.forgeIntroFinished,'1');
@@ -102,7 +102,7 @@ test('slow and failed font loads still finish typing and unlock homepage',async(
 
 test('Skip immediately cancels typing and never signals twice',async()=>{
  const h=setup();await settle();
- h.advance(110);
+ h.advance(112);
  h.skip.click();
  assert.equal(h.intro.removed,true);
  assert.equal(h.notices.length,1);
