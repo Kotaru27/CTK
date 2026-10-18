@@ -371,6 +371,7 @@ export default {
               this.status(message+suffix,isError);
               if (entry.renamedFilename && !isError) this.markDownloaded(entry);
             };
+            entry.renamedFilename = null;
             const tracking = !!(renamer?.active() && renamer.begin(entry));
             // If Auto-name is enabled but tracking is unsafe (duplicate source
             // basename / too many jobs), do not silently start an untracked download.
