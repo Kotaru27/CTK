@@ -68,7 +68,8 @@ test('SharePoint request isolates navigation from the CTK workspace and never cl
     assert.equal(removed,true);
     assert.equal(entry.downloaded,false);
     assert.equal(entry.downloadButton.textContent,'Download again');
-    assert.match(statuses[0][0],/cannot be confirmed/);
+    assert.equal(entry.requested,true);
+    assert.match(statuses[0][0],/verify in browser Downloads/);
   }finally{globalThis.document=originalDoc;globalThis.CTKSharePoint=originalSP;}
 });
 test('SharePoint sources are explicitly excluded from client-side ZIP',async()=>{

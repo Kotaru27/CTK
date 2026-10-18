@@ -139,7 +139,13 @@ try{
 
   // Real input and canvas render in Storyboard.
   await open('section-stills-boards','story');
-  await page.locator('#storyInput').setInputFiles(imgs.slice(0,6));
+  const storyDir='/tmp/forge-story-stills-'+label;
+  fs.mkdirSync(storyDir,{recursive:true});
+  for(const item of imgs.slice(0,6))fs.writeFileSync(storyDir+'/'+item.name,item.buffer);
+  const input=page.locator('#storyInput');
+  assert.equal(await input.getAttribute('webkitdirectory'),'',
+    label+': existing Add Assets must select folders');
+  await input.setInputFiles(storyDir);
   await page.waitForFunction(()=>Tools.Story.active?.images.length>=6&&!!document.querySelector('#storyPreview canvas'),{timeout:35000});
   const storyboard=await page.evaluate(()=>({assets:Tools.Story.active.images.length,
     hasCanvas:!!document.querySelector('#storyPreview canvas'),
@@ -202,13 +208,14 @@ try{
   // overriding a previously populated or user-named board.
   const folderImport=await page.evaluate(async base64=>{
     const story=Tools.Story,prior=story.active.id;
-    const picker=document.getElementById('storyFolderInput');
-    const supported=!!picker?.hasAttribute('webkitdirectory');
+    const picker=document.getElementById('storyInput');
+    const supported=!!picker?.hasAttribute('webkitdirectory') &&
+      !document.getElementById('storyFolderInput');
     story.addNewProject();
     const bytes=Uint8Array.from(atob(base64),c=>c.charCodeAt(0));
     const input=new File([bytes],'scene.png',{type:'image/png'});
     Object.defineProperty(input,'webkitRelativePath',{value:'QA_Client_Stills/scene.png'});
-    await story.handleFiles([input]);
+    await story.importDirectory([input]);
     const name=story.active.name;
     const namedField=document.getElementById('storyNameInput').value;
     const imported=story.active.images.length;
@@ -221,6 +228,35 @@ try{
   assert.equal(folderImport.namedField,folderImport.name,
     label+': board name field does not match folder name');
   assert.equal(folderImport.imported,1,label+': imported still missing');
+
+  // A main directory with multiple ad folders must generate one named
+  // Storyboard per child folder, preserving existing boards and original order.
+  const bulkBoards=await page.evaluate(async b64=>{
+    const story=Tools.Story,prior=story.active.id;
+    const makeFile=(relative,index)=>{
+      const bytes=Uint8Array.from(atob(b64[index]),c=>c.charCodeAt(0));
+      const file=new File([bytes],relative.split('/').pop(),{type:'image/png'});
+      Object.defineProperty(file,'webkitRelativePath',{value:relative});
+      return file;
+    };
+    const before=story.projects.length;
+    await story.importDirectory([
+      makeFile('Campaign_Set/AD_1/001.png',0),
+      makeFile('Campaign_Set/AD_2/001.png',1),
+      makeFile('Campaign_Set/AD_1/002.png',2),
+      makeFile('Campaign_Set/AD_2/002.png',3)
+    ]);
+    const additions=story.projects.slice(before).map(board=>({
+      name:board.name,count:board.images.length,
+      files:board.images.map(item=>item.file.name)
+    }));
+    story.switchProject(prior);
+    return additions;
+  },bases);
+  assert.deepEqual(bulkBoards,[
+    {name:'AD_1',count:2,files:['001.png','002.png']},
+    {name:'AD_2',count:2,files:['001.png','002.png']}
+  ],label+': nested directory did not create proper per-ad boards');
 
   // Real input-to-preview path for Image Splitter.
   await open('section-pdf','split');
@@ -280,34 +316,51 @@ try{
   if(adTypography.action!==null)assert.ok(adTypography.action>=12,
     label+': campaign action caption too small '+JSON.stringify(adTypography));
 
-  // Reproduce the reported scroll overlap with synthetic repeated rows.
-  // Action buttons from rows behind the sticky header must not paint over it.
-  const stickyHeader=await page.evaluate(()=>{
+  // Column headings should scroll away with a long campaign table, not
+  // sit above download buttons or distract from the remaining ad rows.
+  const tableScroll=await page.evaluate(()=>{
     const scroller=document.getElementById('adDlTableContainer');
     const body=document.getElementById('adDlTableBody');
-    const template=body.querySelector('tr');
-    const clones=[];
+    const template=body.querySelector('tr'),copies=[];
     for(let i=0;i<20;i++){
-      const row=template.cloneNode(true);
-      row.removeAttribute('id');
-      body.appendChild(row);
-      clones.push(row);
+      const row=template.cloneNode(true);row.removeAttribute('id');
+      body.appendChild(row);copies.push(row);
     }
-    scroller.scrollTop=160;
-    const header=scroller.querySelector('thead');
-    const cell=header.querySelector('th:last-child');
-    const rect=cell.getBoundingClientRect();
-    const hit=document.elementFromPoint(rect.left+rect.width/2,rect.top+rect.height/2);
-    const state={position:getComputedStyle(header).position,
-      layer:parseInt(getComputedStyle(header).zIndex,10)||0,
-      hitHeader:header.contains(hit),scrollTop:scroller.scrollTop};
-    clones.forEach(row=>row.remove());
+    const heading=scroller.querySelector('thead');
+    const before=heading.getBoundingClientRect().top;
+    scroller.scrollTop=170;
+    const after=heading.getBoundingClientRect().top;
+    const state={position:getComputedStyle(heading).position,
+      offset:before-after,scrollTop:scroller.scrollTop};
+    copies.forEach(row=>row.remove());
     scroller.scrollTop=0;
     return state;
   });
-  assert.ok(stickyHeader.scrollTop>0&&stickyHeader.hitHeader&&
-    stickyHeader.position==='sticky'&&stickyHeader.layer>=40,
-    label+': scrolled download button covers the table heading '+JSON.stringify(stickyHeader));
+  assert.ok(tableScroll.position==='static'&&tableScroll.scrollTop>0&&
+    tableScroll.offset>100,label+': column heading did not scroll with ads '+
+    JSON.stringify(tableScroll));
+  const moved=await page.evaluate(()=>{
+    const tool=Tools.AdDownloader;
+    const first=tool.entries[0],second=tool.entries[1];
+    tool.markRequested(first);
+    tool.markDownloaded(second);
+    return {
+      pending:document.querySelectorAll('#adDlTableBody tr').length,
+      lower:document.querySelectorAll('#adDlDownloadedBody tr').length,
+      requested:first.requested&&!first.downloaded,
+      firstRetry:first.downloadButton?.textContent,
+      secondRetry:second.downloadButton?.textContent,
+      count:document.getElementById('adDlCountText').textContent,
+      status:document.getElementById('adDlDownloadedHeaderRow').textContent.trim(),
+      headingVisible:getComputedStyle(document.getElementById('adDlDownloadedHeaderRow')).display
+    };
+  });
+  assert.ok(moved.pending===1&&moved.lower===3&&moved.requested&&
+    moved.firstRetry==='Download again'&&moved.secondRetry==='Download again'&&
+    /1 pending/.test(moved.count)&&/started/i.test(moved.status)&&
+    moved.headingVisible!=='none',label+': requested/downloaded rows not separated '+
+    JSON.stringify(moved));
+  await snap('ads-requested-below-pending');
 
   // One genuine local WebM exercises the original Video Stills extractor.
   // Run only at Full HD to bound CPU expense. No remote videos or user data.
