@@ -49,6 +49,8 @@ try{
   await page.waitForFunction(()=>typeof UI==='object'&&typeof Tools?.Logo?.handleFiles==='function',{timeout:15000});
   await page.evaluate(()=>document.fonts.ready);
   assert.equal(await page.locator('link[href*="forge-workspace-finish.css"]').count(),1);
+  assert.equal(await page.locator('link[href*="forge-unified-workspaces.css"]').count(),1,
+    label+': unified workspace system CSS not loaded');
   const bases=await page.evaluate(()=>{
    const canvases=[];
    for(let i=0;i<7;i++){
@@ -83,6 +85,14 @@ try{
   }));
   assert.ok(link.exposure>30&&link.storyboard>30,`${label}: real link generation failed`);
   assert.ok(link.inputFont>=12.5&&link.outputFont>=12,`${label}: link typography remains too small`);
+  await page.locator('#alg-input').focus();
+  const linkFocus=await page.locator('#alg-input').evaluate(el=>({
+    width:parseFloat(getComputedStyle(el).outlineWidth),
+    style:getComputedStyle(el).outlineStyle,
+    font:parseFloat(getComputedStyle(el).fontSize)
+  }));
+  assert.ok(linkFocus.font>=13&&linkFocus.width>=2&&linkFocus.style==='solid',
+    label+': link text field lacks readable type or focus '+JSON.stringify(linkFocus));
   await snap('link-generated');
 
   // Upload actual (synthetic) PNG files through the unchanged Logo file input.
@@ -136,6 +146,14 @@ try{
     canvasSize:[Tools.Story.canvas?.width,Tools.Story.canvas?.height],
     fileEntries:document.querySelector('#storyFileList')?.children.length}));
   assert.ok(storyboard.hasCanvas&&storyboard.assets===6,`${label}: storyboard canvas not populated`);
+
+  const storyHierarchy=await page.evaluate(()=>{
+    const add=document.querySelector('#storyDropZone label.liquid-btn.active-mode');
+    const save=document.getElementById('downloadStoryBtn');
+    return {add:getComputedStyle(add).backgroundColor,save:getComputedStyle(save).backgroundColor};
+  });
+  assert.notEqual(storyHierarchy.add,storyHierarchy.save,
+    label+': import/export primary actions visually indistinguishable '+JSON.stringify(storyHierarchy));
   await snap('storyboard-populated');
   // Real populated rail: readable captions, keyboard-discoverable fields.
   const storyboardType=await page.evaluate(()=>{
