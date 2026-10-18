@@ -634,3 +634,11 @@ body.light-mode .undo-toast {
   transition:none!important;
  }
 }
+
+/* Inspect actions are genuine keyboard targets, without moving media. */
+#section-logo #logoGrid .logo-card-item .card-preview-area:focus-visible,
+#section-pdf #pdfStacksContainer .pdf-stack-wrapper:focus-visible,
+#stillsTabContentVideo #stillsStacksContainer .pdf-stack-wrapper:focus-visible{
+ outline:2px solid var(--studio-accent)!important;
+ outline-offset:2px!important;
+}
