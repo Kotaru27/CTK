@@ -12107,17 +12107,35 @@ const CTKDownloadRenamer = (() => {
               s.autoWidth ? "none" : "block";
           },
           renderTabs() {
-            this.els.tabs.innerHTML = "";
-            this.projects.forEach((p) => {
+            const tabs = this.els.tabs;
+            tabs.replaceChildren();
+            this.projects.forEach((project) => {
+              const active = project.id === this.active?.id;
               const tab = document.createElement("div");
-              tab.style.cssText = `padding:6px 12px; background:${p.id === this.active.id ? "var(--text-main)" : "var(--bg-panel)"}; color:${p.id === this.active.id ? "var(--bg-main)" : "var(--text-main)"}; border: 1px solid var(--border); font-size:0.75rem; cursor:pointer; display:flex; gap:6px; align-items:center; `;
-              tab.innerHTML = `<span>${p.name}</span><span style="opacity:0.5;" title="Delete">&times;</span>`;
-              tab.querySelector("span:last-child").onclick = (e) => {
-                e.stopPropagation();
-                this.deleteProject(p.id);
+              tab.className = "story-project-pill";
+              tab.dataset.active = active ? "true" : "false";
+
+              const open = document.createElement("button");
+              open.type = "button";
+              open.className = "story-project-switch";
+              open.textContent = project.name;
+              open.title = project.name;
+              open.setAttribute("aria-current", active ? "true" : "false");
+              open.setAttribute("aria-label", "Open board " + project.name);
+              open.onclick = () => this.switchProject(project.id);
+
+              const remove = document.createElement("button");
+              remove.type = "button";
+              remove.className = "story-project-delete";
+              remove.textContent = "\u00d7";
+              remove.title = "Delete board " + project.name;
+              remove.setAttribute("aria-label", "Delete board " + project.name);
+              remove.onclick = (event) => {
+                event.stopPropagation();
+                this.deleteProject(project.id);
               };
-              tab.onclick = () => this.switchProject(p.id);
-              this.els.tabs.appendChild(tab);
+              tab.append(open, remove);
+              tabs.appendChild(tab);
             });
           },
           deleteProject(id) {
@@ -12214,13 +12232,56 @@ const CTKDownloadRenamer = (() => {
             });
           },
           updateList() {
-            this.els.list.innerHTML = "";
+            const list = this.els.list;
+            list.replaceChildren();
             this.active.images.forEach((item, index) => {
-              const div = document.createElement("div");
-              div.style.cssText =
-                "display:flex; justify-content:space-between; align-items:center; padding:10px 12px; background:var(--bg-panel); border:1px solid var(--border); font-size:0.85rem; border-radius:0; margin-bottom:6px; transition: none;";
-              div.innerHTML = `<div style="display:flex; align-items:center; gap:10px;"><img src="${item.img.src}" title="${item.label || ""}" style="width:30px; height:30px; object-fit:cover; border-radius:0;"><span>${index + 1}</span></div><div style="display:flex; gap:5px;"><button class="liquid-btn" style="padding:0 8px; height:28px;" onclick="Tools.Story.moveImage(${index},-1)">&uarr;</button><button class="liquid-btn" style="padding:0 8px; height:28px;" onclick="Tools.Story.moveImage(${index},1)">&darr;</button><button class="liquid-btn danger-btn" style="padding:0 8px; height:28px;" onclick="Tools.Story.removeImage(${index})">&times;</button></div>`;
-              this.els.list.appendChild(div);
+              const row = document.createElement("div");
+              row.className = "story-asset-row";
+
+              const identity = document.createElement("div");
+              identity.className = "story-asset-identity";
+              const thumbnail = document.createElement("img");
+              thumbnail.className = "story-asset-thumb";
+              thumbnail.src = item.img.src;
+              thumbnail.alt = "";
+              const details = document.createElement("div");
+              details.className = "story-asset-details";
+              const number = document.createElement("span");
+              number.className = "story-asset-number";
+              number.textContent = String(index + 1).padStart(2, "0");
+              const name = document.createElement("span");
+              name.className = "story-asset-filename";
+              const filename = item.file?.name || item.label || "Frame " + (index + 1);
+              name.textContent = filename;
+              name.title = filename;
+              details.append(number, name);
+              identity.append(thumbnail, details);
+
+              const actions = document.createElement("div");
+              actions.className = "story-asset-actions";
+              for (const action of [
+                {name:"Move up",glyph:"\u2191",direction:-1},
+                {name:"Move down",glyph:"\u2193",direction:1},
+                {name:"Remove",glyph:"\u00d7",direction:0}
+              ]) {
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = "liquid-btn story-asset-action" +
+                  (action.direction === 0 ? " danger-btn" : "");
+                button.textContent = action.glyph;
+                button.title = action.name + " " + filename;
+                button.setAttribute("aria-label",action.name + " " + filename);
+                if (action.direction !== 0) {
+                  button.disabled = index + action.direction < 0 ||
+                    index + action.direction >= this.active.images.length;
+                  button.onclick = () => this.moveImage(index, action.direction);
+                } else {
+                  button.onclick = () => this.removeImage(index);
+                }
+                actions.appendChild(button);
+              }
+              row.append(identity, actions);
+              list.appendChild(row);
             });
           },
           moveImage(idx, dir) {
