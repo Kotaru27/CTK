@@ -59,7 +59,7 @@
   if (skip) skip.addEventListener('click',cleanup,{once:true});
   document.addEventListener('keydown',onKey);
   // Failsafe for background tabs / disconnected animations.
-  after(3200,cleanup);
+  after(4700,cleanup);
 
   function moveToHome() {
     if (finished) return;
@@ -79,7 +79,7 @@
       {transform:'translate3d(0,0,0) scale(1)'},
       {transform:'translate3d('+dx+'px,'+dy+'px,0) scale('+scale+')'}
     ],{
-      duration:760,
+      duration:840,
       easing:'cubic-bezier(.24,.86,.30,1)',
       fill:'forwards'
     });
@@ -88,7 +88,7 @@
   function settle() {
     if (finished) return;
     intro.classList.add('is-settled');
-    after(115,function(){
+    after(170,function(){
       if (!finished) requestAnimationFrame(moveToHome);
     });
   }
@@ -98,7 +98,9 @@
     // reveal and the FLIP handoff. No per-letter DOM transforms to jitter
     // on 60/100 Hz monitors.
     intro.classList.add('is-playing');
-    after(920,settle);
+    // The reveal takes its time, then the complete name remains motionless
+    // for a deliberate pause before moving into the actual homepage.
+    after(2100,settle);
   }
   // Start only with Kola ready. If the external font is unavailable,
   // show the usable homepage instead of animating fallback and snapping.
