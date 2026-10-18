@@ -21,7 +21,7 @@ test('all eight existing tools have scoped populated-component refinements', () 
     '#section-yt-helper #ytMetadataContent'
   ]) assert.ok(finish.includes(selector), 'missing actual tool component ' + selector);
   // Animated underlines are pseudo-elements, not canvas/workspace geometry.
-  const safeFinish=finish.replace(/[^{}]+::after\\{[^{}]*\\}/g,'');
+  const safeFinish=finish.replace(/[^{}]+::after\{[^{}]*\}/g,'');
   for (const dangerous of ['grid-template-columns:', 'position:fixed', 'position:absolute',
     'max-width:100vw', 'transform:scale', 'filter:blur', 'object-fit:',
     'canvas {', 'pointer-events:none!important', '@keyframes']) {
