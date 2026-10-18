@@ -72,6 +72,8 @@ try {
      inside:box.top>=0&&box.bottom<=innerHeight+1&&box.left>=0&&box.right<=innerWidth+1};
  });
  check(popupGeometry.inside,'Launch popup is clipped at desktop size: '+JSON.stringify(popupGeometry));
+ check(await launch.evaluate(el=>getComputedStyle(el).backdropFilter.includes('blur(')),
+   'Welcome overlay did not blur the underlying homepage');
  await page.screenshot({path:'artifacts/forge-browser/first-rebrand-welcome.png',fullPage:false});
  await page.locator('#forgeWhatsNewEnter').click();
  await launch.waitFor({state:'hidden',timeout:1500});
@@ -137,6 +139,11 @@ try {
    'Appearance toggle should be hidden in light-only release');
  await page.locator('#forgeIntro').waitFor({state:'detached',timeout:6000});
  check(await page.locator('#forgeIntro').count()===0,'Intro failed to finish after reload');
+ // Closing the dialog did NOT persist an opt-out: it returns on reload.
+ await page.locator('#forgeWhatsNew').waitFor({state:'visible',timeout:3600});
+ check(await page.locator('#forgeWhatsNew').isVisible(),
+   'Welcome must return until Dont show again was selected');
+ await page.locator('#forgeWhatsNewClose').click();
  await page.screenshot({path:'artifacts/forge-browser/home-light-legacy-dark.png'});
  await context.close();
  // Permanent opt-out is a separate deliberate action. A new context
@@ -173,7 +180,7 @@ try {
    const wide=await browser.newContext({viewport,deviceScaleFactor:1,reducedMotion:'no-preference'});
    await wide.addInitScript(()=>{
      sessionStorage.setItem('forge_intro_suppress','1');
-     sessionStorage.setItem('forge_whatsnew_seen_launch_2026_v2','1');
+     sessionStorage.setItem('forge_whatsnew_suppress','1');
    });
    const wp=await wide.newPage();
    const errs=[];
