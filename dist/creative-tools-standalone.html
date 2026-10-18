@@ -5849,6 +5849,50 @@ html.forge-launch-fallback-kola #view-home .combined-home-layout .forge-hero-nam
 .forge-intro.forge-intro-ready .forge-intro-skip {
   font-family:Arial,Helvetica,sans-serif!important;
 }
+
+/* FORGE / INTACT WORD ENTRANCE (2026-10-18)
+   Kola has a distinctive descender on g. Never reveal its letters through
+   a clipping rectangle or a tight line-height; animate two whole words
+   instead. Natural spacing between words preserves glyph kerning. */
+.forge-intro.forge-intro-ready .forge-intro-type{
+  overflow:visible!important;
+}
+.forge-intro.forge-intro-ready #forgeIntroWordmark{
+  clip-path:none!important;
+  overflow:visible!important;
+  line-height:1.26!important;
+  padding:.055em .075em .16em!important;
+  margin:-.055em -.075em -.16em!important;
+  opacity:1!important;
+  transform:none!important;
+  white-space:nowrap;
+  font-kerning:normal;
+  text-rendering:optimizeLegibility;
+}
+.forge-intro.forge-intro-ready .forge-intro-word{
+  display:inline-block;
+  overflow:visible;
+  clip-path:none!important;
+  vertical-align:baseline;
+  white-space:nowrap;
+  opacity:0;
+  transform:translate3d(0,23px,0);
+  will-change:opacity,transform;
+}
+.forge-intro.forge-intro-ready .forge-intro-word:last-child{
+  padding-bottom:.08em;
+  margin-bottom:-.08em;
+}
+.forge-intro.forge-intro-leaving .forge-intro-word{
+  will-change:auto;
+}
+@media(prefers-reduced-motion:reduce){
+  .forge-intro.forge-intro-ready .forge-intro-word{
+    opacity:1!important;
+    transform:none!important;
+    animation:none!important;
+  }
+}
 </style>
 <style id="forge-video-route-styles">/* THE FORGE / UNIFIED WORKSPACE ROUTES
    Eight exact tool pairings; cards, controls and media are never re-laid out.
@@ -8179,6 +8223,44 @@ html:has(.forge-whatsnew:not([hidden])){overflow:hidden;scrollbar-gutter:stable;
   .forge-whatsnew-number
 ) {
   font-family:Consolas,"Courier New",monospace!important;
+}
+
+/* PERSISTENT WELCOME / modal, not an inline status box.
+   The foreground is a centered, solid dialog; only the outside viewport
+   is blurred and darkened. One action dismisses it intentionally. */
+#forgeWhatsNew.forge-whatsnew:not([hidden]){
+  position:fixed!important;
+  inset:0!important;
+  z-index:2147483100!important;
+  display:grid!important;
+  place-items:center!important;
+  background:rgba(20,36,27,.68)!important;
+  -webkit-backdrop-filter:blur(24px) saturate(.68)!important;
+  backdrop-filter:blur(24px) saturate(.68)!important;
+}
+#forgeWhatsNew .forge-whatsnew-dialog{
+  background:#fcfdf9;
+  isolation:isolate;
+}
+#forgeWhatsNew .forge-whatsnew-actions{
+  justify-content:flex-end;
+}
+#forgeWhatsNew #forgeWhatsNewNever{
+  min-height:46px;
+  padding:0 20px;
+  border:1px solid #1c4a34;
+  border-radius:8px;
+  background:#1c4a34;
+  color:#f9fcf7;
+}
+#forgeWhatsNew #forgeWhatsNewNever:hover{
+  background:#153b2a;
+  border-color:#153b2a;
+}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  #forgeWhatsNew.forge-whatsnew:not([hidden]){
+    background:rgba(20,36,27,.92)!important;
+  }
 }
 </style>
 </head>
@@ -17031,6 +17113,9 @@ const CTKDownloadRenamer = (() => {
   const intro=document.getElementById('forgeIntro');
   const mark=document.getElementById('forgeIntroWordmark');
   const destination=document.getElementById('forgeHeroName');
+  // Animate full words, not clipped characters: Kola's descending g must
+  // remain a complete glyph in every frame, including the final handoff.
+  const words=mark?[...mark.querySelectorAll('.forge-intro-word')]:[];
   const home=document.getElementById('view-home');
   const app=document.getElementById('view-app');
   const body=document.body;
@@ -17107,10 +17192,12 @@ const CTKDownloadRenamer = (() => {
     if(typeof mark.animate!=='function'){
       complete('fallback');return;
     }
-    // Finish the reveal in-place before measuring. These same font
-    // settings exist on the destination, including when Kola is offline.
-    mark.style.opacity='1';
-    mark.style.clipPath='none';
+    // Fully settle both words before FLIP measurement. No clipping mask,
+    // overflow crop or transformed letter is left active at this point.
+    for(const word of words){
+      word.style.opacity='1';
+      word.style.transform='none';
+    }
     mark.style.transform='none';
     const from=mark.getBoundingClientRect();
     const to=destination.getBoundingClientRect();
@@ -17145,37 +17232,42 @@ const CTKDownloadRenamer = (() => {
   function reveal(){
     if(done)return;
     intro.classList.add('forge-intro-playing');
-    if(typeof mark.animate!=='function'){
-      intro.classList.add('forge-intro-fallback');
-      hold=setTimeout(()=>complete('fallback'),2850);
+    if(words.length!==2){
+      // Missing word markup must not strand the homepage.
+      mark.style.opacity='1';
+      hold=setTimeout(()=>complete('fallback'),1400);
       return;
     }
-    const frames=[];
-    for(let i=0;i<=55;i++){
-      const t=i/55;
-      // Delay the ink by a fraction of a beat, then ease it into place.
-      const p=settle(Math.max(0,Math.min(1,(t-.09)/.91)),6.2);
-      frames.push({
-        offset:t,
-        opacity:Math.min(1,.45+p*.55),
-        clipPath:'inset(0 '+((1-p)*100).toFixed(3)+'% 0 0)',
-        transform:'translate3d(0,'+((1-p)*21).toFixed(3)+'px,0)'
+    for(let index=0;index<words.length;index++){
+      const word=words[index];
+      const frames=[];
+      for(let i=0;i<=48;i++){
+        const t=i/48;
+        const p=settle(Math.min(1,Math.max(0,(t-.04)/.96)),7.1);
+        frames.push({
+          offset:t,
+          opacity:Math.min(1,.03+.97*p),
+          transform:'translate3d(0,'+((1-p)*23).toFixed(3)+'px,0)'
+        });
+      }
+      const flight=animate(word,frames,{
+        duration:1330,delay:index*260,easing:'linear',fill:'both'
       });
+      if(flight){
+        flight.finished.then(()=>{
+          if(done)return;
+          word.style.opacity='1';
+          word.style.transform='none';
+          flight.cancel();
+          flights.delete(flight);
+        }).catch(()=>{});
+      }else{
+        word.style.opacity='1';
+        word.style.transform='none';
+      }
     }
-    const first=animate(mark,frames,{
-      duration:1590,easing:'linear',fill:'both'
-    });
-    if(first){
-      first.finished.then(()=>{
-        if(done)return;
-        mark.style.opacity='1';
-        mark.style.clipPath='none';
-        mark.style.transform='none';
-        first.cancel();
-        flights.delete(first);
-      }).catch(()=>{});
-    }
-    hold=setTimeout(handoff,2220);
+    // Last word settles before the entire, unsplit lockup travels home.
+    hold=setTimeout(handoff,2280);
   }
   // Resolve ALL introductory typefaces before showing a single letter.
   // FontFaceSet.load resolves with [] if the face is not declared: that
@@ -17552,21 +17644,21 @@ const CTKDownloadRenamer = (() => {
   window.ForgeVideoRoute=api;
 })();
 </script>
-<script id="forge-whats-new-js">/* The Forge welcome / first-launch announcement and manual replay.
-   Intro completion controls timing; no fonts, images or network requests.
-   Every close path is usable and preserves keyboard focus. */
+<script id="forge-whats-new-js">/* The Forge welcome / persistent modal until an explicit opt-out.
+   Only "Don't show again" dismisses it. Font preparation is bounded
+   and the underlying homepage stays inactive under the blurred scrim. */
 (function(){
   'use strict';
   const root=document.getElementById('forgeWhatsNew');
   if(!root)return;
   const dialog=root.querySelector('.forge-whatsnew-dialog');
   const trigger=document.getElementById('forgeWhatsNewTrigger');
-  const enter=root.querySelector('#forgeWhatsNewEnter');
   const never=root.querySelector('#forgeWhatsNewNever');
-  const close=root.querySelector('#forgeWhatsNewClose');
-  if(!dialog||!enter||!never||!close)return;
+  if(!dialog||!never)return;
 
-  const permanentKey='forge_whatsnew_dismissed_2026_v1';
+  // New version intentionally resets previous temporary dismissals.
+  // A visitor must explicitly choose the present modal's opt-out.
+  const permanentKey='forge_whatsnew_dismissed_2026_v3';
   let opened=false,preparing=false,previousFocus=null;
   let automaticTimer=0,autoAttempted=false,openSerial=0,fontsReady=null;
   function safeGet(key){
@@ -17641,12 +17733,12 @@ const CTKDownloadRenamer = (() => {
       previousFocus=restoreFocus;
       root.hidden=false;
       trigger?.setAttribute?.('aria-expanded','true');
-      enter.focus({preventScroll:true});
+      never.focus({preventScroll:true});
     });
   }
-  function dismiss(permanent=false){
+  function dismiss(){
     if(!opened)return;
-    if(permanent)safeSet(permanentKey);
+    safeSet(permanentKey);
     opened=false;
     root.hidden=true;
     trigger?.setAttribute?.('aria-expanded','false');
@@ -17671,7 +17763,9 @@ const CTKDownloadRenamer = (() => {
       getComputedStyle(el).visibility!=='hidden');
   }
   root.addEventListener('keydown',event=>{
-    if(event.key==='Escape'){event.preventDefault();dismiss();return;}
+    // Explicit opt-out is the only dismissal path: Escape may not
+    // silently skip the onboarding information.
+    if(event.key==='Escape'){event.preventDefault();return;}
     if(event.key!=='Tab')return;
     const items=focusables();
     if(!items.length)return;
@@ -17682,12 +17776,7 @@ const CTKDownloadRenamer = (() => {
       event.preventDefault();first.focus();
     }
   });
-  enter.addEventListener('click',()=>dismiss());
-  never.addEventListener('click',()=>dismiss(true));
-  close.addEventListener('click',()=>dismiss());
-  root.addEventListener('pointerdown',event=>{
-    if(event.target===root)dismiss();
-  });
+  never.addEventListener('click',dismiss);
   if(trigger){
     trigger.hidden=false;
     trigger.setAttribute?.('aria-expanded','false');
