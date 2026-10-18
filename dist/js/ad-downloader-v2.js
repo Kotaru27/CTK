@@ -49,8 +49,9 @@
           function positionMenu() {
             // Compute position BEFORE native details opens, so a menu at
             // the bottom of the scroll viewport never flashes outside it.
-            const viewport=root.querySelector("#adDlTableContainer")?.getBoundingClientRect();
-            if (!viewport) return;
+            // The whole workspace now scrolls; use the visible window,
+            // not the height of a long (non-scrolling) asset table.
+            const viewport={top:10,bottom:document.documentElement.clientHeight-10};
             const trigger=summary.getBoundingClientRect();
             const downSpace=viewport.bottom-trigger.bottom;
             const upSpace=trigger.top-viewport.top;
@@ -82,9 +83,9 @@
     document.addEventListener("keydown",e=>{
       if(e.key==="Escape")closeMenus();
     });
-    root.querySelector("#adDlTableContainer")?.addEventListener("scroll",()=>{
-      closeMenus();
-    },{passive:true});
+    // Closing menus on any ancestor scroll prevents a menu floating away
+    // from its row as the user advances down a long asset list.
+    document.addEventListener("scroll",closeMenus,{passive:true,capture:true});
   }
   if (document.readyState==="loading") document.addEventListener("DOMContentLoaded",boot,{once:true});
   else boot();
