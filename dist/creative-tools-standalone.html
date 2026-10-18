@@ -5437,6 +5437,28 @@ body.forge-opening.forge-home-arriving .forge-hero-bottom {
   transition:opacity .48s cubic-bezier(.21,.76,.31,1),
              transform .65s cubic-bezier(.21,.76,.31,1);
 }
+/* One home arrival choreography: the useful tool index follows the FLIP
+   wordmark into place. Existing card art and individual interactions are
+   untouched; only their common parent settles once, before the welcome
+   announcement can open. */
+body.forge-opening #view-home .forge-after-hero,
+body.forge-opening #view-home .combined-home-grid{
+  opacity:0;
+  transform:translate3d(0,10px,0);
+}
+body.forge-opening.forge-home-arriving #view-home .forge-after-hero,
+body.forge-opening.forge-home-arriving #view-home .combined-home-grid{
+  opacity:1;
+  transform:translate3d(0,0,0);
+  transition:opacity .42s cubic-bezier(.22,.8,.28,1) .07s,
+             transform .52s cubic-bezier(.2,.82,.28,1) .07s;
+}
+@media(prefers-reduced-motion:reduce){
+  body.forge-opening #view-home .forge-after-hero,
+  body.forge-opening #view-home .combined-home-grid{
+    opacity:1!important;transform:none!important;transition:none!important;
+  }
+}
 /* The opening is one composition: outline -> raised ink -> continuous
    FLIP wordmark handoff. All animated letter properties are compositable. */
 .forge-intro {
