@@ -39,6 +39,21 @@ try {
 
  const cards=page.locator('button.home-card');
  check(await cards.count()===8,'All eight tool cards must exist after handoff');
+
+ // The eight existing artworks must read as purposeful illustrations, not
+ // tiny low-contrast watermarks. No card/route DOM changes are permitted.
+ const specimens=await page.evaluate(()=>[...document.querySelectorAll('.combined-home-grid > .home-card')].map(card=>{
+   const art=card.querySelector('.home-card-art');
+   const box=card.getBoundingClientRect(),rect=art.getBoundingClientRect();
+   return {tool:[...card.classList].find(c=>c.startsWith('tool-')),
+     tone:getComputedStyle(card).backgroundColor,
+     artWidth:Math.round(rect.width),
+     withinCard:rect.left>=box.left-8&&rect.right<=box.right+8&&rect.top>=box.top-8,
+     title:card.querySelector('.home-card-title')?.textContent.trim()};
+ }));
+ check(specimens.length===8,'Not all eight artwork specimens rendered');
+ check(new Set(specimens.map(x=>x.tone)).size>=6,'Creative tool specimens lost distinct surfaces');
+ check(specimens.every(x=>x.artWidth>=125&&x.withinCard),'Artwork clipped or visually undersized: '+JSON.stringify(specimens));
  const details=await page.evaluate(()=>{
   const hero=document.getElementById('forgeHeroName');
   const element=document.querySelector('.forge-hero');
