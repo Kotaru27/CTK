@@ -3,6 +3,7 @@ on:
   push:
     branches: [main]
     paths:
+      - 'src/css/experience/forge-brand.css'
       - 'src/css/experience/forge-whats-new.css'
       - 'src/js/presentation/forge-whats-new.js'
       - 'src/css/experience/forge-workflow-interactions.css'
