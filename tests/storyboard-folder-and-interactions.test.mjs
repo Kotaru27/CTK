@@ -27,7 +27,7 @@ test('Actual Storyboard import names only previously empty boards with a shared 
   const previousUI = globalThis.UI;
   try {
     globalThis.document = {getElementById: () => null};
-    globalThis.Core = {Utils:{sanitize: name => String(name).replace(/[<>:"/\\|?*]/g,'')}};
+    globalThis.Core = {Utils:{sanitize: name => String(name).replace(/[^a-zA-Z0-9_]/g,"")};
     globalThis.UI = {showError: () => {}};
     const Story = (await import('../src/js/tools/storyboard.js')).default.Story;
     const file=(folder, filename='still.mp4')=>({
