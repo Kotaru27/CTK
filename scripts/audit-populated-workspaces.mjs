@@ -151,6 +151,8 @@ try{
     canvasSize:[Tools.Story.canvas?.width,Tools.Story.canvas?.height],
     fileEntries:document.querySelector('#storyFileList')?.children.length}));
   assert.ok(storyboard.hasCanvas&&storyboard.assets===6,`${label}: storyboard canvas not populated`);
+  assert.equal(await page.locator('#storyCols').inputValue(),'3',
+    label+': newly imported storyboard with more than two stills must default to three columns');
 
   // Actual Storyboard asset behavior: real names, keyboard controls and
   // first/last move boundaries, not merely a screenshot of synthetic rows.
@@ -343,6 +345,23 @@ try{
       }));
       assert.ok(stills.frames>0&&stills.visibleCards>0,
         `${label}: synthetic WebM did not produce a populated Video Stills collection`);
+      const nameLayout=await page.evaluate(()=>{
+        const card=document.querySelector('#stillsStacksContainer .pdf-stack-wrapper');
+        const name=card?.querySelector('.stack-title');
+        if(!name||!card)return null;
+        const original=name.textContent;
+        name.textContent='AD12_LIDL_Wettbewerber_Deep_Dive_Q3_OLV_SOCIAL10_Langzeitpreis_ohne_App_25s';
+        const rect=name.getBoundingClientRect(),parent=card.getBoundingClientRect();
+        const metrics={whiteSpace:getComputedStyle(name).whiteSpace,
+          nameWidth:name.clientWidth,scrollWidth:name.scrollWidth,
+          inside:rect.left>=parent.left-2&&rect.right<=parent.right+2,
+          title:name.title};
+        name.textContent=original;
+        return metrics;
+      });
+      assert.ok(nameLayout&&nameLayout.whiteSpace==='normal'&&
+        nameLayout.scrollWidth<=nameLayout.nameWidth+2&&nameLayout.inside,
+        label+': Video Stills filename is clipped '+JSON.stringify(nameLayout));
       await snap('video-stills-populated');
       // Open the actual contact-sheet reviewer and select a frame.
       await page.evaluate(()=>Tools.Stills.openDetail(Object.keys(Tools.Stills.collection)[0]));
