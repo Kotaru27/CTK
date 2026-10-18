@@ -24,7 +24,7 @@ try {
   const errors=[];
   page.on('pageerror',e=>errors.push(String(e)));
   await page.goto('http://127.0.0.1:4173/',{waitUntil:'domcontentloaded'});
-  await page.waitForFunction(()=>!!window.ForgeWorkspaceRoute && !!window.UI);
+  await page.waitForFunction(()=>!!window.ForgeWorkspaceRoute && typeof UI==='object');
   const hasNative=await page.evaluate(()=>typeof document.startViewTransition==='function');
   assert.equal(hasNative,true,'Native View Transitions unavailable in QA browser');
   await page.evaluate(()=>{
