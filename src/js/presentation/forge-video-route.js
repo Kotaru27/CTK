@@ -116,23 +116,30 @@
     let lastSection=activeSection();
     const wasShown=new Map(panels.map(el=>[el,shown(el)]));
     let sectionFlight=null, panelFlight=null;
+    // The same damped (non-overshooting) response drives all internal
+    // panels. Do not transform media, canvases or their individual controls.
+    // Route snapshots own cross-tool transitions, so these two animators
+    // never compete on the same surface.
     function play(element,kind){
-      if(!element || !element.animate || !canAnimateWorkspace(kind==='panel'))return null;
-      const distance=kind==='section'?4:3;
-      const duration=kind==='section'?220:180;
+      if(!element || !element.animate || !canAnimateWorkspace())return null;
+      const distance=kind==='section'?10:7;
+      const duration=kind==='section'?380:300;
+      const frames=[];
+      const omega=8.5,denom=1-(1+omega)*Math.exp(-omega);
+      for(let i=0;i<=28;i++){
+        const t=i/28;
+        const p=Math.min(1,(1-(1+omega*t)*Math.exp(-omega*t))/denom);
+        frames.push({offset:t,opacity:Math.min(1,.22+p),
+          transform:'translate3d(0,'+((1-p)*distance).toFixed(3)+'px,0)'});
+      }
       try{
-        return element.animate([
-          {opacity:kind==='section'?.95:.92,transform:'translate3d(0,'+distance+'px,0)'},
-          {opacity:1,transform:'translate3d(0,0,0)'}
-        ],{duration,easing:'cubic-bezier(.2,.7,.2,1)'});
+        return element.animate(frames,{duration,easing:'linear'});
       }catch(_){return null;}
     }
-    function canAnimateWorkspace(isPanel=false){
-      // Native route snapshots suppress section entrances, not an explicit
-      // user-triggered mode switch that can occur while a snapshot finishes.
+    function canAnimateWorkspace(){
       return !(preference&&preference.matches) &&
         document.visibilityState==='visible' &&
-        (isPanel || !root.classList.contains('forge-route-running'));
+        !root.classList.contains('forge-route-running');
     }
     function reconcile(){
       const nextSection=activeSection();
