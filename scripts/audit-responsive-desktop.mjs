@@ -24,7 +24,7 @@ const records=[];
 try{
   for(const [label,width,height] of sizes){
     const ctx=await browser.newContext({viewport:{width,height},reducedMotion:'no-preference'});
-    await ctx.addInitScript(()=>sessionStorage.setItem('forge_intro_seen_v4','1'));
+    await ctx.addInitScript(()=>(sessionStorage.setItem('forge_whatsnew_seen_session_2026_v1','1'),sessionStorage.setItem('forge_intro_seen_v4','1')));
     const page=await ctx.newPage(),errors=[];
     page.on('pageerror',e=>errors.push(String(e)));
     await page.goto('http://127.0.0.1:4173/',{waitUntil:'domcontentloaded',timeout:60000});
