@@ -671,3 +671,41 @@ html.forge-launch-fallback-kola #view-home .combined-home-layout .forge-hero-nam
 @media(prefers-reduced-motion:reduce){
   .forge-intro-typed::after{animation:none!important}
 }
+
+/* FORGE / FLUID TYPEWRITER V6 — independently composited caret.
+   The text itself stays fully visible; only the caret glides. */
+.forge-intro.forge-intro-ready .forge-intro-typed::after{
+  display:none!important;
+}
+.forge-intro.forge-intro-ready .forge-intro-caret{
+  position:absolute;
+  display:block;
+  left:.075em;
+  top:.24em;
+  width:2px;
+  height:.74em;
+  margin:0;
+  border-radius:2px;
+  background:currentColor;
+  opacity:0;
+  pointer-events:none;
+  transform:translate3d(0,0,0);
+  will-change:transform;
+  transition:transform 104ms cubic-bezier(.18,.73,.31,1),
+             opacity 130ms ease-out;
+}
+.forge-intro.forge-intro-playing .forge-intro-caret{
+  opacity:1;
+  animation:forge-typing-caret .76s step-end infinite;
+}
+.forge-intro.forge-intro-typed-complete .forge-intro-caret,
+.forge-intro.forge-intro-finishing .forge-intro-caret{
+  opacity:0!important;
+  animation:none!important;
+}
+@media(prefers-reduced-motion:reduce){
+  .forge-intro.forge-intro-ready .forge-intro-caret{
+    transition:none!important;
+    animation:none!important;
+  }
+}
