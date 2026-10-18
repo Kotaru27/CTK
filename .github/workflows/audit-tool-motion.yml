@@ -36,6 +36,8 @@ jobs:
         run: node scripts/audit-tool-motion.mjs
       - name: Inspect internal tool-to-tool navigation and tab switches
         run: node scripts/audit-tool-internal.mjs
+      - name: Verify all 56 ordered tool-to-tool transitions and rapid interruption
+        run: node scripts/audit-route-pairs.mjs
       - name: Inspect responsive desktop layouts at laptop, Full HD and QHD
         run: node scripts/audit-responsive-desktop.mjs
       - name: Exercise populated workspaces and collect rendering telemetry
