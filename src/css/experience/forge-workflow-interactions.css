@@ -109,7 +109,7 @@ html.forge-route-running::view-transition-new(root){
 }
 #stillsTabContentStory .story-board-layout-choice{
   padding:6px 9px;border:0;border-radius:5px;background:transparent;
-  font:650 11px/1.2 inherit;color:var(--sb-muted,var(--text-muted));cursor:pointer;
+  font-size:11px;font-family:inherit;font-weight:650;line-height:1.2;color:var(--sb-muted,var(--text-muted));cursor:pointer;
   transition:background-color 170ms ease,color 170ms ease;
 }
 #stillsTabContentStory .story-board-layout-choice.selected{
