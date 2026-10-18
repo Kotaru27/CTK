@@ -119,9 +119,20 @@ try{
      const indicator=document.getElementById('forgeStoryModeIndicator');
      const active=document.getElementById(id);
      const i=indicator?.getBoundingClientRect(),b=active?.getBoundingClientRect();
+     const host=document.getElementById('storySubModeToggle');
+     const section=document.getElementById('section-stills-boards');
+     const storyPanel=document.getElementById('stillsTabContentStory');
      return {exists:!!i&&!!b,opacity:indicator?getComputedStyle(indicator).opacity:'0',
        inside:!!i&&!!b&&i.left>=b.left-2&&i.right<=b.right+2,
-       width:i?.width||0,active:active?.classList.contains('active-mode')||false};
+       width:i?.width||0,active:active?.classList.contains('active-mode')||false,
+       hostDisplay:host&&getComputedStyle(host).display,hostInline:host?.style.display,
+       hostRects:host?.getClientRects().length,hostWidth:host?.getBoundingClientRect().width,
+       buttonWidth:active?.getBoundingClientRect().width,
+       sectionActive:section?.classList.contains('active'),
+       sectionDisplay:section&&getComputedStyle(section).display,
+       storyPanelDisplay:storyPanel&&getComputedStyle(storyPanel).display,
+       routeRunning:document.documentElement.classList.contains('forge-route-running')
+     };
    },buttonId);
    markerResults.push({mode,...m});
    assert.ok(m.exists&&m.active&&m.inside&&m.width>10,mode+' indicator not aligned to active button '+JSON.stringify(m));
