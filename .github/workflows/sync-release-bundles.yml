@@ -1,0 +1,30 @@
+name: Sync compiled Pages release
+on:
+  push:
+    branches: [release/sync-pages-bundles-20261018]
+permissions:
+  contents: write
+jobs:
+  build-and-commit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Regenerate the published release from modular sources
+        run: npm run build
+      - name: Commit deterministic Pages assets to this release branch
+        run: |
+          git add -- index.html dist/
+          if git diff --cached --quiet; then
+            echo "Build already matches committed artifacts."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Build updated Github Pages release from current source"
+          git push origin HEAD:release/sync-pages-bundles-20261018
