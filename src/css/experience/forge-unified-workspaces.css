@@ -782,7 +782,7 @@ body.light-mode .undo-toast {
  transition:background-color 230ms cubic-bezier(.22,.78,.28,1),
  border-color 230ms cubic-bezier(.22,.78,.28,1),color 230ms cubic-bezier(.22,.78,.28,1)!important;
 }
-.nav-sidebar.visible .nav-item :is(.material-symbols-rounded,svg){
+.nav-sidebar.visible .nav-item > :is(.material-symbols-rounded,svg){
  transition:translate 230ms cubic-bezier(.22,.78,.28,1),color 230ms ease!important;
 }
 .nav-sidebar.visible .nav-item:not(.active):hover :is(.material-symbols-rounded,svg){translate:2px 0!important;}
@@ -805,9 +805,15 @@ body.light-mode .undo-toast {
 #view-app .tool-section .ctk-row-menu > summary:active{translate:0 0!important;}
 @media(prefers-reduced-motion:reduce){
  #view-app .tool-section.active{animation:none!important;translate:none!important;}
- .nav-sidebar.visible .nav-item,.nav-sidebar.visible .nav-item :is(.material-symbols-rounded,svg),
+ .nav-sidebar.visible .nav-item,.nav-sidebar.visible .nav-item > :is(.material-symbols-rounded,svg),
  #view-app .tool-section .liquid-btn,#view-app .tool-section label.liquid-btn,
  #view-app .tool-section [role="tab"],#view-app .tool-section .ctk-row-menu > summary{
+  transition:none!important;translate:none!important;
+ }
+ .nav-sidebar.visible .nav-item:not(.active):hover > :is(.material-symbols-rounded,svg),
+ #view-app .tool-section .liquid-btn:hover:not(:disabled),
+ #view-app .tool-section label.liquid-btn:hover,
+ #view-app .tool-section .ctk-row-menu > summary:hover{
   transition:none!important;translate:none!important;
  }
 }
