@@ -282,10 +282,11 @@
       return {offset:t,opacity:Math.min(1,.74+.26*p),
         transform:'translate3d(0,'+((1-p)*5).toFixed(3)+'px,0)'};
     });
-    const observers=[];
+    const observed=new WeakSet();
     const observe=(id,selector)=>{
       const target=document.getElementById(id);
-      if(!target)return;
+      if(!target || observed.has(target))return;
+      observed.add(target);
       const observer=new MutationObserver(records=>{
         if(preference?.matches || document.visibilityState!=='visible' ||
            root.classList.contains('forge-route-running'))return;
@@ -317,10 +318,7 @@
     if(table){
       const discover=new MutationObserver(()=>{
         for(const [id,selector] of targets.slice(7)){
-          if(document.getElementById(id) && !document.getElementById(id).dataset.forgeResultObserved){
-            document.getElementById(id).dataset.forgeResultObserved='1';
-            observe(id,selector);
-          }
+          observe(id,selector);
         }
       });
       discover.observe(table,{childList:true,subtree:true});
