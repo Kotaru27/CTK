@@ -14,7 +14,8 @@
   // A visitor must explicitly choose the present modal's opt-out.
   const permanentKey='forge_whatsnew_dismissed_2026_v3';
   let opened=false,preparing=false,previousFocus=null;
-  let automaticTimer=0,autoAttempted=false,openSerial=0,fontsReady=null;
+  let autoAttempted=false,openSerial=0,fontsReady=null;
+  const paintGate=typeof window!=='undefined'?window.__forgePaintGate:null;
   function safeGet(key){
     try{if(localStorage.getItem(key)==='1')return true;}catch(_){}
     try{return sessionStorage.getItem(key)==='1';}catch(_){return false;}
@@ -74,7 +75,6 @@
     if(!automatic&&document.body.classList.contains('forge-opening'))
       document.getElementById('forgeIntroSkip')?.click();
     if(!homeActive()||(automatic&&safeGet(permanentKey)))return;
-    clearTimeout(automaticTimer);
     autoAttempted=true;
     preparing=true;
     const token=++openSerial;
@@ -82,10 +82,11 @@
     readyTypography().then(()=>{
       if(token!==openSerial)return;
       preparing=false;
-      if(!homeActive())return;
+      if(!homeActive()){paintGate?.endWelcome?.();return;}
       opened=true;
       previousFocus=restoreFocus;
       root.hidden=false;
+      paintGate?.endWelcome?.();
       trigger?.setAttribute?.('aria-expanded','true');
       never.focus({preventScroll:true});
     });
@@ -106,9 +107,15 @@
     // ordinary visitor sees it on every fresh page until explicit opt-out.
     let auditSkip=false;
     try{auditSkip=sessionStorage.getItem('forge_whatsnew_suppress')==='1';}catch(_){}
-    if(autoAttempted||safeGet(permanentKey)||auditSkip)return;
+    if(autoAttempted||safeGet(permanentKey)||auditSkip||
+       paintGate?.expired){
+      paintGate?.endWelcome?.();
+      return;
+    }
     autoAttempted=true;
-    automaticTimer=setTimeout(()=>open(true),420);
+    // Fonts were requested during the intro, not after it. Open in the
+    // completion turn; the first-paint curtain bridges any slow font.
+    open(true);
   }
   function focusables(){
     return [...dialog.querySelectorAll(
@@ -136,8 +143,9 @@
     trigger.setAttribute?.('aria-expanded','false');
     trigger.addEventListener('click',()=>open(false));
   }
-  // The actual introduction is the source of truth; never run a
-  // competing timeout that appears over a partially animated home.
+  // Start preparing presentation fonts while the logo is still typing.
+  // This avoids the previous 420ms dead time plus network delay.
+  readyTypography();
   document.addEventListener('forge:intro-complete',queueAutomatic,{once:true});
   if(document.documentElement.dataset.forgeIntroFinished==='1'||
      (!document.body.classList.contains('forge-opening')&&
