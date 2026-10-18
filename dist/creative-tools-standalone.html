@@ -6069,6 +6069,54 @@ html.forge-launch-fallback-kola #view-home .combined-home-layout .forge-hero-nam
     animation:none!important;
   }
 }
+
+/* FORGE / MICRO-KINETIC TYPE V7
+   A controlled, fading 3D echo of each newly typed glyph. The underlying
+   Kola wordmark stays one unsplit native text run, never re-kerned. */
+.forge-intro.forge-intro-ready .forge-intro-kinetic-glyph{
+  position:absolute;
+  top:.055em;
+  display:block;
+  width:max-content;
+  height:auto;
+  font:inherit;
+  font-kerning:inherit;
+  letter-spacing:inherit;
+  line-height:inherit;
+  color:inherit;
+  white-space:pre;
+  opacity:0;
+  pointer-events:none;
+  clip-path:none!important;
+  overflow:visible!important;
+  transform-style:preserve-3d;
+  backface-visibility:hidden;
+  will-change:transform,opacity;
+  z-index:2;
+}
+@media(prefers-reduced-motion:reduce){
+  .forge-intro .forge-intro-kinetic-glyph{display:none!important}
+}
+/* No orange global focus box on the editorial updates link. Preserve a
+   quiet dark-green keyboard underline instead of losing focus feedback. */
+#view-home #forgeWhatsNewTrigger,
+#view-home #forgeWhatsNewTrigger:focus,
+#view-home #forgeWhatsNewTrigger:focus-visible{
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  background:transparent!important;
+}
+#view-home #forgeWhatsNewTrigger:focus-visible{
+  outline:none!important;
+  text-decoration:underline!important;
+  text-decoration-color:#245b41!important;
+  text-decoration-thickness:2px!important;
+  text-underline-offset:5px!important;
+}
+#view-home #forgeWhatsNewTrigger:focus:not(:focus-visible){
+  outline:none!important;
+}
 </style>
 <style id="forge-video-route-styles">/* THE FORGE / UNIFIED WORKSPACE ROUTES
    Eight exact tool pairings; cards, controls and media are never re-laid out.
@@ -17295,6 +17343,7 @@ const CTKDownloadRenamer = (() => {
   const gate=window.__forgePaintGate;
   const caret=mark?.querySelector('.forge-intro-caret');
   const timers=new Set();
+  const kineticGlyphs=new Set();
   let complete=false,observer=null,started=false;
 
   const notify=()=>{
@@ -17313,6 +17362,8 @@ const CTKDownloadRenamer = (() => {
     complete=true;
     for(const id of timers)clearTimeout(id);
     timers.clear();
+    for(const glyph of kineticGlyphs)glyph.remove?.();
+    kineticGlyphs.clear();
     document.removeEventListener('keydown',onKey);
     document.removeEventListener('visibilitychange',onVisibility);
     observer?.disconnect();
@@ -17377,6 +17428,40 @@ const CTKDownloadRenamer = (() => {
     loadFont('400 130px "Kola"').then(faces=>{available[0]=!!faces?.length;}),
     loadFont('600 12px "Plus Jakarta Sans"').then(faces=>{available[1]=!!faces?.length;})
   ];
+  // Adapted from kinetic typography: each new character leaves a tiny,
+  // deterministic 3D ink settle. The actual name remains ONE native text
+  // run, so Kola's kerning and descenders are never split or masked.
+  // The transient glyph echoes are decorative and never alter layout.
+  function kineticArrival(char,index){
+    if(!char.trim()||complete||typeof document.createElement!=='function'||
+       typeof typed.getBoundingClientRect!=='function')return;
+    const glyph=document.createElement('span');
+    glyph.className='forge-intro-kinetic-glyph';
+    glyph.setAttribute('aria-hidden','true');
+    glyph.textContent=char;
+    mark.appendChild(glyph);
+    kineticGlyphs.add(glyph);
+    const nativeWidth=typed.getBoundingClientRect().width;
+    const glyphWidth=glyph.getBoundingClientRect().width;
+    if(!Number.isFinite(nativeWidth)||!Number.isFinite(glyphWidth)){
+      glyph.remove();kineticGlyphs.delete(glyph);return;
+    }
+    glyph.style.left='calc(.075em + '+Math.max(0,nativeWidth-glyphWidth).toFixed(2)+'px)';
+    const release=()=>{glyph.remove();kineticGlyphs.delete(glyph);};
+    const direction=index%2===0?-1:1;
+    if(typeof glyph.animate!=='function'){release();return;}
+    try{
+      const flight=glyph.animate([
+        {offset:0,opacity:.30,
+         transform:'translate3d('+(direction*8)+'px,12px,-15px) rotateX(10deg) rotateY('+(direction*9)+'deg)'},
+        {offset:.55,opacity:.16,
+         transform:'translate3d('+(direction*3)+'px,3px,-3px) rotateX(3deg) rotateY('+(direction*3)+'deg)'},
+        {offset:1,opacity:0,
+         transform:'translate3d(0,0,0) rotateX(0deg) rotateY(0deg)'}
+      ],{duration:245,easing:'cubic-bezier(.2,.72,.26,1)',fill:'forwards'});
+      flight.finished.then(release,release);
+    }catch(_){release();}
+  }
   // Tuned typing cadence: calm at the beginning, a natural pause at the
   // word boundary, and a gentle deceleration without artificial holds.
   const intervals=[112,116,121,150,122,118,124,130,122];
@@ -17392,6 +17477,7 @@ const CTKDownloadRenamer = (() => {
       return;
     }
     typed.textContent+=letters[index];
+    kineticArrival(letters[index],index);
     // Composited cursor glides to the new character boundary; its
     // transition is CSS-driven, never a reflowing width animation.
     if(caret&&typeof typed.getBoundingClientRect==='function'){
