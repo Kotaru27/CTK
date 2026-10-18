@@ -7616,6 +7616,48 @@ html.forge-route-running::view-transition-new(root){
 #section-adlinks #adlinksTabContentDownloader #adDlStatus:empty{
   display:none!important;
 }
+
+/* Launch: keep one real upload entry point in each tool header.
+   Existing empty-state copy remains useful; duplicate upload labels do not. */
+#section-logo .logo-empty-upload,
+#section-pdf .pdf-empty-cta,
+#stillsTabContentVideo .vs-empty-cta{
+  display:none!important;
+}
+/* Stills uses the tool-header identity already. Remove the duplicate
+   promotional introduction, but keep the collection title and empty help. */
+#section-stills-boards #stillsTabContentVideo .vs-stage-intro{
+  display:none!important;
+}
+#section-stills-boards #stillsTabContentVideo .vs-collection-header{
+  min-height:64px!important;
+  padding-block:11px!important;
+}
+/* One send action works across every video collection; Filmstrip retains
+   its distinct per-collection workflow inside the frame review dialog. */
+#section-stills-boards #videoHeaderControls #stillsSendAllBoardsBtn{
+  flex:0 0 auto;
+  height:40px!important;
+  padding:0 16px!important;
+  border:1px solid var(--studio-accent,#2d674c)!important;
+  color:var(--studio-accent,#2d674c)!important;
+  background:transparent!important;
+  border-radius:8px!important;
+  font-size:12px!important;
+  font-weight:700!important;
+}
+#section-stills-boards #videoHeaderControls #stillsSendAllBoardsBtn:hover:not(:disabled){
+  background:color-mix(in srgb,var(--studio-accent,#2d674c) 9%,transparent)!important;
+}
+#section-stills-boards #videoHeaderControls #stillsSendAllBoardsBtn:disabled{
+  opacity:.45!important;cursor:not-allowed!important;
+}
+#stillsDetailOverlay #stillsBoardMenu{display:none!important;}
+@media(prefers-reduced-motion:reduce){
+  #section-stills-boards #videoHeaderControls #stillsSendAllBoardsBtn{
+    transition:none!important;
+  }
+}
 </style>
 </head>
 <body class="light-mode">
