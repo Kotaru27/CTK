@@ -111,6 +111,8 @@ export default {
               label.htmlFor="storyNameInput";
               const caption=document.createElement("span");caption.textContent="BOARD NAME";
               input.style.marginBottom="0";input.title=input.value;
+              const oldCaption=input.previousElementSibling;
+              if(oldCaption?.textContent?.trim()==="Board Actions")oldCaption.remove();
               label.append(caption,input);title.insertAdjacentElement("afterend",label);
               const panel=document.getElementById("stillsTabContentStory");
               const section=document.getElementById("section-stills-boards");
