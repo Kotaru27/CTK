@@ -32,6 +32,8 @@ const typeMotionCss=read('src/css/experience/typography-motion-v3.css');
 /* The brand shell is overlaid on the unchanged baseline; never rewrite tool cards. */
 const forgeBrandCss=read('src/css/experience/forge-brand.css');
 const forgeBrandJs=read('src/js/presentation/forge-brand.js');
+const forgePaintCss=read('src/css/experience/forge-first-paint.css');
+const forgePaintJs=read('src/js/presentation/forge-first-paint.js');
 const forgeVideoRouteCss=read('src/css/experience/forge-video-route.css');
 const forgeAdaptiveCss=read('src/css/experience/forge-adaptive-desktop.css');
 const forgeWorkspaceFinishCss=read('src/css/experience/forge-workspace-finish.css');
@@ -112,6 +114,12 @@ const forgeWhatsNew=[
   '</div>'
 ].join('\n');
 function forgeBrand(html,standaloneRelease){
+  // Inline above every blocking third-party script: the browser applies
+  // the first-paint guard before it can draw any of the homepage.
+  if(!html.includes('<head>'))throw Error('Forge early paint head missing');
+  html=html.replace('<head>','<head>\n'+
+    '<style id="forge-first-paint-css">'+forgePaintCss+'</style>\n'+
+    '<script id="forge-first-paint-js">'+forgePaintJs+'</script>\n');
   const start=html.indexOf('<div class="home-wordmark">');
   const end=html.indexOf('<div class="home-grid combined-home-grid" id="homeContent">',start);
   if(start<0||end<0)throw Error('Forge home injection anchors not found: refusing to modify tool cards');
