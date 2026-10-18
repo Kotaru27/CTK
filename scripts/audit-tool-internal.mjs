@@ -83,7 +83,15 @@ try{
  for(const [name,section,mode,method,destination,panel] of modeCases){
   await page.evaluate(({section,mode})=>UI.openTool(section,mode),{section,mode});
   await page.waitForFunction(section=>document.getElementById(section)?.classList.contains('active'),section);
-  await page.waitForFunction(()=>!document.documentElement.classList.contains('forge-route-running'),null,{timeout:2000});
+  console.log('FORGE_INTERNAL_ROUTE_SETTLE '+JSON.stringify({name,state:await page.evaluate(()=>({
+    current:document.querySelector('.nav-sidebar .nav-item.active')?.id,
+    route:document.documentElement.dataset.forgeRoute,
+    travel:document.documentElement.dataset.forgeRouteTravel,
+    running:document.documentElement.classList.contains('forge-route-running'),
+    animations:document.getAnimations({subtree:true}).slice(0,8).map(a=>({
+      state:a.playState,animation:a.animationName||'',duration:a.effect?.getTiming()?.duration}))
+  }))}));
+  await page.waitForFunction(()=>!document.documentElement.classList.contains('forge-route-running'),null,{timeout:2800});
   await page.evaluate(({method,destination})=>UI[method](destination),{method,destination});
   await page.waitForTimeout(40);
   const measurement=await page.evaluate(panel=>{
