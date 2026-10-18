@@ -42,7 +42,7 @@ try {
  await launch.waitFor({state:'visible',timeout:3500});
  check(await page.locator('#forgeWhatsNewTitle').innerText()!=='' ,'Launch title is missing');
  check(await launch.locator('.forge-whatsnew-change').count()===5,
-   'What's New does not include all five rebranding/workflow changes');
+   'Launch popup is missing some rebrand workflow changes');
  const popupGeometry=await launch.locator('.forge-whatsnew-dialog').evaluate(el=>{
    const box=el.getBoundingClientRect();
    return {width:Math.round(box.width),height:Math.round(box.height),
