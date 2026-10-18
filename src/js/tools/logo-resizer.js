@@ -572,8 +572,8 @@ export default {
             };
             const previewArea = card.querySelector(".card-preview-area");
             previewArea.tabIndex = 0;
-            previewArea.setAttribute("role", "button");
-            previewArea.setAttribute("aria-label", "Open Focus Mode for " + file.name);
+            previewArea.setAttribute?.("role", "button");
+            previewArea.setAttribute?.("aria-label", "Open Focus Mode for " + file.name);
             previewArea.onkeydown = (event) => {
               if (event.key === "Enter" || event.key === " ") {
                 event.preventDefault();
