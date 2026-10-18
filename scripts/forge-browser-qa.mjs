@@ -37,10 +37,12 @@ try {
         performance.now()-start>4700){resolve(samples);return;}
      const rect=hero.getBoundingClientRect();
      const style=getComputedStyle(hero);
+     const words=[...document.querySelectorAll('#forgeIntroWordmark .forge-intro-word')];
+     const opacities=words.map(el=>parseFloat(getComputedStyle(el).opacity));
      const source=document.getElementById('forgeIntroWordmark');
      const crop=source?getComputedStyle(source).clipPath:'none';
      samples.push({time:performance.now(),left:rect.left,top:rect.top,
-       width:rect.width,opacity:parseFloat(style.opacity),crop});
+       width:rect.width,opacity:parseFloat(style.opacity),crop,opacities});
      requestAnimationFrame(sample);
    }
    requestAnimationFrame(sample);
@@ -49,8 +51,13 @@ try {
  await intro.waitFor({state:'detached',timeout:6000});
  const trajectory=await trajectoryPromise;
  check(trajectory.length>=12,'Home-native physics intro produced too few frames');
- check(new Set(trajectory.map(f=>f.crop)).size>6,
-   'Intro wordmark ink reveal did not progress across frames');
+ check(trajectory.every(f=>f.crop==='none'),
+   'Intro clipped the Kola g during the wordmark reveal');
+ check(trajectory.some(f=>f.opacities?.length===2),
+   'Two complete animated word spans missing');
+ check(trajectory.some(f=>f.opacities?.[0]<.5)&&
+       trajectory.some(f=>f.opacities?.[0]>.95),
+   'Wordmark first word did not fade in smoothly');
  check(trajectory.every(f=>f.width>0),
    'Wordmark disappeared or collapsed mid-animation');
  if(trajectory.length>=10){
@@ -75,7 +82,10 @@ try {
  check(await launch.evaluate(el=>getComputedStyle(el).backdropFilter.includes('blur(')),
    'Welcome overlay did not blur the underlying homepage');
  await page.screenshot({path:'artifacts/forge-browser/first-rebrand-welcome.png',fullPage:false});
- await page.locator('#forgeWhatsNewEnter').click();
+ // Escape and backdrop cannot dismiss the persistent modal.
+ await page.keyboard.press('Escape');
+ check(await launch.isVisible(),'Escape unexpectedly dismissed persistent welcome');
+ await page.locator('#forgeWhatsNewNever').click();
  await launch.waitFor({state:'hidden',timeout:1500});
 
  const cards=page.locator('button.home-card');
@@ -139,11 +149,9 @@ try {
    'Appearance toggle should be hidden in light-only release');
  await page.locator('#forgeIntro').waitFor({state:'detached',timeout:6000});
  check(await page.locator('#forgeIntro').count()===0,'Intro failed to finish after reload');
- // Closing the dialog did NOT persist an opt-out: it returns on reload.
- await page.locator('#forgeWhatsNew').waitFor({state:'visible',timeout:3600});
- check(await page.locator('#forgeWhatsNew').isVisible(),
-   'Welcome must return until Dont show again was selected');
- await page.locator('#forgeWhatsNewClose').click();
+ // Explicit opt-out persists. The homepage remains accessible on reload.
+ check(await page.locator('#forgeWhatsNew').isHidden(),
+   'Persistent opt-out should suppress automatic welcome after reload');
  await page.screenshot({path:'artifacts/forge-browser/home-light-legacy-dark.png'});
  await context.close();
  // Permanent opt-out is a separate deliberate action. A new context
@@ -156,7 +164,7 @@ try {
  await welcomePage.locator('#forgeWhatsNewNever').click();
  check(await welcomePage.locator('#forgeWhatsNew').isHidden(),
    'Do not show again must dismiss the popup immediately');
- check(await welcomePage.evaluate(()=>localStorage.getItem('forge_whatsnew_dismissed_2026_v1'))==='1',
+ check(await welcomePage.evaluate(()=>localStorage.getItem('forge_whatsnew_dismissed_2026_v3'))==='1',
    'Do not show again was not persisted');
  await welcomePage.reload({waitUntil:'domcontentloaded'});
  await welcomePage.waitForTimeout(120);
