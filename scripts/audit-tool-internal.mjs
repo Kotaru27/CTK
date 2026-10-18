@@ -96,6 +96,29 @@ try{
   assert.ok(measurement.visible,name+' target not visible');
   assert.ok(measurement.motionCount>0,name+' has no internal panel transition');
  }
+ // Measure the new persistent Storyboard mode indicator against the actual
+ // buttons. No fixed geometry, and changing mode must not trigger a new
+ // whole-screen View Transition or remove canvases.
+ await page.evaluate(()=>UI.openTool('section-stills-boards','story'));
+ await page.waitForTimeout(380);
+ const markerResults=[];
+ for(const [mode,buttonId] of [['story','subModeBtnBoard'],['filmstrip','subModeBtnFilmstrip'],['fit','subModeBtnFit'],['story','subModeBtnBoard']]){
+   const routeBefore=await page.evaluate(()=>window.__internalViewTransitions);
+   await page.evaluate(mode=>UI.switchStillsTab(mode),mode);
+   await page.waitForTimeout(340);
+   const m=await page.evaluate(id=>{
+     const indicator=document.getElementById('forgeStoryModeIndicator');
+     const active=document.getElementById(id);
+     const i=indicator?.getBoundingClientRect(),b=active?.getBoundingClientRect();
+     return {exists:!!i&&!!b,opacity:indicator?getComputedStyle(indicator).opacity:'0',
+       inside:!!i&&!!b&&i.left>=b.left-2&&i.right<=b.right+2,
+       width:i?.width||0,active:active?.classList.contains('active-mode')||false};
+   },buttonId);
+   markerResults.push({mode,...m});
+   assert.ok(m.exists&&m.active&&m.inside&&m.width>10,mode+' indicator not aligned to active button '+JSON.stringify(m));
+   assert.equal(await page.evaluate(()=>window.__internalViewTransitions),routeBefore,
+     mode+' triggered an unnecessary whole-screen transition');
+ }
  assert.deepEqual(errors,[],'Internal motion audit produced runtime errors');
  console.log('FORGE_TOOL_INTERNAL_MEASURED '+JSON.stringify(observedTabs));
  console.log('FORGE_TOOL_INTERNAL_MOTION '+JSON.stringify({record,tabs,errors}));
