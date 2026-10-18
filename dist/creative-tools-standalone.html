@@ -5805,12 +5805,13 @@ html.forge-route-running[data-forge-route="story"] #section-stills-boards.active
 #view-app #logoDetailOverlay.active {
   animation:forge-focus-in 360ms linear both!important;
 }
+/* Focus Mode remains flush to the editor's right edge throughout the
+   animation. The panel's geometry is never translated or scaled. */
 @keyframes forge-focus-in {
-  0%{opacity:.55;translate:11px 0}
-  24%{opacity:.88;translate:5px 0}
-  52%{opacity:1;translate:1.5px 0}
-  78%{opacity:1;translate:.22px 0}
-  100%{opacity:1;translate:0 0}
+  0%{opacity:.55}
+  30%{opacity:.86}
+  60%{opacity:.97}
+  100%{opacity:1}
 }
 .presets-dialog,
 #view-app .modal-content,
