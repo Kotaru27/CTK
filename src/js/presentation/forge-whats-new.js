@@ -47,12 +47,18 @@
       try{return Promise.resolve(document.fonts?.load?.(spec)||[]).catch(()=>[]);}
       catch(_){return Promise.resolve([]);}
     };
+    // A single hung font must not discard the faces that did load:
+    // capture readiness independently before the bounded deadline.
+    const available=specs.map(()=>false);
+    const requests=specs.map(([spec],i)=>
+      load(spec).then(faces=>{available[i]=!!faces?.length;})
+    );
     fontsReady=Promise.race([
-      Promise.all(specs.map(([spec])=>load(spec))),
-      new Promise(resolve=>setTimeout(()=>resolve(null),1850))
-    ]).then(results=>{
+      Promise.all(requests),
+      new Promise(resolve=>setTimeout(resolve,1850))
+    ]).then(()=>{
       specs.forEach(([,className],i)=>{
-        if(!results?.[i]?.length||
+        if(!available[i]||
            (className==='forge-fallback-kola'&&
             document.documentElement.classList.contains('forge-launch-fallback-kola')))
           root.classList.add(className);
