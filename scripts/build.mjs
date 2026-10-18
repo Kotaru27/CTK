@@ -57,7 +57,7 @@ const forgeHero=[
   '<div class="forge-after-hero"><strong>Choose a tool</strong></div>'
 ].join('\n');
 const forgeIntro=[
-  '<div class="forge-intro" id="forgeIntro" role="region" aria-label="The Forge introduction">',
+  '<div class="forge-intro" id="forgeIntro" role="region" aria-label="The Forge introduction" hidden>',
   ' <div class="forge-intro-layout">',
   '  <div class="forge-intro-label">CREATIVE TOOL KIT / REIMAGINED</div>',
   '  <div class="forge-intro-type" id="forgeIntroType" role="img" aria-label="The Forge">',
