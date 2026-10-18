@@ -535,3 +535,19 @@ body.forge-opening.forge-home-arriving #forgeHeroName{
  animation:forge-intro-meta 850ms cubic-bezier(.21,.73,.3,1) 1000ms both
 }
 .forge-intro.forge-intro-leaving .forge-intro-caption{opacity:0!important}
+
+/* Typography stability: render the entire intro in one resolved family.
+   When Kola cannot load, freeze both traveling title and destination to
+   the same system face so the shared-element geometry never jumps. */
+html.forge-launch-fallback-kola .forge-intro-wordmark,
+html.forge-launch-fallback-kola #view-home .combined-home-layout .forge-hero-name {
+  font-family:Arial,Helvetica,sans-serif!important;
+}
+.forge-intro.forge-intro-fallback-ui .forge-intro-label,
+.forge-intro.forge-intro-fallback-ui .forge-intro-caption>span {
+  font-family:Arial,Helvetica,sans-serif!important;
+}
+/* Skip stays immediately available and never changes font mid-click. */
+.forge-intro.forge-intro-ready .forge-intro-skip {
+  font-family:Arial,Helvetica,sans-serif!important;
+}
