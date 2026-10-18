@@ -31,6 +31,8 @@ function setup({font='missing',reduced=false,activeTool=false,suppress=false}={}
     forgeIntroSkip:skip,'view-home':home,'view-app':app})[id]||null,
   addEventListener(){},removeEventListener(){},dispatchEvent(){}};
  if(font==='loaded')document.fonts={load:()=>Promise.resolve([{status:'loaded'}])};
+ if(font==='secondary-hang')document.fonts={load:spec=>
+  spec.includes('Kola')?Promise.resolve([{status:'loaded'}]):new Promise(()=>{})};
  if(font==='hang')document.fonts={load:()=>new Promise(()=>{})};
  if(font==='reject')document.fonts={load:()=>Promise.reject(Error('offline'))};
  const context={document,window:{matchMedia:()=>({matches:reduced})},
@@ -96,4 +98,15 @@ test('successful Kola and interface font loads never force fallback',async()=>{
  assert.equal(h.animations.length,1);
  assert.equal(h.document.documentElement.classList.contains('forge-launch-fallback-kola'),false);
  assert.equal(h.intro.classList.contains('forge-intro-fallback-ui'),false);
+});
+
+test('Kola remains selected even when only helper typography stalls',async()=>{
+ const h=setup({font:'secondary-hang'});
+ await microtasks();
+ assert.equal(h.animations.length,0);
+ h.timers[1]();await microtasks();
+ assert.equal(h.animations.length,1);
+ assert.equal(h.document.documentElement.classList.contains('forge-launch-fallback-kola'),false);
+ assert.equal(h.intro.classList.contains('forge-intro-fallback-ui'),true);
+ h.skip.click();
 });
