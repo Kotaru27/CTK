@@ -5,9 +5,8 @@
   'use strict';
   var intro = document.getElementById('forgeIntro');
   var mark = document.getElementById('forgeIntroWordmark');
-  var glyphLayer = document.getElementById('forgeIntroGlyphs');
   var destination = document.getElementById('forgeHeroName');
-  if (!intro || !mark || !glyphLayer || !destination) return;
+  if (!intro || !mark || !destination) return;
 
   var reduced = window.matchMedia &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -62,29 +61,6 @@
   // Failsafe for background tabs / disconnected animations.
   after(3200,cleanup);
 
-  function layoutGlyphs() {
-    // A single Kola text run has kerning that separate characters do not.
-    // Measure each character in that *real* wordmark with a DOM Range so
-    // every outline/ink overlay begins at the same advance position.
-    var node = mark.firstChild;
-    if (!node || node.nodeType !== 3) return false;
-    var base = mark.getBoundingClientRect();
-    if (!base.width || !base.height) return false;
-    var children = glyphLayer.children;
-    if (children.length !== node.length) return false;
-    var range = document.createRange();
-    for (var i=0; i<node.length; i++) {
-      range.setStart(node,i);
-      range.setEnd(node,i+1);
-      var glyph = children[i];
-      if (glyph.classList.contains('forge-intro-gap')) continue;
-      var rect = range.getBoundingClientRect();
-      glyph.style.left = (rect.left-base.left)+'px';
-      glyph.style.top = (rect.top-base.top)+'px';
-    }
-    range.detach && range.detach();
-    return true;
-  }
   function moveToHome() {
     if (finished) return;
     var from=mark.getBoundingClientRect();
@@ -118,11 +94,11 @@
   }
   function play() {
     if (finished) return;
-    if (!layoutGlyphs()) { cleanup(); return; }
+    // A single Kola wordmark stays kerned throughout the compositor-mask
+    // reveal and the FLIP handoff. No per-letter DOM transforms to jitter
+    // on 60/100 Hz monitors.
     intro.classList.add('is-playing');
-    // The last letter settles near .92s. The wordmark crossfades
-    // immediately, then flies without a long static hold.
-    after(995,settle);
+    after(920,settle);
   }
   // Start only with Kola ready. If the external font is unavailable,
   // show the usable homepage instead of animating fallback and snapping.

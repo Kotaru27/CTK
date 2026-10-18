@@ -167,7 +167,12 @@ body.forge-opening.forge-home-arriving .forge-hero-bottom {
   position:absolute;top:clamp(-50px,-4vw,-32px);left:0;
   font:650 10px/1.5 "Plus Jakarta Sans",sans-serif;
   letter-spacing:.19em;text-transform:uppercase;color:#678172;
-  transition:opacity .23s linear;
+  opacity:0;
+  transform:translate3d(0,7px,0);
+  transition:opacity .35s cubic-bezier(.22,.8,.28,1),transform .46s cubic-bezier(.22,.8,.28,1);
+}
+.forge-intro.is-playing .forge-intro-label{
+  opacity:1;transform:translate3d(0,0,0);
 }
 /* The layout footprint is ALWAYS the final kerning-correct Kola string.
    The construction layer is separately positioned and never changes width. */
@@ -181,6 +186,9 @@ body.forge-opening.forge-home-arriving .forge-hero-bottom {
   line-height:1.08;letter-spacing:-.028em;
   color:#123b2c;
 }
+/* THE FORGE / Formed in Motion.
+   A single kerned Kola wordmark is unveiled by a moving ivory cover.
+   The mask travels on the compositor; text remains its real final size. */
 .forge-intro-wordmark {
   display:block;
   white-space:nowrap;
@@ -188,62 +196,49 @@ body.forge-opening.forge-home-arriving .forge-hero-bottom {
   transform-origin:top left;
   will-change:transform,opacity;
 }
-.forge-intro-glyphs {
-  position:absolute;inset:0;pointer-events:none;
-  opacity:1;
-  transition:opacity .11s linear;
+.forge-intro-type::before{
+  content:"";
+  position:absolute;z-index:3;
+  top:-3px;bottom:-3px;left:-2px;
+  width:calc(100% + 6px);
+  background:#f8f7ed;
+  pointer-events:none;
+  transform:translate3d(0,0,0);
 }
-.forge-intro-glyph {
-  position:absolute;left:0;top:0;
-  display:block;line-height:inherit;
+.forge-intro.is-playing .forge-intro-wordmark{opacity:1;}
+.forge-intro.is-playing .forge-intro-type::before{
+  animation:forge-mask-unveil 795ms cubic-bezier(.68,0,.22,1) 75ms both;
 }
-.forge-intro-gap {display:none;}
-.forge-intro-outline,
-.forge-intro-fill {display:block;white-space:pre;}
-.forge-intro-outline {
-  position:relative;color:transparent;
-  -webkit-text-stroke:1px rgba(18,59,44,.40);
-  opacity:0;transform:translate3d(0,8px,0);
+@keyframes forge-mask-unveil{
+  from{transform:translate3d(0,0,0)}
+  to{transform:translate3d(105%,0,0)}
 }
-.forge-intro-fill {
-  position:absolute;inset:0;color:#123b2c;
-  opacity:0;transform:translate3d(0,10px,0) scale(.99);
-  transform-origin:50% 50%;
+.forge-intro.is-settled .forge-intro-type::before,
+.forge-intro--handoff .forge-intro-type::before{
+  transform:translate3d(105%,0,0);
 }
-.forge-intro.is-playing .forge-intro-outline {
-  animation:forge-draw-guide .29s cubic-bezier(.18,.82,.31,1) both;
-  animation-delay:calc(.03s + var(--step)*.05s);
-}
-.forge-intro.is-playing .forge-intro-fill {
-  animation:forge-draw-letter .42s cubic-bezier(.16,.86,.29,1) both;
-  animation-delay:calc(.10s + var(--step)*.05s);
-}
-@keyframes forge-draw-guide {
-  from{opacity:0;transform:translate3d(0,8px,0)}
-  to{opacity:1;transform:translate3d(0,0,0)}
-}
-@keyframes forge-draw-letter {
-  from{opacity:0;transform:translate3d(0,10px,0) scale(.99)}
-  to{opacity:1;transform:translate3d(0,0,0) scale(1)}
-}
-/* A single hairline follows the wordmark's writing rhythm; it exits
-   with the wordmark rather than flashing after the home handoff. */
+/* A measured hairline follows the wordmark rather than adding decorative
+   particles, spinning marks or an extra loading state. */
 .forge-intro-type::after{
-  content:"";position:absolute;left:0;bottom:-12px;
-  width:100%;height:1px;background:rgba(27,79,52,.34);
-  transform-origin:left center;transform:scaleX(0);opacity:0;
+  content:"";position:absolute;left:0;bottom:-11px;
+  width:100%;height:1px;
+  background:rgba(27,79,52,.32);
+  transform-origin:left center;
+  transform:scaleX(0);
+  opacity:0;
   pointer-events:none;
 }
 .forge-intro.is-playing .forge-intro-type::after{
-  animation:forge-ink-rule .82s cubic-bezier(.22,.82,.27,1) both;
+  animation:forge-ink-rule 795ms cubic-bezier(.68,0,.22,1) 75ms both;
 }
-.forge-intro--handoff .forge-intro-type::after{opacity:0!important;}
+.forge-intro--handoff .forge-intro-type::after{
+  animation:none!important;opacity:0!important;
+}
 @keyframes forge-ink-rule{
   0%{opacity:0;transform:scaleX(0)}
-  16%{opacity:.9}
-  100%{opacity:.9;transform:scaleX(1)}
+  12%{opacity:.75}
+  100%{opacity:.75;transform:scaleX(1)}
 }
-.forge-intro.is-settled .forge-intro-glyphs {opacity:0;}
 .forge-intro.is-settled .forge-intro-wordmark {
   opacity:1;
   transition:opacity .16s linear;
@@ -254,7 +249,12 @@ body.forge-opening.forge-home-arriving .forge-hero-bottom {
   margin-top:clamp(24px,3.2vw,44px);padding-top:14px;
   font:600 10px/1.4 "Plus Jakarta Sans",sans-serif;
   letter-spacing:.2em;text-transform:uppercase;color:#678172;
-  transition:opacity .23s linear;
+  opacity:0;
+  transform:translate3d(0,7px,0);
+  transition:opacity .36s cubic-bezier(.22,.8,.28,1) .26s,transform .4s cubic-bezier(.22,.8,.28,1) .26s;
+}
+.forge-intro.is-playing .forge-intro-caption{
+  opacity:1;transform:translate3d(0,0,0);
 }
 .forge-intro-skip {
   font:600 11px/1.5 "Plus Jakarta Sans",sans-serif;
@@ -263,8 +263,12 @@ body.forge-opening.forge-home-arriving .forge-hero-bottom {
 }
 .forge-intro-skip:hover {text-decoration:underline;text-underline-offset:4px;}
 .forge-intro-skip:focus-visible {outline:2px solid #123b2c;outline-offset:4px;}
-.forge-intro--handoff .forge-intro-label,
-.forge-intro--handoff .forge-intro-caption {opacity:0;}
+.forge-intro.forge-intro--handoff .forge-intro-label,
+.forge-intro.forge-intro--handoff .forge-intro-caption{
+  opacity:0;
+  transform:translate3d(0,-4px,0);
+  transition-delay:0ms;
+}
 @media(max-width:1160px) {
   .forge-hero-middle {gap:clamp(24px,4vw,52px);}
   #view-home .combined-home-layout .forge-hero-name {font-size:clamp(71px,8.6vw,122px)!important;}

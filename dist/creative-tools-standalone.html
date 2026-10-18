@@ -5465,7 +5465,12 @@ body.forge-opening.forge-home-arriving .forge-hero-bottom {
   position:absolute;top:clamp(-50px,-4vw,-32px);left:0;
   font:650 10px/1.5 "Plus Jakarta Sans",sans-serif;
   letter-spacing:.19em;text-transform:uppercase;color:#678172;
-  transition:opacity .23s linear;
+  opacity:0;
+  transform:translate3d(0,7px,0);
+  transition:opacity .35s cubic-bezier(.22,.8,.28,1),transform .46s cubic-bezier(.22,.8,.28,1);
+}
+.forge-intro.is-playing .forge-intro-label{
+  opacity:1;transform:translate3d(0,0,0);
 }
 /* The layout footprint is ALWAYS the final kerning-correct Kola string.
    The construction layer is separately positioned and never changes width. */
@@ -5479,6 +5484,9 @@ body.forge-opening.forge-home-arriving .forge-hero-bottom {
   line-height:1.08;letter-spacing:-.028em;
   color:#123b2c;
 }
+/* THE FORGE / Formed in Motion.
+   A single kerned Kola wordmark is unveiled by a moving ivory cover.
+   The mask travels on the compositor; text remains its real final size. */
 .forge-intro-wordmark {
   display:block;
   white-space:nowrap;
@@ -5486,62 +5494,49 @@ body.forge-opening.forge-home-arriving .forge-hero-bottom {
   transform-origin:top left;
   will-change:transform,opacity;
 }
-.forge-intro-glyphs {
-  position:absolute;inset:0;pointer-events:none;
-  opacity:1;
-  transition:opacity .11s linear;
+.forge-intro-type::before{
+  content:"";
+  position:absolute;z-index:3;
+  top:-3px;bottom:-3px;left:-2px;
+  width:calc(100% + 6px);
+  background:#f8f7ed;
+  pointer-events:none;
+  transform:translate3d(0,0,0);
 }
-.forge-intro-glyph {
-  position:absolute;left:0;top:0;
-  display:block;line-height:inherit;
+.forge-intro.is-playing .forge-intro-wordmark{opacity:1;}
+.forge-intro.is-playing .forge-intro-type::before{
+  animation:forge-mask-unveil 795ms cubic-bezier(.68,0,.22,1) 75ms both;
 }
-.forge-intro-gap {display:none;}
-.forge-intro-outline,
-.forge-intro-fill {display:block;white-space:pre;}
-.forge-intro-outline {
-  position:relative;color:transparent;
-  -webkit-text-stroke:1px rgba(18,59,44,.40);
-  opacity:0;transform:translate3d(0,8px,0);
+@keyframes forge-mask-unveil{
+  from{transform:translate3d(0,0,0)}
+  to{transform:translate3d(105%,0,0)}
 }
-.forge-intro-fill {
-  position:absolute;inset:0;color:#123b2c;
-  opacity:0;transform:translate3d(0,10px,0) scale(.99);
-  transform-origin:50% 50%;
+.forge-intro.is-settled .forge-intro-type::before,
+.forge-intro--handoff .forge-intro-type::before{
+  transform:translate3d(105%,0,0);
 }
-.forge-intro.is-playing .forge-intro-outline {
-  animation:forge-draw-guide .29s cubic-bezier(.18,.82,.31,1) both;
-  animation-delay:calc(.03s + var(--step)*.05s);
-}
-.forge-intro.is-playing .forge-intro-fill {
-  animation:forge-draw-letter .42s cubic-bezier(.16,.86,.29,1) both;
-  animation-delay:calc(.10s + var(--step)*.05s);
-}
-@keyframes forge-draw-guide {
-  from{opacity:0;transform:translate3d(0,8px,0)}
-  to{opacity:1;transform:translate3d(0,0,0)}
-}
-@keyframes forge-draw-letter {
-  from{opacity:0;transform:translate3d(0,10px,0) scale(.99)}
-  to{opacity:1;transform:translate3d(0,0,0) scale(1)}
-}
-/* A single hairline follows the wordmark's writing rhythm; it exits
-   with the wordmark rather than flashing after the home handoff. */
+/* A measured hairline follows the wordmark rather than adding decorative
+   particles, spinning marks or an extra loading state. */
 .forge-intro-type::after{
-  content:"";position:absolute;left:0;bottom:-12px;
-  width:100%;height:1px;background:rgba(27,79,52,.34);
-  transform-origin:left center;transform:scaleX(0);opacity:0;
+  content:"";position:absolute;left:0;bottom:-11px;
+  width:100%;height:1px;
+  background:rgba(27,79,52,.32);
+  transform-origin:left center;
+  transform:scaleX(0);
+  opacity:0;
   pointer-events:none;
 }
 .forge-intro.is-playing .forge-intro-type::after{
-  animation:forge-ink-rule .82s cubic-bezier(.22,.82,.27,1) both;
+  animation:forge-ink-rule 795ms cubic-bezier(.68,0,.22,1) 75ms both;
 }
-.forge-intro--handoff .forge-intro-type::after{opacity:0!important;}
+.forge-intro--handoff .forge-intro-type::after{
+  animation:none!important;opacity:0!important;
+}
 @keyframes forge-ink-rule{
   0%{opacity:0;transform:scaleX(0)}
-  16%{opacity:.9}
-  100%{opacity:.9;transform:scaleX(1)}
+  12%{opacity:.75}
+  100%{opacity:.75;transform:scaleX(1)}
 }
-.forge-intro.is-settled .forge-intro-glyphs {opacity:0;}
 .forge-intro.is-settled .forge-intro-wordmark {
   opacity:1;
   transition:opacity .16s linear;
@@ -5552,7 +5547,12 @@ body.forge-opening.forge-home-arriving .forge-hero-bottom {
   margin-top:clamp(24px,3.2vw,44px);padding-top:14px;
   font:600 10px/1.4 "Plus Jakarta Sans",sans-serif;
   letter-spacing:.2em;text-transform:uppercase;color:#678172;
-  transition:opacity .23s linear;
+  opacity:0;
+  transform:translate3d(0,7px,0);
+  transition:opacity .36s cubic-bezier(.22,.8,.28,1) .26s,transform .4s cubic-bezier(.22,.8,.28,1) .26s;
+}
+.forge-intro.is-playing .forge-intro-caption{
+  opacity:1;transform:translate3d(0,0,0);
 }
 .forge-intro-skip {
   font:600 11px/1.5 "Plus Jakarta Sans",sans-serif;
@@ -5561,8 +5561,12 @@ body.forge-opening.forge-home-arriving .forge-hero-bottom {
 }
 .forge-intro-skip:hover {text-decoration:underline;text-underline-offset:4px;}
 .forge-intro-skip:focus-visible {outline:2px solid #123b2c;outline-offset:4px;}
-.forge-intro--handoff .forge-intro-label,
-.forge-intro--handoff .forge-intro-caption {opacity:0;}
+.forge-intro.forge-intro--handoff .forge-intro-label,
+.forge-intro.forge-intro--handoff .forge-intro-caption{
+  opacity:0;
+  transform:translate3d(0,-4px,0);
+  transition-delay:0ms;
+}
 @media(max-width:1160px) {
   .forge-hero-middle {gap:clamp(24px,4vw,52px);}
   #view-home .combined-home-layout .forge-hero-name {font-size:clamp(71px,8.6vw,122px)!important;}
@@ -8007,7 +8011,6 @@ html:has(.forge-whatsnew:not([hidden])){overflow:hidden;scrollbar-gutter:stable;
   <div class="forge-intro-label">CREATIVE TOOL KIT / REIMAGINED</div>
   <div class="forge-intro-type" id="forgeIntroType" role="img" aria-label="The Forge">
    <div class="forge-intro-wordmark" id="forgeIntroWordmark" aria-hidden="true">The Forge</div>
-   <div class="forge-intro-glyphs" id="forgeIntroGlyphs" aria-hidden="true"><span class="forge-intro-glyph" style="--step:0" aria-hidden="true"><span class="forge-intro-outline">T</span><span class="forge-intro-fill">T</span></span><span class="forge-intro-glyph" style="--step:1" aria-hidden="true"><span class="forge-intro-outline">h</span><span class="forge-intro-fill">h</span></span><span class="forge-intro-glyph" style="--step:2" aria-hidden="true"><span class="forge-intro-outline">e</span><span class="forge-intro-fill">e</span></span><span class="forge-intro-gap" aria-hidden="true"></span><span class="forge-intro-glyph" style="--step:4" aria-hidden="true"><span class="forge-intro-outline">F</span><span class="forge-intro-fill">F</span></span><span class="forge-intro-glyph" style="--step:5" aria-hidden="true"><span class="forge-intro-outline">o</span><span class="forge-intro-fill">o</span></span><span class="forge-intro-glyph" style="--step:6" aria-hidden="true"><span class="forge-intro-outline">r</span><span class="forge-intro-fill">r</span></span><span class="forge-intro-glyph" style="--step:7" aria-hidden="true"><span class="forge-intro-outline">g</span><span class="forge-intro-fill">g</span></span><span class="forge-intro-glyph" style="--step:8" aria-hidden="true"><span class="forge-intro-outline">e</span><span class="forge-intro-fill">e</span></span></div>
   </div>
   <div class="forge-intro-caption"><span>EIGHT TOOLS / ONE WORKSPACE</span>
    <button type="button" class="forge-intro-skip" id="forgeIntroSkip" aria-label="Skip introduction">Skip intro ↗</button>
@@ -16830,9 +16833,8 @@ const CTKDownloadRenamer = (() => {
   'use strict';
   var intro = document.getElementById('forgeIntro');
   var mark = document.getElementById('forgeIntroWordmark');
-  var glyphLayer = document.getElementById('forgeIntroGlyphs');
   var destination = document.getElementById('forgeHeroName');
-  if (!intro || !mark || !glyphLayer || !destination) return;
+  if (!intro || !mark || !destination) return;
 
   var reduced = window.matchMedia &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -16887,29 +16889,6 @@ const CTKDownloadRenamer = (() => {
   // Failsafe for background tabs / disconnected animations.
   after(3200,cleanup);
 
-  function layoutGlyphs() {
-    // A single Kola text run has kerning that separate characters do not.
-    // Measure each character in that *real* wordmark with a DOM Range so
-    // every outline/ink overlay begins at the same advance position.
-    var node = mark.firstChild;
-    if (!node || node.nodeType !== 3) return false;
-    var base = mark.getBoundingClientRect();
-    if (!base.width || !base.height) return false;
-    var children = glyphLayer.children;
-    if (children.length !== node.length) return false;
-    var range = document.createRange();
-    for (var i=0; i<node.length; i++) {
-      range.setStart(node,i);
-      range.setEnd(node,i+1);
-      var glyph = children[i];
-      if (glyph.classList.contains('forge-intro-gap')) continue;
-      var rect = range.getBoundingClientRect();
-      glyph.style.left = (rect.left-base.left)+'px';
-      glyph.style.top = (rect.top-base.top)+'px';
-    }
-    range.detach && range.detach();
-    return true;
-  }
   function moveToHome() {
     if (finished) return;
     var from=mark.getBoundingClientRect();
@@ -16943,11 +16922,11 @@ const CTKDownloadRenamer = (() => {
   }
   function play() {
     if (finished) return;
-    if (!layoutGlyphs()) { cleanup(); return; }
+    // A single Kola wordmark stays kerned throughout the compositor-mask
+    // reveal and the FLIP handoff. No per-letter DOM transforms to jitter
+    // on 60/100 Hz monitors.
     intro.classList.add('is-playing');
-    // The last letter settles near .92s. The wordmark crossfades
-    // immediately, then flies without a long static hold.
-    after(995,settle);
+    after(920,settle);
   }
   // Start only with Kola ready. If the external font is unavailable,
   // show the usable homepage instead of animating fallback and snapping.
