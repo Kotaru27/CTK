@@ -61,7 +61,7 @@ const forgeIntro=[
   ' <div class="forge-intro-layout">',
   '  <div class="forge-intro-label">CREATIVE TOOL KIT / REIMAGINED</div>',
   '  <div class="forge-intro-type" id="forgeIntroType" role="img" aria-label="The Forge">',
-  '   <div class="forge-intro-wordmark" id="forgeIntroWordmark" aria-hidden="true">The Forge</div>',
+  '   <div class="forge-intro-wordmark" id="forgeIntroWordmark" aria-hidden="true"><span class="forge-intro-word forge-intro-word-first">The</span> <span class="forge-intro-word forge-intro-word-second">Forge</span></div>',
   '  </div>',
   '  <div class="forge-intro-caption"><span>EIGHT TOOLS / ONE WORKSPACE</span>',
   '   <button type="button" class="forge-intro-skip" id="forgeIntroSkip" aria-label="Skip introduction">Skip intro ↗</button>',
@@ -84,7 +84,7 @@ const forgeWhatsNew=[
   '  <div class="forge-whatsnew-content">',
   '   <div class="forge-whatsnew-topline">',
   '    <span class="forge-whatsnew-section-label">WHAT\'S NEW / THE FORGE</span>',
-  '    <button type="button" class="forge-whatsnew-close" id="forgeWhatsNewClose" aria-label="Close What\'s New">×</button>',
+
   '   </div>',
   '   <div class="forge-whatsnew-changes">',
   '    <article class="forge-whatsnew-change"><span class="forge-whatsnew-number">01</span><div>',
@@ -104,8 +104,8 @@ const forgeWhatsNew=[
   '    </div></article>',
   '   </div>',
   '   <div class="forge-whatsnew-actions">',
-  '    <button type="button" id="forgeWhatsNewNever" class="forge-whatsnew-never">Don\'t show again</button>',
-  '    <button type="button" id="forgeWhatsNewEnter" class="forge-whatsnew-enter">Explore The Forge <span aria-hidden="true">→</span></button>',
+  '    <button type="button" id="forgeWhatsNewNever" class="forge-whatsnew-enter">Don\'t show again <span aria-hidden="true">→</span></button>',
+
   '   </div>',
   '  </div>',
   ' </section>',
@@ -137,7 +137,7 @@ function forgeBrand(html,standaloneRelease){
   const fontLink='<link rel="preconnect" href="https://api.fontshare.com" crossorigin="anonymous">\n'+
     '<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=kola@400&amp;display=swap">\n';
   const brandStyle=standaloneRelease?'<style id="forge-brand-styles">'+forgeBrandCss+'</style>\n':
-    '<link rel="stylesheet" href="./dist/css/forge-brand.css?v=forge-launch-20261018-fonts-v3">\n';
+    '<link rel="stylesheet" href="./dist/css/forge-brand.css?v=forge-launch-20261018-wordmark-v4">\n';
   const routeStyle=standaloneRelease?'<style id="forge-video-route-styles">'+forgeVideoRouteCss+'</style>\n':
     '<link rel="stylesheet" href="./dist/css/forge-video-route.css">\n';
   const adaptiveStyle=standaloneRelease?'<style id="forge-adaptive-styles">'+forgeAdaptiveCss+'</style>\n':
@@ -151,16 +151,16 @@ function forgeBrand(html,standaloneRelease){
   const workflowStyle=standaloneRelease?'<style id="forge-workflow-interactions-styles">'+forgeWorkflowCss+'</style>\n':
     '<link rel="stylesheet" href="./dist/css/forge-workflow-interactions.css">\n';
   const welcomeStyle=standaloneRelease?'<style id="forge-whats-new-styles">'+forgeWhatsNewCss+'</style>\n':
-    '<link rel="stylesheet" href="./dist/css/forge-whats-new.css?v=forge-launch-20261018-fonts-v3">\n';
+    '<link rel="stylesheet" href="./dist/css/forge-whats-new.css?v=forge-launch-20261018-wordmark-v4">\n';
   html=html.replace('</head>',fontLink+brandStyle+routeStyle+adaptiveStyle+workspaceFinishStyle+specimenStyle+unifiedStyle+workflowStyle+welcomeStyle+'</head>');
   // Light-only presentation: do not read an old dark preference on first paint.
   html=html.replace('<body>','<body class="light-mode">\n'+forgeIntro+'\n'+forgeWhatsNew+'\n');
   const brandScript=standaloneRelease?'<script id="forge-brand-intro-js">'+forgeBrandJs+'</script>':
-    '<script id="forge-brand-intro-js" src="./dist/js/forge-brand.js?v=forge-launch-20261018-fonts-v3"></script>';
+    '<script id="forge-brand-intro-js" src="./dist/js/forge-brand.js?v=forge-launch-20261018-wordmark-v4"></script>';
   const routeScript=standaloneRelease?'<script id="forge-video-route-js">'+forgeVideoRouteJs+'</script>':
     '<script id="forge-video-route-js" src="./dist/js/forge-video-route.js"></script>';
   const welcomeScript=standaloneRelease?'<script id="forge-whats-new-js">'+forgeWhatsNewJs+'</script>':
-    '<script id="forge-whats-new-js" src="./dist/js/forge-whats-new.js?v=forge-launch-20261018-fonts-v3"></script>';
+    '<script id="forge-whats-new-js" src="./dist/js/forge-whats-new.js?v=forge-launch-20261018-wordmark-v4"></script>';
   html=html.replace('</body>',brandScript+'\n'+routeScript+'\n'+welcomeScript+'\n</body>');
   return html;
 }
