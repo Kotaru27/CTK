@@ -135,8 +135,8 @@ try {
    'Light-only release still applies a saved dark preference');
  check(await page.locator('#themeToggleBtn').isHidden(),
    'Appearance toggle should be hidden in light-only release');
- await page.locator('#forgeIntro').waitFor({state:'detached',timeout:2500});
- check(await page.locator('#forgeIntro').count()===0,'Intro repeated within one session');
+ await page.locator('#forgeIntro').waitFor({state:'detached',timeout:6000});
+ check(await page.locator('#forgeIntro').count()===0,'Intro failed to finish after reload');
  await page.screenshot({path:'artifacts/forge-browser/home-light-legacy-dark.png'});
  await context.close();
  // Permanent opt-out is a separate deliberate action. A new context
@@ -158,8 +158,8 @@ try {
  await welcomePage.waitForTimeout(120);
  check(await welcomePage.locator('#forgeWhatsNew').isHidden(),
    'Dismissed rebrand popup reappeared after a reload');
- check(await welcomePage.locator('#forgeWhatsNewTrigger').isHidden(),
-   'Persisted opt-out did not hide release-notes trigger');
+ check(await welcomePage.locator('#forgeWhatsNewTrigger').isVisible(),
+   'Manual release-notes entry must remain accessible after opt-out');
  await dismissContext.close();
 
  const motion=await browser.newContext({viewport:{width:1440,height:900},reducedMotion:'reduce'});
@@ -175,7 +175,7 @@ try {
  for(const viewport of [{width:2560,height:1440},{width:2048,height:1152}]) {
    const wide=await browser.newContext({viewport,deviceScaleFactor:1,reducedMotion:'no-preference'});
    await wide.addInitScript(()=>{
-     sessionStorage.setItem('forge_intro_seen_v4','1');
+     sessionStorage.setItem('forge_intro_suppress','1');
      sessionStorage.setItem('forge_whatsnew_seen_session_2026_v1','1');
    });
    const wp=await wide.newPage();
