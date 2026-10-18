@@ -5426,10 +5426,11 @@ body:not(.light-mode) #view-home .combined-home-layout .forge-hero {
 body:not(.light-mode) .forge-hero-edition::before {background:#b1d4b6;}
 /* Shared element: the homepage heading is present in layout, but hidden
    until the one properly-kerned opener arrives at precisely the same rect. */
-body.forge-opening #forgeHeroName {opacity:0!important;}
+body.forge-opening #forgeHeroName{opacity:0;}
+body.forge-opening.forge-home-arriving #forgeHeroName{opacity:1;}
 body.forge-opening .forge-hero-aside,
 body.forge-opening .forge-hero-top,
-body.forge-opening .forge-hero-bottom {opacity:0;transform:translate3d(0,8px,0);}
+body.forge-opening .forge-hero-bottom {opacity:.65;transform:translate3d(0,4px,0);}
 body.forge-opening.forge-home-arriving .forge-hero-aside,
 body.forge-opening.forge-home-arriving .forge-hero-top,
 body.forge-opening.forge-home-arriving .forge-hero-bottom {
@@ -5443,8 +5444,8 @@ body.forge-opening.forge-home-arriving .forge-hero-bottom {
    announcement can open. */
 body.forge-opening #view-home .forge-after-hero,
 body.forge-opening #view-home .combined-home-grid{
-  opacity:0;
-  transform:translate3d(0,10px,0);
+  opacity:.75;
+  transform:translate3d(0,5px,0);
 }
 body.forge-opening.forge-home-arriving #view-home .forge-after-hero,
 body.forge-opening.forge-home-arriving #view-home .combined-home-grid{
@@ -5461,139 +5462,47 @@ body.forge-opening.forge-home-arriving #view-home .combined-home-grid{
 }
 /* The opening is one composition: outline -> raised ink -> continuous
    FLIP wordmark handoff. All animated letter properties are compositable. */
-.forge-intro {
-  position:fixed;inset:0;z-index:2147483000;
-  display:grid;place-items:center;overflow:hidden;
-  background:transparent;color:#123b2c;
-  transition:opacity .2s linear;
-}
-/* Fade a composited backing plane instead of repainting the entire
-   2K screen via animated background-color on every refresh. */
-.forge-intro::before {
-  content:"";
-  position:absolute;
-  inset:0;
-  background:#f8f7ed;
-  opacity:1;
-  transform:translateZ(0);
-  transition:opacity .72s cubic-bezier(.18,.78,.24,1);
-  pointer-events:none;
-}
-.forge-intro--handoff::before {opacity:0;}
-.forge-intro--handoff {pointer-events:none;}
-.forge-intro--ending {opacity:0;pointer-events:none;}
- .forge-intro-layout {width:min(1420px,91vw);position:relative;z-index:1;}
-.forge-intro-label {
-  position:absolute;top:clamp(-50px,-4vw,-32px);left:0;
-  font:650 10px/1.5 "Plus Jakarta Sans",sans-serif;
-  letter-spacing:.19em;text-transform:uppercase;color:#678172;
-  opacity:0;
-  transform:translate3d(0,7px,0);
-  transition:opacity .35s cubic-bezier(.22,.8,.28,1),transform .46s cubic-bezier(.22,.8,.28,1);
-}
-.forge-intro.is-playing .forge-intro-label{
-  opacity:1;transform:translate3d(0,0,0);
-}
-/* The layout footprint is ALWAYS the final kerning-correct Kola string.
-   The construction layer is separately positioned and never changes width. */
-.forge-intro-type {
-  position:relative;
-  display:block;width:max-content;max-width:none;margin:0 auto;
-  white-space:nowrap;
-  font-family:"Kola","Plus Jakarta Sans",sans-serif;
-  font-size:clamp(66px,10.2vw,162px);
-  font-weight:400;
-  line-height:1.08;letter-spacing:-.028em;
-  color:#123b2c;
-}
-/* THE FORGE / Formed in Motion.
-   A single kerned Kola wordmark is unveiled by a moving ivory cover.
-   The mask travels on the compositor; text remains its real final size. */
-.forge-intro-wordmark {
+/* Home-native entrance. The intro is a small skip control, NOT a full
+   screen backdrop: no ivory plane, no mask rectangle, no overlay flash. */
+.forge-intro{
+  position:fixed;
+  inset:auto 36px 24px auto;
+  z-index:2147483000;
   display:block;
-  white-space:nowrap;
-  opacity:0;
-  transform-origin:top left;
-  will-change:transform,opacity;
-}
-.forge-intro-type::before{
-  content:"";
-  position:absolute;z-index:3;
-  top:-3px;bottom:-3px;left:-2px;
-  width:calc(100% + 6px);
-  background:#f8f7ed;
-  pointer-events:none;
-  transform:translate3d(0,0,0);
-}
-.forge-intro.is-playing .forge-intro-wordmark{opacity:1;}
-.forge-intro.is-playing .forge-intro-type::before{
-  animation:forge-mask-unveil 1120ms cubic-bezier(.74,0,.18,1) 340ms both;
-}
-@keyframes forge-mask-unveil{
-  from{transform:translate3d(0,0,0)}
-  to{transform:translate3d(0,-106%,0)}
-}
-.forge-intro.is-settled .forge-intro-type::before,
-.forge-intro--handoff .forge-intro-type::before{
-  transform:translate3d(0,-106%,0);
-}
-/* A measured hairline follows the wordmark rather than adding decorative
-   particles, spinning marks or an extra loading state. */
-.forge-intro-type::after{
-  content:"";position:absolute;left:0;bottom:-11px;
-  width:100%;height:1px;
-  background:rgba(27,79,52,.32);
-  transform-origin:center center;
-  transform:scaleX(0);
-  opacity:0;
+  width:auto;
+  height:auto;
+  background:transparent;
+  color:var(--forge-forest);
   pointer-events:none;
 }
-.forge-intro.is-playing .forge-intro-type::after{
-  animation:forge-ink-rule 1010ms cubic-bezier(.29,.68,.19,1) 200ms both;
+.forge-intro::before,.forge-intro::after{content:none!important;display:none!important;}
+.forge-intro-layout{width:auto;position:relative;}
+.forge-intro-type,.forge-intro-label{display:none!important;}
+.forge-intro-caption{
+  display:block;
+  margin:0;padding:0;border:0;
+  background:transparent;
 }
-.forge-intro--handoff .forge-intro-type::after{
-  animation:none!important;opacity:0!important;
+.forge-intro-caption > span{display:none;}
+.forge-intro-skip{
+  pointer-events:auto;
+  font:650 11px/1.4 "Plus Jakarta Sans",sans-serif;
+  color:#335b46;
+  background:rgba(248,247,237,.88);
+  border:1px solid rgba(43,94,66,.22);
+  border-radius:8px;
+  padding:9px 13px;
+  cursor:pointer;
+  transition:background-color 170ms ease,color 170ms ease;
 }
-@keyframes forge-ink-rule{
-  0%{opacity:0;transform:scaleX(0)}
-  12%{opacity:.75}
-  100%{opacity:.75;transform:scaleX(1)}
-}
-.forge-intro.is-settled .forge-intro-wordmark {
-  opacity:1;
-  transition:opacity .16s linear;
-}
-/* The fully revealed name rests in place before the actual shared-element
-   transition. A tiny line fades during the hold; there is no second loader. */
-.forge-intro.is-settled .forge-intro-type::after{
-  opacity:.24;
-  transition:opacity 380ms cubic-bezier(.22,.8,.28,1);
-}
-.forge-intro-caption {
-  display:flex;justify-content:space-between;align-items:center;
-  gap:16px;border-top:1px solid rgba(25,55,43,.2);
-  margin-top:clamp(24px,3.2vw,44px);padding-top:14px;
-  font:600 10px/1.4 "Plus Jakarta Sans",sans-serif;
-  letter-spacing:.2em;text-transform:uppercase;color:#678172;
-  opacity:0;
-  transform:translate3d(0,7px,0);
-  transition:opacity .46s cubic-bezier(.22,.8,.28,1) .62s,transform .5s cubic-bezier(.22,.8,.28,1) .62s;
-}
-.forge-intro.is-playing .forge-intro-caption{
-  opacity:1;transform:translate3d(0,0,0);
-}
-.forge-intro-skip {
-  font:600 11px/1.5 "Plus Jakarta Sans",sans-serif;
-  letter-spacing:.08em;padding:7px 0 7px 10px;
-  color:#123b2c;background:none;border:0;cursor:pointer;
-}
-.forge-intro-skip:hover {text-decoration:underline;text-underline-offset:4px;}
-.forge-intro-skip:focus-visible {outline:2px solid #123b2c;outline-offset:4px;}
-.forge-intro.forge-intro--handoff .forge-intro-label,
-.forge-intro.forge-intro--handoff .forge-intro-caption{
-  opacity:0;
-  transform:translate3d(0,-4px,0);
-  transition-delay:0ms;
+.forge-intro-skip:hover{background:#e2eee1;color:#173d2a;}
+.forge-intro-skip:focus-visible{outline:2px solid #357358;outline-offset:3px;}
+@media(prefers-reduced-motion:reduce){
+ .forge-intro{display:none!important;}
+ body.forge-opening #forgeHeroName{opacity:1!important;transform:none!important;}
+ body.forge-opening :is(.forge-hero-top,.forge-hero-aside,.forge-after-hero,.combined-home-grid){
+   opacity:1!important;transform:none!important;transition:none!important;
+ }
 }
 @media(max-width:1160px) {
   .forge-hero-middle {gap:clamp(24px,4vw,52px);}
@@ -5888,20 +5797,26 @@ html.forge-route-running[data-forge-route="story"] #section-stills-boards.active
    This never changes workspace geometry or content visibility. */
 :root { --forge-ui-motion: cubic-bezier(.2,.7,.2,1); }
 #view-app #logoDetailOverlay.active {
-  animation:forge-focus-in 200ms var(--forge-ui-motion) both!important;
+  animation:forge-focus-in 360ms linear both!important;
 }
 @keyframes forge-focus-in {
-  from{opacity:.94;translate:4px 0}
-  to{opacity:1;translate:0 0}
+  0%{opacity:.55;translate:11px 0}
+  24%{opacity:.88;translate:5px 0}
+  52%{opacity:1;translate:1.5px 0}
+  78%{opacity:1;translate:.22px 0}
+  100%{opacity:1;translate:0 0}
 }
 .presets-dialog,
 #view-app .modal-content,
 #view-app .dialog-content {
-  animation:forge-dialog-in 200ms var(--forge-ui-motion) both!important;
+  animation:forge-dialog-in 340ms linear both!important;
 }
 @keyframes forge-dialog-in {
-  from{opacity:.94;translate:0 4px}
-  to{opacity:1;translate:0 0}
+  0%{opacity:.45;translate:0 10px}
+  20%{opacity:.8;translate:0 6px}
+  48%{opacity:1;translate:0 1.7px}
+  74%{opacity:1;translate:0 .27px}
+  100%{opacity:1;translate:0 0}
 }
 #section-adlinks #adlinksTabContentDownloader :is(
   #adDlTableContainer,#adDlEmptyState,.ad-download-illustration
@@ -5969,13 +5884,20 @@ html.forge-route-running[data-forge-route-travel="home"]::view-transition-new(ro
 html.forge-route-running[data-forge-route-travel="return"]::view-transition-new(root){
   animation:forge-return-home 440ms cubic-bezier(.18,.78,.22,1) both!important;
 }
+/* Monotonic critically damped arrival. Surfaces never bounce, blur or
+   expose a bright intermediate background frame. */
 @keyframes forge-open-workspace{
-  0%{opacity:0;transform:translate3d(0,16px,0)}
-  35%{opacity:.65}
+  0%{opacity:.68;transform:translate3d(0,7px,0)}
+  18%{opacity:.82;transform:translate3d(0,5px,0)}
+  36%{opacity:.95;transform:translate3d(0,2.4px,0)}
+  58%{opacity:1;transform:translate3d(0,.8px,0)}
+  82%{opacity:1;transform:translate3d(0,.12px,0)}
   100%{opacity:1;transform:translate3d(0,0,0)}
 }
 @keyframes forge-return-home{
-  0%{opacity:0;transform:translate3d(0,-10px,0)}
+  0%{opacity:.72;transform:translate3d(0,-6px,0)}
+  27%{opacity:.91;transform:translate3d(0,-2.5px,0)}
+  58%{opacity:1;transform:translate3d(0,-.6px,0)}
   100%{opacity:1;transform:translate3d(0,0,0)}
 }
 /* Cross-tool movement belongs to the workspace content only. A real named
@@ -6001,7 +5923,11 @@ html.forge-route-running::view-transition-new(forge-tool-surface){
   animation:forge-enter-tool 450ms cubic-bezier(.18,.78,.22,1) both!important;
 }
 @keyframes forge-enter-tool{
-  0%{opacity:0;transform:translate3d(0,12px,0)}
+  0%{opacity:.16;transform:translate3d(0,10px,0)}
+  14%{opacity:.48;transform:translate3d(0,7px,0)}
+  32%{opacity:.80;transform:translate3d(0,3.7px,0)}
+  54%{opacity:.96;transform:translate3d(0,1.3px,0)}
+  75%{opacity:1;transform:translate3d(0,.23px,0)}
   100%{opacity:1;transform:translate3d(0,0,0)}
 }
 @media(prefers-reduced-motion:reduce){
@@ -6045,12 +5971,30 @@ html.forge-route-running::view-transition-group(forge-shell-header){
   opacity:0;
   pointer-events:none;
   transform:translate3d(0,0,0);
-  transition:transform 270ms cubic-bezier(.22,.8,.28,1),
-             width 270ms cubic-bezier(.22,.8,.28,1),
-             opacity 150ms ease;
+  transition:none!important; /* Retargeted spring is owned by WAAPI. */
 }
 @media(prefers-reduced-motion:reduce){
   #section-stills-boards #forgeStoryModeIndicator{transition:none!important;}
+}
+
+/* The shell is physically stationary, even when earlier CSS declares a
+   sidebar entrance. Named View Transition snapshots and live DOM must not
+   both animate the same header or sidebar. */
+html.forge-route-running .nav-sidebar.visible,
+html.forge-route-running .header{
+  animation:none!important;
+  translate:none!important;
+  transform:none!important;
+}
+html.forge-route-running[data-forge-route-travel="tool"]::view-transition-group(forge-workspace-title),
+html.forge-route-running[data-forge-route-travel="tool"]::view-transition-group(forge-workspace-art){
+  animation:none!important;
+}
+html.forge-route-running[data-forge-route-travel="tool"]::view-transition-old(forge-workspace-title),
+html.forge-route-running[data-forge-route-travel="tool"]::view-transition-new(forge-workspace-title),
+html.forge-route-running[data-forge-route-travel="tool"]::view-transition-old(forge-workspace-art),
+html.forge-route-running[data-forge-route-travel="tool"]::view-transition-new(forge-workspace-art){
+  animation:none!important;
 }
 </style>
 <style id="forge-adaptive-styles">/* THE FORGE / ADAPTIVE DESKTOP — 1366 / Full HD / QHD
@@ -10916,34 +10860,25 @@ const CTKDownloadRenamer = (() => {
           document.getElementById("brandText").textContent = "The Forge";
         },
         openTool(id, mode) {
-          const motion = window.ForgeWorkspaceRoute;
-          if (this.els.viewApp.classList.contains("active")) {
-            const currentSection=document.querySelector("#view-app .tool-section.active");
-            // Panels within one tool already have their own precise WAAPI
-            // transitions; a root snapshot would suppress that panel motion.
-            if (currentSection?.id === id) {
-              if (motion) motion.cancel();
-              this._openTool(id, mode);
-            } else {
-              // Cross-workspace navigation was previously an instant cut.
-              const route = motion && motion.fromOpen(id, mode);
-              if (route) {
-                this._switchToken = (this._switchToken || 0) + 1;
-                motion.navigate(() => this._openTool(id, mode), route);
-              } else {
-                if (motion) motion.cancel();
-                this._openTool(id, mode);
-              }
-            }
-          } else {
-            const core = () => this._openTool(id, mode);
-            const route = motion && motion.fromOpen(id, mode);
-            if (route) {
-              this._switchToken = (this._switchToken || 0) + 1;
-              motion.navigate(core, route);
-            } else {
-              this.switchViews(core);
-            }
+          const motion=window.ForgeWorkspaceRoute;
+          const route=motion?.fromOpen(id,mode);
+          const inside=this.els.viewApp.classList.contains("active");
+          const sameRoute=inside && motion?.selected()===route;
+          // Shared sections represent distinct tools. PDF/Split,
+          // Stills/Storyboard and Link Gen/Downloader all need the SAME
+          // transition ownership as every other workspace switch.
+          // Switching Board / Filmstrip / Fit within Storyboard remains a
+          // mode-only change, using the shorter internal panel motion.
+          if(sameRoute){
+            motion?.cancel();
+            this._openTool(id,mode);
+          }else if(route&&motion){
+            this._switchToken=(this._switchToken||0)+1;
+            motion.navigate(()=>this._openTool(id,mode),route);
+          }else{
+            motion?.cancel();
+            const core=()=>this._openTool(id,mode);
+            if(inside)core();else this.switchViews(core);
           }
         },
         switchPdfTab(tabId) {
@@ -16882,129 +16817,87 @@ const CTKDownloadRenamer = (() => {
   if (document.readyState==="loading") document.addEventListener("DOMContentLoaded",boot,{once:true});
   else boot();
 })();</script>
-<script id="forge-brand-intro-js">/* The Forge: light, interruptible, compositor-first shared wordmark.
-   One kerned text node flies to an equal-font-metrics home heading.
-   Never touches tool cards, processing, navigation, or saved preferences. */
-(function () {
+<script id="forge-brand-intro-js">/* The Forge / home-native brand entrance.
+   Animate the real Kola heading, never a second full-screen white surface.
+   All timelines are cancellable; tool engines, cards and saved state remain
+   independent of the entrance. */
+(function(){
   'use strict';
-  var intro = document.getElementById('forgeIntro');
-  var mark = document.getElementById('forgeIntroWordmark');
-  var destination = document.getElementById('forgeHeroName');
-  if (!intro || !mark || !destination) return;
-
-  var reduced = window.matchMedia &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var seen = false, activeTool = null;
-  try {
-    seen = sessionStorage.getItem('forge_intro_seen_v4') === '1';
-    activeTool = localStorage.getItem('cts_activeTool');
-  } catch (_) {}
-  function notifyIntroFinished() {
+  const intro=document.getElementById('forgeIntro');
+  const mark=document.getElementById('forgeIntroWordmark');
+  const destination=document.getElementById('forgeHeroName');
+  if(!intro||!mark||!destination)return;
+  const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  let seen=false,activeTool=null;
+  try{
+    seen=sessionStorage.getItem('forge_intro_seen_v4')==='1';
+    activeTool=localStorage.getItem('cts_activeTool');
+  }catch(_){}
+  let complete=false,flight=null,safety=0;
+  const notify=()=>{
     document.documentElement.dataset.forgeIntroFinished='1';
     document.dispatchEvent(new Event('forge:intro-complete'));
-  }
-  if (reduced || seen || (activeTool && activeTool !== 'home')) {
-    intro.remove();
-    notifyIntroFinished();
-    return;
-  }
-  try { sessionStorage.setItem('forge_intro_seen_v4', '1'); } catch (_) {}
-  document.body.classList.add('forge-opening');
-
-  var finished = false, flight = null, timers = [];
-  var skip = document.getElementById('forgeIntroSkip');
-  function after(ms, fn) {
-    var id = window.setTimeout(fn, ms);
-    timers.push(id);
-    return id;
-  }
-  function cleanup() {
-    if (finished) return;
-    finished = true;
-    timers.forEach(window.clearTimeout);
-    document.removeEventListener('keydown', onKey);
-    if (flight) {
-      flight.onfinish = null;
-      flight.cancel();
-    }
-    // The fully transformed wordmark and the hero exchange visibility
-    // in the same frame. This avoids the large-to-small snap.
-    mark.style.visibility = 'hidden';
+  };
+  function cleanup(){
+    if(complete)return;
+    complete=true;
+    clearTimeout(safety);
+    document.removeEventListener('keydown',key);
+    flight?.cancel();
     document.body.classList.remove('forge-opening','forge-home-arriving');
     intro.remove();
-    notifyIntroFinished();
+    notify();
   }
-  function onKey(e) {
-    if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      cleanup();
-    }
+  function key(e){
+    if(e.key==='Escape'){e.preventDefault();cleanup();}
   }
-  if (skip) skip.addEventListener('click',cleanup,{once:true});
-  document.addEventListener('keydown',onKey);
-  // Failsafe for background tabs / disconnected animations.
-  after(4700,cleanup);
-
-  function moveToHome() {
-    if (finished) return;
-    var from=mark.getBoundingClientRect();
-    var to=destination.getBoundingClientRect();
-    if (!from.width || !to.width || !mark.animate ||
-        destination.getClientRects().length === 0) { cleanup(); return; }
-    // Shared-element FLIP: same text run, matching font/line height,
-    // measured once after font load, then only translate+uniform scale.
-    var dx=to.left-from.left;
-    var dy=to.top-from.top;
-    var scale=to.width/from.width;
-    if (!isFinite(scale) || scale<=0) { cleanup(); return; }
-    intro.classList.add('forge-intro--handoff');
+  if(reduced||seen||(activeTool&&activeTool!=='home')){
+    intro.remove();notify();return;
+  }
+  try{sessionStorage.setItem('forge_intro_seen_v4','1');}catch(_){}
+  document.body.classList.add('forge-opening');
+  document.getElementById('forgeIntroSkip')?.addEventListener('click',cleanup,{once:true});
+  document.addEventListener('keydown',key);
+  safety=setTimeout(cleanup,4200);
+  // Critically damped step response with no overshoot; the glyph geometry
+  // never changes, and the final transform is exactly identity.
+  function progress(t){
+    const omega=8.7;
+    const value=1-(1+omega*t)*Math.exp(-omega*t);
+    const total=1-(1+omega)*Math.exp(-omega);
+    return Math.min(1,Math.max(0,value/total));
+  }
+  function play(){
+    if(complete)return;
     document.body.classList.add('forge-home-arriving');
-    flight=mark.animate([
-      {transform:'translate3d(0,0,0) scale(1)'},
-      {transform:'translate3d('+dx+'px,'+dy+'px,0) scale('+scale+')'}
-    ],{
-      duration:840,
-      easing:'cubic-bezier(.24,.86,.30,1)',
-      fill:'forwards'
-    });
-    flight.onfinish=cleanup;
+    if(!destination.animate){cleanup();return;}
+    const frames=[];
+    for(let i=0;i<=48;i++){
+      const t=i/48,p=progress(t);
+      frames.push({
+        offset:t,
+        opacity:Math.min(1,.12+p*1.28),
+        transform:'translate3d(0,'+((1-p)*27).toFixed(3)+'px,0) scale('+
+          (.982+.018*p).toFixed(6)+')'
+      });
+    }
+    flight=destination.animate(frames,{duration:1580,easing:'linear',fill:'both'});
+    flight.finished.then(cleanup,cleanup);
   }
-  function settle() {
-    if (finished) return;
-    intro.classList.add('is-settled');
-    after(170,function(){
-      if (!finished) requestAnimationFrame(moveToHome);
-    });
-  }
-  function play() {
-    if (finished) return;
-    // A single Kola wordmark stays kerned throughout the compositor-mask
-    // reveal and the FLIP handoff. No per-letter DOM transforms to jitter
-    // on 60/100 Hz monitors.
-    intro.classList.add('is-playing');
-    // The reveal takes its time, then the complete name remains motionless
-    // for a deliberate pause before moving into the actual homepage.
-    after(2100,settle);
-  }
-  // Start only with Kola ready. If the external font is unavailable,
-  // show the usable homepage instead of animating fallback and snapping.
-  var fonts=document.fonts;
-  if (!fonts || !fonts.load) {
-    cleanup();
-    return;
-  }
-  var timeout;
+  // Never conceal the home screen waiting for a font: an unavailable Kola
+  // simply shows the usable application immediately.
+  if(!document.fonts?.load){cleanup();return;}
+  let started=false;
+  const begin=()=>{
+    if(started)return;
+    started=true;
+    requestAnimationFrame(()=>requestAnimationFrame(play));
+  };
   Promise.race([
-    fonts.load('400 120px "Kola"').then(function(faces){return !!(faces && faces.length);},function(){return false;}),
-    new Promise(function(resolve){timeout=window.setTimeout(function(){resolve(false);},780);})
-  ]).then(function(ready){
-    window.clearTimeout(timeout);
-    if (finished) return;
-    if (!ready) { cleanup(); return; }
-    requestAnimationFrame(play);
-  },cleanup);
-})();
-</script>
+    document.fonts.load('400 120px "Kola"').then(faces=>!!faces?.length,()=>false),
+    new Promise(resolve=>setTimeout(()=>resolve(false),850))
+  ]).then(ready=>ready?begin():cleanup(),cleanup);
+})();</script>
 <script id="forge-video-route-js">/* THE FORGE / UNIFIED WORKSPACE MOTION
    Native snapshots of unchanged home cards and real workspace headings.
    The existing _openTool/_showHome remain the sole owners of application state.
@@ -17123,23 +17016,30 @@ const CTKDownloadRenamer = (() => {
     let lastSection=activeSection();
     const wasShown=new Map(panels.map(el=>[el,shown(el)]));
     let sectionFlight=null, panelFlight=null;
+    // The same damped (non-overshooting) response drives all internal
+    // panels. Do not transform media, canvases or their individual controls.
+    // Route snapshots own cross-tool transitions, so these two animators
+    // never compete on the same surface.
     function play(element,kind){
-      if(!element || !element.animate || !canAnimateWorkspace(kind==='panel'))return null;
-      const distance=kind==='section'?4:3;
-      const duration=kind==='section'?220:180;
+      if(!element || !element.animate || !canAnimateWorkspace())return null;
+      const distance=kind==='section'?10:7;
+      const duration=kind==='section'?380:300;
+      const frames=[];
+      const omega=8.5,denom=1-(1+omega)*Math.exp(-omega);
+      for(let i=0;i<=28;i++){
+        const t=i/28;
+        const p=Math.min(1,(1-(1+omega*t)*Math.exp(-omega*t))/denom);
+        frames.push({offset:t,opacity:Math.min(1,.22+p),
+          transform:'translate3d(0,'+((1-p)*distance).toFixed(3)+'px,0)'});
+      }
       try{
-        return element.animate([
-          {opacity:kind==='section'?.95:.92,transform:'translate3d(0,'+distance+'px,0)'},
-          {opacity:1,transform:'translate3d(0,0,0)'}
-        ],{duration,easing:'cubic-bezier(.2,.7,.2,1)'});
+        return element.animate(frames,{duration,easing:'linear'});
       }catch(_){return null;}
     }
-    function canAnimateWorkspace(isPanel=false){
-      // Native route snapshots suppress section entrances, not an explicit
-      // user-triggered mode switch that can occur while a snapshot finishes.
+    function canAnimateWorkspace(){
       return !(preference&&preference.matches) &&
         document.visibilityState==='visible' &&
-        (isPanel || !root.classList.contains('forge-route-running'));
+        !root.classList.contains('forge-route-running');
     }
     function reconcile(){
       const nextSection=activeSection();
@@ -17196,28 +17096,50 @@ const CTKDownloadRenamer = (() => {
     indicator.className='forge-story-mode-indicator';
     indicator.setAttribute('aria-hidden','true');
     host.appendChild(indicator);
-    let frame=0,initialized=false;
+    let frame=0,initialized=false,flight=null,lastX=null,lastWidth=null;
     const update=()=>{
       frame=0;
       const activeButton=buttons.find(button=>button.classList.contains('active-mode'));
       if(!activeButton || !host.getClientRects().length){
+        flight?.cancel();flight=null;
         indicator.style.opacity='0';return;
       }
-      // First placement is instantaneous; subsequent changes animate.
       const width=Math.max(0,activeButton.offsetWidth-16);
       const x=activeButton.offsetLeft+8;
-      if(!initialized){
+      if(initialized && lastX===x && lastWidth===width)return;
+      lastX=x;lastWidth=width;
+      const target='translate3d('+x+'px,0,0)';
+      if(!initialized || preference?.matches || !indicator.animate){
+        flight?.cancel();flight=null;
         indicator.style.transition='none';
         indicator.style.width=width+'px';
-        indicator.style.transform='translate3d('+x+'px,0,0)';
+        indicator.style.transform=target;
         indicator.style.opacity='1';
         initialized=true;
-        requestAnimationFrame(()=>{indicator.style.removeProperty('transition');});
-      }else{
-        indicator.style.width=width+'px';
-        indicator.style.transform='translate3d('+x+'px,0,0)';
-        indicator.style.opacity='1';
+        return;
       }
+      // Retarget from the actual current frame. A second click never snaps
+      // the indicator back to its previous start point.
+      const style=getComputedStyle(indicator);
+      const previous=style.transform==='none'?0:new DOMMatrixReadOnly(style.transform).m41;
+      const priorWidth=parseFloat(style.width)||width;
+      flight?.cancel();
+      indicator.style.transform=target;
+      indicator.style.width=width+'px';
+      const omega=9,denom=1-(1+omega)*Math.exp(-omega);
+      const frames=[];
+      for(let i=0;i<=30;i++){
+        const t=i/30;
+        const progress=(1-(1+omega*t)*Math.exp(-omega*t))/denom;
+        frames.push({offset:t,
+          transform:'translate3d('+(previous+(x-previous)*progress).toFixed(3)+'px,0,0)',
+          width:(priorWidth+(width-priorWidth)*progress).toFixed(3)+'px'});
+      }
+      flight=indicator.animate(frames,{duration:360,easing:'linear'});
+      indicator.style.opacity='1';
+      flight.finished.catch(()=>{}).then(()=>{
+        if(flight?.playState==='finished')flight=null;
+      });
     };
     const schedule=()=>{
       if(frame)cancelAnimationFrame(frame);

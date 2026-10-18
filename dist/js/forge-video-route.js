@@ -116,23 +116,30 @@
     let lastSection=activeSection();
     const wasShown=new Map(panels.map(el=>[el,shown(el)]));
     let sectionFlight=null, panelFlight=null;
+    // The same damped (non-overshooting) response drives all internal
+    // panels. Do not transform media, canvases or their individual controls.
+    // Route snapshots own cross-tool transitions, so these two animators
+    // never compete on the same surface.
     function play(element,kind){
-      if(!element || !element.animate || !canAnimateWorkspace(kind==='panel'))return null;
-      const distance=kind==='section'?4:3;
-      const duration=kind==='section'?220:180;
+      if(!element || !element.animate || !canAnimateWorkspace())return null;
+      const distance=kind==='section'?10:7;
+      const duration=kind==='section'?380:300;
+      const frames=[];
+      const omega=8.5,denom=1-(1+omega)*Math.exp(-omega);
+      for(let i=0;i<=28;i++){
+        const t=i/28;
+        const p=Math.min(1,(1-(1+omega*t)*Math.exp(-omega*t))/denom);
+        frames.push({offset:t,opacity:Math.min(1,.22+p),
+          transform:'translate3d(0,'+((1-p)*distance).toFixed(3)+'px,0)'});
+      }
       try{
-        return element.animate([
-          {opacity:kind==='section'?.95:.92,transform:'translate3d(0,'+distance+'px,0)'},
-          {opacity:1,transform:'translate3d(0,0,0)'}
-        ],{duration,easing:'cubic-bezier(.2,.7,.2,1)'});
+        return element.animate(frames,{duration,easing:'linear'});
       }catch(_){return null;}
     }
-    function canAnimateWorkspace(isPanel=false){
-      // Native route snapshots suppress section entrances, not an explicit
-      // user-triggered mode switch that can occur while a snapshot finishes.
+    function canAnimateWorkspace(){
       return !(preference&&preference.matches) &&
         document.visibilityState==='visible' &&
-        (isPanel || !root.classList.contains('forge-route-running'));
+        !root.classList.contains('forge-route-running');
     }
     function reconcile(){
       const nextSection=activeSection();
@@ -189,28 +196,50 @@
     indicator.className='forge-story-mode-indicator';
     indicator.setAttribute('aria-hidden','true');
     host.appendChild(indicator);
-    let frame=0,initialized=false;
+    let frame=0,initialized=false,flight=null,lastX=null,lastWidth=null;
     const update=()=>{
       frame=0;
       const activeButton=buttons.find(button=>button.classList.contains('active-mode'));
       if(!activeButton || !host.getClientRects().length){
+        flight?.cancel();flight=null;
         indicator.style.opacity='0';return;
       }
-      // First placement is instantaneous; subsequent changes animate.
       const width=Math.max(0,activeButton.offsetWidth-16);
       const x=activeButton.offsetLeft+8;
-      if(!initialized){
+      if(initialized && lastX===x && lastWidth===width)return;
+      lastX=x;lastWidth=width;
+      const target='translate3d('+x+'px,0,0)';
+      if(!initialized || preference?.matches || !indicator.animate){
+        flight?.cancel();flight=null;
         indicator.style.transition='none';
         indicator.style.width=width+'px';
-        indicator.style.transform='translate3d('+x+'px,0,0)';
+        indicator.style.transform=target;
         indicator.style.opacity='1';
         initialized=true;
-        requestAnimationFrame(()=>{indicator.style.removeProperty('transition');});
-      }else{
-        indicator.style.width=width+'px';
-        indicator.style.transform='translate3d('+x+'px,0,0)';
-        indicator.style.opacity='1';
+        return;
       }
+      // Retarget from the actual current frame. A second click never snaps
+      // the indicator back to its previous start point.
+      const style=getComputedStyle(indicator);
+      const previous=style.transform==='none'?0:new DOMMatrixReadOnly(style.transform).m41;
+      const priorWidth=parseFloat(style.width)||width;
+      flight?.cancel();
+      indicator.style.transform=target;
+      indicator.style.width=width+'px';
+      const omega=9,denom=1-(1+omega)*Math.exp(-omega);
+      const frames=[];
+      for(let i=0;i<=30;i++){
+        const t=i/30;
+        const progress=(1-(1+omega*t)*Math.exp(-omega*t))/denom;
+        frames.push({offset:t,
+          transform:'translate3d('+(previous+(x-previous)*progress).toFixed(3)+'px,0,0)',
+          width:(priorWidth+(width-priorWidth)*progress).toFixed(3)+'px'});
+      }
+      flight=indicator.animate(frames,{duration:360,easing:'linear'});
+      indicator.style.opacity='1';
+      flight.finished.catch(()=>{}).then(()=>{
+        if(flight?.playState==='finished')flight=null;
+      });
     };
     const schedule=()=>{
       if(frame)cancelAnimationFrame(frame);
