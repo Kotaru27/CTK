@@ -41,7 +41,7 @@ test('eight workspace title pairs are strictly scoped to their own cards',()=>{
 test('all home-to-workspace flows use original openTool/showHome mutations',()=>{
  assert.match(core,/motion\.fromOpen\(id, mode\)/);
  assert.match(core,/motion\.selected\(\)/);
- assert.match(core,/motion\.navigate\(core, route\)/);
+ assert.match(core,/motion\.navigate\(\(\)=>this\._openTool\(id,mode\),route\)/);
  assert.match(core,/motion\.navigate\(core, selectedRoute\)/);
  assert.match(core,/this\._openTool\(id, mode\)/);
  assert.match(core,/this\._showHome\(\)/);
@@ -87,8 +87,8 @@ test('internal route and mode changes animate only presentation, never core logi
  assert.match(js,/return !\(preference&&preference\.matches\)/);
  assert.match(js,/document\.visibilityState==='visible'/);
  assert.match(js,/!root\.classList\.contains\('forge-route-running'\)/);
- assert.match(js,/distance=kind==='section'\?4:3/);
- assert.match(js,/duration=kind==='section'\?220:180/);
+ assert.match(js,/distance=kind==='section'\?10:7/);
+ assert.match(js,/duration=kind==='section'\?380:300/);
  assert.doesNotMatch(js,/UI\.(?:openTool|switchPdfTab|switchStillsTab|switchAdlinksTab)\s*=/);
  assert.match(css,/@keyframes forge-open-workspace/);
  assert.match(css,/view-transition-name:forge-tool-surface/);
