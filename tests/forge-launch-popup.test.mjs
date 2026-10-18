@@ -96,8 +96,10 @@ test('keyboard Escape closes and focus stays inside modal on Tab',()=>{
 test('welcome is in both release formats, matches the actual new workflows, and honors reduced motion',()=>{
  for(const s of ['forgeWhatsNew','forgeWhatsNewNever','forgeWhatsNewEnter','forge-whatsnew-change'])
   assert.ok(build.includes(s),'Launch build missing '+s);
- for(const words of ['Creative Tool Kit is now The Forge','One Send to Board','Boards from folders',
-  'Choose a download folder before importing Excel','pending, requested, or confirmed']){
+ for(const words of ['Creative Tool Kit has a new name','<h3>Video Stills</h3>',
+  '<h3>Storyboard</h3>','<h3>Ad Downloader · Auto-name</h3>',
+  '<h3>Ad Downloader · Downloads</h3>','One Send to Board',
+  'Choose a writable folder before uploading Excel']){
   assert.ok(build.includes(words),'Missing launch fact '+words);
  }
  assert.match(intro,/forge:intro-complete/);
