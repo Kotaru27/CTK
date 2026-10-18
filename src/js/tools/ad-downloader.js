@@ -291,6 +291,7 @@ export default {
             setTimeout(() => URL.revokeObjectURL(url), 60000);
           },
           moveToDownloads(entry, verifiedSource) {
+            if (entry.downloadButton) entry.downloadButton.textContent = "Download again";
             if (!entry.row) return;
             // Keep pending downloads in the first tbody; started and directly
             // fetched downloads move below it, with retry still available.
@@ -310,7 +311,6 @@ export default {
               }
               state.textContent = verifiedSource ? "Download started" : "Requested · check browser Downloads";
             }
-            if (entry.downloadButton) entry.downloadButton.textContent = "Download again";
             document.getElementById("adDlDownloadedHeaderRow").style.display = "table-row";
             document.getElementById("adDlDownloadedBody").appendChild(entry.row);
             this.updateBulkButton();
