@@ -40,23 +40,22 @@ test('light-only release hides appearance toggle and ignores legacy dark selecti
   assert.doesNotMatch(index,/localStorage\.getItem\("cts_theme"\)==="dark"/);
   assert.doesNotMatch(standalone,/localStorage\.getItem\("cts_theme"\)==="dark"/);
 });
-test('intro is accessible, skippable, reduced-motion friendly and session scoped',()=>{
-  assert.match(index,/id="forgeIntro"/);
-  assert.match(brandJS,/sessionStorage/);
-  assert.match(brandJS,/sessionStorage\.getItem\('forge_intro_seen_v4'\)/);
-  assert.match(brandJS,/sessionStorage\.setItem\('forge_intro_seen_v4'/);
-  assert.match(brandJS,/prefers-reduced-motion/);
-  assert.match(brandJS,/Escape/);
-  assert.match(index,/id="forgeIntroSkip"/);
-  assert.match(brandJS,/document\.fonts/);
-  assert.match(brandJS,/destination\.getBoundingClientRect/);
-  assert.match(brandJS,/mark\.animate/);
-  assert.doesNotMatch(brandJS,/document\.createRange/);
-  assert.match(brandJS,/to\.width\/from\.width/);
-  assert.match(index,/id="forgeIntroWordmark"/);
-  assert.match(brandJS,/flight\.onfinish\s*=\s*cleanup/);
-  assert.match(brandJS,/after\(4700,cleanup\)/);
-  assert.match(brandCss,/@media\(prefers-reduced-motion:reduce\)/);
+test('first opening animates the actual homepage, preserves skip and first-run semantics',()=>{
+ assert.match(index,/id="forgeIntro"/);
+ assert.match(index,/id="forgeIntroSkip"/);
+ assert.match(brandJS,/sessionStorage\.getItem\('forge_intro_seen_v4'\)/);
+ assert.match(brandJS,/sessionStorage\.setItem\('forge_intro_seen_v4'/);
+ assert.match(brandJS,/prefers-reduced-motion/);
+ assert.match(brandJS,/Escape/);
+ assert.match(brandJS,/document\.fonts\.load/);
+ assert.match(brandJS,/destination\.animate\(frames/);
+ assert.match(brandJS,/function progress\(t\)/);
+ assert.match(brandJS,/forge:intro-complete/);
+ assert.match(brandJS,/clearTimeout\(safety\)/);
+ assert.doesNotMatch(brandJS,/mark\.animate\(/);
+ assert.match(brandCss,/\.forge-intro\{[\s\S]*?inset:auto 36px 24px auto/);
+ assert.match(brandCss,/\.forge-intro::before,\.forge-intro::after\{content:none!important/);
+ assert.match(brandCss,/@media\(prefers-reduced-motion:reduce\)/);
 });
 test('card polish is strictly visual and confined to the home page',()=>{
   const cssRulesOnly = brandCss.replace(/\/\*[\s\S]*?\*\//g,'');
@@ -79,42 +78,26 @@ test('editorial hero is light-first, free of the old dark banner and circular de
   assert.doesNotMatch(brandCss,/forge-hero::before|forge-hero::after/);
   assert.doesNotMatch(brandCss,/\.forge-hero\s*\{[^}]*linear-gradient/);
 });
-test('intro reveals one correctly kerned Kola wordmark, not individual letters',()=>{
-  assert.match(index,/id="forgeIntroWordmark"/);
-  assert.doesNotMatch(index,/class="forge-intro-glyphs"/);
-  assert.doesNotMatch(index,/class="forge-intro-outline"/);
-  assert.match(brandCss,/@keyframes forge-mask-unveil/);
-  assert.match(brandCss,/\.forge-intro\.is-playing \.forge-intro-wordmark/);
-  assert.match(brandCss,/\.forge-intro-type::before/);
-  assert.match(brandCss,/\.forge-intro-type::after/);
-  assert.match(brandJS,/forge-home-arriving/);
-  assert.match(brandJS,/prefers-reduced-motion/);
-  assert.match(brandJS,/forge_intro_seen_v4/);
+test('real Kola heading has no opaque splash, wipe or second moving text copy',()=>{
+ assert.match(index,/class="forge-hero-name" id="forgeHeroName">The Forge/);
+ assert.doesNotMatch(index,/class="forge-intro-glyphs"/);
+ assert.doesNotMatch(brandCss,/@keyframes forge-mask-unveil|@keyframes forge-draw-letter/);
+ assert.doesNotMatch(brandCss,/\.forge-intro-type::before\s*\{/);
+ assert.match(brandCss,/\.forge-intro\{[\s\S]*?background:transparent/);
+ assert.match(brandCss,/\.forge-intro-type,\.forge-intro-label\{display:none!important/);
+ assert.match(brandJS,/Math\.exp\(-omega\*t\)/);
+ assert.match(brandJS,/translate3d\(0,/);
+ assert.doesNotMatch(brandJS,/\.createRange\(|clipPath/);
 });
-
-test('intro uses compositor-only cover, never clip-path, filter or font-size tweens',()=>{
-  assert.doesNotMatch(brandCss,/clip-path\s*:/);
-  assert.doesNotMatch(brandCss,/@keyframes forge-draw-letter/);
-  assert.match(brandCss,/@keyframes forge-mask-unveil\s*\{[\s\S]*?translate3d/);
-  assert.match(brandCss,/\.forge-intro\.is-settled \.forge-intro-wordmark/);
-  assert.match(brandJS,/flight\.onfinish=cleanup/);
-  assert.match(brandJS,/mark\.style\.visibility = 'hidden'/);
-  assert.match(brandJS,/document\.fonts/);
-  assert.match(brandJS,/isFinite\(scale\)/);
-  assert.match(brandCss,/width:max-content!important/);
+test('intro and home avoid expensive animated backdrops and layout font changes',()=>{
+ assert.doesNotMatch(brandCss,/\.forge-intro::before\s*\{\s*content:""/);
+ assert.doesNotMatch(brandCss,/transition:background-color \.82s/);
+ assert.match(brandCss,/min-height:clamp\(322px,27vw,392px\)/);
+ assert.match(brandCss,/\.home-card:hover\s*\{\s*box-shadow:none!important/);
+ assert.match(brandCss,/\.home-card-go[\s\S]*?transform:translate3d/);
+ assert.match(brandJS,/duration:1580/);
+ assert.doesNotMatch(brandJS,/fontSize|backdropFilter/);
 });
-
-test('QHD and high refresh polish avoids expensive background color and hover shadow animations',()=>{
-  assert.match(brandCss,/\.forge-intro::before/);
-  assert.match(brandCss,/\.forge-intro--handoff::before \{opacity:0;/);
-  assert.doesNotMatch(brandCss,/transition:background-color \.82s/);
-  assert.match(brandCss,/min-height:clamp\(322px,27vw,392px\)/);
-  assert.match(brandCss,/\.home-card:hover\s*\{\s*box-shadow:none!important/);
-  assert.match(brandCss,/\.home-card-go[\s\S]*?transform:translate3d/);
-  assert.match(brandJS,/duration:840/);
-  assert.match(brandJS,/after\(170,function\(\)/);
-});
-
 test('executive hero states one purpose, one description, then tool selection',()=>{
   for(const page of [index,standalone]){
     assert.match(page,/EIGHT TOOLS\. ONE CREATIVE WORKSPACE\./);
