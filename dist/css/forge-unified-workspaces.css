@@ -450,3 +450,187 @@ body.light-mode .undo-toast {
   line-height:1.55!important;
   color:var(--sb-muted)!important;
 }
+
+/* THE FORGE / FINAL EIGHT-TOOL COMPONENT PASS
+   Each rule follows the existing populated workflow. Do not change workspace
+   width, canvas geometry, crop, scroll owner, or original export behavior. */
+
+/* 01 — Logo Resizer: editable filenames, overlay control and card actions. */
+#section-logo #logoGrid .logo-card-item .card-fname-lbl{
+ font:650 12.5px/1.45 "Plus Jakarta Sans",sans-serif!important;
+ letter-spacing:-.018em!important;color:var(--studio-title)!important;
+ border-color:transparent!important;background:transparent!important;
+}
+#section-logo #logoGrid .logo-card-item .card-fname-lbl:hover{
+ border-color:var(--lr-line)!important;background:var(--studio-hover)!important;
+}
+#section-logo #logoGrid .logo-card-item .card-fname-lbl:focus-visible{
+ border-color:var(--lr-cta)!important;background:var(--studio-panel)!important;
+}
+#section-logo #logoGrid .logo-card-item .card-text{
+ font-size:12.5px!important;line-height:1.5!important;
+ border-color:var(--lr-line)!important;background:var(--studio-panel)!important;
+ color:var(--studio-title)!important;
+}
+#section-logo #logoGrid .logo-card-item .card-rm:not(:hover){
+ color:var(--studio-muted)!important;
+}
+#section-logo #logoGrid .logo-card-item .card-dl:hover:not(:disabled){
+ box-shadow:none!important;background:var(--studio-title)!important;color:#fff!important;
+}
+#section-logo #logoDetailOverlay :is(#logoDetailFname,#logoDetailText){
+ font-size:13px!important;line-height:1.55!important;
+}
+
+/* 02 — PDF to Image: pages and document cards are the actual output. */
+#section-pdf #pdfStacksContainer .pdf-stack-wrapper{
+ border-color:var(--studio-border)!important;box-shadow:none!important;
+ transition:border-color 160ms ease,background-color 160ms ease!important;
+}
+#section-pdf #pdfStacksContainer .pdf-stack-wrapper:hover{
+ border-color:var(--studio-accent)!important;background:var(--studio-hover)!important;
+}
+#section-pdf #pdfStacksContainer .stack-meta{
+ background:var(--studio-panel)!important;border-color:var(--studio-border)!important;
+}
+#section-pdf #pdfStacksContainer .stack-title{
+ font-size:12.5px!important;font-weight:700!important;
+ letter-spacing:-.018em!important;color:var(--studio-title)!important;
+}
+#section-pdf #pdfStacksContainer .stack-count{
+ font:650 11px/1.4 "JetBrains Mono",monospace!important;
+ color:var(--studio-muted)!important;
+}
+#section-pdf .pdf-work-status{
+ color:var(--studio-muted)!important;font-size:12px!important;line-height:1.55!important;
+}
+#section-pdf .pdf-download-all:disabled{opacity:.48!important;cursor:not-allowed!important;}
+
+/* 03 — Image Splitter: a named source with a true Ready/Done state. */
+#pdfTabContentSplit #splitGrid .split-file-name{
+ color:var(--studio-title)!important;font-size:12.5px!important;
+ font-weight:700!important;letter-spacing:-.017em!important;
+}
+#pdfTabContentSplit #splitGrid .logo-card-item .card-controls{
+ background:var(--studio-panel)!important;border-top:1px solid var(--studio-border)!important;
+}
+#pdfTabContentSplit #splitGrid .logo-card-item .split-status{
+ font:650 11px/1.4 "JetBrains Mono",monospace!important;
+ color:var(--studio-muted)!important;
+}
+#pdfTabContentSplit #splitGrid .logo-card-item[data-ready="done"] .split-status{
+ color:var(--studio-accent)!important;
+}
+#pdfTabContentSplit #splitGrid .split-check:focus-visible{
+ outline:2px solid var(--studio-accent)!important;outline-offset:3px!important;
+}
+
+/* 04 — Video Stills: a browsable, keyboard-operable vertical frame reviewer. */
+#stillsTabContentVideo #stillsStacksContainer .pdf-stack-wrapper{
+ border-color:var(--studio-border)!important;
+ transition:border-color 160ms ease,background-color 160ms ease!important;
+}
+#stillsTabContentVideo #stillsStacksContainer .pdf-stack-wrapper:hover{
+ border-color:var(--studio-accent)!important;
+}
+#stillsDetailOverlay #stillsOverlayGrid>.vs-frame-row{
+ border-color:transparent!important;
+ transition:background-color 150ms ease,border-color 150ms ease!important;
+}
+#stillsDetailOverlay #stillsOverlayGrid>.vs-frame-row:focus-visible{
+ outline:2px solid var(--vs-primary,var(--studio-accent))!important;
+ outline-offset:-2px!important;
+}
+#stillsDetailOverlay #stillsOverlayGrid>.vs-frame-row.active-still{
+ border-color:var(--vs-primary,var(--studio-accent))!important;
+}
+#stillsDetailOverlay #stillsOverlayGrid>.vs-frame-row .detail-check:focus-visible{
+ outline:2px solid var(--vs-primary,var(--studio-accent))!important;
+ outline-offset:2px!important;
+}
+
+/* 05 — Storyboard, Filmstrip and Fit: controls readable, canvas unchanged. */
+#stillsTabContentStory #storyBoardControls .control-group>.label-header,
+#stillsTabContentFilmstrip .sidebar-panel .glass-panel>.label-header,
+#stillsTabContentFit .fit-controls .control-group>.label-header{
+ font-size:11.5px!important;font-weight:700!important;
+ color:var(--sb-text)!important;letter-spacing:.025em!important;
+}
+#stillsTabContentStory #storyBoardControls :is(#storyNameInput,#storyCols,#storyWidth),
+#stillsTabContentFilmstrip :is(#filmstripTitleInput,#filmstripRowsSelect,#filmstripFramesPerRowSelect){
+ border-color:var(--sb-line)!important;color:var(--sb-text)!important;
+}
+#stillsTabContentStory #storyBoardControls #storyProjectTabs .story-project-switch{
+ letter-spacing:-.01em!important;
+}
+#stillsTabContentFilmstrip #filmstripFileList>.story-asset-row:hover{
+ background:var(--studio-hover)!important;
+}
+
+/* 06 — Link Gen: source parameters and generated copy-ready code. */
+#section-adlinks #adlinksTabContentGen :is(#alg-input,#alg-folder,#alg-server){
+ border-color:var(--studio-border)!important;color:var(--studio-title)!important;
+}
+#section-adlinks #adlinksTabContentGen .adgen-output-card{
+ border-color:var(--studio-border)!important;box-shadow:none!important;
+}
+#section-adlinks #adlinksTabContentGen .adgen-output-card:focus-within{
+ border-color:var(--studio-accent)!important;
+}
+#section-adlinks #adlinksTabContentGen :is(#alg-out-ads,#alg-out-story){
+ background:var(--studio-stage)!important;color:var(--studio-title)!important;
+ border-color:var(--studio-border)!important;
+ font:500 12px/1.7 "JetBrains Mono",monospace!important;
+ letter-spacing:-.01em!important;
+}
+#section-adlinks #adlinksTabContentGen .adgen-output-card .liquid-btn{
+ font-size:11.5px!important;font-weight:700!important;
+}
+
+/* 07 — Ad Downloader: dense filename tables remain readable and actionable. */
+#section-adlinks #adlinksTabContentDownloader #adDlTableContainer tbody tr{
+ transition:background-color 140ms ease!important;
+}
+#section-adlinks #adlinksTabContentDownloader #adDlTableContainer tbody tr:hover{
+ background:var(--studio-hover)!important;
+}
+#section-adlinks #adlinksTabContentDownloader #adDlTableContainer tbody td{
+ font-size:12px!important;line-height:1.55!important;
+ color:var(--studio-title)!important;
+}
+#section-adlinks #adlinksTabContentDownloader #adDlTableContainer tbody td :is(button,a){
+ font-weight:650!important;
+}
+#section-adlinks #adlinksTabContentDownloader #adDlTableContainer tbody td input[type="checkbox"]{
+ accent-color:var(--studio-accent)!important;
+}
+#section-adlinks #adDlStatus{
+ color:var(--studio-muted)!important;line-height:1.6!important;
+}
+#section-adlinks #adDlBulkButton:disabled{opacity:.5!important;cursor:not-allowed!important;}
+
+/* 08 — Video Downloads: URLs, metadata, and real command strings. */
+#section-yt-helper #ytUrlInput{
+ font:500 13px/1.65 "Plus Jakarta Sans",sans-serif!important;
+ color:var(--studio-title)!important;border-color:var(--studio-border)!important;
+}
+#section-yt-helper #ytMetadataContent :is(.glass-panel,.yt-result-card){
+ border-color:var(--studio-border)!important;background:var(--studio-panel)!important;
+}
+#section-yt-helper #ytMetadataContent :is(pre,code,textarea){
+ font-family:"JetBrains Mono",monospace!important;
+ font-size:12px!important;line-height:1.65!important;
+ color:var(--studio-title)!important;
+}
+#section-yt-helper #ytMetadataContent .copy-cmd-btn:not(:disabled):hover{
+ background:var(--studio-hover)!important;border-color:var(--studio-accent)!important;
+ box-shadow:none!important;
+}
+@media(prefers-reduced-motion:reduce){
+ #section-pdf #pdfStacksContainer .pdf-stack-wrapper,
+ #stillsTabContentVideo #stillsStacksContainer .pdf-stack-wrapper,
+ #stillsDetailOverlay #stillsOverlayGrid>.vs-frame-row,
+ #section-adlinks #adlinksTabContentDownloader #adDlTableContainer tbody tr{
+  transition:none!important;
+ }
+}
