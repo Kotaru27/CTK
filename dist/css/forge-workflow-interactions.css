@@ -235,3 +235,73 @@ html.forge-route-running::view-transition-new(root){
     transition:none!important;
   }
 }
+
+/* Video Stills: collection filenames must remain legible. The old single-line
+   ellipsis allowed long campaign names to be clipped beyond their cards.
+   Wrap inside the existing card width, without changing image dimensions. */
+#view-app #stillsTabContentVideo #stillsStacksContainer .pdf-stack-wrapper .stack-meta{
+  min-width:0!important;
+  max-width:100%!important;
+  width:100%!important;
+  height:auto!important;
+  overflow:visible!important;
+}
+#view-app #stillsTabContentVideo #stillsStacksContainer .pdf-stack-wrapper .stack-title{
+  display:block!important;
+  min-width:0!important;
+  max-width:100%!important;
+  width:100%!important;
+  height:auto!important;
+  max-height:none!important;
+  white-space:normal!important;
+  text-overflow:clip!important;
+  overflow:visible!important;
+  overflow-wrap:anywhere!important;
+  word-break:normal!important;
+  line-height:1.48!important;
+  text-align:left!important;
+}
+#view-app #stillsTabContentVideo #stillsStacksContainer .pdf-stack-wrapper .stack-count{
+  flex:0 0 auto!important;
+}
+
+/* Launch motion final: no hopping icons or shifting action buttons.
+   Surface feedback uses only compositor-safe color/border transitions.
+   Keep all existing colors, layout, focus rings and modes unchanged. */
+.nav-sidebar.visible .nav-item:not(.nav-toggle){
+  transition:background-color 200ms cubic-bezier(.22,1,.36,1),
+             border-color 200ms cubic-bezier(.22,1,.36,1),
+             color 200ms cubic-bezier(.22,1,.36,1)!important;
+}
+.nav-sidebar.visible .nav-item:not(.nav-toggle) > :is(.material-symbols-rounded,svg),
+.nav-sidebar.visible .nav-item:not(.active):hover > :is(.material-symbols-rounded,svg),
+.nav-sidebar.visible .nav-item.active > :is(.material-symbols-rounded,svg){
+  translate:none!important;
+  transform:none!important;
+  transition:color 200ms cubic-bezier(.22,1,.36,1)!important;
+}
+#view-app .tool-section .liquid-btn:not(:disabled),
+#view-app .tool-section label.liquid-btn,
+#view-app .tool-section .ctk-row-menu > summary,
+#view-app .tool-section [role="tab"]:not(:disabled){
+  transition:background-color 200ms cubic-bezier(.22,1,.36,1),
+             color 200ms cubic-bezier(.22,1,.36,1),
+             border-color 200ms cubic-bezier(.22,1,.36,1),
+             box-shadow 200ms cubic-bezier(.22,1,.36,1)!important;
+}
+#view-app .tool-section .liquid-btn:hover:not(:disabled),
+#view-app .tool-section label.liquid-btn:hover,
+#view-app .tool-section .ctk-row-menu > summary:hover,
+#view-app .tool-section .liquid-btn:active:not(:disabled),
+#view-app .tool-section label.liquid-btn:active,
+#view-app .tool-section .ctk-row-menu > summary:active{
+  translate:none!important;
+  transform:none!important;
+}
+@media(prefers-reduced-motion:reduce){
+ .nav-sidebar.visible .nav-item:not(.nav-toggle),
+ .nav-sidebar.visible .nav-item > :is(.material-symbols-rounded,svg),
+ #view-app .tool-section :is(.liquid-btn,label.liquid-btn,[role="tab"],.ctk-row-menu > summary){
+   transition:none!important;
+ }
+}

@@ -5945,7 +5945,7 @@ html.forge-route-running[data-forge-route-travel="tool"]::view-transition-old(ro
   opacity:1!important;
 }
 html.forge-route-running[data-forge-route-travel="tool"]::view-transition-new(root) {
-  animation:forge-tool-overlay 280ms cubic-bezier(.18,.76,.25,1) both!important;
+  animation:forge-tool-overlay 340ms cubic-bezier(.44,0,.16,1) both!important;
 }
 @keyframes forge-tool-overlay {from{opacity:0}to{opacity:1}}
 @media(prefers-reduced-motion:reduce){
@@ -7657,6 +7657,76 @@ html.forge-route-running::view-transition-new(root){
   #section-stills-boards #videoHeaderControls #stillsSendAllBoardsBtn{
     transition:none!important;
   }
+}
+
+/* Video Stills: collection filenames must remain legible. The old single-line
+   ellipsis allowed long campaign names to be clipped beyond their cards.
+   Wrap inside the existing card width, without changing image dimensions. */
+#view-app #stillsTabContentVideo #stillsStacksContainer .pdf-stack-wrapper .stack-meta{
+  min-width:0!important;
+  max-width:100%!important;
+  width:100%!important;
+  height:auto!important;
+  overflow:visible!important;
+}
+#view-app #stillsTabContentVideo #stillsStacksContainer .pdf-stack-wrapper .stack-title{
+  display:block!important;
+  min-width:0!important;
+  max-width:100%!important;
+  width:100%!important;
+  height:auto!important;
+  max-height:none!important;
+  white-space:normal!important;
+  text-overflow:clip!important;
+  overflow:visible!important;
+  overflow-wrap:anywhere!important;
+  word-break:normal!important;
+  line-height:1.48!important;
+  text-align:left!important;
+}
+#view-app #stillsTabContentVideo #stillsStacksContainer .pdf-stack-wrapper .stack-count{
+  flex:0 0 auto!important;
+}
+
+/* Launch motion final: no hopping icons or shifting action buttons.
+   Surface feedback uses only compositor-safe color/border transitions.
+   Keep all existing colors, layout, focus rings and modes unchanged. */
+.nav-sidebar.visible .nav-item:not(.nav-toggle){
+  transition:background-color 200ms cubic-bezier(.22,1,.36,1),
+             border-color 200ms cubic-bezier(.22,1,.36,1),
+             color 200ms cubic-bezier(.22,1,.36,1)!important;
+}
+.nav-sidebar.visible .nav-item:not(.nav-toggle) > :is(.material-symbols-rounded,svg),
+.nav-sidebar.visible .nav-item:not(.active):hover > :is(.material-symbols-rounded,svg),
+.nav-sidebar.visible .nav-item.active > :is(.material-symbols-rounded,svg){
+  translate:none!important;
+  transform:none!important;
+  transition:color 200ms cubic-bezier(.22,1,.36,1)!important;
+}
+#view-app .tool-section .liquid-btn:not(:disabled),
+#view-app .tool-section label.liquid-btn,
+#view-app .tool-section .ctk-row-menu > summary,
+#view-app .tool-section [role="tab"]:not(:disabled){
+  transition:background-color 200ms cubic-bezier(.22,1,.36,1),
+             color 200ms cubic-bezier(.22,1,.36,1),
+             border-color 200ms cubic-bezier(.22,1,.36,1),
+             box-shadow 200ms cubic-bezier(.22,1,.36,1)!important;
+}
+#view-app .tool-section .liquid-btn:hover:not(:disabled),
+#view-app .tool-section label.liquid-btn:hover,
+#view-app .tool-section .ctk-row-menu > summary:hover,
+#view-app .tool-section .liquid-btn:active:not(:disabled),
+#view-app .tool-section label.liquid-btn:active,
+#view-app .tool-section .ctk-row-menu > summary:active{
+  translate:none!important;
+  transform:none!important;
+}
+@media(prefers-reduced-motion:reduce){
+ .nav-sidebar.visible .nav-item:not(.nav-toggle),
+ .nav-sidebar.visible .nav-item > :is(.material-symbols-rounded,svg),
+ #view-app .tool-section :is(.liquid-btn,label.liquid-btn,[role="tab"],.ctk-row-menu > summary){
+   transition:none!important;
+ }
 }
 </style>
 </head>
@@ -12753,6 +12823,7 @@ const CTKDownloadRenamer = (() => {
                       ? "none"
                       : "block";
                   }
+                  if (id === "storyCols" && this.active) this.active.defaultColumnsPending = false;
                   this.saveSettings();
                   this.draw();
                 }, 150),
@@ -12859,6 +12930,7 @@ const CTKDownloadRenamer = (() => {
               id,
               name: name || `Board_${this.projects.length + 1}`,
               images: [],
+              defaultColumnsPending: true,
               settings: {
                 gap: 0,
                 width: 1920,
@@ -12870,6 +12942,19 @@ const CTKDownloadRenamer = (() => {
             };
             this.projects.push(project);
             return project;
+          },
+          applyDefaultColumns(project) {
+            // Choose three columns only for a fresh/unconfigured board
+            // after its third still. Never override a deliberate user choice.
+            if (!project || project.images.length <= 2 ||
+                !project.defaultColumnsPending || Number(project.settings.cols) !== 0) return false;
+            project.settings.cols = 3;
+            project.defaultColumnsPending = false;
+            if (this.active === project) {
+              const cols = document.getElementById("storyCols");
+              if (cols) cols.value = "3";
+            }
+            return true;
           },
           addNewProject() {
             const project = this.makeProject();
@@ -13103,6 +13188,7 @@ const CTKDownloadRenamer = (() => {
               if (this.active === project) this.els.name.value = candidate;
               this.renderTabs();
             }
+            this.applyDefaultColumns(project);
             // An upload may have finished after the user switched boards.
             if (this.active===project) {this.saveSettings();this.updateList();this.draw();}
             return {accepted: project.images.length - beforeCount, rejected};
@@ -13799,6 +13885,7 @@ const CTKDownloadRenamer = (() => {
                   imported++;
                 }
                 if(target.images.length>initial){
+                  story.applyDefaultColumns?.(target);
                   if(newBoard)created++;
                   if(firstId===null)firstId=target.id;
                 }else if(newBoard){
@@ -13892,6 +13979,8 @@ const CTKDownloadRenamer = (() => {
                 stack.className = "pdf-stack-wrapper";
                 stack.innerHTML = `<img src=""><div class="stack-meta"><div class="stack-title"></div><div class="stack-count">Processing...</div></div>`;
                 stack.querySelector(".stack-title").textContent = name;
+                stack.querySelector(".stack-title").title = name;
+                stack.title = name;
                 stack.tabIndex = 0;
                 stack.setAttribute?.("role", "button");
                 stack.setAttribute?.("aria-label", "Inspect stills from " + name);

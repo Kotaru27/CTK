@@ -161,7 +161,7 @@ html.forge-route-running[data-forge-route-travel="tool"]::view-transition-old(ro
   opacity:1!important;
 }
 html.forge-route-running[data-forge-route-travel="tool"]::view-transition-new(root) {
-  animation:forge-tool-overlay 280ms cubic-bezier(.18,.76,.25,1) both!important;
+  animation:forge-tool-overlay 340ms cubic-bezier(.44,0,.16,1) both!important;
 }
 @keyframes forge-tool-overlay {from{opacity:0}to{opacity:1}}
 @media(prefers-reduced-motion:reduce){
