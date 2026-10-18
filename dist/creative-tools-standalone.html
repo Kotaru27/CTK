@@ -7483,6 +7483,20 @@ body.light-mode .undo-toast {
   transition:none!important;
  }
 }
+
+/* Slide a thin green navigation marker, not the menu items themselves. */
+.nav-sidebar.visible{position:relative!important;}
+.nav-sidebar.visible>.forge-nav-indicator{
+ position:absolute;top:0;left:0;width:3px;height:0;
+ background:#91c79d;border-radius:0 3px 3px 0;
+ pointer-events:none;z-index:3;opacity:0;
+ transform:translate3d(0,0,0);
+ transition:transform 260ms cubic-bezier(.22,1,.36,1),
+   height 260ms cubic-bezier(.22,1,.36,1),opacity 120ms ease!important;
+}
+@media(prefers-reduced-motion:reduce){
+ .nav-sidebar.visible>.forge-nav-indicator{transition:none!important;}
+}
 </style>
 </head>
 <body class="light-mode">
