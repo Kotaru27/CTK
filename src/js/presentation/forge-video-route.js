@@ -202,11 +202,16 @@
       const activeButton=buttons.find(button=>button.classList.contains('active-mode'));
       if(!activeButton || !host.getClientRects().length){
         flight?.cancel();flight=null;
-        indicator.style.opacity='0';return;
+        indicator.style.opacity='0';
+        // Its last geometry is invalid once the parent is hidden. Re-entry
+        // must restore the marker even if the same mode/button is selected.
+        initialized=false;lastX=null;lastWidth=null;
+        return;
       }
       const width=Math.max(0,activeButton.offsetWidth-16);
       const x=activeButton.offsetLeft+8;
-      if(initialized && lastX===x && lastWidth===width)return;
+      if(initialized && lastX===x && lastWidth===width &&
+         indicator.style.opacity!=='0' && indicator.getBoundingClientRect().width>0)return;
       lastX=x;lastWidth=width;
       const target='translate3d('+x+'px,0,0)';
       if(!initialized || preference?.matches || !indicator.animate){

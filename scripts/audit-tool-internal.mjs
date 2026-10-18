@@ -109,7 +109,11 @@ try{
  // buttons. No fixed geometry, and changing mode must not trigger a new
  // whole-screen View Transition or remove canvases.
  await page.evaluate(()=>UI.openTool('section-stills-boards','story'));
- await page.waitForTimeout(380);
+ // Do not race the browser's asynchronous View Transition. The Storyboard
+ // marker should be judged only while its actual workspace is visible.
+ await page.waitForFunction(()=>document.getElementById('section-stills-boards')?.classList.contains('active') &&
+   !document.documentElement.classList.contains('forge-route-running'),null,{timeout:6500});
+ await page.waitForTimeout(70);
  const markerResults=[];
  for(const [mode,buttonId] of [['story','subModeBtnBoard'],['filmstrip','subModeBtnFilmstrip'],['fit','subModeBtnFit'],['story','subModeBtnBoard']]){
    const routeBefore=await page.evaluate(()=>window.__internalViewTransitions);
@@ -119,15 +123,50 @@ try{
      const indicator=document.getElementById('forgeStoryModeIndicator');
      const active=document.getElementById(id);
      const i=indicator?.getBoundingClientRect(),b=active?.getBoundingClientRect();
+     const host=document.getElementById('storySubModeToggle');
+     const section=document.getElementById('section-stills-boards');
+     const storyPanel=document.getElementById('stillsTabContentStory');
      return {exists:!!i&&!!b,opacity:indicator?getComputedStyle(indicator).opacity:'0',
        inside:!!i&&!!b&&i.left>=b.left-2&&i.right<=b.right+2,
-       width:i?.width||0,active:active?.classList.contains('active-mode')||false};
+       width:i?.width||0,active:active?.classList.contains('active-mode')||false,
+       hostDisplay:host&&getComputedStyle(host).display,hostInline:host?.style.display,
+       hostRects:host?.getClientRects().length,hostWidth:host?.getBoundingClientRect().width,
+       buttonWidth:active?.getBoundingClientRect().width,
+       sectionActive:section?.classList.contains('active'),
+       sectionDisplay:section&&getComputedStyle(section).display,
+       storyPanelDisplay:storyPanel&&getComputedStyle(storyPanel).display,
+       routeRunning:document.documentElement.classList.contains('forge-route-running')
+     };
    },buttonId);
    markerResults.push({mode,...m});
    assert.ok(m.exists&&m.active&&m.inside&&m.width>10,mode+' indicator not aligned to active button '+JSON.stringify(m));
    assert.equal(await page.evaluate(()=>window.__internalViewTransitions),routeBefore,
      mode+' triggered an unnecessary whole-screen transition');
  }
+ // Reopen the Storyboard after genuinely hiding its containing tool panel.
+ // The indicator must not reuse an invisible stale geometry on re-entry.
+ const reentry=[];
+ for(let attempt=0;attempt<3;attempt++){
+   await page.evaluate(()=>UI.openTool('section-adlinks','gen'));
+   await page.waitForFunction(()=>!document.documentElement.classList.contains('forge-route-running'));
+   await page.evaluate(()=>UI.openTool('section-stills-boards','story'));
+   await page.waitForFunction(()=>!document.documentElement.classList.contains('forge-route-running'));
+   await page.waitForTimeout(390);
+   const visible=await page.evaluate(()=>{
+     const host=document.getElementById('storySubModeToggle');
+     const mark=document.getElementById('forgeStoryModeIndicator');
+     const selected=document.querySelector('#storySubModeToggle .active-mode');
+     const box=mark?.getBoundingClientRect(),ref=selected?.getBoundingClientRect();
+     return {hostVisible:!!host?.getClientRects().length,
+       opacity:getComputedStyle(mark).opacity,
+       width:box?.width||0,
+       inside:!!box&&!!ref&&box.left>=ref.left-2&&box.right<=ref.right+2};
+   });
+   reentry.push(visible);
+   assert.ok(visible.hostVisible&&visible.opacity!=='0'&&visible.width>10&&visible.inside,
+     'Storyboard mode marker not restored after tool re-entry '+JSON.stringify({attempt,visible}));
+ }
+ console.log('FORGE_STORYBOARD_INDICATOR_REENTRY '+JSON.stringify(reentry));
  // Navigation is no longer one full-screen fade. Verify the coordinator
  // selects a specific animation for each user action, while the existing
  // tool state and active nav stay correct after the transition.
