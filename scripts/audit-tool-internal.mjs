@@ -128,6 +128,28 @@ try{
    assert.equal(await page.evaluate(()=>window.__internalViewTransitions),routeBefore,
      mode+' triggered an unnecessary whole-screen transition');
  }
+ // Revisit the same Storyboard parent repeatedly. A hidden tab must
+ // never cache zero-width geometry or keep an old opacity:0 marker.
+ const revisits=[];
+ for(let attempt=0;attempt<5;attempt++){
+  await page.evaluate(()=>UI.openTool('section-pdf','split'));
+  await page.waitForFunction(()=>!document.documentElement.classList.contains('forge-route-running'));
+  await page.evaluate(()=>UI.openTool('section-stills-boards','story'));
+  await page.waitForFunction(()=>!document.documentElement.classList.contains('forge-route-running'));
+  await page.waitForTimeout(120);
+  const m=await page.evaluate(()=>{
+   const indicator=document.getElementById('forgeStoryModeIndicator');
+   const button=document.getElementById('subModeBtnBoard');
+   const a=indicator.getBoundingClientRect(),b=button.getBoundingClientRect();
+   return {visible:parseFloat(getComputedStyle(indicator).opacity)>.95,
+     width:a.width,inside:a.left>=b.left-2&&a.right<=b.right+2,
+     selected:button.classList.contains('active-mode')};
+  });
+  revisits.push(m);
+  assert.ok(m.visible&&m.width>10&&m.inside&&m.selected,
+    'Storyboard mode marker disappeared on re-entry '+attempt+' '+JSON.stringify(m));
+ }
+ console.log('FORGE_STORY_REENTRY '+JSON.stringify(revisits));
  // Navigation is no longer one full-screen fade. Verify the coordinator
  // selects a specific animation for each user action, while the existing
  // tool state and active nav stay correct after the transition.
