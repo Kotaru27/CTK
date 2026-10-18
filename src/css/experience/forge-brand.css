@@ -128,10 +128,11 @@ body:not(.light-mode) #view-home .combined-home-layout .forge-hero {
 body:not(.light-mode) .forge-hero-edition::before {background:#b1d4b6;}
 /* Shared element: the homepage heading is present in layout, but hidden
    until the one properly-kerned opener arrives at precisely the same rect. */
-body.forge-opening #forgeHeroName {opacity:0!important;}
+body.forge-opening #forgeHeroName{opacity:0;}
+body.forge-opening.forge-home-arriving #forgeHeroName{opacity:1;}
 body.forge-opening .forge-hero-aside,
 body.forge-opening .forge-hero-top,
-body.forge-opening .forge-hero-bottom {opacity:0;transform:translate3d(0,8px,0);}
+body.forge-opening .forge-hero-bottom {opacity:.65;transform:translate3d(0,4px,0);}
 body.forge-opening.forge-home-arriving .forge-hero-aside,
 body.forge-opening.forge-home-arriving .forge-hero-top,
 body.forge-opening.forge-home-arriving .forge-hero-bottom {
@@ -145,8 +146,8 @@ body.forge-opening.forge-home-arriving .forge-hero-bottom {
    announcement can open. */
 body.forge-opening #view-home .forge-after-hero,
 body.forge-opening #view-home .combined-home-grid{
-  opacity:0;
-  transform:translate3d(0,10px,0);
+  opacity:.75;
+  transform:translate3d(0,5px,0);
 }
 body.forge-opening.forge-home-arriving #view-home .forge-after-hero,
 body.forge-opening.forge-home-arriving #view-home .combined-home-grid{
@@ -163,139 +164,47 @@ body.forge-opening.forge-home-arriving #view-home .combined-home-grid{
 }
 /* The opening is one composition: outline -> raised ink -> continuous
    FLIP wordmark handoff. All animated letter properties are compositable. */
-.forge-intro {
-  position:fixed;inset:0;z-index:2147483000;
-  display:grid;place-items:center;overflow:hidden;
-  background:transparent;color:#123b2c;
-  transition:opacity .2s linear;
-}
-/* Fade a composited backing plane instead of repainting the entire
-   2K screen via animated background-color on every refresh. */
-.forge-intro::before {
-  content:"";
-  position:absolute;
-  inset:0;
-  background:#f8f7ed;
-  opacity:1;
-  transform:translateZ(0);
-  transition:opacity .72s cubic-bezier(.18,.78,.24,1);
-  pointer-events:none;
-}
-.forge-intro--handoff::before {opacity:0;}
-.forge-intro--handoff {pointer-events:none;}
-.forge-intro--ending {opacity:0;pointer-events:none;}
- .forge-intro-layout {width:min(1420px,91vw);position:relative;z-index:1;}
-.forge-intro-label {
-  position:absolute;top:clamp(-50px,-4vw,-32px);left:0;
-  font:650 10px/1.5 "Plus Jakarta Sans",sans-serif;
-  letter-spacing:.19em;text-transform:uppercase;color:#678172;
-  opacity:0;
-  transform:translate3d(0,7px,0);
-  transition:opacity .35s cubic-bezier(.22,.8,.28,1),transform .46s cubic-bezier(.22,.8,.28,1);
-}
-.forge-intro.is-playing .forge-intro-label{
-  opacity:1;transform:translate3d(0,0,0);
-}
-/* The layout footprint is ALWAYS the final kerning-correct Kola string.
-   The construction layer is separately positioned and never changes width. */
-.forge-intro-type {
-  position:relative;
-  display:block;width:max-content;max-width:none;margin:0 auto;
-  white-space:nowrap;
-  font-family:"Kola","Plus Jakarta Sans",sans-serif;
-  font-size:clamp(66px,10.2vw,162px);
-  font-weight:400;
-  line-height:1.08;letter-spacing:-.028em;
-  color:#123b2c;
-}
-/* THE FORGE / Formed in Motion.
-   A single kerned Kola wordmark is unveiled by a moving ivory cover.
-   The mask travels on the compositor; text remains its real final size. */
-.forge-intro-wordmark {
+/* Home-native entrance. The intro is a small skip control, NOT a full
+   screen backdrop: no ivory plane, no mask rectangle, no overlay flash. */
+.forge-intro{
+  position:fixed;
+  inset:auto 36px 24px auto;
+  z-index:2147483000;
   display:block;
-  white-space:nowrap;
-  opacity:0;
-  transform-origin:top left;
-  will-change:transform,opacity;
-}
-.forge-intro-type::before{
-  content:"";
-  position:absolute;z-index:3;
-  top:-3px;bottom:-3px;left:-2px;
-  width:calc(100% + 6px);
-  background:#f8f7ed;
-  pointer-events:none;
-  transform:translate3d(0,0,0);
-}
-.forge-intro.is-playing .forge-intro-wordmark{opacity:1;}
-.forge-intro.is-playing .forge-intro-type::before{
-  animation:forge-mask-unveil 1120ms cubic-bezier(.74,0,.18,1) 340ms both;
-}
-@keyframes forge-mask-unveil{
-  from{transform:translate3d(0,0,0)}
-  to{transform:translate3d(0,-106%,0)}
-}
-.forge-intro.is-settled .forge-intro-type::before,
-.forge-intro--handoff .forge-intro-type::before{
-  transform:translate3d(0,-106%,0);
-}
-/* A measured hairline follows the wordmark rather than adding decorative
-   particles, spinning marks or an extra loading state. */
-.forge-intro-type::after{
-  content:"";position:absolute;left:0;bottom:-11px;
-  width:100%;height:1px;
-  background:rgba(27,79,52,.32);
-  transform-origin:center center;
-  transform:scaleX(0);
-  opacity:0;
+  width:auto;
+  height:auto;
+  background:transparent;
+  color:var(--forge-forest);
   pointer-events:none;
 }
-.forge-intro.is-playing .forge-intro-type::after{
-  animation:forge-ink-rule 1010ms cubic-bezier(.29,.68,.19,1) 200ms both;
+.forge-intro::before,.forge-intro::after{content:none!important;display:none!important;}
+.forge-intro-layout{width:auto;position:relative;}
+.forge-intro-type,.forge-intro-label{display:none!important;}
+.forge-intro-caption{
+  display:block;
+  margin:0;padding:0;border:0;
+  background:transparent;
 }
-.forge-intro--handoff .forge-intro-type::after{
-  animation:none!important;opacity:0!important;
+.forge-intro-caption > span{display:none;}
+.forge-intro-skip{
+  pointer-events:auto;
+  font:650 11px/1.4 "Plus Jakarta Sans",sans-serif;
+  color:#335b46;
+  background:rgba(248,247,237,.88);
+  border:1px solid rgba(43,94,66,.22);
+  border-radius:8px;
+  padding:9px 13px;
+  cursor:pointer;
+  transition:background-color 170ms ease,color 170ms ease;
 }
-@keyframes forge-ink-rule{
-  0%{opacity:0;transform:scaleX(0)}
-  12%{opacity:.75}
-  100%{opacity:.75;transform:scaleX(1)}
-}
-.forge-intro.is-settled .forge-intro-wordmark {
-  opacity:1;
-  transition:opacity .16s linear;
-}
-/* The fully revealed name rests in place before the actual shared-element
-   transition. A tiny line fades during the hold; there is no second loader. */
-.forge-intro.is-settled .forge-intro-type::after{
-  opacity:.24;
-  transition:opacity 380ms cubic-bezier(.22,.8,.28,1);
-}
-.forge-intro-caption {
-  display:flex;justify-content:space-between;align-items:center;
-  gap:16px;border-top:1px solid rgba(25,55,43,.2);
-  margin-top:clamp(24px,3.2vw,44px);padding-top:14px;
-  font:600 10px/1.4 "Plus Jakarta Sans",sans-serif;
-  letter-spacing:.2em;text-transform:uppercase;color:#678172;
-  opacity:0;
-  transform:translate3d(0,7px,0);
-  transition:opacity .46s cubic-bezier(.22,.8,.28,1) .62s,transform .5s cubic-bezier(.22,.8,.28,1) .62s;
-}
-.forge-intro.is-playing .forge-intro-caption{
-  opacity:1;transform:translate3d(0,0,0);
-}
-.forge-intro-skip {
-  font:600 11px/1.5 "Plus Jakarta Sans",sans-serif;
-  letter-spacing:.08em;padding:7px 0 7px 10px;
-  color:#123b2c;background:none;border:0;cursor:pointer;
-}
-.forge-intro-skip:hover {text-decoration:underline;text-underline-offset:4px;}
-.forge-intro-skip:focus-visible {outline:2px solid #123b2c;outline-offset:4px;}
-.forge-intro.forge-intro--handoff .forge-intro-label,
-.forge-intro.forge-intro--handoff .forge-intro-caption{
-  opacity:0;
-  transform:translate3d(0,-4px,0);
-  transition-delay:0ms;
+.forge-intro-skip:hover{background:#e2eee1;color:#173d2a;}
+.forge-intro-skip:focus-visible{outline:2px solid #357358;outline-offset:3px;}
+@media(prefers-reduced-motion:reduce){
+ .forge-intro{display:none!important;}
+ body.forge-opening #forgeHeroName{opacity:1!important;transform:none!important;}
+ body.forge-opening :is(.forge-hero-top,.forge-hero-aside,.forge-after-hero,.combined-home-grid){
+   opacity:1!important;transform:none!important;transition:none!important;
+ }
 }
 @media(max-width:1160px) {
   .forge-hero-middle {gap:clamp(24px,4vw,52px);}
