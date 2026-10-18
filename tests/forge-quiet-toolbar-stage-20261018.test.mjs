@@ -30,7 +30,10 @@ test('cross-tool transitions keep the shell stable while new workspace covers th
   assert.match(css,/\[data-forge-route-travel="tool"\]::view-transition-old\(root\)/);
   assert.match(css,/opacity:1!important/);
   assert.match(css,/\[data-forge-route-travel="tool"\]::view-transition-new\(root\)/);
-  assert.match(css,/view-transition-name:forge-tool-surface/);\n  assert.match(css,/@keyframes forge-enter-tool/);\n  assert.match(css,/@keyframes forge-open-workspace/);\n  assert.match(css,/@keyframes forge-return-home/);
+  assert.match(css,/view-transition-name:forge-tool-surface/);
+  assert.match(css,/@keyframes forge-enter-tool/);
+  assert.match(css,/@keyframes forge-open-workspace/);
+  assert.match(css,/@keyframes forge-return-home/);
   assert.match(css,/html\.forge-route-running::view-transition-old\(forge-tool-surface\)/);
   assert.doesNotMatch(css,/view-transition-name:forge-workspace-stage/);
   assert.doesNotMatch(css,/backdrop-filter|filter:blur|animation-iteration-count:infinite/);
