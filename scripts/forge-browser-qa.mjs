@@ -37,6 +37,22 @@ try {
  await intro.waitFor({state:'detached',timeout:6000});
  const trajectory=await trajectoryPromise;
 
+ // First major rebrand: popup appears AFTER the intro wordmark handoff.
+ const launch=page.locator('#forgeWhatsNew');
+ await launch.waitFor({state:'visible',timeout:3500});
+ check(await page.locator('#forgeWhatsNewTitle').innerText()!=='' ,'Launch title is missing');
+ check(await launch.locator('.forge-whatsnew-change').count()===5,
+   'What's New does not include all five rebranding/workflow changes');
+ const popupGeometry=await launch.locator('.forge-whatsnew-dialog').evaluate(el=>{
+   const box=el.getBoundingClientRect();
+   return {width:Math.round(box.width),height:Math.round(box.height),
+     inside:box.top>=0&&box.bottom<=innerHeight+1&&box.left>=0&&box.right<=innerWidth+1};
+ });
+ check(popupGeometry.inside,'Launch popup is clipped at desktop size: '+JSON.stringify(popupGeometry));
+ await page.screenshot({path:'artifacts/forge-browser/first-rebrand-welcome.png',fullPage:false});
+ await page.locator('#forgeWhatsNewEnter').click();
+ await launch.waitFor({state:'hidden',timeout:1500});
+
  const cards=page.locator('button.home-card');
  check(await cards.count()===8,'All eight tool cards must exist after handoff');
 
@@ -103,6 +119,24 @@ try {
  check(await page.locator('#forgeIntro').count()===0,'Intro repeated within one session');
  await page.screenshot({path:'artifacts/forge-browser/home-light-legacy-dark.png'});
  await context.close();
+ // Permanent opt-out is a separate deliberate action. A new context
+ // proves the saved choice persists beyond a simple page reload.
+ const dismissContext=await browser.newContext({viewport:{width:1366,height:768},reducedMotion:'reduce'});
+ const welcomePage=await dismissContext.newPage();
+ await welcomePage.goto(base,{waitUntil:'domcontentloaded',timeout:60000});
+ await welcomePage.locator('#forgeWhatsNew').waitFor({state:'visible',timeout:4500});
+ await welcomePage.screenshot({path:'artifacts/forge-browser/first-rebrand-laptop.png'});
+ await welcomePage.locator('#forgeWhatsNewNever').click();
+ check(await welcomePage.locator('#forgeWhatsNew').isHidden(),
+   'Do not show again must dismiss the popup immediately');
+ check(await welcomePage.evaluate(()=>localStorage.getItem('forge_whatsnew_dismissed_2026_v1'))==='1',
+   'Do not show again was not persisted');
+ await welcomePage.reload({waitUntil:'domcontentloaded'});
+ await welcomePage.waitForTimeout(120);
+ check(await welcomePage.locator('#forgeWhatsNew').isHidden(),
+   'Dismissed rebrand popup reappeared after a reload');
+ await dismissContext.close();
+
  const motion=await browser.newContext({viewport:{width:1440,height:900},reducedMotion:'reduce'});
  const reducedPage=await motion.newPage();
  await reducedPage.goto(base,{waitUntil:'domcontentloaded',timeout:60000});
@@ -115,7 +149,10 @@ try {
  const qhd=[];
  for(const viewport of [{width:2560,height:1440},{width:2048,height:1152}]) {
    const wide=await browser.newContext({viewport,deviceScaleFactor:1,reducedMotion:'no-preference'});
-   await wide.addInitScript(()=>sessionStorage.setItem('forge_intro_seen_v4','1'));
+   await wide.addInitScript(()=>{
+     sessionStorage.setItem('forge_intro_seen_v4','1');
+     sessionStorage.setItem('forge_whatsnew_seen_session_2026_v1','1');
+   });
    const wp=await wide.newPage();
    const errs=[];
    wp.on('pageerror',error=>errs.push(String(error)));
