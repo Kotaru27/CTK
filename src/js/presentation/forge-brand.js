@@ -1,104 +1,171 @@
-/* The Forge / resilient, home-native wordmark entrance.
-   Animate the actual heading: no backdrop, duplicated wordmark, or
-   network-dependent font gate. Navigation and every tool stay interactive. */
+/* The Forge / cinematic wordmark introduction.
+   Three stages: ink reveal, composed hold, measured home handoff.
+   Remote fonts are optional. Intro markup starts hidden, so a failed
+   script never leaves a blocking overlay over the tools. */
 (function(){
   'use strict';
   const intro=document.getElementById('forgeIntro');
+  const mark=document.getElementById('forgeIntroWordmark');
   const destination=document.getElementById('forgeHeroName');
-  if(!destination){intro?.remove();return;}
-  const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   const home=document.getElementById('view-home');
   const app=document.getElementById('view-app');
-  const onHome=home && !home.classList.contains('hidden') &&
-    !app?.classList.contains('active');
-  // Explicit suppression is reserved for unattended QA/embeds; ordinary
-  // page reloads never inherit an old auto-seen session flag.
-  let suppressed=false;
-  try{suppressed=sessionStorage.getItem('forge_intro_suppress')==='1';}catch(_){}
-  let complete=false,flight=null,safety=0,observer=null;
-  function notify(){
+  const body=document.body;
+  let done=false,observer=null,safety=0,hold=0;
+  const flights=new Set();
+  const reduced=!!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+  let suppress=false;
+  try{suppress=sessionStorage.getItem('forge_intro_suppress')==='1';}catch(_){}
+
+  function notify(reason){
     document.documentElement.dataset.forgeIntroFinished='1';
     document.dispatchEvent(new Event('forge:intro-complete'));
   }
-  function cleanup(){
-    if(complete)return;
-    complete=true;
+  function complete(reason){
+    if(done)return;
+    done=true;
     clearTimeout(safety);
+    clearTimeout(hold);
     document.removeEventListener('keydown',onKey);
     document.removeEventListener('visibilitychange',onVisibility);
     observer?.disconnect();
-    flight?.cancel();
-    document.body.classList.remove('forge-opening','forge-home-arriving');
+    for(const animation of flights){try{animation.cancel();}catch(_){}}
+    flights.clear();
+    body.classList.remove('forge-opening','forge-home-arriving');
     intro?.remove();
-    notify();
+    notify(reason);
   }
   function onKey(event){
-    if(event.key==='Escape'){event.preventDefault();cleanup();}
+    if(event.key==='Escape'){event.preventDefault();complete('skip');}
   }
   function onVisibility(){
-    if(document.visibilityState==='hidden')cleanup();
+    if(document.visibilityState==='hidden')complete('hidden');
   }
-  // Saved tool preferences and session history are not evidence that a
-  // visible homepage should skip its opening. Reload always replays it.
-  if(reduced||suppressed||!onHome||document.visibilityState==='hidden'){
-    intro?.remove();notify();return;
+  if(!intro||!mark||!destination||!home||reduced||suppress||
+     home.classList.contains('hidden')||
+     app?.classList.contains('active')||
+     document.visibilityState==='hidden'){
+    complete('bypass');
+    return;
   }
-  document.body.classList.add('forge-opening');
-  document.getElementById('forgeIntroSkip')?.addEventListener('click',cleanup,{once:true});
+
+  // Launch only after script initialization: never expose an unstyled,
+  // blocking splash if a network request interrupts page execution.
+  body.classList.add('forge-opening');
+  intro.hidden=false;
+  intro.classList.add('forge-intro-ready');
+  document.getElementById('forgeIntroSkip')?.addEventListener('click',()=>complete('skip'),{once:true});
   document.addEventListener('keydown',onKey);
   document.addEventListener('visibilitychange',onVisibility);
   if(typeof MutationObserver==='function'&&app){
     observer=new MutationObserver(()=>{
       if(app.classList.contains('active')||home.classList.contains('hidden'))
-        cleanup();
+        complete('navigation');
     });
     observer.observe(app,{attributes:true,attributeFilter:['class']});
     observer.observe(home,{attributes:true,attributeFilter:['class']});
   }
-  safety=setTimeout(cleanup,3900);
+  safety=setTimeout(()=>complete('safety'),5400);
 
-  // Slow-to-fast ink reveal, followed by a critically damped settle.
-  // The actual glyphs stay laid out in one position; only the heading's
-  // clip and composited translation change, avoiding a white mask rectangle.
-  function progress(t){
-    const x=Math.min(1,Math.max(0,(t-.08)/.88));
-    const omega=6.4;
-    const end=1-(1+omega)*Math.exp(-omega);
-    return Math.min(1,(1-(1+omega*x)*Math.exp(-omega*x))/end);
+  // Smooth but never overshooting; the last sampled pose is exact.
+  function settle(t,omega){
+    const denom=1-(1+omega)*Math.exp(-omega);
+    return Math.min(1,Math.max(0,(1-(1+omega*t)*Math.exp(-omega*t))/denom));
   }
-  function play(){
-    if(complete)return;
-    document.body.classList.add('forge-home-arriving');
-    if(typeof destination.animate!=='function'){cleanup();return;}
+  function animate(el,frames,options){
+    try{
+      const a=el.animate(frames,options);
+      flights.add(a);
+      return a;
+    }catch(_){return null;}
+  }
+  function handoff(){
+    if(done)return;
+    if(typeof mark.animate!=='function'){
+      complete('fallback');return;
+    }
+    // Finish the reveal in-place before measuring. These same font
+    // settings exist on the destination, including when Kola is offline.
+    mark.style.opacity='1';
+    mark.style.clipPath='none';
+    mark.style.transform='none';
+    const from=mark.getBoundingClientRect();
+    const to=destination.getBoundingClientRect();
+    if(!from.width||!from.height||!to.width||!to.height){
+      complete('geometry');return;
+    }
+    const dx=to.left-from.left,dy=to.top-from.top;
+    const sx=to.width/from.width,sy=to.height/from.height;
+    if(![dx,dy,sx,sy].every(Number.isFinite)||
+       sx<=0||sy<=0||sx>4||sy>4){
+      complete('geometry');return;
+    }
+    body.classList.add('forge-home-arriving');
+    intro.classList.add('forge-intro-leaving');
     const frames=[];
     for(let i=0;i<=64;i++){
-      const t=i/64,p=progress(t);
+      const t=i/64,p=settle(t,8.4);
       frames.push({
         offset:t,
-        opacity:1,
-        clipPath:'inset(0 '+((1-p)*100).toFixed(3)+'% 0 0)',
-        transform:'translate3d(0,'+((1-p)*12).toFixed(3)+'px,0)'
+        transform:'translate3d('+(dx*p).toFixed(3)+'px,'+
+          (dy*p).toFixed(3)+'px,0) scale('+
+          (1+(sx-1)*p).toFixed(6)+','+
+          (1+(sy-1)*p).toFixed(6)+')'
       });
     }
-    try{
-      flight=destination.animate(frames,{duration:2250,easing:'linear',fill:'both'});
-      flight.finished.then(cleanup,cleanup);
-    }catch(_){cleanup();}
+    const flight=animate(mark,frames,{
+      duration:1080,easing:'linear',fill:'both'
+    });
+    if(!flight){complete('fallback');return;}
+    flight.finished.then(()=>complete('finished'),()=>complete('interrupted'));
   }
+  function reveal(){
+    if(done)return;
+    intro.classList.add('forge-intro-playing');
+    if(typeof mark.animate!=='function'){
+      intro.classList.add('forge-intro-fallback');
+      hold=setTimeout(()=>complete('fallback'),2850);
+      return;
+    }
+    const frames=[];
+    for(let i=0;i<=55;i++){
+      const t=i/55;
+      // Delay the ink by a fraction of a beat, then ease it into place.
+      const p=settle(Math.max(0,Math.min(1,(t-.09)/.91)),6.2);
+      frames.push({
+        offset:t,
+        opacity:Math.min(1,.45+p*.55),
+        clipPath:'inset(0 '+((1-p)*100).toFixed(3)+'% 0 0)',
+        transform:'translate3d(0,'+((1-p)*21).toFixed(3)+'px,0)'
+      });
+    }
+    const first=animate(mark,frames,{
+      duration:1590,easing:'linear',fill:'both'
+    });
+    if(first){
+      first.finished.then(()=>{
+        if(done)return;
+        mark.style.opacity='1';
+        mark.style.clipPath='none';
+        mark.style.transform='none';
+        first.cancel();
+        flights.delete(first);
+      }).catch(()=>{});
+    }
+    hold=setTimeout(handoff,2220);
+  }
+  // A cached Kola loads immediately. A missing/offline Kola still gets
+  // the full ceremony using matching fallback typography, never a skip.
   let started=false;
-  function begin(){
-    if(started||complete)return;
+  const begin=()=>{
+    if(started||done)return;
     started=true;
-    // Keep the first frame stable even when the font arrived from cache.
-    requestAnimationFrame(()=>requestAnimationFrame(play));
-  }
-  // Wait briefly for Kola, but NEVER cancel the intro when offline, if the
-  // CSS font fails, or when document.fonts is missing. The fallback draws.
-  const fontReady=(()=>{try{
-    return document.fonts?.load?.('400 120px "Kola"')||Promise.resolve();
-  }catch(_){return Promise.resolve();}})();
+    requestAnimationFrame(()=>requestAnimationFrame(reveal));
+  };
+  let fontRequest=Promise.resolve();
+  try{fontRequest=Promise.resolve(document.fonts?.load?.('400 130px "Kola"'));}
+  catch(_){}
   Promise.race([
-    Promise.resolve(fontReady).catch(()=>null),
-    new Promise(resolve=>setTimeout(resolve,650))
+    fontRequest.catch(()=>null),
+    new Promise(resolve=>setTimeout(resolve,720))
   ]).then(begin,begin);
 })();
