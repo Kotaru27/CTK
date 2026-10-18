@@ -61,20 +61,26 @@ html.forge-route-running[data-forge-route="story"] #section-stills-boards.active
    This never changes workspace geometry or content visibility. */
 :root { --forge-ui-motion: cubic-bezier(.2,.7,.2,1); }
 #view-app #logoDetailOverlay.active {
-  animation:forge-focus-in 200ms var(--forge-ui-motion) both!important;
+  animation:forge-focus-in 360ms linear both!important;
 }
 @keyframes forge-focus-in {
-  from{opacity:.94;translate:4px 0}
-  to{opacity:1;translate:0 0}
+  0%{opacity:.55;translate:11px 0}
+  24%{opacity:.88;translate:5px 0}
+  52%{opacity:1;translate:1.5px 0}
+  78%{opacity:1;translate:.22px 0}
+  100%{opacity:1;translate:0 0}
 }
 .presets-dialog,
 #view-app .modal-content,
 #view-app .dialog-content {
-  animation:forge-dialog-in 200ms var(--forge-ui-motion) both!important;
+  animation:forge-dialog-in 340ms linear both!important;
 }
 @keyframes forge-dialog-in {
-  from{opacity:.94;translate:0 4px}
-  to{opacity:1;translate:0 0}
+  0%{opacity:.45;translate:0 10px}
+  20%{opacity:.8;translate:0 6px}
+  48%{opacity:1;translate:0 1.7px}
+  74%{opacity:1;translate:0 .27px}
+  100%{opacity:1;translate:0 0}
 }
 #section-adlinks #adlinksTabContentDownloader :is(
   #adDlTableContainer,#adDlEmptyState,.ad-download-illustration
@@ -229,9 +235,7 @@ html.forge-route-running::view-transition-group(forge-shell-header){
   opacity:0;
   pointer-events:none;
   transform:translate3d(0,0,0);
-  transition:transform 270ms cubic-bezier(.22,.8,.28,1),
-             width 270ms cubic-bezier(.22,.8,.28,1),
-             opacity 150ms ease;
+  transition:none!important; /* Retargeted spring is owned by WAAPI. */
 }
 @media(prefers-reduced-motion:reduce){
   #section-stills-boards #forgeStoryModeIndicator{transition:none!important;}
