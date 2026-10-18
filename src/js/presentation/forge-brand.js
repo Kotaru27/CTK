@@ -7,6 +7,9 @@
   const intro=document.getElementById('forgeIntro');
   const mark=document.getElementById('forgeIntroWordmark');
   const destination=document.getElementById('forgeHeroName');
+  // Animate full words, not clipped characters: Kola's descending g must
+  // remain a complete glyph in every frame, including the final handoff.
+  const words=mark?[...mark.querySelectorAll('.forge-intro-word')]:[];
   const home=document.getElementById('view-home');
   const app=document.getElementById('view-app');
   const body=document.body;
@@ -83,10 +86,12 @@
     if(typeof mark.animate!=='function'){
       complete('fallback');return;
     }
-    // Finish the reveal in-place before measuring. These same font
-    // settings exist on the destination, including when Kola is offline.
-    mark.style.opacity='1';
-    mark.style.clipPath='none';
+    // Fully settle both words before FLIP measurement. No clipping mask,
+    // overflow crop or transformed letter is left active at this point.
+    for(const word of words){
+      word.style.opacity='1';
+      word.style.transform='none';
+    }
     mark.style.transform='none';
     const from=mark.getBoundingClientRect();
     const to=destination.getBoundingClientRect();
@@ -121,37 +126,42 @@
   function reveal(){
     if(done)return;
     intro.classList.add('forge-intro-playing');
-    if(typeof mark.animate!=='function'){
-      intro.classList.add('forge-intro-fallback');
-      hold=setTimeout(()=>complete('fallback'),2850);
+    if(words.length!==2){
+      // Missing word markup must not strand the homepage.
+      mark.style.opacity='1';
+      hold=setTimeout(()=>complete('fallback'),1400);
       return;
     }
-    const frames=[];
-    for(let i=0;i<=55;i++){
-      const t=i/55;
-      // Delay the ink by a fraction of a beat, then ease it into place.
-      const p=settle(Math.max(0,Math.min(1,(t-.09)/.91)),6.2);
-      frames.push({
-        offset:t,
-        opacity:Math.min(1,.45+p*.55),
-        clipPath:'inset(0 '+((1-p)*100).toFixed(3)+'% 0 0)',
-        transform:'translate3d(0,'+((1-p)*21).toFixed(3)+'px,0)'
+    for(let index=0;index<words.length;index++){
+      const word=words[index];
+      const frames=[];
+      for(let i=0;i<=48;i++){
+        const t=i/48;
+        const p=settle(Math.min(1,Math.max(0,(t-.04)/.96)),7.1);
+        frames.push({
+          offset:t,
+          opacity:Math.min(1,.03+.97*p),
+          transform:'translate3d(0,'+((1-p)*23).toFixed(3)+'px,0)'
+        });
+      }
+      const flight=animate(word,frames,{
+        duration:1330,delay:index*260,easing:'linear',fill:'both'
       });
+      if(flight){
+        flight.finished.then(()=>{
+          if(done)return;
+          word.style.opacity='1';
+          word.style.transform='none';
+          flight.cancel();
+          flights.delete(flight);
+        }).catch(()=>{});
+      }else{
+        word.style.opacity='1';
+        word.style.transform='none';
+      }
     }
-    const first=animate(mark,frames,{
-      duration:1590,easing:'linear',fill:'both'
-    });
-    if(first){
-      first.finished.then(()=>{
-        if(done)return;
-        mark.style.opacity='1';
-        mark.style.clipPath='none';
-        mark.style.transform='none';
-        first.cancel();
-        flights.delete(first);
-      }).catch(()=>{});
-    }
-    hold=setTimeout(handoff,2220);
+    // Last word settles before the entire, unsplit lockup travels home.
+    hold=setTimeout(handoff,2280);
   }
   // Resolve ALL introductory typefaces before showing a single letter.
   // FontFaceSet.load resolves with [] if the face is not declared: that
