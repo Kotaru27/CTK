@@ -5833,6 +5833,22 @@ body.forge-opening.forge-home-arriving #forgeHeroName{
  animation:forge-intro-meta 850ms cubic-bezier(.21,.73,.3,1) 1000ms both
 }
 .forge-intro.forge-intro-leaving .forge-intro-caption{opacity:0!important}
+
+/* Typography stability: render the entire intro in one resolved family.
+   When Kola cannot load, freeze both traveling title and destination to
+   the same system face so the shared-element geometry never jumps. */
+html.forge-launch-fallback-kola .forge-intro-wordmark,
+html.forge-launch-fallback-kola #view-home .combined-home-layout .forge-hero-name {
+  font-family:Arial,Helvetica,sans-serif!important;
+}
+.forge-intro.forge-intro-fallback-ui .forge-intro-label,
+.forge-intro.forge-intro-fallback-ui .forge-intro-caption>span {
+  font-family:Arial,Helvetica,sans-serif!important;
+}
+/* Skip stays immediately available and never changes font mid-click. */
+.forge-intro.forge-intro-ready .forge-intro-skip {
+  font-family:Arial,Helvetica,sans-serif!important;
+}
 </style>
 <style id="forge-video-route-styles">/* THE FORGE / UNIFIED WORKSPACE ROUTES
    Eight exact tool pairings; cards, controls and media are never re-laid out.
@@ -7895,7 +7911,9 @@ body.light-mode .undo-toast {
   display:grid;
   place-items:center;
   padding:clamp(16px,3.8vw,54px);
-  background:rgba(16,29,22,.58);
+  background:rgba(16,29,22,.52);
+  -webkit-backdrop-filter:blur(18px) saturate(.74);
+  backdrop-filter:blur(18px) saturate(.74);
   color:var(--wn-ink);
   isolation:isolate;
   animation:forge-wn-shade 380ms ease both;
@@ -8128,6 +8146,39 @@ html:has(.forge-whatsnew:not([hidden])){overflow:hidden;scrollbar-gutter:stable;
 @media(prefers-reduced-motion:reduce){
   .forge-whatsnew,.forge-whatsnew-dialog{animation:none!important;}
   .forge-whatsnew button{transition:none!important;}
+}
+
+/* The workspace remains present but deliberately out of focus behind
+   a true translucent blurred modal scrim; never blur the dialog itself. */
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))) {
+  .forge-whatsnew{background:rgba(16,29,22,.82);}
+}
+/* Typeface loading finishes before the modal is revealed. If a particular
+   remote face is missing, lock that family to a stable local fallback. */
+.forge-whatsnew.forge-fallback-kola .forge-whatsnew-brand {
+  font-family:Arial,Helvetica,sans-serif!important;
+}
+.forge-whatsnew.forge-fallback-serif .forge-whatsnew-opening h2 em {
+  font-family:Georgia,"Times New Roman",serif!important;
+}
+.forge-whatsnew.forge-fallback-ui :is(
+  .forge-whatsnew-opening h2,
+  .forge-whatsnew-intro,
+  .forge-whatsnew-close,
+  .forge-whatsnew-change h3,
+  .forge-whatsnew-change p,
+  .forge-whatsnew-never,
+  .forge-whatsnew-enter
+) {
+  font-family:Arial,Helvetica,sans-serif!important;
+}
+.forge-whatsnew.forge-fallback-mono :is(
+  .forge-whatsnew-edition,
+  .forge-whatsnew-foot,
+  .forge-whatsnew-section-label,
+  .forge-whatsnew-number
+) {
+  font-family:Consolas,"Courier New",monospace!important;
 }
 </style>
 </head>
@@ -17037,7 +17088,7 @@ const CTKDownloadRenamer = (() => {
     observer.observe(app,{attributes:true,attributeFilter:['class']});
     observer.observe(home,{attributes:true,attributeFilter:['class']});
   }
-  safety=setTimeout(()=>complete('safety'),5400);
+  safety=setTimeout(()=>complete('safety'),6700);
 
   // Smooth but never overshooting; the last sampled pose is exact.
   function settle(t,omega){
@@ -17126,21 +17177,32 @@ const CTKDownloadRenamer = (() => {
     }
     hold=setTimeout(handoff,2220);
   }
-  // A cached Kola loads immediately. A missing/offline Kola still gets
-  // the full ceremony using matching fallback typography, never a skip.
+  // Resolve ALL introductory typefaces before showing a single letter.
+  // FontFaceSet.load resolves with [] if the face is not declared: that
+  // is not proof the intended font was loaded. Freeze system fallback
+  // instead of letting a late download visibly replace live typography.
+  function loadFont(specimen){
+    try{return Promise.resolve(document.fonts?.load?.(specimen)||[])
+      .catch(()=>[]);}
+    catch(_){return Promise.resolve([]);}
+  }
   let started=false;
-  const begin=()=>{
+  function begin(results){
     if(started||done)return;
     started=true;
+    if(!results?.[0]?.length)
+      document.documentElement.classList.add('forge-launch-fallback-kola');
+    if(!results?.[1]?.length)
+      intro.classList.add('forge-intro-fallback-ui');
     requestAnimationFrame(()=>requestAnimationFrame(reveal));
-  };
-  let fontRequest=Promise.resolve();
-  try{fontRequest=Promise.resolve(document.fonts?.load?.('400 130px "Kola"'));}
-  catch(_){}
+  }
   Promise.race([
-    fontRequest.catch(()=>null),
-    new Promise(resolve=>setTimeout(resolve,720))
-  ]).then(begin,begin);
+    Promise.all([
+      loadFont('400 130px "Kola"'),
+      loadFont('600 12px "Plus Jakarta Sans"')
+    ]),
+    new Promise(resolve=>setTimeout(()=>resolve(null),1650))
+  ]).then(begin,()=>begin(null));
 })();
 </script>
 <script id="forge-video-route-js">/* THE FORGE / UNIFIED WORKSPACE MOTION
@@ -17501,9 +17563,9 @@ const CTKDownloadRenamer = (() => {
   const close=root.querySelector('#forgeWhatsNewClose');
   if(!dialog||!enter||!never||!close)return;
 
-  const seenKey='forge_whatsnew_seen_launch_2026_v2';
   const permanentKey='forge_whatsnew_dismissed_2026_v1';
-  let opened=false,previousFocus=null,automaticTimer=0,autoAttempted=false;
+  let opened=false,preparing=false,previousFocus=null;
+  let automaticTimer=0,autoAttempted=false,openSerial=0,fontsReady=null;
   function safeGet(key){
     try{if(localStorage.getItem(key)==='1')return true;}catch(_){}
     try{return sessionStorage.getItem(key)==='1';}catch(_){return false;}
@@ -17520,25 +17582,62 @@ const CTKDownloadRenamer = (() => {
       !document.body.classList.contains('forge-opening')&&
       document.visibilityState!=='hidden';
   }
+  // Hide the *entire dialog* while resolving the exact typefaces it
+  // uses. Never display fallback glyphs and then replace them in place.
+  // If a network request stalls, freeze the appropriate system family
+  // for this popup so a late download cannot cause a second layout.
+  function readyTypography(){
+    if(fontsReady)return fontsReady;
+    const specs=[
+      ['400 80px "Kola"','forge-fallback-kola'],
+      ['600 16px "Plus Jakarta Sans"','forge-fallback-ui'],
+      ['italic 400 38px "Instrument Serif"','forge-fallback-serif'],
+      ['600 11px "JetBrains Mono"','forge-fallback-mono']
+    ];
+    const load=spec=>{
+      try{return Promise.resolve(document.fonts?.load?.(spec)||[]).catch(()=>[]);}
+      catch(_){return Promise.resolve([]);}
+    };
+    fontsReady=Promise.race([
+      Promise.all(specs.map(([spec])=>load(spec))),
+      new Promise(resolve=>setTimeout(()=>resolve(null),1850))
+    ]).then(results=>{
+      specs.forEach(([,className],i)=>{
+        if(!results?.[i]?.length||
+           (className==='forge-fallback-kola'&&
+            document.documentElement.classList.contains('forge-launch-fallback-kola')))
+          root.classList.add(className);
+      });
+    }).catch(()=>{
+      specs.forEach(([,className])=>root.classList.add(className));
+    });
+    return fontsReady;
+  }
   function open(automatic=false){
-    if(opened)return;
-    // A requested popup is never lost behind the optional intro.
+    if(opened||preparing)return;
+    // An intentional click cancels the intro and its scheduled auto-open.
     if(!automatic&&document.body.classList.contains('forge-opening'))
       document.getElementById('forgeIntroSkip')?.click();
-    if(!homeActive())return;
-    if(automatic&&safeGet(seenKey))return;
+    if(!homeActive()||(automatic&&safeGet(permanentKey)))return;
     clearTimeout(automaticTimer);
-    opened=true;
-    previousFocus=automatic?null:document.activeElement;
-    root.hidden=false;
-    trigger?.setAttribute?.('aria-expanded','true');
-    safeSet(seenKey);
-    enter.focus({preventScroll:true});
+    autoAttempted=true;
+    preparing=true;
+    const token=++openSerial;
+    const restoreFocus=automatic?null:document.activeElement;
+    readyTypography().then(()=>{
+      if(token!==openSerial)return;
+      preparing=false;
+      if(!homeActive())return;
+      opened=true;
+      previousFocus=restoreFocus;
+      root.hidden=false;
+      trigger?.setAttribute?.('aria-expanded','true');
+      enter.focus({preventScroll:true});
+    });
   }
   function dismiss(permanent=false){
     if(!opened)return;
     if(permanent)safeSet(permanentKey);
-    safeSet(seenKey);
     opened=false;
     root.hidden=true;
     trigger?.setAttribute?.('aria-expanded','false');
@@ -17548,9 +17647,12 @@ const CTKDownloadRenamer = (() => {
     previousFocus=null;
   }
   function queueAutomatic(){
-    if(autoAttempted)return;
+    // Automated browser audits intentionally suppress onboarding, but an
+    // ordinary visitor sees it on every fresh page until explicit opt-out.
+    let auditSkip=false;
+    try{auditSkip=sessionStorage.getItem('forge_whatsnew_suppress')==='1';}catch(_){}
+    if(autoAttempted||safeGet(permanentKey)||auditSkip)return;
     autoAttempted=true;
-    if(safeGet(seenKey))return;
     automaticTimer=setTimeout(()=>open(true),420);
   }
   function focusables(){
