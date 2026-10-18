@@ -104,7 +104,7 @@ test('Downloader scrolls as one workspace and preserves requested/completed stat
    '#view-app #adlinksTabContentDownloader #adDlTableContainer{',
    'position:static!important;top:auto!important;z-index:auto!important;',
    '#view-app #adlinksTabContentDownloader #adDlStatus{',
-   '#view-app #adlinksTabContentDownloader #adDlRequestedHeaderRow',
+   ':is(#adDlRequestedHeaderRow,#adDlDownloadedHeaderRow)',
    '#view-app #section-stills-boards .story-import-menu[hidden]',
    '.nav-sidebar.visible>.forge-nav-indicator',
    '#view-app .tool-section .forge-switch-indicator',
