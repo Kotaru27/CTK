@@ -305,3 +305,22 @@ html.forge-route-running::view-transition-new(root){
    transition:none!important;
  }
 }
+
+/* Before an authorized Auto-name directory is chosen, the Excel input stays
+   genuinely disabled; visual affordance matches that locked native state. */
+#section-adlinks #adlinksTabContentDownloader #adDlDropZone.ad-excel-locked label{
+  opacity:.48!important;
+  cursor:not-allowed!important;
+  box-shadow:none!important;
+  transform:none!important;
+  translate:none!important;
+}
+#section-adlinks #adlinksTabContentDownloader #adDlDropZone.ad-excel-locked label:hover{
+  box-shadow:none!important;
+  transform:none!important;
+  translate:none!important;
+}
+#section-adlinks #adlinksTabContentDownloader #adDlRenameFolder:focus-visible{
+  outline:2px solid var(--ad-primary,#285a43)!important;
+  outline-offset:2px!important;
+}
