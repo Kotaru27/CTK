@@ -207,7 +207,7 @@ try{
   // overriding a previously populated or user-named board.
   const folderImport=await page.evaluate(async base64=>{
     const story=Tools.Story,prior=story.active.id;
-    const picker=document.getElementById('storyFolderInput');
+    const picker=document.getElementById('storyInput');
     const supported=!!picker?.hasAttribute('webkitdirectory');
     story.addNewProject();
     const bytes=Uint8Array.from(atob(base64),c=>c.charCodeAt(0));
