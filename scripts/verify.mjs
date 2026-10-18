@@ -30,7 +30,7 @@ if(!b.includes('./dist/css/forge-whats-new.css') || !b.includes('./dist/js/forge
    !standalone.includes('<script id="forge-whats-new-js">'+whatsNewJs+'</script>') ||
    rd('dist/css/forge-whats-new.css')!==whatsNewCss ||
    rd('dist/js/forge-whats-new.js')!==whatsNewJs)
-  throw Error('What's New launch assets missing or stale');
+  throw Error('Launch popup assets missing or stale');
 if(!standalone.includes('<style id="forge-video-route-styles">'+videoRouteCss+'</style>') ||
    !standalone.includes('<script id="forge-video-route-js">'+videoRouteJs+'</script>'))
   throw Error('Standalone shared route layer missing or stale');
