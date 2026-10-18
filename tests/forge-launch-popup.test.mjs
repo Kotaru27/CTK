@@ -45,9 +45,11 @@ function setup({local=store(),introFinished=true,opening=false,active=false,font
 }
 const flush=async()=>{for(let i=0;i<12;i++)await Promise.resolve()};
 test('auto show after intro and return on next visit unless permanently dismissed',async()=>{
- const local=store(),one=setup({local,introFinished:false});
- assert.equal(one.timers.length,0);
- one.doc.dispatch('forge:intro-complete');one.fire(420);await flush();
+ const local=store();
+ const waiting=setup({local,introFinished:false,opening:true});
+ assert.equal(waiting.timers.length,0,'No popup before intro is complete');
+ const one=setup({local});
+ one.fire(420);await flush();
  assert.equal(one.root.hidden,false);
  one.buttons.forgeWhatsNewEnter.click();
  assert.equal(local.getItem('forge_whatsnew_dismissed_2026_v1'),null);
