@@ -14854,11 +14854,33 @@ const CTKDownloadRenamer = (() => {
           entries: [],
           _downloadBusy: false,
           init() {
-            document.getElementById("adDlInput").addEventListener("change", (e) => {
-              const file = e.target.files[0];
-              document.getElementById("adDlFileNameDisplay").innerText = file ? file.name : "Upload Excel";
-              if (file) this.loadExcel();
+            const input=document.getElementById("adDlInput");
+            const zone=document.getElementById("adDlDropZone");
+            input.addEventListener("change", async (e) => {
+              const file=e.target.files?.[0];
+              if(!file)return;
+              // An Excel must never be parsed without an authorized renaming
+              // destination, even if a browser bypasses the disabled picker.
+              await this.loadExcel(file);
             });
+            // A label can be activated by pointer or keyboard. When locked,
+            // guide the user to the existing folder picker without opening Excel.
+            input.closest("label")?.addEventListener("click", (event) => {
+              if(this.folderReady())return;
+              event.preventDefault();
+              this.status("Choose an Auto-name folder before importing Excel.",true);
+              document.getElementById("adDlRenameFolder")?.focus();
+            });
+            if(zone) {
+              zone.addEventListener("dragover",event=>{
+                if(!this.folderReady())event.preventDefault();
+              });
+              zone.addEventListener("drop",event=>{
+                if(this.folderReady())return;
+                event.preventDefault();
+                this.status("Choose an Auto-name folder before importing Excel.",true);
+              });
+            }
             const header = document.getElementById("adlinksDlHeaderControls") || document.getElementById("adDlSummaryBar");
             if (header && !document.getElementById("adDlBulkButton")) {
               const btn = document.createElement("button");
@@ -14871,15 +14893,17 @@ const CTKDownloadRenamer = (() => {
               btn.onclick = () => this.downloadBulk();
               header.appendChild(btn);
             }
-            if (typeof window.showDirectoryPicker === "function" && window.isSecureContext && header && !document.getElementById("adDlRenameFolder")) {
-              const folderButton = document.createElement("button");
-              folderButton.id = "adDlRenameFolder";
-              folderButton.type = "button";
-              folderButton.className = "liquid-btn";
-              folderButton.textContent = "Auto-name: Choose folder";
-              folderButton.title = "Optional: give CTK permission to rename completed SharePoint downloads in Chrome's selected download folder.";
-              folderButton.onclick = () => this.chooseRenameFolder();
-              header.appendChild(folderButton);
+            if(header && !document.getElementById("adDlRenameFolder")) {
+              const folderButton=document.createElement("button");
+              folderButton.id="adDlRenameFolder";
+              folderButton.type="button";
+              folderButton.className="liquid-btn";
+              folderButton.textContent="Auto-name: Choose folder";
+              folderButton.title="Required before Excel import. Select the same folder configured for browser downloads; grant read/write access for automatic renaming.";
+              folderButton.onclick=()=>this.chooseRenameFolder();
+              const uploadZone=document.getElementById("adDlDropZone");
+              if(uploadZone && uploadZone.parentNode===header) header.insertBefore(folderButton,uploadZone);
+              else header.appendChild(folderButton);
             }
             const bar = document.getElementById("adDlSummaryBar");
             if (bar && !document.getElementById("adDlStatus")) {
@@ -14890,6 +14914,28 @@ const CTKDownloadRenamer = (() => {
               status.style.cssText = "display:inline-block; margin-left:12px; font-size:12px; line-height:1.5; color:var(--text-muted);";
               bar.appendChild(status);
             }
+            this.updateExcelGate();
+          },
+          folderReady() {
+            return !!this._renameFolderApproved && typeof CTKDownloadRenamer!=="undefined" &&
+              CTKDownloadRenamer.active();
+          },
+          updateExcelGate() {
+            const ready=this.folderReady();
+            const input=document.getElementById("adDlInput");
+            if(input) {
+              input.disabled=!ready;
+              if(!ready)input.value="";
+              const label=input.closest("label");
+              if(label) {
+                label.classList.toggle("ad-excel-locked",!ready);
+                label.setAttribute("aria-disabled",String(!ready));
+                label.title=ready?"Upload Excel workbook":"First choose the Auto-name download folder";
+              }
+            }
+            const zone=document.getElementById("adDlDropZone");
+            if(zone)zone.classList.toggle("ad-excel-locked",!ready);
+            return ready;
           },
           status(message, isError = false) {
             const el = document.getElementById("adDlStatus");
@@ -14897,12 +14943,21 @@ const CTKDownloadRenamer = (() => {
           },
           async chooseRenameFolder() {
             try {
-              const chosen = await CTKDownloadRenamer.chooseFolder();
-              document.getElementById("adDlRenameFolder").textContent = "Auto-name: " + chosen;
-              this.status(`Auto-name is ready for multiple distinct SharePoint downloads. In Chrome Downloads settings, select the SAME folder: ${chosen}. Keep CTK open. Ambiguous files are left untouched for Fix downloaded name.`);
+              if(typeof CTKDownloadRenamer==="undefined" || !CTKDownloadRenamer.chooseFolder)
+                throw Error("Automatic renaming is unavailable in this browser.");
+              const chosen=await CTKDownloadRenamer.chooseFolder();
+              this._renameFolderApproved=true;
+              this.updateExcelGate();
+              const button=document.getElementById("adDlRenameFolder");
+              if(button)button.textContent="Auto-name: "+chosen;
+              this.status("Folder ready · Upload Excel to continue.");
             } catch(error) {
-              if (error.name === "AbortError") { this.status("Folder selection cancelled. Native downloads still work."); return; }
-              this.status("Folder access unavailable: "+error.message+". Native downloads still work.",true);
+              this.updateExcelGate();
+              if(error.name==="AbortError") {
+                this.status(this.folderReady()?"Current folder remains selected.":"Choose an Auto-name folder before importing Excel.");
+                return;
+              }
+              this.status("Choose a writable folder to enable Excel import. "+error.message,true);
             }
           },
           normalize(text) {
@@ -14949,9 +15004,23 @@ const CTKDownloadRenamer = (() => {
             if (/\b(print|outdoor|ooh|image|photo|static|poster|banner|display)\b/.test(t)) return {ext:".jpg",confidence:"inferred"};
             return {ext:"",confidence:"unknown"};
           },
-          loadExcel() {
-            const file = document.getElementById("adDlInput").files[0];
+          async loadExcel(selectedFile) {
+            const input=document.getElementById("adDlInput");
+            const file=selectedFile || input?.files?.[0];
             if (!file) return;
+            if(!this.folderReady() || !await CTKDownloadRenamer.permissionGranted()) {
+              this._renameFolderApproved=false;
+              this.updateExcelGate();
+              this.status("Auto-name folder access is required before importing Excel. Choose the folder again.",true);
+              return;
+            }
+            if(!/\.(xlsx|xls)$/i.test(file.name || "")) {
+              this.status("Select an Excel workbook (.xlsx or .xls).",true);
+              if(input)input.value="";
+              return;
+            }
+            const display=document.getElementById("adDlFileNameDisplay");
+            if(display)display.innerText=file.name;
             const reader = new FileReader();
             reader.onerror = () => this.status("Could not read the spreadsheet.", true);
             reader.onload = (e) => {
@@ -14964,6 +15033,10 @@ const CTKDownloadRenamer = (() => {
             reader.readAsArrayBuffer(file);
           },
           generateDashboard() {
+            if(!this.folderReady()){
+              this.status("Choose an Auto-name folder before importing Excel.",true);
+              return;
+            }
             if (!this.workbookData?.SheetNames?.length) { this.status("The workbook has no sheets.", true); return; }
             const sheet = this.workbookData.Sheets[this.workbookData.SheetNames[0]];
             if (!sheet?.["!ref"]) { this.status("The first sheet is empty.", true); return; }
@@ -15077,7 +15150,7 @@ const CTKDownloadRenamer = (() => {
             document.getElementById("adDlCountText").innerText = `${this.entries.length} valid ads`;
             document.getElementById("adDlEmptyState").style.display = "none";
             this.updateBulkButton();
-            this.status(`${this.entries.length} ready · ${skipped} invalid rows skipped · ${inferred} extensions inferred.${this.entries.some(e=>CTKSharePoint.isSharePoint(e.url)) ? ' SharePoint uses native downloads; click Auto-name: Choose folder for optional renamed files.' : ''}`);
+            this.status(`${this.entries.length} ready · ${skipped} invalid rows skipped · ${inferred} extensions inferred.${this.entries.some(e=>CTKSharePoint.isSharePoint(e.url)) ? ' SharePoint uses native downloads with folder-based automatic renaming.' : ''}`);
           },
           updateBulkButton() {
             const btn = document.getElementById("adDlBulkButton");
