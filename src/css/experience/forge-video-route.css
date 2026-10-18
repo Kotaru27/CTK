@@ -127,8 +127,8 @@ html.forge-route-running[data-forge-route-travel="tool"]::view-transition-new(ro
   animation:forge-tool-root-in 270ms cubic-bezier(.16,1,.3,1) both;
 }
 @keyframes forge-tool-root-out{
-  from{opacity:1;filter:blur(0)}
-  to{opacity:.68;filter:blur(1px)}
+  from{opacity:1}
+  to{opacity:.68}
 }
 @keyframes forge-tool-root-in{
   from{opacity:.68;transform:translate3d(0,6px,0)}
