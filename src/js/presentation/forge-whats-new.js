@@ -1,18 +1,18 @@
-/* The Forge welcome / first-launch announcement and manual replay.
-   Intro completion controls timing; no fonts, images or network requests.
-   Every close path is usable and preserves keyboard focus. */
+/* The Forge welcome / persistent modal until an explicit opt-out.
+   Only "Don't show again" dismisses it. Font preparation is bounded
+   and the underlying homepage stays inactive under the blurred scrim. */
 (function(){
   'use strict';
   const root=document.getElementById('forgeWhatsNew');
   if(!root)return;
   const dialog=root.querySelector('.forge-whatsnew-dialog');
   const trigger=document.getElementById('forgeWhatsNewTrigger');
-  const enter=root.querySelector('#forgeWhatsNewEnter');
   const never=root.querySelector('#forgeWhatsNewNever');
-  const close=root.querySelector('#forgeWhatsNewClose');
-  if(!dialog||!enter||!never||!close)return;
+  if(!dialog||!never)return;
 
-  const permanentKey='forge_whatsnew_dismissed_2026_v1';
+  // New version intentionally resets previous temporary dismissals.
+  // A visitor must explicitly choose the present modal's opt-out.
+  const permanentKey='forge_whatsnew_dismissed_2026_v3';
   let opened=false,preparing=false,previousFocus=null;
   let automaticTimer=0,autoAttempted=false,openSerial=0,fontsReady=null;
   function safeGet(key){
@@ -87,12 +87,12 @@
       previousFocus=restoreFocus;
       root.hidden=false;
       trigger?.setAttribute?.('aria-expanded','true');
-      enter.focus({preventScroll:true});
+      never.focus({preventScroll:true});
     });
   }
-  function dismiss(permanent=false){
+  function dismiss(){
     if(!opened)return;
-    if(permanent)safeSet(permanentKey);
+    safeSet(permanentKey);
     opened=false;
     root.hidden=true;
     trigger?.setAttribute?.('aria-expanded','false');
@@ -117,7 +117,9 @@
       getComputedStyle(el).visibility!=='hidden');
   }
   root.addEventListener('keydown',event=>{
-    if(event.key==='Escape'){event.preventDefault();dismiss();return;}
+    // Explicit opt-out is the only dismissal path: Escape may not
+    // silently skip the onboarding information.
+    if(event.key==='Escape'){event.preventDefault();return;}
     if(event.key!=='Tab')return;
     const items=focusables();
     if(!items.length)return;
@@ -128,12 +130,7 @@
       event.preventDefault();first.focus();
     }
   });
-  enter.addEventListener('click',()=>dismiss());
-  never.addEventListener('click',()=>dismiss(true));
-  close.addEventListener('click',()=>dismiss());
-  root.addEventListener('pointerdown',event=>{
-    if(event.target===root)dismiss();
-  });
+  never.addEventListener('click',dismiss);
   if(trigger){
     trigger.hidden=false;
     trigger.setAttribute?.('aria-expanded','false');
