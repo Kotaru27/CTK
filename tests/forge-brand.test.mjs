@@ -116,7 +116,7 @@ test('QHD and high refresh polish avoids expensive background color and hover sh
 test('executive hero states one purpose, one description, then tool selection',()=>{
   for(const page of [index,standalone]){
     assert.match(page,/EIGHT TOOLS\. ONE CREATIVE WORKSPACE\./);
-    assert.match(page,/Resize images, convert PDFs, capture video stills/);
+    assert.match(page,/Resize images, convert PDFs, capture stills and build storyboards/);
     assert.match(page,/class="forge-after-hero"><strong>Choose a tool<\/strong>/);
     assert.doesNotMatch(page,/Everything at your fingertips/);
     assert.doesNotMatch(page,/From working files to finished assets/);
