@@ -164,3 +164,32 @@ html.forge-route-running::view-transition-new(root){
 @media(prefers-reduced-motion:reduce){
   #stillsTabContentStory .story-board-layout-choice{transition:none!important;}
 }
+
+/* Action-first asset desk. The main tool header already says Ad Downloader:
+   duplicate editorial copy costs space in a populated download queue. */
+#section-adlinks #adlinksTabContentDownloader .ad-download-heading{display:none!important;}
+#section-adlinks #adlinksTabContentDownloader .ad-download-top{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:10px!important;
+  padding:15px 32px!important;
+  min-height:74px!important;
+  overflow:visible!important;
+}
+#section-adlinks #adlinksTabContentDownloader .ad-download-top::before{
+  display:none!important;
+}
+#section-adlinks #adlinksTabContentDownloader #adlinksDlHeaderControls{
+  width:100%!important;max-width:none!important;
+  flex-wrap:wrap!important;
+  padding:0!important;justify-content:flex-end!important;
+  align-self:center!important;
+}
+#section-adlinks #adlinksTabContentDownloader #adDlSummaryBar{
+  min-height:52px!important;padding:10px 32px!important;
+}
+#section-adlinks #adlinksTabContentDownloader #adDlStatus:empty{
+  display:none!important;
+}
