@@ -571,6 +571,15 @@ export default {
               window.applyThanosSnap(obj.card).then(() => this.removeCard(obj));
             };
             const previewArea = card.querySelector(".card-preview-area");
+            previewArea.tabIndex = 0;
+            previewArea.setAttribute("role", "button");
+            previewArea.setAttribute("aria-label", "Open Focus Mode for " + file.name);
+            previewArea.onkeydown = (event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                previewArea.click();
+              }
+            };
             previewArea.onmouseenter = () => (hoverOverlay.style.opacity = "1");
             previewArea.onmouseleave = () => (hoverOverlay.style.opacity = "0");
             previewArea.onclick = () =>
