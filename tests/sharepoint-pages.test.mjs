@@ -68,7 +68,8 @@ test('SharePoint request isolates navigation from the CTK workspace and never cl
     assert.equal(removed,true);
     assert.equal(entry.downloaded,false);
     assert.equal(entry.downloadButton.textContent,'Download again');
-    assert.match(statuses[0][0],/cannot be confirmed/);
+    assert.equal(entry.requested,true,'native SharePoint request is tracked without declaring completion');
+    assert.equal(statuses[0][0],'','routine download requests should not repeat technical status in the workspace');
   }finally{globalThis.document=originalDoc;globalThis.CTKSharePoint=originalSP;}
 });
 test('SharePoint sources are explicitly excluded from client-side ZIP',async()=>{
