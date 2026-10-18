@@ -26,6 +26,23 @@ try {
  });
  check(revealStyle.mask!=='none'&&revealStyle.position==='absolute',
    'Precision wordmark cover was not rendered: '+JSON.stringify(revealStyle));
+ const revealPromise=page.evaluate(()=>new Promise(resolve=>{
+   const positions=[],started=performance.now();
+   const tick=()=>{
+     const intro=document.getElementById('forgeIntro');
+     const word=document.getElementById('forgeIntroType');
+     if(!intro || intro.classList.contains('is-settled') || performance.now()-started>3000){
+       resolve(positions);return;
+     }
+     if(intro.classList.contains('is-playing') && word){
+       const matrix=getComputedStyle(word,'::before').transform;
+       const tx=matrix==='none'?0:new DOMMatrixReadOnly(matrix).m41;
+       positions.push({at:performance.now(),tx});
+     }
+     requestAnimationFrame(tick);
+   };
+   requestAnimationFrame(tick);
+ }));
  const trajectoryPromise=page.evaluate(()=>new Promise(resolve=>{
    const samples=[];
    const loop=()=>{
@@ -44,6 +61,12 @@ try {
  await page.screenshot({path:'artifacts/forge-browser/intro.png'});
  await intro.waitFor({state:'detached',timeout:6000});
  const trajectory=await trajectoryPromise;
+ const reveal=await revealPromise;
+ check(reveal.length>=10,'Kola intro mask did not produce continuous compositor samples');
+ if(reveal.length>=3){
+   const travel=Math.max(...reveal.map(f=>f.tx))-Math.min(...reveal.map(f=>f.tx));
+   check(travel>80,'Kola wordmark mask did not visibly travel: '+travel.toFixed(1)+'px');
+ }
 
  // First major rebrand: popup appears AFTER the intro wordmark handoff.
  const launch=page.locator('#forgeWhatsNew');
