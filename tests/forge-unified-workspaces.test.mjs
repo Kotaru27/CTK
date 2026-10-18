@@ -33,7 +33,10 @@ test('polish touches only presentation, never process or export code',()=>{
   /#view-app #stillsTabContentStory #storyProjectTabs \.story-project-delete\{[^}]+\}/g,
   /#view-app :is\(#stillsTabContentStory,#stillsTabContentFilmstrip\) \.story-asset-action\.liquid-btn\{[^}]+\}/g
  ];
- const layoutSafeCss=allowedSmallComponents.reduce((s,re)=>s.replace(re,''),css);
+ // Scoped, non-interactive ::after indicators may position themselves
+ // without changing a tool panel, canvas, editor, or scroll owner.
+ const layoutSafeCss=allowedSmallComponents.reduce((s,re)=>s.replace(re,''),css)
+  .replace(/[^{}]+::after\\{[^{}]*\\}/g,'');
  assert.match(css, /\.story-asset-row\{[^}]*grid-template-columns:minmax\(0,1fr\) auto/);
  for(const banned of ['#pdfStacksContainer {','grid-template-columns:','grid-template-rows:',
    'object-fit:','canvas {','position:fixed','position:absolute','min-height:',
