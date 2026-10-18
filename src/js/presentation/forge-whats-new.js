@@ -13,15 +13,12 @@
   if(!dialog||!enter||!never||!close)return;
   const permanentKey='forge_whatsnew_dismissed_2026_v1';
   let opened=false,previousFocus=null;
-  const safeGet=(store,key)=>{
-    try{return store.getItem(key)==='1';}catch(_){return false;}
-  };
-  const safeSet=(store,key)=>{
-    try{store.setItem(key,'1');}catch(_){}
+  // Storage getters themselves can throw in private/sandboxed browsers.
+  const safeSet=key=>{
+    try{localStorage.setItem(key,'1');}catch(_){}
   };
   function eligible(){
     if(opened)return false;
-    if(safeGet(localStorage,permanentKey))return false;
     // A restoring workspace takes precedence over promotional content.
     const home=document.getElementById('view-home');
     const app=document.getElementById('view-app');
@@ -30,17 +27,22 @@
       !document.body.classList.contains('forge-opening');
   }
   function open(){
+    // An intentional click always works, even while the intro is drawing.
+    // Finish the optional intro first instead of silently discarding it.
+    if(document.body.classList.contains('forge-opening'))
+      document.getElementById('forgeIntroSkip')?.click();
     if(!eligible())return;
     opened=true;
     previousFocus=document.activeElement;
     root.hidden=false;
+    trigger?.setAttribute?.('aria-expanded','true');
     enter.focus({preventScroll:true});
   }
   function dismiss(permanent=false){
     if(!opened)return;
-    if(permanent)safeSet(localStorage,permanentKey);
+    if(permanent)safeSet(permanentKey);
     opened=false;root.hidden=true;
-    if(permanent&&trigger)trigger.hidden=true;
+    trigger?.setAttribute?.('aria-expanded','false');
     if(previousFocus && previousFocus.isConnected &&
        typeof previousFocus.focus==='function')
       previousFocus.focus({preventScroll:true});
@@ -70,7 +72,10 @@
   });
   // Release notes are opt-in and never intercept tool clicks.
   if(trigger){
-    if(safeGet(localStorage,permanentKey))trigger.hidden=true;
+    // Never hide the user-invoked updates entry. "Don't show again"
+    // records a preference against automatic prompts, not manual access.
+    trigger.hidden=false;
+    trigger.setAttribute?.('aria-expanded','false');
     trigger.addEventListener('click',open);
   }
 })();
