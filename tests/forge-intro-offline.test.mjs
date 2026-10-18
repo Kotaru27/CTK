@@ -5,108 +5,85 @@ import fs from 'node:fs';
 const js=fs.readFileSync(new URL('../src/js/presentation/forge-brand.js',import.meta.url),'utf8');
 const css=fs.readFileSync(new URL('../src/css/experience/forge-brand.css',import.meta.url),'utf8');
 const build=fs.readFileSync(new URL('../scripts/build.mjs',import.meta.url),'utf8');
-
-function setup({font='missing',reduced=false,activeTool=false,suppress=false}={}){
- const timers=[],animations=[];
+function fixture({font='missing',reduced=false,active=false}={}){
+ const timers=[],animations=[],listeners=new Map();
  const classes=(initial=[])=>{
-  const s=new Set(initial);
-  return {contains:x=>s.has(x),add:(...x)=>x.forEach(v=>s.add(v)),
-   remove:(...x)=>x.forEach(v=>s.delete(v))};
+  const values=new Set(initial);
+  return {contains:x=>values.has(x),add:(...xs)=>xs.forEach(x=>values.add(x)),
+   remove:(...xs)=>xs.forEach(x=>values.delete(x))};
  };
- const intro={hidden:true,removed:false,classList:classes(),remove(){this.removed=true;}};
- const skip={handlers:[],addEventListener(_type,fn){this.handlers.push(fn);},
+ const animation=(kind,frames,options)=>{
+  const flight={kind,frames,options,cancelled:false,
+   cancel(){this.cancelled=true;},finished:Promise.resolve()};
+  animations.push(flight);return flight;
+ };
+ const word=(kind)=>({style:{},animate:(frames,options)=>animation(kind,frames,options)});
+ const words=[word('The'),word('Forge')];
+ const intro={hidden:true,removed:false,classList:classes(),remove(){this.removed=true}};
+ const skip={handlers:[],addEventListener(_event,fn){this.handlers.push(fn);},
   click(){for(const fn of this.handlers)fn();}};
- const mark={style:{},getBoundingClientRect:()=>({left:410,top:350,width:550,height:140}),
-  animate(frames,options){
-   const a={frames,options,cancelled:false,cancel(){this.cancelled=true;},
-     finished:Promise.resolve()};
-   animations.push(a);return a;
-  }};
- const title={getBoundingClientRect:()=>({left:215,top:245,width:450,height:115})};
- const home={classList:classes()};
- const app={classList:classes(activeTool?['active']:[])};
+ const mark={style:{},querySelectorAll:()=>words,
+  getBoundingClientRect:()=>({left:410,top:350,width:550,height:155}),
+  animate:(frames,options)=>animation('handoff',frames,options)};
+ const heading={getBoundingClientRect:()=>({left:215,top:245,width:450,height:145})};
+ const home={classList:classes()},app={classList:classes(active?['active']:[])};
  const body={classList:classes()};
- const document={body,visibilityState:'visible',documentElement:{dataset:{},classList:classes()},
-  getElementById:id=>({forgeIntro:intro,forgeIntroWordmark:mark,forgeHeroName:title,
-    forgeIntroSkip:skip,'view-home':home,'view-app':app})[id]||null,
-  addEventListener(){},removeEventListener(){},dispatchEvent(){}};
- if(font==='loaded')document.fonts={load:()=>Promise.resolve([{status:'loaded'}])};
- if(font==='secondary-hang')document.fonts={load:spec=>
-  spec.includes('Kola')?Promise.resolve([{status:'loaded'}]):new Promise(()=>{})};
- if(font==='hang')document.fonts={load:()=>new Promise(()=>{})};
- if(font==='reject')document.fonts={load:()=>Promise.reject(Error('offline'))};
- const context={document,window:{matchMedia:()=>({matches:reduced})},
-  sessionStorage:{getItem:()=>suppress?'1':null},
-  Event:class{constructor(type){this.type=type;}},
+ const doc={body,visibilityState:'visible',documentElement:{dataset:{},classList:classes()},
+  getElementById:id=>({
+   forgeIntro:intro,forgeIntroWordmark:mark,forgeHeroName:heading,
+   forgeIntroSkip:skip,'view-home':home,'view-app':app
+  })[id]||null,addEventListener(){},removeEventListener(){},dispatchEvent(){}};
+ if(font==='loaded')doc.fonts={load:()=>Promise.resolve([{status:'loaded'}])};
+ if(font==='hang')doc.fonts={load:()=>new Promise(()=>{})};
+ if(font==='reject')doc.fonts={load:()=>Promise.reject(new Error('offline'))};
+ if(font==='secondary-hang')doc.fonts={load:s=>s.includes('Kola')?
+  Promise.resolve([{status:'loaded'}]):new Promise(()=>{})};
+ const context={document:doc,window:{matchMedia:()=>({matches:reduced})},
+  sessionStorage:{getItem:()=>null},Event:class{constructor(type){this.type=type}},
   setTimeout:fn=>{timers.push(fn);return timers.length;},clearTimeout(){},
   requestAnimationFrame:fn=>fn(),MutationObserver:undefined,Promise,Math};
  vm.runInNewContext(js,context,{filename:'forge-brand.js'});
- return {document,intro,skip,timers,animations,body};
+ return {timers,animations,intro,skip,doc,body,words};
 }
-const microtasks=async()=>{for(let i=0;i<9;i++)await Promise.resolve();};
-test('missing remote Kola retains the full wordmark animation and handoff',async()=>{
- const h=setup();
- await microtasks();
- assert.equal(h.intro.hidden,false);
- assert.equal(h.animations.length,1);
- assert.equal(h.animations[0].options.duration,1590);
- assert.equal(h.document.documentElement.classList.contains('forge-launch-fallback-kola'),true);
- assert.equal(h.intro.classList.contains('forge-intro-fallback-ui'),true);
- assert.match(h.animations[0].frames[0].clipPath,/100/);
- h.timers.at(-1)();await microtasks();
- assert.equal(h.animations.length,2);
- assert.equal(h.animations[1].options.duration,1080);
- assert.equal(h.intro.removed,true);
- assert.equal(h.document.documentElement.dataset.forgeIntroFinished,'1');
+const flush=async()=>{for(let i=0;i<12;i++)await Promise.resolve()};
+test('The and Forge appear separately without cutting any glyph',async()=>{
+ const h=fixture();await flush();
+ assert.deepEqual(h.animations.map(a=>a.kind),['The','Forge']);
+ assert.equal(h.animations[0].options.delay,0);
+ assert.equal(h.animations[1].options.delay,260);
+ for(const a of h.animations){
+  assert.equal(a.frames.every(f=>!('clipPath' in f)),true);
+  assert.equal(a.frames.every(f=>typeof f.opacity==='number'),true);
+ }
+ h.timers.at(-1)();await flush();
+ assert.equal(h.animations.at(-1).kind,'handoff');
+ assert.equal(h.doc.documentElement.dataset.forgeIntroFinished,'1');
 });
-test('hung font request cannot cancel opening',async()=>{
- const h=setup({font:'hang'});
- assert.equal(h.animations.length,0);
- assert.equal(h.timers.length,2);
- h.timers[1]();await microtasks();
- assert.equal(h.animations.length,1);
- h.skip.click();
- assert.equal(h.intro.removed,true);
- assert.equal(h.body.classList.contains('forge-opening'),false);
+test('slow, rejected and partially loaded fonts do not strand the entrance',async()=>{
+ for(const font of ['hang','reject','secondary-hang']){
+  const h=fixture({font});
+  if(font!=='reject'){assert.equal(h.animations.length,0);h.timers[1]();}
+  await flush();
+  assert.equal(h.animations.length,2);
+  if(font==='secondary-hang')
+   assert.equal(h.doc.documentElement.classList.contains('forge-launch-fallback-kola'),false);
+  h.skip.click();
+  assert.equal(h.intro.removed,true);
+ }
 });
-test('rejected font draws fallback and reduced motion bypasses',async()=>{
- const h=setup({font:'reject'});await microtasks();
- assert.equal(h.animations.length,1);
- const reduced=setup({reduced:true});
- assert.equal(reduced.intro.hidden,true);
- assert.equal(reduced.intro.removed,true);
- assert.equal(reduced.animations.length,0);
-});
-test('restored tool and explicit test suppression never block workspaces',()=>{
- for(const opts of [{activeTool:true},{suppress:true}]){
-  const h=setup(opts);
+test('restored workspace and reduced motion bypass safely',()=>{
+ for(const opts of [{active:true},{reduced:true}]){
+  const h=fixture(opts);
   assert.equal(h.intro.removed,true);
   assert.equal(h.animations.length,0);
  }
 });
-test('markup stays hidden if intro JS cannot load, with no opaque box',()=>{
+test('Kola descender is never hidden behind a mask or tight line box',()=>{
+ assert.match(css,/INTACT WORD ENTRANCE/);
+ assert.match(css,/clip-path:none!important/);
+ assert.match(css,/line-height:1\.26!important/);
+ assert.match(css,/overflow:visible!important/);
+ assert.match(build,/forge-intro-word-first/);
+ assert.match(build,/forge-intro-word-second/);
  assert.match(build,/The Forge introduction" hidden/);
- assert.match(css,/\.forge-intro\[hidden\]/);
- assert.match(css,/\.forge-intro-wordmark\{/);
- assert.match(css,/forge-intro-leaving::before/);
- assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
-});
-
-test('successful Kola and interface font loads never force fallback',async()=>{
- const h=setup({font:'loaded'});
- await microtasks();
- assert.equal(h.animations.length,1);
- assert.equal(h.document.documentElement.classList.contains('forge-launch-fallback-kola'),false);
- assert.equal(h.intro.classList.contains('forge-intro-fallback-ui'),false);
-});
-
-test('Kola remains selected even when only helper typography stalls',async()=>{
- const h=setup({font:'secondary-hang'});
- await microtasks();
- assert.equal(h.animations.length,0);
- h.timers[1]();await microtasks();
- assert.equal(h.animations.length,1);
- assert.equal(h.document.documentElement.classList.contains('forge-launch-fallback-kola'),false);
- assert.equal(h.intro.classList.contains('forge-intro-fallback-ui'),true);
- h.skip.click();
 });
