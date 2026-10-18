@@ -5,103 +5,108 @@ import fs from 'node:fs';
 const js=fs.readFileSync(new URL('../src/js/presentation/forge-whats-new.js',import.meta.url),'utf8');
 const css=fs.readFileSync(new URL('../src/css/experience/forge-whats-new.css',import.meta.url),'utf8');
 const build=fs.readFileSync(new URL('../scripts/build.mjs',import.meta.url),'utf8');
-const store=()=>{
- const map=new Map();return {getItem:k=>map.get(k)||null,setItem:(k,v)=>map.set(k,v)};
-};
-const classes=()=>{const s=new Set();return {add:x=>s.add(x),contains:x=>s.has(x)}};
-function setup({local=store(),introFinished=true,opening=false,active=false,font='loaded'}={}){
- const timers=[],listeners=new Map(),buttons={};
- const listen=(bucket,event,fn)=>{if(!bucket.has(event))bucket.set(event,[]);bucket.get(event).push(fn)};
- for(const id of ['forgeWhatsNewTrigger','forgeWhatsNewEnter','forgeWhatsNewNever','forgeWhatsNewClose']){
-  const events=new Map();
-  buttons[id]={hidden:false,isConnected:true,addEventListener:(type,fn)=>listen(events,type,fn),
-   click(){for(const fn of events.get('click')||[])fn({target:this})},
-   focus(){doc.activeElement=this},setAttribute(){},getClientRects:()=>[{}]};
- }
- const modalEvents=new Map(),intro={hidden:true};
- const root={hidden:true,classList:classes(),addEventListener:(type,fn)=>listen(modalEvents,type,fn),
-  querySelector:q=>q==='.forge-whatsnew-dialog'?{querySelectorAll:()=>Object.values(buttons)}:buttons[q.slice(1)],
-  keydown(e){for(const fn of modalEvents.get('keydown')||[])fn(e)}};
- const host={classList:{contains:()=>false}};
- const workspace={classList:{contains:k=>k==='active'&&active}};
+function storage(seed={}){
+ const map=new Map(Object.entries(seed));
+ return {getItem:k=>map.get(k)||null,setItem:(k,v)=>map.set(k,v)};
+}
+function fixture({local=storage(),opening=false,active=false,font='loaded',introFinished=true}={}){
+ const timers=[],listeners=new Map(),rootListeners=new Map();
+ const listen=(bucket,type,fn)=>{
+  if(!bucket.has(type))bucket.set(type,[]);
+  bucket.get(type).push(fn);
+ };
+ const classes=()=>{const values=new Set();return {
+  add:v=>values.add(v),contains:v=>values.has(v)}};
+ const button=(name)=>{
+  const events=new Map();return {name,isConnected:true,hidden:false,
+   focus(){doc.activeElement=this;},setAttribute(){},getClientRects:()=>[{}],
+   addEventListener:(t,f)=>listen(events,t,f),
+   click(){for(const fn of events.get('click')||[])fn({target:this});}};
+ };
+ const trigger=button('trigger'),never=button('never');
  let skips=0;
+ const root={hidden:true,classList:classes(),
+  addEventListener:(t,f)=>listen(rootListeners,t,f),
+  querySelector:q=>q==='.forge-whatsnew-dialog'?dialog:
+   q==='#forgeWhatsNewNever'?never:null,
+  fire(type,event){for(const fn of rootListeners.get(type)||[])fn(event);}};
+ const dialog={querySelectorAll:()=>[never]};
+ const home={classList:{contains:()=>false}},
+  app={classList:{contains:k=>k==='active'&&active}};
  const doc={visibilityState:'visible',activeElement:null,
   body:{classList:{contains:k=>k==='forge-opening'&&opening}},
   documentElement:{dataset:introFinished?{forgeIntroFinished:'1'}:{},classList:{contains:()=>false}},
-  fonts:{load(spec){return font==='hang'?new Promise(()=>{}):
-    font==='partial'&&!spec.includes('Kola')?new Promise(()=>{}):
-    font==='fail'?Promise.reject(Error('Offline')):Promise.resolve([{status:'loaded'}])}},
-  getElementById:id=>id==='forgeWhatsNew'?root:id==='view-home'?host:
-    id==='view-app'?workspace:id==='forgeIntro'?intro:id==='forgeIntroSkip'?{
-     click(){opening=false;skips++;}}:buttons[id]||null,
-  addEventListener:(type,fn)=>listen(listeners,type,fn),
-  dispatch(type){for(const fn of listeners.get(type)||[])fn()}};
- const schedule=(fn,ms)=>{const t={fn,ms,cancelled:false};timers.push(t);return t};
- const context={document:doc,localStorage:local,sessionStorage:store(),Promise,
-  setTimeout:schedule,clearTimeout:t=>{if(t)t.cancelled=true},
+  fonts:{load:()=>font==='hang'?new Promise(()=>{}):Promise.resolve([{status:'loaded'}])},
+  getElementById:id=>({
+   forgeWhatsNew:root,forgeWhatsNewTrigger:trigger,'view-home':home,
+   'view-app':app,forgeIntro:{hidden:true},
+   forgeIntroSkip:{click(){opening=false;skips++;}}
+  })[id]||null,
+  addEventListener:(t,f)=>listen(listeners,t,f),
+  dispatch(t){for(const fn of listeners.get(t)||[])fn();}};
+ const schedule=(fn,ms)=>{const t={fn,ms,cleared:false};timers.push(t);return t};
+ const context={document:doc,localStorage:local,sessionStorage:storage(),
+  Promise,setTimeout:schedule,clearTimeout:t=>{if(t)t.cleared=true},
   getComputedStyle:()=>({visibility:'visible'})};
  vm.runInNewContext(js,context,{filename:'forge-whats-new.js'});
- function fire(ms){for(const t of timers.filter(x=>x.ms===ms&&!x.cancelled)){t.cancelled=true;t.fn()}}
- return {root,doc,buttons,timers,local,fire,get skips(){return skips}};
+ const fire=ms=>{for(const t of timers.filter(t=>t.ms===ms&&!t.cleared)){t.cleared=true;t.fn()}};
+ return {doc,root,trigger,never,local,timers,fire,get skips(){return skips}};
 }
-const flush=async()=>{for(let i=0;i<12;i++)await Promise.resolve()};
-test('auto show after intro and return on next visit unless permanently dismissed',async()=>{
- const local=store();
- const waiting=setup({local,introFinished:false,opening:true});
- assert.equal(waiting.timers.length,0,'No popup before intro is complete');
- const one=setup({local});
- one.fire(420);await flush();
- assert.equal(one.root.hidden,false);
- one.buttons.forgeWhatsNewEnter.click();
- assert.equal(local.getItem('forge_whatsnew_dismissed_2026_v1'),null);
- const two=setup({local});two.fire(420);await flush();
- assert.equal(two.root.hidden,false);
- two.buttons.forgeWhatsNewClose.click();
- const three=setup({local});three.fire(420);await flush();
- assert.equal(three.root.hidden,false);
- three.buttons.forgeWhatsNewNever.click();
- assert.equal(local.getItem('forge_whatsnew_dismissed_2026_v1'),'1');
- const four=setup({local});
- assert.equal(four.timers.length,0);
- four.buttons.forgeWhatsNewTrigger.click();await flush();
- assert.equal(four.root.hidden,false);
-});
-test('modal never shows in fallback font before readiness',async()=>{
- const h=setup({font:'hang'});h.fire(420);await flush();
- assert.equal(h.root.hidden,true);
- h.fire(1850);await flush();
+const flush=async()=>{for(let i=0;i<14;i++)await Promise.resolve()};
+test('welcome remains visible through Escape and outside click',async()=>{
+ const h=fixture();
+ h.fire(420);await flush();
  assert.equal(h.root.hidden,false);
- for(const name of ['forge-fallback-kola','forge-fallback-ui','forge-fallback-serif','forge-fallback-mono'])
-  assert.equal(h.root.classList.contains(name),true);
- const loaded=setup();loaded.fire(420);await flush();
- assert.equal(loaded.root.hidden,false);
- assert.equal(loaded.root.classList.contains('forge-fallback-kola'),false);
-});
-test('restored tool is unobstructed; manual click during intro still works',async()=>{
- const busy=setup({active:true});busy.fire(420);await flush();
- assert.equal(busy.root.hidden,true);
- const manual=setup({introFinished:false,opening:true});
- manual.buttons.forgeWhatsNewTrigger.click();await flush();
- assert.equal(manual.skips,1);
- assert.equal(manual.root.hidden,false);
-});
-test('Escape closes only this visit and backdrop blurs home',async()=>{
- const h=setup();h.fire(420);await flush();
  let prevented=false;
- h.root.keydown({key:'Escape',preventDefault(){prevented=true}});
+ h.root.fire('keydown',{key:'Escape',preventDefault(){prevented=true}});
  assert.equal(prevented,true);
+ assert.equal(h.root.hidden,false);
+ h.root.fire('pointerdown',{target:h.root});
+ assert.equal(h.root.hidden,false);
+ h.never.click();
  assert.equal(h.root.hidden,true);
- assert.equal(h.local.getItem('forge_whatsnew_dismissed_2026_v1'),null);
- assert.match(css,/backdrop-filter:blur\(18px\)/);
- assert.match(build,/forgeWhatsNewEnter/);
+ assert.equal(h.local.getItem('forge_whatsnew_dismissed_2026_v3'),'1');
 });
-
-test('loaded popup wordmark keeps Kola when other remote fonts time out',async()=>{
- const h=setup({font:'partial'});
+test('only Dont show again suppresses next launch, manual replay remains',async()=>{
+ const local=storage({'forge_whatsnew_dismissed_2026_v1':'1'});
+ const first=fixture({local});first.fire(420);await flush();
+ assert.equal(first.root.hidden,false,'Old dismissal must not hide new announcement');
+ first.never.click();
+ const again=fixture({local});
+ assert.equal(again.timers.length,0,'New opt-out prevents future automatic popup');
+ again.trigger.click();await flush();
+ assert.equal(again.root.hidden,false,'Manual What’s New always works');
+});
+test('popup waits for end of intro and never interrupts restored tool',async()=>{
+ const pending=fixture({opening:true,introFinished:false});
+ assert.equal(pending.timers.length,0);
+ pending.doc.dispatch('forge:intro-complete');
+ pending.fire(420);await flush();
+ assert.equal(pending.root.hidden,true);
+ const active=fixture({active:true});active.fire(420);await flush();
+ assert.equal(active.root.hidden,true);
+});
+test('manual popup may skip the intro without closing itself',async()=>{
+ const h=fixture({opening:true,introFinished:false});
+ h.trigger.click();await flush();
+ assert.equal(h.skips,1);
+ assert.equal(h.root.hidden,false);
+});
+test('font stalls preserve hidden dialog until fallback is stable',async()=>{
+ const h=fixture({font:'hang'});
  h.fire(420);await flush();
  assert.equal(h.root.hidden,true);
  h.fire(1850);await flush();
  assert.equal(h.root.hidden,false);
- assert.equal(h.root.classList.contains('forge-fallback-kola'),false);
- assert.equal(h.root.classList.contains('forge-fallback-ui'),true);
+ for(const cls of ['forge-fallback-kola','forge-fallback-ui',
+  'forge-fallback-serif','forge-fallback-mono'])
+   assert.equal(h.root.classList.contains(cls),true);
+});
+test('build contains exactly one welcome dismissal action and real backdrop',()=>{
+ assert.match(build,/forgeWhatsNewNever/);
+ assert.equal(build.includes('forgeWhatsNewEnter'),false);
+ assert.equal(build.includes('forgeWhatsNewClose'),false);
+ assert.match(css,/PERSISTENT WELCOME/);
+ assert.match(css,/backdrop-filter:blur\(24px\)/);
+ assert.match(css,/place-items:center!important/);
 });
