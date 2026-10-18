@@ -137,9 +137,14 @@ try{
   await snap('logo-focus-populated');
   await page.evaluate(()=>Tools.Logo.closeDetail());
 
-  // Real input and canvas render in Storyboard.
+  // Real Add Assets folder workflow and canvas render in Storyboard.
+  // Browser directory inputs require a directory path, not synthetic File payloads.
+  const campaignRoot=fs.mkdtempSync('/tmp/forge-story-folder-');
+  const adFolder=campaignRoot+'/AD_QA';
+  fs.mkdirSync(adFolder);
+  for(const asset of imgs.slice(0,6))fs.writeFileSync(adFolder+'/'+asset.name,asset.buffer);
   await open('section-stills-boards','story');
-  await page.locator('#storyInput').setInputFiles(imgs.slice(0,6));
+  await page.locator('#storyInput').setInputFiles(campaignRoot);
   await page.waitForFunction(()=>Tools.Story.active?.images.length>=6&&!!document.querySelector('#storyPreview canvas'),{timeout:35000});
   const storyboard=await page.evaluate(()=>({assets:Tools.Story.active.images.length,
     hasCanvas:!!document.querySelector('#storyPreview canvas'),
@@ -280,34 +285,35 @@ try{
   if(adTypography.action!==null)assert.ok(adTypography.action>=12,
     label+': campaign action caption too small '+JSON.stringify(adTypography));
 
-  // Reproduce the reported scroll overlap with synthetic repeated rows.
-  // Action buttons from rows behind the sticky header must not paint over it.
-  const stickyHeader=await page.evaluate(()=>{
-    const scroller=document.getElementById('adDlTableContainer');
+  // Validate the requested natural scroll: the heading moves with the
+  // workspace instead of sticking atop action buttons in a nested box.
+  const pageScroll=await page.evaluate(()=>{
+    const workspace=document.getElementById('view-app');
+    const list=document.getElementById('adDlTableContainer');
     const body=document.getElementById('adDlTableBody');
     const template=body.querySelector('tr');
     const clones=[];
-    for(let i=0;i<20;i++){
+    for(let i=0;i<32;i++){
       const row=template.cloneNode(true);
       row.removeAttribute('id');
       body.appendChild(row);
       clones.push(row);
     }
-    scroller.scrollTop=160;
-    const header=scroller.querySelector('thead');
-    const cell=header.querySelector('th:last-child');
-    const rect=cell.getBoundingClientRect();
-    const hit=document.elementFromPoint(rect.left+rect.width/2,rect.top+rect.height/2);
-    const state={position:getComputedStyle(header).position,
-      layer:parseInt(getComputedStyle(header).zIndex,10)||0,
-      hitHeader:header.contains(hit),scrollTop:scroller.scrollTop};
+    const header=list.querySelector('thead');
+    const topBefore=header.getBoundingClientRect().top;
+    const nestedOverflow=getComputedStyle(list).overflowY;
+    const stickyPosition=getComputedStyle(header).position;
+    workspace.scrollTop=220;
+    const topAfter=header.getBoundingClientRect().top;
+    const scrolled=workspace.scrollTop;
     clones.forEach(row=>row.remove());
-    scroller.scrollTop=0;
-    return state;
+    workspace.scrollTop=0;
+    return {scrolled,nestedOverflow,stickyPosition,topBefore,topAfter};
   });
-  assert.ok(stickyHeader.scrollTop>0&&stickyHeader.hitHeader&&
-    stickyHeader.position==='sticky'&&stickyHeader.layer>=40,
-    label+': scrolled download button covers the table heading '+JSON.stringify(stickyHeader));
+  assert.ok(pageScroll.scrolled>=150&&pageScroll.topAfter<pageScroll.topBefore-120
+    &&pageScroll.stickyPosition!=='sticky'
+    &&!['auto','scroll'].includes(pageScroll.nestedOverflow),
+    label+': asset list must scroll naturally with headings, without a sticky nested viewport '+JSON.stringify(pageScroll));
 
   // One genuine local WebM exercises the original Video Stills extractor.
   // Run only at Full HD to bound CPU expense. No remote videos or user data.
