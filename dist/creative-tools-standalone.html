@@ -5539,50 +5539,7 @@ body.forge-opening.forge-home-arriving #view-home .combined-home-grid{
     opacity:1!important;transform:none!important;transition:none!important;
   }
 }
-/* The opening is one composition: outline -> raised ink -> continuous
-   FLIP wordmark handoff. All animated letter properties are compositable. */
-/* Home-native entrance. The intro is a small skip control, NOT a full
-   screen backdrop: no ivory plane, no mask rectangle, no overlay flash. */
-.forge-intro{
-  position:fixed;
-  inset:auto 36px 24px auto;
-  z-index:2147483000;
-  display:block;
-  width:auto;
-  height:auto;
-  background:transparent;
-  color:var(--forge-forest);
-  pointer-events:none;
-}
-.forge-intro::before,.forge-intro::after{content:none!important;display:none!important;}
-.forge-intro-layout{width:auto;position:relative;}
-.forge-intro-type,.forge-intro-label{display:none!important;}
-.forge-intro-caption{
-  display:block;
-  margin:0;padding:0;border:0;
-  background:transparent;
-}
-.forge-intro-caption > span{display:none;}
-.forge-intro-skip{
-  pointer-events:auto;
-  font:650 11px/1.4 "Plus Jakarta Sans",sans-serif;
-  color:#335b46;
-  background:rgba(248,247,237,.88);
-  border:1px solid rgba(43,94,66,.22);
-  border-radius:8px;
-  padding:9px 13px;
-  cursor:pointer;
-  transition:background-color 170ms ease,color 170ms ease;
-}
-.forge-intro-skip:hover{background:#e2eee1;color:#173d2a;}
-.forge-intro-skip:focus-visible{outline:2px solid #357358;outline-offset:3px;}
-@media(prefers-reduced-motion:reduce){
- .forge-intro{display:none!important;}
- body.forge-opening #forgeHeroName{opacity:1!important;transform:none!important;clip-path:none!important;}
- body.forge-opening :is(.forge-hero-top,.forge-hero-aside,.forge-after-hero,.combined-home-grid){
-   opacity:1!important;transform:none!important;transition:none!important;
- }
-}
+/* One cinematic intro implementation follows below. */
 @media(max-width:1160px) {
   .forge-hero-middle {gap:clamp(24px,4vw,52px);}
   #view-home .combined-home-layout .forge-hero-name {font-size:clamp(71px,8.6vw,122px)!important;}
@@ -5834,8 +5791,8 @@ body.light-mode #view-home .combined-home-grid > .home-card .home-card-num{
   display:block;width:max-content;max-width:94vw;margin:0;padding:0;
   font:400 clamp(82px,10.7vw,180px)/1.015 "Kola","Plus Jakarta Sans",sans-serif;
   letter-spacing:-.028em;white-space:nowrap;color:#143c2b;
-  clip-path:inset(0 100% 0 0);opacity:1;
-  transform:translate3d(0,21px,0);transform-origin:top left;will-change:transform;
+  clip-path:none;opacity:1;
+  transform:none;transform-origin:top left;
 }
 .forge-intro.forge-intro-ready .forge-intro-label{
   display:block!important;position:absolute;top:clamp(30px,5.3vh,70px);
@@ -5855,6 +5812,10 @@ body.light-mode #view-home .combined-home-grid > .home-card .home-card-num{
   display:inline-flex;align-items:center;padding:7px 0 7px 15px;
   border:0;border-radius:0;background:none!important;box-shadow:none;
   color:#28583d;font:650 12px/1.5 "Plus Jakarta Sans",sans-serif;
+  cursor:pointer;
+}
+.forge-intro.forge-intro-ready .forge-intro-skip:focus-visible{
+  outline:2px solid #357358;outline-offset:4px;
 }
 .forge-intro.forge-intro-playing .forge-intro-label{
   animation:forge-intro-meta 850ms cubic-bezier(.21,.73,.3,1) 200ms both
@@ -5871,13 +5832,6 @@ body.light-mode #view-home .combined-home-grid > .home-card .home-card-num{
 body.forge-opening #forgeHeroName,
 body.forge-opening.forge-home-arriving #forgeHeroName{
   visibility:hidden!important;opacity:1!important;clip-path:none!important;transform:none!important
-}
-.forge-intro.forge-intro-fallback .forge-intro-wordmark{
-  animation:forge-intro-static 1600ms cubic-bezier(.18,.7,.22,1) both
-}
-@keyframes forge-intro-static{
- from{opacity:.45;clip-path:inset(0 100% 0 0);transform:translate3d(0,21px,0)}
- to{opacity:1;clip-path:inset(0 0 0 0);transform:none}
 }
 @media(max-width:750px){.forge-intro-wordmark{font-size:clamp(55px,12.2vw,94px)}}
 @media(prefers-reduced-motion:reduce){
@@ -5912,51 +5866,7 @@ html.forge-launch-fallback-kola #view-home .combined-home-layout .forge-hero-nam
   font-family:Arial,Helvetica,sans-serif!important;
 }
 
-/* FORGE / INTACT WORD ENTRANCE (2026-10-18)
-   Kola has a distinctive descender on g. Never reveal its letters through
-   a clipping rectangle or a tight line-height; animate two whole words
-   instead. Natural spacing between words preserves glyph kerning. */
-.forge-intro.forge-intro-ready .forge-intro-type{
-  overflow:visible!important;
-}
-.forge-intro.forge-intro-ready #forgeIntroWordmark{
-  clip-path:none!important;
-  overflow:visible!important;
-  line-height:1.26!important;
-  padding:.055em .075em .16em!important;
-  margin:-.055em -.075em -.16em!important;
-  opacity:1!important;
-  transform:none!important;
-  white-space:nowrap;
-  font-kerning:normal;
-  text-rendering:optimizeLegibility;
-}
-.forge-intro.forge-intro-ready .forge-intro-word{
-  display:inline-block;
-  overflow:visible;
-  clip-path:none!important;
-  vertical-align:baseline;
-  white-space:nowrap;
-  opacity:0;
-  transform:translate3d(0,23px,0);
-  will-change:opacity,transform;
-}
-.forge-intro.forge-intro-ready .forge-intro-word:last-child{
-  padding-bottom:.08em;
-  margin-bottom:-.08em;
-}
-.forge-intro.forge-intro-leaving .forge-intro-word{
-  will-change:auto;
-}
-@media(prefers-reduced-motion:reduce){
-  .forge-intro.forge-intro-ready .forge-intro-word{
-    opacity:1!important;
-    transform:none!important;
-    animation:none!important;
-  }
-}
-
-/* FORGE / TYPEWRITER V5 — reserve final Kola geometry before typing.
+/* FORGE / TYPOGRAPHIC GEOMETRY — reserve final Kola geometry before typing.
    Invisible full text determines width, so the visible name does not
    re-center each time a character appears. No glyph-sized masks or
    tight overflow containers: the Kola g descender remains complete. */
@@ -5999,44 +5909,23 @@ html.forge-launch-fallback-kola #view-home .combined-home-layout .forge-hero-nam
   letter-spacing:inherit;
   line-height:inherit;
 }
-.forge-intro.forge-intro-ready .forge-intro-typed::after{
-  content:"";
-  display:inline-block;
-  width:2px;
-  height:.76em;
-  margin-left:.045em;
-  vertical-align:-.075em;
-  border-radius:1px;
-  background:currentColor;
-  opacity:0;
-}
-.forge-intro.forge-intro-playing .forge-intro-typed::after{
-  opacity:1;
-  animation:forge-typing-caret .72s step-end infinite;
-}
-.forge-intro.forge-intro-typed-complete .forge-intro-typed::after{
-  display:none!important;
-}
 @keyframes forge-typing-caret{
   0%,48%{opacity:1}
   49%,100%{opacity:0}
 }
-/* Finishing takes only 130ms. The homepage is already composed behind
-   this surface and is revealed with no extra FLIP hold or travel. */
+/* One 380ms crossfade. The destination is composed beneath the
+   introduction before it leaves; no re-centering or full-page travel. */
 .forge-intro.forge-intro-ready.forge-intro-finishing{
   opacity:0!important;
   pointer-events:none!important;
-  transition:opacity .13s ease-out!important;
+  transition:opacity 380ms cubic-bezier(.24,.72,.3,1)!important;
 }
 @media(prefers-reduced-motion:reduce){
   .forge-intro-typed::after{animation:none!important}
 }
 
-/* FORGE / FLUID TYPEWRITER V6 — independently composited caret.
+/* FORGE / COMPOSITED CARET — the only typing cursor.
    The text itself stays fully visible; only the caret glides. */
-.forge-intro.forge-intro-ready .forge-intro-typed::after{
-  display:none!important;
-}
 .forge-intro.forge-intro-ready .forge-intro-caret{
   position:absolute;
   display:block;
@@ -6096,6 +5985,18 @@ html.forge-launch-fallback-kola #view-home .combined-home-layout .forge-hero-nam
 }
 @media(prefers-reduced-motion:reduce){
   .forge-intro .forge-intro-kinetic-glyph{display:none!important}
+}
+/* During the last fade, keep the popup curtain beneath the title. */
+html.forge-welcome-pending body.forge-opening::after{
+  z-index:2147482950!important;
+}
+/* The home is fully prepared under the departing intro, so there is
+   no missing heading or disconnected scale jump at the handoff. */
+body.forge-opening.forge-handoff #forgeHeroName{
+  visibility:visible!important;
+  clip-path:none!important;
+  transform:none!important;
+  opacity:1!important;
 }
 /* No orange global focus box on the editorial updates link. Preserve a
    quiet dark-green keyboard underline instead of losing focus feedback. */
@@ -8081,8 +7982,8 @@ body.light-mode .undo-toast {
    Tool-specific CSS retains only semantic color states, focus, and selection.
    Legacy baseline remains byte-identical for regression safety. */
 :root {
-  --forge-interaction-time:190ms;
-  --forge-interaction-ease:cubic-bezier(.22,.8,.28,1);
+  --forge-interaction-time:225ms;
+  --forge-interaction-ease:cubic-bezier(.18,.78,.26,1);
 }
 .nav-sidebar.visible .nav-item:not(.nav-toggle),
 #view-app .tool-section :is(.liquid-btn,button,[role="tab"],[role="button"],summary):not(:disabled),
@@ -8145,6 +8046,28 @@ body.light-mode .undo-toast {
   }
 }
 
+/* Deliberate desktop tactile feedback: surface light, not geometry motion.
+   Keep file previews, canvases, selected cards and layout dimensions still.
+   Hover and keyboard focus remain independently accessible. */
+@media(hover:hover) and (pointer:fine){
+  #view-home .combined-home-grid > .home-card:hover{
+    border-color:rgba(35,93,59,.40)!important;
+    box-shadow:inset 0 0 0 1px rgba(36,96,60,.10)!important;
+  }
+  .nav-sidebar.visible .nav-item:not(.active):not(.nav-toggle):hover{
+    background-color:rgba(39,93,59,.075)!important;
+  }
+  #view-app .tool-section .liquid-btn:not(:disabled):hover,
+  #view-app .tool-section label.liquid-btn:hover{
+    box-shadow:inset 0 0 0 1px rgba(39,104,66,.14),0 3px 12px rgba(18,56,35,.055)!important;
+  }
+}
+.nav-sidebar.visible .nav-item:not(.nav-toggle):focus-visible,
+#view-app .tool-section .liquid-btn:focus-visible,
+#view-app .tool-section label.liquid-btn:focus-within{
+  outline:2px solid #37714f!important;
+  outline-offset:3px!important;
+}
 /* Before an authorized Auto-name directory is chosen, the Excel input stays
    genuinely disabled; visual affordance matches that locked native state. */
 #section-adlinks #adlinksTabContentDownloader #adDlDropZone.ad-excel-locked label{
@@ -8189,10 +8112,10 @@ body.light-mode .undo-toast {
 .forge-whatsnew-dialog{
   position:relative;
   display:grid;
-  grid-template-columns:minmax(0,.87fr) minmax(0,1.13fr);
-  width:min(1040px,100%);
-  max-height:min(820px,calc(100dvh - 36px));
-  min-height:min(618px,calc(100dvh - 36px));
+  grid-template-columns:minmax(0,.84fr) minmax(0,1.16fr);
+  width:min(920px,100%);
+  max-height:min(700px,calc(100dvh - 36px));
+  min-height:0;
   overflow:hidden;
   border:1px solid #d3ded1;
   border-radius:15px;
@@ -8207,7 +8130,7 @@ body.light-mode .undo-toast {
   justify-content:space-between;
   gap:28px;
   min-width:0;
-  padding:clamp(26px,3.4vw,50px);
+  padding:clamp(24px,2.8vw,40px);
   background:var(--wn-forest);
   color:#f2f7ed;
 }
@@ -8235,14 +8158,14 @@ body.light-mode .undo-toast {
 .forge-whatsnew-brand{
   display:block;
   margin:0 0 26px;
-  font:400 clamp(56px,5.1vw,83px)/.96 "Kola","Plus Jakarta Sans",sans-serif;
+  font:400 clamp(52px,4.5vw,72px)/1.02 "Kola","Plus Jakarta Sans",sans-serif;
   letter-spacing:-.04em;
   color:#f1f6ed;
 }
 .forge-whatsnew-opening h2{
   margin:0;
   max-width:375px;
-  font:650 clamp(32px,3.1vw,46px)/1.13 "Plus Jakarta Sans",sans-serif;
+  font:650 clamp(30px,2.7vw,40px)/1.18 "Plus Jakarta Sans",sans-serif;
   letter-spacing:-.063em;
   text-wrap:balance;
   color:#f7f9f4;
@@ -8253,8 +8176,8 @@ body.light-mode .undo-toast {
 }
 .forge-whatsnew-intro{
   max-width:290px;
-  margin:20px 0 0;
-  font:450 13px/1.75 "Plus Jakarta Sans",sans-serif;
+  margin:15px 0 0;
+  font:450 13px/1.64 "Plus Jakarta Sans",sans-serif;
   color:#c9dace;
 }
 .forge-whatsnew-foot{
@@ -8275,7 +8198,7 @@ body.light-mode .undo-toast {
   align-items:center;
   justify-content:space-between;
   flex:none;
-  padding:28px 34px 15px;
+  padding:20px 28px 12px;
   border-bottom:1px solid var(--wn-line);
 }
 .forge-whatsnew-section-label{
@@ -8299,15 +8222,15 @@ body.light-mode .undo-toast {
 .forge-whatsnew-changes{
   overflow-y:auto;
   min-height:0;
-  padding:12px 34px 8px;
+  padding:4px 28px 6px;
   overscroll-behavior:contain;
   scrollbar-width:thin;
 }
 .forge-whatsnew-change{
   display:grid;
-  grid-template-columns:32px minmax(0,1fr);
-  gap:14px;
-  padding:18px 0;
+  grid-template-columns:24px minmax(0,1fr);
+  gap:12px;
+  padding:13px 0;
   border-bottom:1px solid var(--wn-line);
 }
 .forge-whatsnew-change:last-child{border-bottom:0;}
@@ -8336,7 +8259,7 @@ body.light-mode .undo-toast {
   gap:14px;
   flex:none;
   border-top:1px solid var(--wn-line);
-  padding:18px 34px 22px;
+  padding:14px 28px 18px;
   background:#fcfdf9;
 }
 .forge-whatsnew-never{
@@ -8458,9 +8381,9 @@ html:has(.forge-whatsnew:not([hidden])){overflow:hidden;scrollbar-gutter:stable;
   z-index:2147483100!important;
   display:grid!important;
   place-items:center!important;
-  background:rgba(20,36,27,.68)!important;
-  -webkit-backdrop-filter:blur(24px) saturate(.68)!important;
-  backdrop-filter:blur(24px) saturate(.68)!important;
+  background:rgba(20,36,27,.60)!important;
+  -webkit-backdrop-filter:blur(18px) saturate(.74)!important;
+  backdrop-filter:blur(18px) saturate(.74)!important;
 }
 #forgeWhatsNew .forge-whatsnew-dialog{
   background:#fcfdf9;
@@ -8514,7 +8437,6 @@ html:has(.forge-whatsnew:not([hidden])){overflow:hidden;scrollbar-gutter:stable;
   <div class="forge-whatsnew-content">
    <div class="forge-whatsnew-topline">
     <span class="forge-whatsnew-section-label">WHAT'S NEW / THE FORGE</span>
-
    </div>
    <div class="forge-whatsnew-changes">
     <article class="forge-whatsnew-change"><span class="forge-whatsnew-number">01</span><div>
@@ -8535,7 +8457,6 @@ html:has(.forge-whatsnew:not([hidden])){overflow:hidden;scrollbar-gutter:stable;
    </div>
    <div class="forge-whatsnew-actions">
     <button type="button" id="forgeWhatsNewNever" class="forge-whatsnew-enter">Don't show again <span aria-hidden="true">→</span></button>
-
    </div>
   </div>
  </section>
@@ -17331,7 +17252,7 @@ const CTKDownloadRenamer = (() => {
 <script id="forge-brand-intro-js">/* The Forge / stable, genuine typing entrance.
    The full wordmark reserves its final width; visible characters are added
    without clipping, shifting the overall layout or waiting for FLIP motion.
-   Finishing the final character immediately hands control to the homepage. */
+   The completed wordmark crossfades to the prepared home / welcome state. */
 (function(){
   'use strict';
   const intro=document.getElementById('forgeIntro');
@@ -17373,7 +17294,7 @@ const CTKDownloadRenamer = (() => {
       !app?.classList.contains('active')&&document.visibilityState!=='hidden';
     if(homeActive)gate?.beginWelcome?.();
     else gate?.endWelcome?.();
-    body.classList.remove('forge-opening','forge-home-arriving');
+    body.classList.remove('forge-opening','forge-home-arriving','forge-handoff');
     intro?.remove();
     gate?.release?.();
     notify();
@@ -17470,10 +17391,14 @@ const CTKDownloadRenamer = (() => {
     if(complete)return;
     if(index>=letters.length){
       intro.classList.add('forge-intro-typed-complete');
-      // No intermediate FLIP or composed hold: one short crossfade, then
-      // the waiting welcome overlay or immediately usable homepage.
+      // Prepare the destination beneath the intro BEFORE the last fade.
+      // The welcome curtain remains behind the typography until handoff.
+      if(home&&!home.classList.contains('hidden')&&
+         !app?.classList.contains('active')&&
+         document.visibilityState!=='hidden')gate?.beginWelcome?.();
+      body.classList.add('forge-home-arriving','forge-handoff');
       intro.classList.add('forge-intro-finishing');
-      schedule(finish,130);
+      schedule(finish,380);
       return;
     }
     typed.textContent+=letters[index];

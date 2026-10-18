@@ -1,7 +1,7 @@
 /* The Forge / stable, genuine typing entrance.
    The full wordmark reserves its final width; visible characters are added
    without clipping, shifting the overall layout or waiting for FLIP motion.
-   Finishing the final character immediately hands control to the homepage. */
+   The completed wordmark crossfades to the prepared home / welcome state. */
 (function(){
   'use strict';
   const intro=document.getElementById('forgeIntro');
@@ -43,7 +43,7 @@
       !app?.classList.contains('active')&&document.visibilityState!=='hidden';
     if(homeActive)gate?.beginWelcome?.();
     else gate?.endWelcome?.();
-    body.classList.remove('forge-opening','forge-home-arriving');
+    body.classList.remove('forge-opening','forge-home-arriving','forge-handoff');
     intro?.remove();
     gate?.release?.();
     notify();
@@ -140,10 +140,14 @@
     if(complete)return;
     if(index>=letters.length){
       intro.classList.add('forge-intro-typed-complete');
-      // No intermediate FLIP or composed hold: one short crossfade, then
-      // the waiting welcome overlay or immediately usable homepage.
+      // Prepare the destination beneath the intro BEFORE the last fade.
+      // The welcome curtain remains behind the typography until handoff.
+      if(home&&!home.classList.contains('hidden')&&
+         !app?.classList.contains('active')&&
+         document.visibilityState!=='hidden')gate?.beginWelcome?.();
+      body.classList.add('forge-home-arriving','forge-handoff');
       intro.classList.add('forge-intro-finishing');
-      schedule(finish,130);
+      schedule(finish,380);
       return;
     }
     typed.textContent+=letters[index];

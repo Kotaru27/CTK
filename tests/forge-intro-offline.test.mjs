@@ -78,7 +78,7 @@ function setup({font='loaded',reduced=false,active=false,hidden=false,suppress=f
 }
 const settle=async()=>{for(let i=0;i<12;i++)await Promise.resolve()};
 
-test('real character-by-character typing, fixed rhythm and immediate release',async()=>{
+test('real character-by-character typing, steady rhythm and composed exit',async()=>{
  const h=setup();
  await settle();
  assert.equal(h.typed.textContent,'T');
@@ -89,11 +89,14 @@ test('real character-by-character typing, fixed rhythm and immediate release',as
  assert.equal(h.intro.removed,false);
  h.advance(1100);
  assert.equal(h.typed.textContent,'The Forge');
+ assert.equal(h.intro.classList.contains('forge-intro-finishing'),true);
+ assert.equal(h.intro.removed,false,'Intro must not be removed before its exit fade');
+ h.advance(170);
  assert.equal(h.intro.removed,true);
  assert.equal(h.document.documentElement.dataset.forgeIntroFinished,'1');
  assert.equal(h.body.classList.contains('forge-opening'),false);
  assert.deepEqual(h.notices,['forge:intro-complete']);
- assert.ok(h.time<1500,'Unexpected extra FLIP or wordmark hold');
+ assert.ok(h.time<1700,'Unexpected extra FLIP or wordmark hold');
 });
 
 test('slow and failed font loads still finish typing and unlock homepage',async()=>{
@@ -102,7 +105,7 @@ test('slow and failed font loads still finish typing and unlock homepage',async(
   if(font!=='failed')h.advance(1350);
   await settle();
   assert.equal(h.typed.textContent,'T');
-  h.advance(1250);
+  h.advance(1620);
   assert.equal(h.intro.removed,true);
   assert.equal(h.typed.textContent,'The Forge');
   assert.equal(h.notices.length,1);
@@ -133,7 +136,7 @@ test('restored workspace, reduced motion and hidden document skip safely',()=>{
 test('typing markup reserves full word width and does not mask Kola descender',()=>{
  assert.match(build,/data-full-name="The Forge"/);
  assert.match(build,/class="forge-intro-typed"/);
- assert.match(css,/TYPEWRITER V5/);
+ assert.match(css,/TYPOGRAPHIC GEOMETRY/);
  assert.match(css,/content:attr\(data-full-name\)/);
  assert.match(css,/clip-path:none!important/);
  assert.match(css,/line-height:1\.26!important/);
