@@ -595,3 +595,79 @@ html.forge-launch-fallback-kola #view-home .combined-home-layout .forge-hero-nam
     animation:none!important;
   }
 }
+
+/* FORGE / TYPEWRITER V5 — reserve final Kola geometry before typing.
+   Invisible full text determines width, so the visible name does not
+   re-center each time a character appears. No glyph-sized masks or
+   tight overflow containers: the Kola g descender remains complete. */
+.forge-intro.forge-intro-ready #forgeIntroWordmark{
+  position:relative!important;
+  width:max-content!important;
+  max-width:94vw!important;
+  display:block!important;
+  margin:0!important;
+  padding:.055em .075em .18em!important;
+  line-height:1.26!important;
+  clip-path:none!important;
+  overflow:visible!important;
+  white-space:nowrap;
+  text-align:left;
+  transform:none!important;
+  font-kerning:normal;
+  text-rendering:optimizeLegibility;
+}
+.forge-intro.forge-intro-ready #forgeIntroWordmark::before{
+  content:attr(data-full-name);
+  display:block;
+  visibility:hidden;
+  white-space:pre;
+  pointer-events:none;
+}
+.forge-intro.forge-intro-ready .forge-intro-typed{
+  position:absolute;
+  top:.055em;
+  left:.075em;
+  display:block;
+  width:max-content;
+  height:auto;
+  white-space:pre;
+  clip-path:none!important;
+  overflow:visible!important;
+  opacity:1!important;
+  transform:none!important;
+  font:inherit;
+  letter-spacing:inherit;
+  line-height:inherit;
+}
+.forge-intro.forge-intro-ready .forge-intro-typed::after{
+  content:"";
+  display:inline-block;
+  width:2px;
+  height:.76em;
+  margin-left:.045em;
+  vertical-align:-.075em;
+  border-radius:1px;
+  background:currentColor;
+  opacity:0;
+}
+.forge-intro.forge-intro-playing .forge-intro-typed::after{
+  opacity:1;
+  animation:forge-typing-caret .72s step-end infinite;
+}
+.forge-intro.forge-intro-typed-complete .forge-intro-typed::after{
+  display:none!important;
+}
+@keyframes forge-typing-caret{
+  0%,48%{opacity:1}
+  49%,100%{opacity:0}
+}
+/* Finishing takes only 130ms. The homepage is already composed behind
+   this surface and is revealed with no extra FLIP hold or travel. */
+.forge-intro.forge-intro-ready.forge-intro-finishing{
+  opacity:0!important;
+  pointer-events:none!important;
+  transition:opacity .13s ease-out!important;
+}
+@media(prefers-reduced-motion:reduce){
+  .forge-intro-typed::after{animation:none!important}
+}
