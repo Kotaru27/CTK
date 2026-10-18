@@ -128,6 +128,30 @@ try{
    assert.equal(await page.evaluate(()=>window.__internalViewTransitions),routeBefore,
      mode+' triggered an unnecessary whole-screen transition');
  }
+ // Reopen the Storyboard after genuinely hiding its containing tool panel.
+ // The indicator must not reuse an invisible stale geometry on re-entry.
+ const reentry=[];
+ for(let attempt=0;attempt<3;attempt++){
+   await page.evaluate(()=>UI.openTool('section-adlinks','gen'));
+   await page.waitForFunction(()=>!document.documentElement.classList.contains('forge-route-running'));
+   await page.evaluate(()=>UI.openTool('section-stills-boards','story'));
+   await page.waitForFunction(()=>!document.documentElement.classList.contains('forge-route-running'));
+   await page.waitForTimeout(390);
+   const visible=await page.evaluate(()=>{
+     const host=document.getElementById('storySubModeToggle');
+     const mark=document.getElementById('forgeStoryModeIndicator');
+     const selected=document.querySelector('#storySubModeToggle .active-mode');
+     const box=mark?.getBoundingClientRect(),ref=selected?.getBoundingClientRect();
+     return {hostVisible:!!host?.getClientRects().length,
+       opacity:getComputedStyle(mark).opacity,
+       width:box?.width||0,
+       inside:!!box&&!!ref&&box.left>=ref.left-2&&box.right<=ref.right+2};
+   });
+   reentry.push(visible);
+   assert.ok(visible.hostVisible&&visible.opacity!=='0'&&visible.width>10&&visible.inside,
+     'Storyboard mode marker not restored after tool re-entry '+JSON.stringify({attempt,visible}));
+ }
+ console.log('FORGE_STORYBOARD_INDICATOR_REENTRY '+JSON.stringify(reentry));
  // Navigation is no longer one full-screen fade. Verify the coordinator
  // selects a specific animation for each user action, while the existing
  // tool state and active nav stay correct after the transition.
