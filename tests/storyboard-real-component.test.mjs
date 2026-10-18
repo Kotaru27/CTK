@@ -49,3 +49,27 @@ test('Asset and project styling remains inside Storyboard workspace, preserves c
   assert.ok(!tail.includes(banned),'unexpected storyboard layout change '+banned);
  }
 });
+
+test('Filmstrip reuses named, keyboard-accessible rows without changing rendering',()=>{
+ const filmstrip=read('src/js/tools/storyboard-filmstrip.js');
+ const bundle=read('dist/js/app.js');
+ const standalone=read('dist/creative-tools-standalone.html');
+ for(const fragment of ['list.replaceChildren()', 'row.className = "story-asset-row"',
+   'name.textContent = filename','button.setAttribute("aria-label", action.name + " " + filename)',
+   'button.disabled = index + action.direction < 0',
+   'button.onclick = () => this.moveImage(index, action.direction)',
+   'button.onclick = () => this.removeImage(index)']){
+   assert.ok(filmstrip.includes(fragment),'Filmstrip row missing '+fragment);
+ }
+ const start='          updateList() {\n            const list = this.els.list;\n            const countBadge = this.els.countBadge;';
+ const end='          draw() {';
+ const part=s=>s.slice(s.indexOf(start),s.indexOf(end,s.indexOf(start)));
+ assert.ok(part(filmstrip).length>1300);
+ assert.equal(part(filmstrip),part(bundle));
+ assert.equal(part(filmstrip),part(standalone));
+ for(const fragment of [':is(#stillsTabContentStory,#stillsTabContentFilmstrip)',
+   ':is(#storyFileList,#filmstripFileList)', '#stillsTabContentFit .fit-source-status',
+   '#stillsTabContentFit #fitStatement', '#stillsTabContentFit .fit-render-status']){
+   assert.ok(css.includes(fragment),'missing storyboard styling '+fragment);
+ }
+});

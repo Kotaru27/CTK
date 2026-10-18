@@ -334,7 +334,7 @@ body.light-mode .undo-toast {
   outline:2px solid var(--sb-focus)!important;
   outline-offset:-2px!important;
 }
-#view-app #stillsTabContentStory #storyFileList > .story-asset-row{
+#view-app :is(#stillsTabContentStory,#stillsTabContentFilmstrip) :is(#storyFileList,#filmstripFileList) > .story-asset-row{
   display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;
   align-items:center!important;gap:5px!important;
   padding:6px 7px!important;min-width:0;margin-bottom:0!important;
@@ -344,38 +344,38 @@ body.light-mode .undo-toast {
   color:var(--sb-text)!important;
   transition:border-color 150ms ease,background-color 150ms ease!important;
 }
-#view-app #stillsTabContentStory #storyFileList > .story-asset-row:hover{
+#view-app :is(#stillsTabContentStory,#stillsTabContentFilmstrip) :is(#storyFileList,#filmstripFileList) > .story-asset-row:hover{
   border-color:var(--sb-dim)!important;
 }
-#view-app #stillsTabContentStory #storyFileList > .story-asset-row:focus-within{
+#view-app :is(#stillsTabContentStory,#stillsTabContentFilmstrip) :is(#storyFileList,#filmstripFileList) > .story-asset-row:focus-within{
   outline:2px solid var(--sb-focus)!important;
   outline-offset:1px!important;
 }
-#view-app #stillsTabContentStory .story-asset-identity{
+#view-app :is(#stillsTabContentStory,#stillsTabContentFilmstrip) .story-asset-identity{
   display:flex;align-items:center;gap:8px;min-width:0;overflow:hidden;
 }
-#view-app #stillsTabContentStory .story-asset-thumb{
+#view-app :is(#stillsTabContentStory,#stillsTabContentFilmstrip) .story-asset-thumb{
   display:block;flex:0 0 36px;width:36px;height:36px;object-fit:cover;
   border:1px solid var(--sb-line)!important;border-radius:3px!important;
 }
-#view-app #stillsTabContentStory .story-asset-details{
+#view-app :is(#stillsTabContentStory,#stillsTabContentFilmstrip) .story-asset-details{
   display:flex;flex-direction:column;justify-content:center;
   gap:2px;min-width:0;flex:1;
 }
-#view-app #stillsTabContentStory .story-asset-number{
+#view-app :is(#stillsTabContentStory,#stillsTabContentFilmstrip) .story-asset-number{
   display:block;flex:none;font:650 10px/1.2 "JetBrains Mono",monospace;
   letter-spacing:.04em;color:var(--sb-dim);
 }
-#view-app #stillsTabContentStory .story-asset-filename{
+#view-app :is(#stillsTabContentStory,#stillsTabContentFilmstrip) .story-asset-filename{
   display:block;min-width:0;max-width:100%;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
   font:600 11px/1.32 "Plus Jakarta Sans",sans-serif;
   letter-spacing:-.025em;color:var(--sb-text);
 }
-#view-app #stillsTabContentStory .story-asset-actions{
+#view-app :is(#stillsTabContentStory,#stillsTabContentFilmstrip) .story-asset-actions{
   display:flex;flex:0 0 auto;align-items:center;gap:3px;
 }
-#view-app #stillsTabContentStory .story-asset-action.liquid-btn{
+#view-app :is(#stillsTabContentStory,#stillsTabContentFilmstrip) .story-asset-action.liquid-btn{
   display:grid!important;place-items:center!important;
   flex:0 0 25px;width:25px!important;height:28px!important;
   min-width:25px!important;min-height:28px!important;
@@ -386,20 +386,67 @@ body.light-mode .undo-toast {
   font:600 15px/1 "Plus Jakarta Sans",sans-serif!important;
   transition:background-color 150ms ease,border-color 150ms ease!important;
 }
-#view-app #stillsTabContentStory .story-asset-action.liquid-btn:not(:disabled):hover{
+#view-app :is(#stillsTabContentStory,#stillsTabContentFilmstrip) .story-asset-action.liquid-btn:not(:disabled):hover{
   background:var(--sb-shell)!important;border-color:var(--sb-action)!important;
 }
-#view-app #stillsTabContentStory .story-asset-action.danger-btn:not(:disabled):hover{
+#view-app :is(#stillsTabContentStory,#stillsTabContentFilmstrip) .story-asset-action.danger-btn:not(:disabled):hover{
   color:var(--danger,#a44743)!important;border-color:var(--danger,#a44743)!important;
 }
-#view-app #stillsTabContentStory .story-asset-action:disabled{
+#view-app :is(#stillsTabContentStory,#stillsTabContentFilmstrip) .story-asset-action:disabled{
   color:var(--sb-dim)!important;opacity:.35!important;cursor:not-allowed!important;
 }
-#view-app #stillsTabContentStory .story-asset-action:focus-visible{
+#view-app :is(#stillsTabContentStory,#stillsTabContentFilmstrip) .story-asset-action:focus-visible{
   outline:2px solid var(--sb-focus)!important;outline-offset:2px!important;
 }
 @media(prefers-reduced-motion:reduce){
  #view-app #stillsTabContentStory :is(.story-project-pill,.story-asset-row,.story-asset-action){
   transition:none!important;
  }
+}
+
+/* Same compact, named asset design in both composition workspaces.
+   Fit's control and preview labels preserve the exact canvas geometry. */
+#stillsTabContentFilmstrip .sidebar-panel .label-header{
+  font-size:11.5px!important;
+  font-weight:650!important;
+  color:var(--sb-muted)!important;
+  letter-spacing:.025em!important;
+}
+#stillsTabContentFilmstrip #filmstripCountBadge{
+  font-variant-numeric:tabular-nums;
+  color:var(--sb-text)!important;
+}
+#stillsTabContentFilmstrip #filmstripTitleInput{
+  font-weight:650!important;
+  letter-spacing:-.015em!important;
+}
+#stillsTabContentFit .fit-source-status{
+  font-size:12.5px!important;
+  font-weight:550!important;
+  line-height:1.6!important;
+  color:var(--sb-text)!important;
+}
+#stillsTabContentFit .fit-help{
+  font-size:12px!important;
+  line-height:1.55!important;
+  color:var(--sb-muted)!important;
+}
+#stillsTabContentFit #fitStatement{
+  font-size:13px!important;
+  line-height:1.65!important;
+  letter-spacing:-.01em!important;
+}
+#stillsTabContentFit .fit-preview-heading strong{
+  font-size:11.5px!important;
+  letter-spacing:.025em!important;
+  color:var(--sb-text)!important;
+}
+#stillsTabContentFit .fit-preview-heading .meta{
+  font:650 11px/1.4 "JetBrains Mono",monospace!important;
+  color:var(--sb-muted)!important;
+}
+#stillsTabContentFit .fit-render-status{
+  font-size:12px!important;
+  line-height:1.55!important;
+  color:var(--sb-muted)!important;
 }

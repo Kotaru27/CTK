@@ -206,29 +206,57 @@ export default {
             const countBadge = this.els.countBadge;
             if (countBadge) countBadge.innerText = this.images.length;
             if (!list) return;
-            list.innerHTML = "";
+            list.replaceChildren();
             if (!this.images.length) {
               if (this.els.emptyMsg) list.appendChild(this.els.emptyMsg);
               return;
             }
             this.images.forEach((item, index) => {
-              const div = document.createElement("div");
-              const safeName=String(item.name||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-              div.style.cssText =
-                "display:flex; align-items:center; justify-content:space-between; padding:6px 10px; background:var(--bg-input); border:1px solid var(--border); font-size:0.8rem;";
-              div.innerHTML = `
-                <div style="display:flex; align-items:center; gap:8px; overflow:hidden;">
-                  <img src="${item.img.src}" style="width:28px; height:28px; object-fit:cover; flex-shrink:0; border:1px solid var(--border);">
-                  <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--text-muted);">${String(index + 1).padStart(2, '0')}</span>
-                  <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:110px;" title="${safeName}">${safeName}</span>
-                </div>
-                <div style="display:flex; gap:4px; flex-shrink:0;">
-                  <button class="liquid-btn" style="padding:0 6px; height:24px; font-size:0.75rem;" title="Move Up" onclick="Tools.Filmstrip.moveImage(${index}, -1)">&uarr;</button>
-                  <button class="liquid-btn" style="padding:0 6px; height:24px; font-size:0.75rem;" title="Move Down" onclick="Tools.Filmstrip.moveImage(${index}, 1)">&darr;</button>
-                  <button class="liquid-btn danger-btn" style="padding:0 6px; height:24px; font-size:0.75rem;" title="Remove" onclick="Tools.Filmstrip.removeImage(${index})">&times;</button>
-                </div>
-              `;
-              list.appendChild(div);
+              const row = document.createElement("div");
+              row.className = "story-asset-row";
+              const identity = document.createElement("div");
+              identity.className = "story-asset-identity";
+              const thumbnail = document.createElement("img");
+              thumbnail.className = "story-asset-thumb";
+              thumbnail.src = item.img.src;
+              thumbnail.alt = "";
+              const details = document.createElement("div");
+              details.className = "story-asset-details";
+              const number = document.createElement("span");
+              number.className = "story-asset-number";
+              number.textContent = String(index + 1).padStart(2, "0");
+              const name = document.createElement("span");
+              name.className = "story-asset-filename";
+              const filename = item.name || "Still " + (index + 1);
+              name.textContent = filename;
+              name.title = filename;
+              details.append(number, name);
+              identity.append(thumbnail, details);
+              const actions = document.createElement("div");
+              actions.className = "story-asset-actions";
+              for (const action of [
+                {name:"Move up",glyph:"\u2191",direction:-1},
+                {name:"Move down",glyph:"\u2193",direction:1},
+                {name:"Remove",glyph:"\u00d7",direction:0}
+              ]) {
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = "liquid-btn story-asset-action" +
+                  (action.direction === 0 ? " danger-btn" : "");
+                button.textContent = action.glyph;
+                button.title = action.name + " " + filename;
+                button.setAttribute("aria-label", action.name + " " + filename);
+                if (action.direction !== 0) {
+                  button.disabled = index + action.direction < 0 ||
+                    index + action.direction >= this.images.length;
+                  button.onclick = () => this.moveImage(index, action.direction);
+                } else {
+                  button.onclick = () => this.removeImage(index);
+                }
+                actions.appendChild(button);
+              }
+              row.append(identity, actions);
+              list.appendChild(row);
             });
           },
           draw() {
