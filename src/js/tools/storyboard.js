@@ -92,6 +92,7 @@ export default {
               });
             };
             this.addNewProject();
+            this.setupBoardChrome();
           },
           destroy() {
             this.active.images.forEach((i) => Core.BlobRegistry.release(i.img.src));
@@ -100,6 +101,50 @@ export default {
             this.updateList();
             this.els.preview.innerHTML =
               '<span class="text-muted">Preview</span>';
+          },
+          setupBoardChrome() {
+            const title=document.getElementById("stillsToolTitle");
+            const input=this.els.name;
+            if(title&&input&&!document.getElementById("storyHeaderName")) {
+              const label=document.createElement("label");
+              label.id="storyHeaderName";label.className="story-header-name";
+              label.htmlFor="storyNameInput";
+              const caption=document.createElement("span");caption.textContent="BOARD NAME";
+              input.style.marginBottom="0";input.title=input.value;
+              label.append(caption,input);title.insertAdjacentElement("afterend",label);
+              const panel=document.getElementById("stillsTabContentStory");
+              const section=document.getElementById("section-stills-boards");
+              const refresh=()=>{label.hidden=!(section?.classList.contains("active")&&panel&&panel.style.display!=="none");};
+              if(typeof MutationObserver==="function"){
+                const observer=new MutationObserver(refresh);
+                if(panel)observer.observe(panel,{attributes:true,attributeFilter:["style"]});
+                if(section)observer.observe(section,{attributes:true,attributeFilter:["class"]});
+              }
+              refresh();
+            }
+            const tabs=this.els.tabs;
+            if(!tabs||document.getElementById("storyBoardNavigator"))return;
+            const container=tabs.parentElement;
+            const nav=document.createElement("div");nav.id="storyBoardNavigator";nav.className="story-board-navigator";
+            const heading=document.createElement("div");heading.className="story-board-navigator-heading";
+            const count=document.createElement("span");count.id="storyBoardCount";
+            const options=document.createElement("div");options.className="story-board-layout-options";
+            for(const [mode,text] of [["compact","Compact"],["list","List"]]){
+              const button=document.createElement("button");button.type="button";
+              button.className="story-board-layout-choice";button.dataset.layout=mode;
+              button.textContent=text;button.onclick=()=>{this.boardLayout=mode;this.renderTabs();};
+              options.appendChild(button);
+            }
+            heading.append(count,options);
+            const quick=document.createElement("div");quick.id="storyBoardQuickSelect";quick.className="story-board-quick-select";
+            const select=document.createElement("select");select.id="storyBoardSelect";select.className="liquid-input";
+            select.setAttribute("aria-label","Choose a storyboard");
+            select.onchange=()=>this.switchProject(Number(select.value));
+            const remove=document.createElement("button");remove.type="button";remove.className="story-board-remove-current";
+            remove.title="Delete selected storyboard";remove.setAttribute("aria-label","Delete selected storyboard");
+            remove.textContent="×";remove.onclick=()=>{if(this.active)this.deleteProject(this.active.id);};
+            quick.append(select,remove);nav.append(heading,quick);container.insertBefore(nav,tabs);
+            this.boardLayout="compact";this.renderTabs();
           },
           makeProject(name) {
             // Batch creation must not switch the active project while images
@@ -173,12 +218,32 @@ export default {
             document.getElementById("storyFitMode").value =
               s.fitMode || "cover";
             this.els.name.value = this.active.name;
+            this.els.name.title = this.active.name;
             document.getElementById("storyWidthContainer").style.display =
               s.autoWidth ? "none" : "block";
           },
           renderTabs() {
             const tabs = this.els.tabs;
             tabs.replaceChildren();
+            const quick=document.getElementById("storyBoardSelect");
+            if(quick?.tagName==="SELECT"){
+              quick.replaceChildren();
+              this.projects.forEach(project=>{
+                const option=document.createElement("option");
+                option.value=String(project.id);option.textContent=project.name;
+                option.title=project.name;option.selected=project.id===this.active?.id;
+                quick.appendChild(option);
+              });
+              const count=document.getElementById("storyBoardCount");
+              if(count)count.textContent="BOARDS / "+this.projects.length;
+              const compact=this.boardLayout!=="list";
+              tabs.classList.toggle("story-board-list-hidden",compact);
+              document.getElementById("storyBoardQuickSelect")?.classList.toggle("story-board-quick-hidden",!compact);
+              document.querySelectorAll("#storyBoardNavigator .story-board-layout-choice").forEach(btn=>{
+                const on=btn.dataset.layout===(compact?"compact":"list");
+                btn.classList.toggle("selected",on);btn.setAttribute("aria-pressed",String(on));
+              });
+            }
             this.projects.forEach((project) => {
               const active = project.id === this.active?.id;
               const tab = document.createElement("div");
