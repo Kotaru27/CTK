@@ -816,10 +816,17 @@
         openTool(id, mode) {
           const motion = window.ForgeWorkspaceRoute;
           if (this.els.viewApp.classList.contains("active")) {
-            // Changing tools inside the workspace must immediately stop any
-            // older shared-element flight; never queue pending navigation.
-            if (motion) motion.cancel();
-            this._openTool(id, mode);
+            // All tool-to-tool switches now use the same visual coordinator as
+            // home-to-tool navigation. Previously this path cancelled motion
+            // and swapped every workspace instantly.
+            const route = motion && motion.fromOpen(id, mode);
+            if (route) {
+              this._switchToken = (this._switchToken || 0) + 1;
+              motion.navigate(() => this._openTool(id, mode), route);
+            } else {
+              if (motion) motion.cancel();
+              this._openTool(id, mode);
+            }
           } else {
             const core = () => this._openTool(id, mode);
             const route = motion && motion.fromOpen(id, mode);
