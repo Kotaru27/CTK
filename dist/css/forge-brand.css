@@ -524,3 +524,14 @@ body.forge-opening.forge-home-arriving #forgeHeroName{
  .forge-intro.forge-intro-ready{display:none!important}
  body.forge-opening #forgeHeroName{visibility:visible!important;clip-path:none!important}
 }
+
+/* Keep Skip visible immediately, including when the web font stalls.
+   The descriptor still arrives later in the choreography. */
+.forge-intro.forge-intro-ready:not(.forge-intro-leaving) .forge-intro-caption{
+ opacity:1;animation:none!important
+}
+.forge-intro.forge-intro-ready .forge-intro-caption>span{opacity:0}
+.forge-intro.forge-intro-playing .forge-intro-caption>span{
+ animation:forge-intro-meta 850ms cubic-bezier(.21,.73,.3,1) 1000ms both
+}
+.forge-intro.forge-intro-leaving .forge-intro-caption{opacity:0!important}
