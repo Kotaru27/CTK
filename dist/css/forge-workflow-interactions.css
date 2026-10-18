@@ -231,7 +231,11 @@
 #view-app .tool-section :is(.liquid-btn,button,[role="tab"],[role="button"],summary):not(:disabled),
 #view-app .tool-section label.liquid-btn,
 #stillsDetailOverlay :is(button,[role="button"]):not(:disabled),
-#view-home .combined-home-grid > .home-card {
+#view-home .combined-home-grid > .home-card,
+#view-app .tool-section :is(input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]),textarea,select),
+:is(#pdfDetailOverlay,#logoDimensionOverlay,#confirmOverlay,#presetsOverlay,#commandPaletteOverlay) button:not(:disabled),
+#view-app :is(#storyFileList,#filmstripFileList) .story-asset-row,
+#section-adlinks #adDlTableContainer tbody tr {
   transition-property:background-color,color,border-color,box-shadow,opacity!important;
   transition-duration:var(--forge-interaction-time)!important;
   transition-timing-function:var(--forge-interaction-ease)!important;
@@ -256,6 +260,17 @@
 .nav-sidebar.visible .nav-item:hover :is(svg,.material-symbols-rounded){
   transform:none!important;translate:none!important;scale:none!important;
 }
+/* Cards communicate selection with their existing semantic colors, never
+   by moving the user's preview out from under the pointer. This owner takes
+   precedence over legacy hover-lift rules without changing card dimensions. */
+#section-logo #logoGrid > .logo-card-item:hover,
+#section-pdf #pdfStacksContainer .pdf-stack-wrapper:hover,
+#stillsTabContentVideo #stillsStacksContainer .pdf-stack-wrapper:hover{
+  transform:none!important;
+  translate:none!important;
+  filter:none!important;
+}
+
 #view-app .tool-section :is(.liquid-btn,button,[role="tab"],summary):disabled{
   transition:none!important;transform:none!important;translate:none!important;
 }
@@ -264,7 +279,11 @@
   #view-app .tool-section :is(.liquid-btn,button,[role="tab"],[role="button"],summary),
   #view-app .tool-section label.liquid-btn,
   #stillsDetailOverlay :is(button,[role="button"]),
-  #view-home .combined-home-grid > .home-card{
+  #view-home .combined-home-grid > .home-card,
+  #view-app .tool-section :is(input,textarea,select),
+  :is(#pdfDetailOverlay,#logoDimensionOverlay,#confirmOverlay,#presetsOverlay,#commandPaletteOverlay) button,
+  #view-app :is(#storyFileList,#filmstripFileList) .story-asset-row,
+  #section-adlinks #adDlTableContainer tbody tr{
     transition:none!important;animation:none!important;translate:none!important;
   }
 }
