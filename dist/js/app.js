@@ -3390,30 +3390,57 @@ const CTKDownloadRenamer = (() => {
               this.handleFiles([...e.target.files]);
               this.els.input.value = "";
             };
-            // A multi-file picker cannot reveal its parent directory.
-            // The directory picker supplies File.webkitRelativePath instead.
-            const projectPanel = this.els.tabs?.parentElement;
-            const createBoardRow = projectPanel?.querySelector?.('button[onclick*="addNewProject"]')?.parentElement;
-            if (createBoardRow?.appendChild && !document.getElementById("storyFolderInput")) {
-              createBoardRow.classList.add("story-import-actions");
-              const folderLabel = document.createElement("label");
-              folderLabel.className = "liquid-btn story-folder-import";
-              folderLabel.textContent = "Import stills folder";
-              folderLabel.title = "Import a folder of stills and name an empty board after it.";
+            // One existing Add Assets surface; users choose files or a directory
+            // in its compact menu. No standalone folder button in the sidebar.
+            const trigger = this.els.input.closest?.("label");
+            if (trigger && !document.getElementById("storyFolderInput")) {
               const folderInput = document.createElement("input");
-              folderInput.id = "storyFolderInput";
               folderInput.type = "file";
+              folderInput.id = "storyFolderInput";
               folderInput.multiple = true;
-              folderInput.accept = "image/*,video/*";
               folderInput.hidden = true;
               folderInput.setAttribute("webkitdirectory", "");
               folderInput.addEventListener("change", event => {
-                const selected = [...(event.target.files || [])];
+                const files = [...(event.target.files || [])];
                 event.target.value = "";
-                if (selected.length) this.handleFiles(selected);
+                if (files.length) this.importFolder(files);
               });
-              folderLabel.appendChild(folderInput);
-              createBoardRow.appendChild(folderLabel);
+              this.els.drop.appendChild(folderInput);
+              const menu = document.createElement("div");
+              menu.id = "storyImportMenu";
+              menu.className = "story-import-menu";
+              menu.setAttribute("role", "menu");
+              menu.hidden = true;
+              const option = (label,onClick) => {
+                const button = document.createElement("button");
+                button.type = "button";
+                button.setAttribute("role", "menuitem");
+                button.textContent = label;
+                button.onclick = () => {menu.hidden = true;trigger.setAttribute("aria-expanded","false");onClick();};
+                menu.appendChild(button);
+              };
+              option("Choose stills folder / campaign folder",()=>folderInput.click());
+              option("Choose individual image or video files",()=>this.els.input.click());
+              this.els.drop.appendChild(menu);
+              trigger.tabIndex = 0;
+              trigger.setAttribute("role","button");
+              trigger.setAttribute("aria-haspopup","menu");
+              trigger.setAttribute("aria-expanded","false");
+              trigger.onclick = event => {
+                if (event.target === this.els.input) return;
+                event.preventDefault();
+                menu.hidden = !menu.hidden;
+                trigger.setAttribute("aria-expanded",String(!menu.hidden));
+              };
+              trigger.onkeydown = event => {
+                if (event.key==="Enter" || event.key===" ") {event.preventDefault();trigger.click();}
+                if (event.key==="Escape") {menu.hidden=true;trigger.setAttribute("aria-expanded","false");}
+              };
+              document.addEventListener("pointerdown",event=>{
+                if (!this.els.drop.contains(event.target)) {
+                  menu.hidden=true;trigger.setAttribute("aria-expanded","false");
+                }
+              });
             }
             this.els.name.oninput = () => {
               this.els.name.value = Core.Utils.sanitize(this.els.name.value);
@@ -3489,22 +3516,19 @@ const CTKDownloadRenamer = (() => {
             this.els.preview.innerHTML =
               '<span class="text-muted">Preview</span>';
           },
+          createProject(name) {
+            let id = Date.now();
+            while (this.projects.some(project=>project.id===id)) id++;
+            const project={
+              id,name:name||`Board_${this.projects.length+1}`,images:[],
+              settings:{gap:0,width:1920,autoWidth:true,cols:0,bgColor:"#ffffff",fitMode:"cover"}
+            };
+            this.projects.push(project);
+            return project;
+          },
           addNewProject() {
-            const id = Date.now();
-            this.projects.push({
-              id,
-              name: `Board_${this.projects.length + 1}`,
-              images: [],
-              settings: {
-                gap: 0,
-                width: 1920,
-                autoWidth: true,
-                cols: 0,
-                bgColor: "#ffffff",
-                fitMode: "cover",
-              },
-            });
-            this.switchProject(id);
+            const project=this.createProject();
+            this.switchProject(project.id);
           },
           switchProject(id) {
             if (this.active) this.saveSettings();
@@ -3617,6 +3641,67 @@ const CTKDownloadRenamer = (() => {
             document.body.appendChild(a);a.click();a.remove();
             setTimeout(()=>URL.revokeObjectURL(url),60000);
           },
+          folderGroups(files) {
+            const paths = files.map(file=>String(file?.webkitRelativePath||"").split("/"));
+            if (!paths.length || paths.some(parts=>parts.length<2)) return [];
+            const root=paths[0][0];
+            if (!root || paths.some(parts=>parts[0]!==root)) return [];
+            const natural=new Intl.Collator(undefined,{numeric:true,sensitivity:"base"});
+            const hasChildren=paths.some(parts=>parts.length>=3);
+            const groups=new Map();
+            files.forEach((file,index)=>{
+              const parts=paths[index];
+              if (!file || !(file.type.startsWith("image/")||file.type.startsWith("video/"))) return;
+              if (hasChildren && parts.length<3) return;
+              const name=hasChildren ? parts[1] : root;
+              if (!name) return;
+              if (!groups.has(name))groups.set(name,[]);
+              groups.get(name).push(file);
+            });
+            return [...groups].sort((a,b)=>natural.compare(a[0],b[0]))
+              .map(([name,items])=>({
+                name:Core.Utils.sanitize(name).trim().slice(0,80)||"Storyboard",
+                items:items.sort((a,b)=>natural.compare(a.name,b.name))
+              }));
+          },
+          async importFolder(files) {
+            if (this._folderImportBusy) {UI.showError("Finish the current folder import first.");return;}
+            const groups=this.folderGroups(files);
+            if (!groups.length) {UI.showError("Choose a directory containing image or video stills.");return;}
+            const total=groups.reduce((sum,g)=>sum+g.items.length,0);
+            if (groups.length>100 || total>2000) {
+              UI.showError("Import limit: 100 boards or 2,000 stills per batch. Split the folder into smaller batches.");
+              return;
+            }
+            this._folderImportBusy=true;
+            const previous=this.active;
+            const reusable=previous?.images.length===0 ? previous : null;
+            let first=null,imported=0,skipped=0;
+            try {
+              for (const group of groups) {
+                const project=first===null && reusable ? reusable : this.createProject(group.name);
+                const generated=project!==reusable;
+                const before=project.images.length;
+                await this.handleFiles(group.items,project,group.name);
+                const count=project.images.length-before;
+                if (count===0) {
+                  if (generated) this.projects.splice(this.projects.indexOf(project),1);
+                  skipped+=group.items.length;
+                  continue;
+                }
+                imported++;
+                if (!first)first=project;
+                await new Promise(resolve=>setTimeout(resolve,0));
+              }
+              if (first) this.switchProject(first.id);
+              else if(previous) this.switchProject(previous.id);
+              if (imported) UI.toast?.(`Imported ${imported} storyboard${imported===1?"":"s"} from folders`);
+              if(skipped)UI.showError?.(`${skipped} stills could not be added.`);
+            } catch(error) {
+              if(first) this.switchProject(first.id);
+              UI.showError?.("Folder import stopped: "+error.message);
+            } finally {this._folderImportBusy=false;}
+          },
           folderNameFromFiles(files) {
             const paths = Array.from(files || [], file => String(file?.webkitRelativePath || ""));
             if (!paths.length || !paths[0].includes("/")) return "";
@@ -3624,12 +3709,12 @@ const CTKDownloadRenamer = (() => {
             if (!root || paths.some(path => !path.includes("/") || path.split("/")[0] !== root)) return "";
             return Core.Utils.sanitize(root).trim().slice(0, 80);
           },
-          async handleFiles(files) {
-            const project = this.active;
+          async handleFiles(files, destination=this.active, preferredFolderName="") {
+            const project = destination;
             if (!project) return;
             const initialName = project.name;
             const wasEmpty = project.images.length === 0;
-            const folderName = this.folderNameFromFiles(files);
+            const folderName = preferredFolderName || this.folderNameFromFiles(files);
             let rejected=0;
             for (const file of files) {
               if (project.images.length >= 200) {rejected++;continue;}
