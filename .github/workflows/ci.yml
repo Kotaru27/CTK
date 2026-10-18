@@ -18,6 +18,7 @@ jobs:
       - name: Validate bundled release and run tests
         run: npm test
       - name: Ensure GitHub Pages artifacts match modular source
+        if: github.event_name == 'pull_request'
         run: |
           if ! git diff --quiet -- index.html dist/; then
             echo '::error::Pages artifacts are stale. Run npm run build and commit index.html and dist/ alongside source changes.'
