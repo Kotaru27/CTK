@@ -17494,8 +17494,8 @@ const CTKDownloadRenamer = (() => {
   const permanentKey='forge_whatsnew_dismissed_2026_v1';
   let opened=false,previousFocus=null,automaticTimer=0,autoAttempted=false;
   function safeGet(key){
-    try{return localStorage.getItem(key)==='1'||
-      sessionStorage.getItem(key)==='1';}catch(_){return false;}
+    try{if(localStorage.getItem(key)==='1')return true;}catch(_){}
+    try{return sessionStorage.getItem(key)==='1';}catch(_){return false;}
   }
   function safeSet(key){
     try{localStorage.setItem(key,'1');return;}catch(_){}
@@ -17574,7 +17574,9 @@ const CTKDownloadRenamer = (() => {
   // The actual introduction is the source of truth; never run a
   // competing timeout that appears over a partially animated home.
   document.addEventListener('forge:intro-complete',queueAutomatic,{once:true});
-  if(document.documentElement.dataset.forgeIntroFinished==='1')
+  if(document.documentElement.dataset.forgeIntroFinished==='1'||
+     (!document.body.classList.contains('forge-opening')&&
+       document.getElementById('forgeIntro')?.hidden))
     queueAutomatic();
 })();
 </script>
