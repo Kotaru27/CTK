@@ -6,7 +6,8 @@ const rd=s=>fs.readFileSync(path.join(root,s),'utf8');
 const a=rd('source/baseline.html'), b=rd('index.html');
 const ids=s=>[...s.replace(/<script\b[^>]*>[\s\S]*?<\/script>/g,'').matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]).sort();
 const getRoutes=s=>[...s.matchAll(/<button\b[^>]*class="[^"]*home-card[^>]*"[^>]*onclick="([^"]+)"/g)].map(m=>m[1]);
-const beforeIds=ids(a),afterIds=ids(b).filter(id=>!["forgeIntro","forgeHeroName","forgeIntroType","forgeIntroSkip","forgeIntroWordmark","forgeIntroGlyphs"].includes(id));
+const beforeIds=ids(a),afterIds=ids(b).filter(id=>!["forgeIntro","forgeHeroName","forgeIntroType","forgeIntroSkip","forgeIntroWordmark","forgeIntroGlyphs",
+  "forgeWhatsNew","forgeWhatsNewTitle","forgeWhatsNewDescription","forgeWhatsNewClose","forgeWhatsNewNever","forgeWhatsNewEnter"].includes(id));
 if(JSON.stringify(beforeIds)!==JSON.stringify(afterIds))throw Error('DOM element IDs changed');
 const beforeRoutes=getRoutes(a),afterRoutes=getRoutes(b);
 if(beforeRoutes.length!==8||JSON.stringify(beforeRoutes)!==JSON.stringify(afterRoutes))throw Error('Homepage routes changed');
@@ -22,6 +23,14 @@ const visualJs=rd('src/js/presentation/ad-downloader-v2.js');
 const typeMotionCss=rd('src/css/experience/typography-motion-v3.css');
 const videoRouteCss=rd('src/css/experience/forge-video-route.css');
 const videoRouteJs=rd('src/js/presentation/forge-video-route.js');
+const whatsNewJs=rd('src/js/presentation/forge-whats-new.js');
+const whatsNewCss=rd('src/css/experience/forge-whats-new.css');
+if(!b.includes('./dist/css/forge-whats-new.css') || !b.includes('./dist/js/forge-whats-new.js') ||
+   !standalone.includes('<style id="forge-whats-new-styles">'+whatsNewCss+'</style>') ||
+   !standalone.includes('<script id="forge-whats-new-js">'+whatsNewJs+'</script>') ||
+   rd('dist/css/forge-whats-new.css')!==whatsNewCss ||
+   rd('dist/js/forge-whats-new.js')!==whatsNewJs)
+  throw Error('What's New launch assets missing or stale');
 if(!standalone.includes('<style id="forge-video-route-styles">'+videoRouteCss+'</style>') ||
    !standalone.includes('<script id="forge-video-route-js">'+videoRouteJs+'</script>'))
   throw Error('Standalone shared route layer missing or stale');
@@ -37,7 +46,9 @@ const withoutVisual=standalone
 // Remove only the new, explicitly-scoped Forge presentation layer before
 // comparing to the untouched original. Tool sections and cards must be identical.
 const forgeJs=rd('src/js/presentation/forge-brand.js');
-let withoutForge=withoutVisual.replace('<script id="forge-brand-intro-js">'+forgeJs+'</script>\n','');
+let withoutForge=withoutVisual
+  .replace('<script id="forge-brand-intro-js">'+forgeJs+'</script>\n','')
+  .replace('<script id="forge-whats-new-js">'+whatsNewJs+'</script>\n','');
 const brandStart=withoutForge.indexOf('<section class="forge-hero"');
 const brandEnd=withoutForge.indexOf('<div class="home-grid combined-home-grid" id="homeContent">',brandStart);
 const originalStart=a.indexOf('<div class="home-wordmark">');
