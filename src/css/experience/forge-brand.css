@@ -211,12 +211,12 @@ body.forge-opening.forge-home-arriving .forge-hero-bottom {
   transform-origin:50% 50%;
 }
 .forge-intro.is-playing .forge-intro-outline {
-  animation:forge-draw-guide .31s cubic-bezier(.18,.82,.31,1) both;
-  animation-delay:calc(.04s + var(--step)*.065s);
+  animation:forge-draw-guide .29s cubic-bezier(.18,.82,.31,1) both;
+  animation-delay:calc(.03s + var(--step)*.05s);
 }
 .forge-intro.is-playing .forge-intro-fill {
-  animation:forge-draw-letter .40s cubic-bezier(.16,.86,.29,1) both;
-  animation-delay:calc(.15s + var(--step)*.065s);
+  animation:forge-draw-letter .42s cubic-bezier(.16,.86,.29,1) both;
+  animation-delay:calc(.10s + var(--step)*.05s);
 }
 @keyframes forge-draw-guide {
   from{opacity:0;transform:translate3d(0,8px,0)}
@@ -225,6 +225,23 @@ body.forge-opening.forge-home-arriving .forge-hero-bottom {
 @keyframes forge-draw-letter {
   from{opacity:0;transform:translate3d(0,10px,0) scale(.99)}
   to{opacity:1;transform:translate3d(0,0,0) scale(1)}
+}
+/* A single hairline follows the wordmark's writing rhythm; it exits
+   with the wordmark rather than flashing after the home handoff. */
+.forge-intro-type::after{
+  content:"";position:absolute;left:0;bottom:-12px;
+  width:100%;height:1px;background:rgba(27,79,52,.34);
+  transform-origin:left center;transform:scaleX(0);opacity:0;
+  pointer-events:none;
+}
+.forge-intro.is-playing .forge-intro-type::after{
+  animation:forge-ink-rule .82s cubic-bezier(.22,.82,.27,1) both;
+}
+.forge-intro--handoff .forge-intro-type::after{opacity:0!important;}
+@keyframes forge-ink-rule{
+  0%{opacity:0;transform:scaleX(0)}
+  16%{opacity:.9}
+  100%{opacity:.9;transform:scaleX(1)}
 }
 .forge-intro.is-settled .forge-intro-glyphs {opacity:0;}
 .forge-intro.is-settled .forge-intro-wordmark {
