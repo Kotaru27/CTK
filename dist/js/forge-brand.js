@@ -1,195 +1,119 @@
-/* The Forge / cinematic wordmark introduction.
-   Three stages: ink reveal, composed hold, measured home handoff.
-   Remote fonts are optional. Intro markup starts hidden, so a failed
-   script never leaves a blocking overlay over the tools. */
+/* The Forge / stable, genuine typing entrance.
+   The full wordmark reserves its final width; visible characters are added
+   without clipping, shifting the overall layout or waiting for FLIP motion.
+   Finishing the final character immediately hands control to the homepage. */
 (function(){
   'use strict';
   const intro=document.getElementById('forgeIntro');
   const mark=document.getElementById('forgeIntroWordmark');
-  const destination=document.getElementById('forgeHeroName');
-  // Animate full words, not clipped characters: Kola's descending g must
-  // remain a complete glyph in every frame, including the final handoff.
-  const words=mark?[...mark.querySelectorAll('.forge-intro-word')]:[];
+  const typed=mark?.querySelector('.forge-intro-typed');
   const home=document.getElementById('view-home');
   const app=document.getElementById('view-app');
   const body=document.body;
-  let done=false,observer=null,safety=0,hold=0;
-  const flights=new Set();
-  const reduced=!!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
-  let suppress=false;
-  try{suppress=sessionStorage.getItem('forge_intro_suppress')==='1';}catch(_){}
+  const timers=new Set();
+  let complete=false,observer=null,started=false;
 
-  function notify(reason){
+  const notify=()=>{
     document.documentElement.dataset.forgeIntroFinished='1';
     document.dispatchEvent(new Event('forge:intro-complete'));
+  };
+  function schedule(fn,ms){
+    const id=setTimeout(()=>{
+      timers.delete(id);
+      if(!complete)fn();
+    },ms);
+    timers.add(id);
   }
-  function complete(reason){
-    if(done)return;
-    done=true;
-    clearTimeout(safety);
-    clearTimeout(hold);
+  function finish(){
+    if(complete)return;
+    complete=true;
+    for(const id of timers)clearTimeout(id);
+    timers.clear();
     document.removeEventListener('keydown',onKey);
     document.removeEventListener('visibilitychange',onVisibility);
     observer?.disconnect();
-    for(const animation of flights){try{animation.cancel();}catch(_){}}
-    flights.clear();
     body.classList.remove('forge-opening','forge-home-arriving');
     intro?.remove();
-    notify(reason);
+    notify();
   }
   function onKey(event){
-    if(event.key==='Escape'){event.preventDefault();complete('skip');}
+    if(event.key==='Escape'){event.preventDefault();finish();}
   }
   function onVisibility(){
-    if(document.visibilityState==='hidden')complete('hidden');
+    if(document.visibilityState==='hidden')finish();
   }
-  if(!intro||!mark||!destination||!home||reduced||suppress||
+
+  const reduced=!!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+  let suppressed=false;
+  try{suppressed=sessionStorage.getItem('forge_intro_suppress')==='1';}catch(_){}
+  if(!intro||!mark||!typed||!home||reduced||suppressed||
      home.classList.contains('hidden')||
      app?.classList.contains('active')||
      document.visibilityState==='hidden'){
-    complete('bypass');
+    finish();
     return;
   }
 
-  // Launch only after script initialization: never expose an unstyled,
-  // blocking splash if a network request interrupts page execution.
+  // The intro starts hidden in HTML and can never block the app if the
+  // presentation script fails. Skip works during font loading and typing.
   body.classList.add('forge-opening');
   intro.hidden=false;
   intro.classList.add('forge-intro-ready');
-  document.getElementById('forgeIntroSkip')?.addEventListener('click',()=>complete('skip'),{once:true});
+  typed.textContent='';
+  document.getElementById('forgeIntroSkip')
+    ?.addEventListener('click',finish,{once:true});
   document.addEventListener('keydown',onKey);
   document.addEventListener('visibilitychange',onVisibility);
   if(typeof MutationObserver==='function'&&app){
     observer=new MutationObserver(()=>{
       if(app.classList.contains('active')||home.classList.contains('hidden'))
-        complete('navigation');
+        finish();
     });
     observer.observe(app,{attributes:true,attributeFilter:['class']});
     observer.observe(home,{attributes:true,attributeFilter:['class']});
   }
-  safety=setTimeout(()=>complete('safety'),6700);
+  // Absolute fail-safe: even if a font or a browser animation stalls, the
+  // homepage never remains behind the intro indefinitely.
+  schedule(finish,4400);
 
-  // Smooth but never overshooting; the last sampled pose is exact.
-  function settle(t,omega){
-    const denom=1-(1+omega)*Math.exp(-omega);
-    return Math.min(1,Math.max(0,(1-(1+omega*t)*Math.exp(-omega*t))/denom));
-  }
-  function animate(el,frames,options){
-    try{
-      const a=el.animate(frames,options);
-      flights.add(a);
-      return a;
-    }catch(_){return null;}
-  }
-  function handoff(){
-    if(done)return;
-    if(typeof mark.animate!=='function'){
-      complete('fallback');return;
-    }
-    // Fully settle both words before FLIP measurement. No clipping mask,
-    // overflow crop or transformed letter is left active at this point.
-    for(const word of words){
-      word.style.opacity='1';
-      word.style.transform='none';
-    }
-    mark.style.transform='none';
-    const from=mark.getBoundingClientRect();
-    const to=destination.getBoundingClientRect();
-    if(!from.width||!from.height||!to.width||!to.height){
-      complete('geometry');return;
-    }
-    const dx=to.left-from.left,dy=to.top-from.top;
-    const sx=to.width/from.width,sy=to.height/from.height;
-    if(![dx,dy,sx,sy].every(Number.isFinite)||
-       sx<=0||sy<=0||sx>4||sy>4){
-      complete('geometry');return;
-    }
-    body.classList.add('forge-home-arriving');
-    intro.classList.add('forge-intro-leaving');
-    const frames=[];
-    for(let i=0;i<=64;i++){
-      const t=i/64,p=settle(t,8.4);
-      frames.push({
-        offset:t,
-        transform:'translate3d('+(dx*p).toFixed(3)+'px,'+
-          (dy*p).toFixed(3)+'px,0) scale('+
-          (1+(sx-1)*p).toFixed(6)+','+
-          (1+(sy-1)*p).toFixed(6)+')'
-      });
-    }
-    const flight=animate(mark,frames,{
-      duration:1080,easing:'linear',fill:'both'
-    });
-    if(!flight){complete('fallback');return;}
-    flight.finished.then(()=>complete('finished'),()=>complete('interrupted'));
-  }
-  function reveal(){
-    if(done)return;
-    intro.classList.add('forge-intro-playing');
-    if(words.length!==2){
-      // Missing word markup must not strand the homepage.
-      mark.style.opacity='1';
-      hold=setTimeout(()=>complete('fallback'),1400);
-      return;
-    }
-    for(let index=0;index<words.length;index++){
-      const word=words[index];
-      const frames=[];
-      for(let i=0;i<=48;i++){
-        const t=i/48;
-        const p=settle(Math.min(1,Math.max(0,(t-.04)/.96)),7.1);
-        frames.push({
-          offset:t,
-          opacity:Math.min(1,.03+.97*p),
-          transform:'translate3d(0,'+((1-p)*23).toFixed(3)+'px,0)'
-        });
-      }
-      const flight=animate(word,frames,{
-        duration:1330,delay:index*260,easing:'linear',fill:'both'
-      });
-      if(flight){
-        flight.finished.then(()=>{
-          if(done)return;
-          word.style.opacity='1';
-          word.style.transform='none';
-          flight.cancel();
-          flights.delete(flight);
-        }).catch(()=>{});
-      }else{
-        word.style.opacity='1';
-        word.style.transform='none';
-      }
-    }
-    // Last word settles before the entire, unsplit lockup travels home.
-    hold=setTimeout(handoff,2280);
-  }
-  // Resolve ALL introductory typefaces before showing a single letter.
-  // FontFaceSet.load resolves with [] if the face is not declared: that
-  // is not proof the intended font was loaded. Freeze system fallback
-  // instead of letting a late download visibly replace live typography.
-  function loadFont(specimen){
-    try{return Promise.resolve(document.fonts?.load?.(specimen)||[])
-      .catch(()=>[]);}
+  function loadFont(spec){
+    try{return Promise.resolve(document.fonts?.load?.(spec)||[]).catch(()=>[]);}
     catch(_){return Promise.resolve([]);}
   }
-  let started=false;
-  // Keep successful Kola even when the secondary caption face times out.
   const available=[false,false];
-  const requests=[
+  const fonts=[
     loadFont('400 130px "Kola"').then(faces=>{available[0]=!!faces?.length;}),
     loadFont('600 12px "Plus Jakarta Sans"').then(faces=>{available[1]=!!faces?.length;})
   ];
-  function begin(){
-    if(started||done)return;
+  // Deterministic typing rhythm with a slightly longer pause between words.
+  const intervals=[110,112,120,135,110,118,116,124,112];
+  const letters=Array.from(mark.dataset.fullName||'The Forge');
+  function type(index){
+    if(complete)return;
+    if(index>=letters.length){
+      intro.classList.add('forge-intro-typed-complete');
+      // No intermediate FLIP or composed hold. Just a 130ms dissolve,
+      // then restore the already-laid-out homepage and notify the popup.
+      intro.classList.add('forge-intro-finishing');
+      schedule(finish,130);
+      return;
+    }
+    typed.textContent+=letters[index];
+    const ms=intervals[index]||110;
+    schedule(()=>type(index+1),ms);
+  }
+  function start(){
+    if(complete||started)return;
     started=true;
     if(!available[0])
       document.documentElement.classList.add('forge-launch-fallback-kola');
     if(!available[1])
       intro.classList.add('forge-intro-fallback-ui');
-    requestAnimationFrame(()=>requestAnimationFrame(reveal));
+    intro.classList.add('forge-intro-playing');
+    requestAnimationFrame(()=>requestAnimationFrame(()=>type(0)));
   }
   Promise.race([
-    Promise.all(requests),
-    new Promise(resolve=>setTimeout(resolve,1650))
-  ]).then(begin,begin);
+    Promise.all(fonts),
+    new Promise(resolve=>schedule(resolve,1350))
+  ]).then(start,start);
 })();
