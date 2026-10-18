@@ -146,6 +146,14 @@ try{
     canvasSize:[Tools.Story.canvas?.width,Tools.Story.canvas?.height],
     fileEntries:document.querySelector('#storyFileList')?.children.length}));
   assert.ok(storyboard.hasCanvas&&storyboard.assets===6,`${label}: storyboard canvas not populated`);
+
+  const storyHierarchy=await page.evaluate(()=>{
+    const add=document.querySelector('#storyDropZone label.liquid-btn.active-mode');
+    const save=document.getElementById('downloadStoryBtn');
+    return {add:getComputedStyle(add).backgroundColor,save:getComputedStyle(save).backgroundColor};
+  });
+  assert.notEqual(storyHierarchy.add,storyHierarchy.save,
+    label+': import/export primary actions visually indistinguishable '+JSON.stringify(storyHierarchy));
   await snap('storyboard-populated');
   // Real populated rail: readable captions, keyboard-discoverable fields.
   const storyboardType=await page.evaluate(()=>{
