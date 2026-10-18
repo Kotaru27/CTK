@@ -123,8 +123,9 @@ test('Bulk parent-folder import produces separate boards with correct stills',as
   assert.deepEqual(ctx.projects.slice(1).map(p=>p.images.map(i=>i.file.name)),
     [['01.mp4','02.mp4'],['01.mp4','02.mp4']]);
   assert.equal(ctx.active.name,'Ad_1','first imported board should be focused');
+  ctx.addNewProject();
   await Story.importDirectory.call(ctx,[file('One/Still_A.mp4')]);
-  assert.equal(ctx.projects.at(-1).name,'One');
+  assert.equal(ctx.active.name,'One');
  }finally{globalThis.document=previous.document;
   globalThis.Core=previous.Core;globalThis.UI=previous.UI;}
 });
