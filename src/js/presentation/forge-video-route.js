@@ -200,13 +200,20 @@
     const update=()=>{
       frame=0;
       const activeButton=buttons.find(button=>button.classList.contains('active-mode'));
-      if(!activeButton || !host.getClientRects().length){
+      // Hidden panels can report the previously selected button while their
+      // geometry is still zero. Never memorize that zero-width measurement.
+      if(!activeButton || !host.getClientRects().length ||
+         activeButton.getBoundingClientRect().width<=16){
         flight?.cancel();flight=null;
-        indicator.style.opacity='0';return;
+        indicator.style.opacity='0';
+        indicator.style.width='0px';
+        initialized=false;lastX=null;lastWidth=null;
+        return;
       }
       const width=Math.max(0,activeButton.offsetWidth-16);
       const x=activeButton.offsetLeft+8;
-      if(initialized && lastX===x && lastWidth===width)return;
+      if(initialized && lastX===x && lastWidth===width &&
+         indicator.style.opacity==='1' && indicator.getBoundingClientRect().width>10)return;
       lastX=x;lastWidth=width;
       const target='translate3d('+x+'px,0,0)';
       if(!initialized || preference?.matches || !indicator.animate){
@@ -254,7 +261,11 @@
     const storySection=document.getElementById('section-stills-boards');
     const storyPanel=document.getElementById('stillsTabContentStory');
     if(storySection)observer.observe(storySection,{attributes:true,attributeFilter:['class','style']});
-    if(storyPanel)observer.observe(storyPanel,{attributes:true,attributeFilter:['class','style']});
+    if(storyPanel)observer.observe(storyPanel,{attributes:true,attributeFilter:['class','style','hidden']});
+    // Switching into Storyboard changes view-app, and does not always
+    // mutate the button host or Storyboard section on repeated visits.
+    const appView=document.getElementById('view-app');
+    if(appView)observer.observe(appView,{attributes:true,attributeFilter:['class','style','hidden']});
     if(typeof ResizeObserver==='function'){
       const resize=new ResizeObserver(schedule);
       resize.observe(host);
