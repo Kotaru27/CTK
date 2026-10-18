@@ -17202,6 +17202,12 @@ const CTKDownloadRenamer = (() => {
     for(const button of buttons)
       observer.observe(button,{attributes:true,attributeFilter:['class','style']});
     observer.observe(host,{attributes:true,attributeFilter:['style']});
+    // The host can become visible through its parent section without its own
+    // style changing. Reconcile the indicator on those visibility changes.
+    const storySection=document.getElementById('section-stills-boards');
+    const storyPanel=document.getElementById('stillsTabContentStory');
+    if(storySection)observer.observe(storySection,{attributes:true,attributeFilter:['class','style']});
+    if(storyPanel)observer.observe(storyPanel,{attributes:true,attributeFilter:['class','style']});
     if(typeof ResizeObserver==='function'){
       const resize=new ResizeObserver(schedule);
       resize.observe(host);
