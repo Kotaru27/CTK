@@ -310,7 +310,6 @@
         }
       });
       observer.observe(target,{childList:true,subtree:true});
-      observers.push(observer);
     };
     for(const [id,selector] of targets)observe(id,selector);
     // Requested/verified download tables can be created after first import.
@@ -322,7 +321,6 @@
         }
       });
       discover.observe(table,{childList:true,subtree:true});
-      observers.push(discover);
     }
   }
   attachResultArrival();
