@@ -55,7 +55,7 @@ function fixture({local=storage(),opening=false,active=false,font='loaded',intro
 const flush=async()=>{for(let i=0;i<14;i++)await Promise.resolve()};
 test('welcome remains visible through Escape and outside click',async()=>{
  const h=fixture();
- h.fire(420);await flush();
+ await flush();
  assert.equal(h.root.hidden,false);
  let prevented=false;
  h.root.fire('keydown',{key:'Escape',preventDefault(){prevented=true}});
@@ -69,21 +69,23 @@ test('welcome remains visible through Escape and outside click',async()=>{
 });
 test('only Dont show again suppresses next launch, manual replay remains',async()=>{
  const local=storage({'forge_whatsnew_dismissed_2026_v1':'1'});
- const first=fixture({local});first.fire(420);await flush();
+ const first=fixture({local});await flush();
  assert.equal(first.root.hidden,false,'Old dismissal must not hide new announcement');
  first.never.click();
  const again=fixture({local});
- assert.equal(again.timers.length,0,'New opt-out prevents future automatic popup');
+ await flush();
+ assert.equal(again.root.hidden,true,'New opt-out prevents future automatic popup');
  again.trigger.click();await flush();
  assert.equal(again.root.hidden,false,'Manual What’s New always works');
 });
 test('popup waits for end of intro and never interrupts restored tool',async()=>{
  const pending=fixture({opening:true,introFinished:false});
- assert.equal(pending.timers.length,0);
- pending.doc.dispatch('forge:intro-complete');
- pending.fire(420);await flush();
+ await flush();
  assert.equal(pending.root.hidden,true);
- const active=fixture({active:true});active.fire(420);await flush();
+ pending.doc.dispatch('forge:intro-complete');
+ await flush();
+ assert.equal(pending.root.hidden,true);
+ const active=fixture({active:true});await flush();
  assert.equal(active.root.hidden,true);
 });
 test('manual popup may skip the intro without closing itself',async()=>{
@@ -94,7 +96,7 @@ test('manual popup may skip the intro without closing itself',async()=>{
 });
 test('font stalls preserve hidden dialog until fallback is stable',async()=>{
  const h=fixture({font:'hang'});
- h.fire(420);await flush();
+ await flush();
  assert.equal(h.root.hidden,true);
  h.fire(1850);await flush();
  assert.equal(h.root.hidden,false);
