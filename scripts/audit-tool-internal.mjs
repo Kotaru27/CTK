@@ -109,7 +109,11 @@ try{
  // buttons. No fixed geometry, and changing mode must not trigger a new
  // whole-screen View Transition or remove canvases.
  await page.evaluate(()=>UI.openTool('section-stills-boards','story'));
- await page.waitForTimeout(380);
+ // Do not race the browser's asynchronous View Transition. The Storyboard
+ // marker should be judged only while its actual workspace is visible.
+ await page.waitForFunction(()=>document.getElementById('section-stills-boards')?.classList.contains('active') &&
+   !document.documentElement.classList.contains('forge-route-running'),null,{timeout:6500});
+ await page.waitForTimeout(70);
  const markerResults=[];
  for(const [mode,buttonId] of [['story','subModeBtnBoard'],['filmstrip','subModeBtnFilmstrip'],['fit','subModeBtnFit'],['story','subModeBtnBoard']]){
    const routeBefore=await page.evaluate(()=>window.__internalViewTransitions);
