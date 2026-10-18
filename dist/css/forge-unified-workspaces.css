@@ -662,10 +662,17 @@ body.light-mode .undo-toast {
 
 /* Folder import complements Add Assets: it is the only reliable way to
    receive the user-selected parent folder name through webkitRelativePath. */
+#view-app #stillsTabContentStory .story-import-actions{
+  display:flex!important;align-items:stretch!important;gap:6px!important;
+}
+#view-app #stillsTabContentStory .story-import-actions > button.liquid-btn{
+  flex:1 1 0!important;width:auto!important;min-width:0!important;
+}
 #view-app #stillsTabContentStory .story-folder-import{
   box-sizing:border-box!important;display:flex!important;align-items:center!important;
-  justify-content:center!important;gap:7px!important;
-  margin-top:9px!important;padding:9px 12px!important;
+  justify-content:center!important;gap:5px!important;flex:1 1 0!important;
+  width:auto!important;min-width:0!important;white-space:nowrap!important;
+  margin-top:0!important;padding:8px 6px!important;
   border:1px solid var(--sb-line)!important;border-radius:6px!important;
   background:var(--sb-shell)!important;color:var(--sb-text)!important;
   cursor:pointer!important;font:650 12px/1.4 "Plus Jakarta Sans",sans-serif!important;
