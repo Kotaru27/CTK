@@ -299,6 +299,8 @@ export default {
                 stack.className = "pdf-stack-wrapper";
                 stack.innerHTML = `<img src=""><div class="stack-meta"><div class="stack-title"></div><div class="stack-count">Processing...</div></div>`;
                 stack.querySelector(".stack-title").textContent = name;
+                stack.querySelector(".stack-title").title = name;
+                stack.title = name;
                 stack.tabIndex = 0;
                 stack.setAttribute?.("role", "button");
                 stack.setAttribute?.("aria-label", "Inspect stills from " + name);
