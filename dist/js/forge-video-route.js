@@ -258,6 +258,77 @@
   }
   attachStoryModeIndicator();
 
+  // Newly generated work results get one short, physically damped arrival.
+  // No decorative entrance is applied to individual pixels, canvas, video,
+  // labels, inputs or buttons; processing continues independently.
+  function attachResultArrival(){
+    if(typeof MutationObserver!=='function')return;
+    const targets=[
+      ['logoGrid','.logo-card-item'],
+      ['pdfStacksContainer','.pdf-stack-wrapper'],
+      ['splitGrid','.logo-card-item'],
+      ['stillsStacksContainer','.pdf-stack-wrapper'],
+      ['storyFileList','.story-asset-row'],
+      ['filmstripFileList','.story-asset-row'],
+      ['adDlTableBody','tr'],
+      ['adDlRequestedBody','tr'],
+      ['adDlDownloadedBody','tr']
+    ];
+    const omega=9;
+    const normalizer=1-(1+omega)*Math.exp(-omega);
+    const frames=Array.from({length:21},(_,i)=>{
+      const t=i/20;
+      const p=Math.min(1,(1-(1+omega*t)*Math.exp(-omega*t))/normalizer);
+      return {offset:t,opacity:Math.min(1,.74+.26*p),
+        transform:'translate3d(0,'+((1-p)*5).toFixed(3)+'px,0)'};
+    });
+    const observers=[];
+    const observe=(id,selector)=>{
+      const target=document.getElementById(id);
+      if(!target)return;
+      const observer=new MutationObserver(records=>{
+        if(preference?.matches || document.visibilityState!=='visible' ||
+           root.classList.contains('forge-route-running'))return;
+        const added=[];
+        for(const record of records){
+          for(const node of record.addedNodes){
+            if(node.nodeType!==1)continue;
+            if(node.matches?.(selector))added.push(node);
+            for(const item of node.querySelectorAll?.(selector)||[])added.push(item);
+          }
+        }
+        // Large imports must never enqueue dozens of animations; an import
+        // is a single useful result, not a series of cards waiting to appear.
+        if(!added.length || added.length>8)return;
+        const unique=[...new Set(added)];
+        for(const node of unique){
+          if(!node.isConnected || !node.getClientRects().length ||
+             typeof node.animate!=='function')continue;
+          try{node.animate(frames,{duration:300,easing:'linear'});}
+          catch(_){}
+        }
+      });
+      observer.observe(target,{childList:true,subtree:true});
+      observers.push(observer);
+    };
+    for(const [id,selector] of targets)observe(id,selector);
+    // Requested/verified download tables can be created after first import.
+    const table=document.getElementById('adDlTableContainer');
+    if(table){
+      const discover=new MutationObserver(()=>{
+        for(const [id,selector] of targets.slice(7)){
+          if(document.getElementById(id) && !document.getElementById(id).dataset.forgeResultObserved){
+            document.getElementById(id).dataset.forgeResultObserved='1';
+            observe(id,selector);
+          }
+        }
+      });
+      discover.observe(table,{childList:true,subtree:true});
+      observers.push(discover);
+    }
+  }
+  attachResultArrival();
+
   const api=Object.freeze({navigate,fromOpen,selected,canTransition,cancel});
   window.ForgeWorkspaceRoute=api;
   // Retain the old extension point for any existing private usage.
