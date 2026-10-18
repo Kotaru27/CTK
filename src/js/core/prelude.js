@@ -816,16 +816,22 @@
         openTool(id, mode) {
           const motion = window.ForgeWorkspaceRoute;
           if (this.els.viewApp.classList.contains("active")) {
-            // All tool-to-tool switches now use the same visual coordinator as
-            // home-to-tool navigation. Previously this path cancelled motion
-            // and swapped every workspace instantly.
-            const route = motion && motion.fromOpen(id, mode);
-            if (route) {
-              this._switchToken = (this._switchToken || 0) + 1;
-              motion.navigate(() => this._openTool(id, mode), route);
-            } else {
+            const currentSection=document.querySelector("#view-app .tool-section.active");
+            // Panels within one tool already have their own precise WAAPI
+            // transitions; a root snapshot would suppress that panel motion.
+            if (currentSection?.id === id) {
               if (motion) motion.cancel();
               this._openTool(id, mode);
+            } else {
+              // Cross-workspace navigation was previously an instant cut.
+              const route = motion && motion.fromOpen(id, mode);
+              if (route) {
+                this._switchToken = (this._switchToken || 0) + 1;
+                motion.navigate(() => this._openTool(id, mode), route);
+              } else {
+                if (motion) motion.cancel();
+                this._openTool(id, mode);
+              }
             }
           } else {
             const core = () => this._openTool(id, mode);
