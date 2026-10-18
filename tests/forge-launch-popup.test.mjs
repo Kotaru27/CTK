@@ -104,5 +104,5 @@ test('welcome is in both release formats, matches the actual new workflows, and 
  assert.match(intro,/notifyIntroFinished\(\)/);
  assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
  assert.match(css,/max-height:min\(820px,calc\(100dvh - 36px\)\)/);
- assert.match(css,/\.forge-whatsnew:focus-visible|forge-whatsnew :is\(button\):focus-visible/);
+ assert.match(css,/#forgeWhatsNew :is\(button\):focus-visible/);
 });
