@@ -196,28 +196,50 @@
     indicator.className='forge-story-mode-indicator';
     indicator.setAttribute('aria-hidden','true');
     host.appendChild(indicator);
-    let frame=0,initialized=false;
+    let frame=0,initialized=false,flight=null,lastX=null,lastWidth=null;
     const update=()=>{
       frame=0;
       const activeButton=buttons.find(button=>button.classList.contains('active-mode'));
       if(!activeButton || !host.getClientRects().length){
+        flight?.cancel();flight=null;
         indicator.style.opacity='0';return;
       }
-      // First placement is instantaneous; subsequent changes animate.
       const width=Math.max(0,activeButton.offsetWidth-16);
       const x=activeButton.offsetLeft+8;
-      if(!initialized){
+      if(initialized && lastX===x && lastWidth===width)return;
+      lastX=x;lastWidth=width;
+      const target='translate3d('+x+'px,0,0)';
+      if(!initialized || preference?.matches || !indicator.animate){
+        flight?.cancel();flight=null;
         indicator.style.transition='none';
         indicator.style.width=width+'px';
-        indicator.style.transform='translate3d('+x+'px,0,0)';
+        indicator.style.transform=target;
         indicator.style.opacity='1';
         initialized=true;
-        requestAnimationFrame(()=>{indicator.style.removeProperty('transition');});
-      }else{
-        indicator.style.width=width+'px';
-        indicator.style.transform='translate3d('+x+'px,0,0)';
-        indicator.style.opacity='1';
+        return;
       }
+      // Retarget from the actual current frame. A second click never snaps
+      // the indicator back to its previous start point.
+      const style=getComputedStyle(indicator);
+      const previous=style.transform==='none'?0:new DOMMatrixReadOnly(style.transform).m41;
+      const priorWidth=parseFloat(style.width)||width;
+      flight?.cancel();
+      indicator.style.transform=target;
+      indicator.style.width=width+'px';
+      const omega=9,denom=1-(1+omega)*Math.exp(-omega);
+      const frames=[];
+      for(let i=0;i<=30;i++){
+        const t=i/30;
+        const progress=(1-(1+omega*t)*Math.exp(-omega*t))/denom;
+        frames.push({offset:t,
+          transform:'translate3d('+(previous+(x-previous)*progress).toFixed(3)+'px,0,0)',
+          width:(priorWidth+(width-priorWidth)*progress).toFixed(3)+'px'});
+      }
+      flight=indicator.animate(frames,{duration:360,easing:'linear'});
+      indicator.style.opacity='1';
+      flight.finished.catch(()=>{}).then(()=>{
+        if(flight?.playState==='finished')flight=null;
+      });
     };
     const schedule=()=>{
       if(frame)cancelAnimationFrame(frame);
