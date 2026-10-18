@@ -282,3 +282,41 @@ html:has(.forge-whatsnew:not([hidden])){overflow:hidden;scrollbar-gutter:stable;
 ) {
   font-family:Consolas,"Courier New",monospace!important;
 }
+
+/* PERSISTENT WELCOME / modal, not an inline status box.
+   The foreground is a centered, solid dialog; only the outside viewport
+   is blurred and darkened. One action dismisses it intentionally. */
+#forgeWhatsNew.forge-whatsnew:not([hidden]){
+  position:fixed!important;
+  inset:0!important;
+  z-index:2147483100!important;
+  display:grid!important;
+  place-items:center!important;
+  background:rgba(20,36,27,.68)!important;
+  -webkit-backdrop-filter:blur(24px) saturate(.68)!important;
+  backdrop-filter:blur(24px) saturate(.68)!important;
+}
+#forgeWhatsNew .forge-whatsnew-dialog{
+  background:#fcfdf9;
+  isolation:isolate;
+}
+#forgeWhatsNew .forge-whatsnew-actions{
+  justify-content:flex-end;
+}
+#forgeWhatsNew #forgeWhatsNewNever{
+  min-height:46px;
+  padding:0 20px;
+  border:1px solid #1c4a34;
+  border-radius:8px;
+  background:#1c4a34;
+  color:#f9fcf7;
+}
+#forgeWhatsNew #forgeWhatsNewNever:hover{
+  background:#153b2a;
+  border-color:#153b2a;
+}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  #forgeWhatsNew.forge-whatsnew:not([hidden]){
+    background:rgba(20,36,27,.92)!important;
+  }
+}
