@@ -50,7 +50,7 @@ try {
  }));
  await page.waitForFunction(()=>
    (document.querySelector('#forgeIntroWordmark .forge-intro-typed')?.textContent.length||0)>=3,
-   {timeout:4000});
+   null,{timeout:4000});
  await page.screenshot({path:'artifacts/forge-browser/intro.png'});
  await intro.waitFor({state:'detached',timeout:6000});
  const trajectory=await trajectoryPromise;
