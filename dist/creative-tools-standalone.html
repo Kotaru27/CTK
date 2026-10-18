@@ -5909,6 +5909,12 @@ html.forge-route-running[data-forge-route-travel="return"]::view-transition-new(
 }
 /* Cross-tool movement belongs to the workspace content only. A real named
    surface excludes the nav and app header from opacity interpolation. */
+/* Tool-to-tool transitions snapshot only the actual changing workspace. 
+   The unchanged document root is not rasterized into a giant QHD surface;
+   home-to-tool and return-home transitions retain their own root animation. */
+html.forge-route-running[data-forge-route-travel="tool"] {
+  view-transition-name:none!important;
+}
 html.forge-route-running[data-forge-route-travel="tool"] #view-app.active .tool-section.active {
   view-transition-name:forge-tool-surface;
 }
