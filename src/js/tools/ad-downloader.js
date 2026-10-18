@@ -46,7 +46,7 @@ export default {
           },
           status(message, isError = false) {
             const el = document.getElementById("adDlStatus");
-            if (el) { el.textContent = message; el.style.color = isError ? "var(--danger, #b64a44)" : "var(--text-muted)"; }
+            if (el) { el.textContent = message; el.title = message; el.style.color = isError ? "var(--danger, #b64a44)" : "var(--text-muted)"; }
           },
           async chooseRenameFolder() {
             try {
@@ -218,6 +218,11 @@ export default {
             this.status(`${this.entries.length} ready · ${skipped} invalid rows skipped · ${inferred} extensions inferred.${this.entries.some(e=>CTKSharePoint.isSharePoint(e.url)) ? ' SharePoint uses native downloads; click Auto-name: Choose folder for optional renamed files.' : ''}`);
           },
           updateBulkButton() {
+            const pending = this.entries.filter(entry => !entry.downloaded && !entry.requested).length;
+            const count = document.getElementById("adDlCountText");
+            if (count) count.textContent = pending === this.entries.length
+              ? `${pending} valid ads`
+              : `${pending} pending · ${this.entries.length - pending} started`;
             const btn = document.getElementById("adDlBulkButton");
             if (btn) btn.disabled = this._downloadBusy || !this.entries.some(entry => entry.selected && !entry.downloaded && !entry.requested);
           },
