@@ -142,13 +142,20 @@ html.forge-route-running[data-forge-route-travel="home"]::view-transition-new(ro
 html.forge-route-running[data-forge-route-travel="return"]::view-transition-new(root){
   animation:forge-return-home 440ms cubic-bezier(.18,.78,.22,1) both!important;
 }
+/* Monotonic critically damped arrival. Surfaces never bounce, blur or
+   expose a bright intermediate background frame. */
 @keyframes forge-open-workspace{
-  0%{opacity:0;transform:translate3d(0,16px,0)}
-  35%{opacity:.65}
+  0%{opacity:.68;transform:translate3d(0,7px,0)}
+  18%{opacity:.82;transform:translate3d(0,5px,0)}
+  36%{opacity:.95;transform:translate3d(0,2.4px,0)}
+  58%{opacity:1;transform:translate3d(0,.8px,0)}
+  82%{opacity:1;transform:translate3d(0,.12px,0)}
   100%{opacity:1;transform:translate3d(0,0,0)}
 }
 @keyframes forge-return-home{
-  0%{opacity:0;transform:translate3d(0,-10px,0)}
+  0%{opacity:.72;transform:translate3d(0,-6px,0)}
+  27%{opacity:.91;transform:translate3d(0,-2.5px,0)}
+  58%{opacity:1;transform:translate3d(0,-.6px,0)}
   100%{opacity:1;transform:translate3d(0,0,0)}
 }
 /* Cross-tool movement belongs to the workspace content only. A real named
@@ -174,7 +181,11 @@ html.forge-route-running::view-transition-new(forge-tool-surface){
   animation:forge-enter-tool 450ms cubic-bezier(.18,.78,.22,1) both!important;
 }
 @keyframes forge-enter-tool{
-  0%{opacity:0;transform:translate3d(0,12px,0)}
+  0%{opacity:.16;transform:translate3d(0,10px,0)}
+  14%{opacity:.48;transform:translate3d(0,7px,0)}
+  32%{opacity:.80;transform:translate3d(0,3.7px,0)}
+  54%{opacity:.96;transform:translate3d(0,1.3px,0)}
+  75%{opacity:1;transform:translate3d(0,.23px,0)}
   100%{opacity:1;transform:translate3d(0,0,0)}
 }
 @media(prefers-reduced-motion:reduce){
@@ -224,4 +235,24 @@ html.forge-route-running::view-transition-group(forge-shell-header){
 }
 @media(prefers-reduced-motion:reduce){
   #section-stills-boards #forgeStoryModeIndicator{transition:none!important;}
+}
+
+/* The shell is physically stationary, even when earlier CSS declares a
+   sidebar entrance. Named View Transition snapshots and live DOM must not
+   both animate the same header or sidebar. */
+html.forge-route-running .nav-sidebar.visible,
+html.forge-route-running .header{
+  animation:none!important;
+  translate:none!important;
+  transform:none!important;
+}
+html.forge-route-running[data-forge-route-travel="tool"]::view-transition-group(forge-workspace-title),
+html.forge-route-running[data-forge-route-travel="tool"]::view-transition-group(forge-workspace-art){
+  animation:none!important;
+}
+html.forge-route-running[data-forge-route-travel="tool"]::view-transition-old(forge-workspace-title),
+html.forge-route-running[data-forge-route-travel="tool"]::view-transition-new(forge-workspace-title),
+html.forge-route-running[data-forge-route-travel="tool"]::view-transition-old(forge-workspace-art),
+html.forge-route-running[data-forge-route-travel="tool"]::view-transition-new(forge-workspace-art){
+  animation:none!important;
 }
