@@ -12,7 +12,8 @@ function store(seed={}){
  const map=new Map(Object.entries(seed));
  return {getItem:key=>map.get(key)||null,setItem:(key,val)=>map.set(key,val),map};
 }
-function launch({introFinished=true,toolActive=false,local=store(),session=store()}={}){
+function launch({introFinished=true,toolActive=false,opening=false,local=store(),session=store()}={}){
+ let introOpening=opening, skipped=0;
  const listeners=new Map();
  const on=(map,type,cb)=>{if(!map.has(type))map.set(type,[]);map.get(type).push(cb);};
  let active=null;
@@ -21,7 +22,7 @@ function launch({introFinished=true,toolActive=false,local=store(),session=store
   return {id,isConnected:true,
     addEventListener:(type,callback)=>on(events,type,callback),
     click(){for(const fn of events.get('click')||[])fn({target:this});},
-    focus(){active=this;},getClientRects(){return [{}];}
+    focus(){active=this;},setAttribute(){},getClientRects(){return [{}];}
   };
  };
  const buttons={
@@ -44,10 +45,11 @@ function launch({introFinished=true,toolActive=false,local=store(),session=store
   documentElement:{dataset:introFinished?{forgeIntroFinished:'1'}:{}},
   getElementById:id=>id==='forgeWhatsNew'?root:
     id==='forgeWhatsNewTrigger'?buttons['#forgeWhatsNewTrigger']:
+    id==='forgeIntroSkip'?{click(){skipped++;introOpening=false;}}:
     id==='view-home'?{classList:{contains:()=>false}}:
     id==='view-app'?{classList:{contains:()=>toolActive}}:
     id==='homeContent'?{focus(){}}:null,
-  body:{classList:{contains:()=>false}},
+  body:{classList:{contains:name=>name==='forge-opening'&&introOpening}},
   activeElement:null,
   addEventListener:(type,fn)=>on(listeners,type,fn),
   dispatch(type){for(const fn of listeners.get(type)||[])fn();}
@@ -55,7 +57,7 @@ function launch({introFinished=true,toolActive=false,local=store(),session=store
  const context={document:doc,localStorage:local,sessionStorage:session,
   requestAnimationFrame:fn=>fn(),getComputedStyle:()=>({visibility:'visible'})};
  vm.runInNewContext(code,context,{filename:'forge-whats-new.js'});
- return {root,buttons,doc,local,session};
+ return {root,buttons,doc,local,session,get skipped(){return skipped;}};
 }
 test('release notes stay closed until clicked and may be reopened',()=>{
  const h=launch();
@@ -67,7 +69,7 @@ test('release notes stay closed until clicked and may be reopened',()=>{
  h.buttons['#forgeWhatsNewTrigger'].click();
  assert.equal(h.root.hidden,false);
 });
-test('durable opt-out hides the optional trigger',()=>{
+test('saved automatic opt-out never hides manually invoked updates',()=>{
  const local=store();
  const h=launch({local});
  assert.equal(h.root.hidden,true);
@@ -76,10 +78,15 @@ test('durable opt-out hides the optional trigger',()=>{
  h.buttons['#forgeWhatsNewNever'].click();
  assert.equal(local.getItem('forge_whatsnew_dismissed_2026_v1'),'1');
  assert.equal(h.root.hidden,true);
- assert.equal(h.buttons['#forgeWhatsNewTrigger'].hidden,true);
+ assert.equal(h.buttons['#forgeWhatsNewTrigger'].hidden,false);
+ h.buttons['#forgeWhatsNewTrigger'].click();
+ assert.equal(h.root.hidden,false);
+ h.buttons['#forgeWhatsNewClose'].click();
  const next=launch({local,session:store()});
  assert.equal(next.root.hidden,true);
- assert.equal(next.buttons['#forgeWhatsNewTrigger'].hidden,true);
+ assert.equal(next.buttons['#forgeWhatsNewTrigger'].hidden,false);
+ next.buttons['#forgeWhatsNewTrigger'].click();
+ assert.equal(next.root.hidden,false);
 });
 test('intro completion never opens notes and restored workspace stays uninterrupted',()=>{
  const pending=launch({introFinished:false});
@@ -115,4 +122,11 @@ test('welcome is in both release formats, matches the actual new workflows, and 
  assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
  assert.match(css,/max-height:min\(820px,calc\(100dvh - 36px\)\)/);
  assert.match(css,/#forgeWhatsNew :is\(button\):focus-visible/);
+});
+
+test('clicking What’s new during the intro finishes intro and opens popup',()=>{
+ const h=launch({opening:true});
+ h.buttons['#forgeWhatsNewTrigger'].click();
+ assert.equal(h.skipped,1);
+ assert.equal(h.root.hidden,false);
 });
