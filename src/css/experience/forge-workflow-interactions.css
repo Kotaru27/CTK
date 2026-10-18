@@ -1,0 +1,75 @@
+/* THE FORGE / Workflow-specific navigation, hover and Ad Downloader queue behavior.
+   Keep this separate from geometry-frozen general workspace refinements. */
+/* AD DOWNLOADER: one continuous page scroll; no boxed row viewport. */
+#view-app #section-adlinks #adlinksTabContentDownloader.ad-download-studio{
+ height:auto!important;min-height:100%!important;overflow:visible!important;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader .ad-download-inner{
+ height:auto!important;min-height:100%!important;overflow:visible!important;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader #adDlTableContainer{
+ flex:0 0 auto!important;height:auto!important;max-height:none!important;
+ overflow:visible!important;overscroll-behavior:auto!important;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader #adDlTableContainer table{
+ min-width:0!important;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader #adDlTableContainer thead,
+#view-app #section-adlinks #adlinksTabContentDownloader #adDlTableContainer th{
+ position:static!important;z-index:auto!important;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader #adDlDownloadedHeaderRow td{
+ font-weight:750!important;letter-spacing:.075em!important;
+}
+/* FORGE MOTION: a short compositor-friendly route arrival, avoiding
+   stacked header/body entrances and layout-affecting spring movement. */
+#view-app .tool-section.active{
+ animation:forge-route-arrive 290ms cubic-bezier(.22,.78,.28,1) both!important;
+}
+#view-app .tool-section.active>.tool-header,
+#view-app .tool-section.active :is(.editor-layout,.story-layout,.split-studio-workspace,.adgen-studio,.yt-studio){
+ animation:none!important;
+}
+@keyframes forge-route-arrive{
+ from{opacity:.75;translate:0 5px}
+ to{opacity:1;translate:0 0}
+}
+.nav-sidebar.visible .nav-item:not(.nav-toggle){
+ transition:background-color 230ms cubic-bezier(.22,.78,.28,1),
+ border-color 230ms cubic-bezier(.22,.78,.28,1),color 230ms cubic-bezier(.22,.78,.28,1)!important;
+}
+.nav-sidebar.visible .nav-item > :is(.material-symbols-rounded,svg){
+ transition:translate 230ms cubic-bezier(.22,.78,.28,1),color 230ms ease!important;
+}
+.nav-sidebar.visible .nav-item:not(.active):hover :is(.material-symbols-rounded,svg){translate:2px 0!important;}
+.nav-sidebar.visible .nav-item.active :is(.material-symbols-rounded,svg){translate:0 0!important;}
+#view-app .tool-section .liquid-btn:not(:disabled),
+#view-app .tool-section label.liquid-btn,
+#view-app .tool-section .ctk-row-menu > summary,
+#view-app .tool-section [role="tab"]:not(:disabled){
+ transition:background-color 220ms cubic-bezier(.22,.78,.28,1),
+ color 220ms cubic-bezier(.22,.78,.28,1),
+ border-color 220ms cubic-bezier(.22,.78,.28,1),
+ box-shadow 220ms cubic-bezier(.22,.78,.28,1),
+ translate 220ms cubic-bezier(.22,.78,.28,1)!important;
+}
+#view-app .tool-section .liquid-btn:hover:not(:disabled),
+#view-app .tool-section label.liquid-btn:hover,
+#view-app .tool-section .ctk-row-menu > summary:hover{translate:0 -1px!important;}
+#view-app .tool-section .liquid-btn:active:not(:disabled),
+#view-app .tool-section label.liquid-btn:active,
+#view-app .tool-section .ctk-row-menu > summary:active{translate:0 0!important;}
+@media(prefers-reduced-motion:reduce){
+ #view-app .tool-section.active{animation:none!important;translate:none!important;}
+ .nav-sidebar.visible .nav-item,.nav-sidebar.visible .nav-item > :is(.material-symbols-rounded,svg),
+ #view-app .tool-section .liquid-btn,#view-app .tool-section label.liquid-btn,
+ #view-app .tool-section [role="tab"],#view-app .tool-section .ctk-row-menu > summary{
+  transition:none!important;translate:none!important;
+ }
+ .nav-sidebar.visible .nav-item:not(.active):hover > :is(.material-symbols-rounded,svg),
+ #view-app .tool-section .liquid-btn:hover:not(:disabled),
+ #view-app .tool-section label.liquid-btn:hover,
+ #view-app .tool-section .ctk-row-menu > summary:hover{
+  transition:none!important;translate:none!important;
+ }
+}
