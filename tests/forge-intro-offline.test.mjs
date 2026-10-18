@@ -7,9 +7,9 @@ const source=fs.readFileSync(new URL('../src/js/presentation/forge-brand.js',imp
 const css=fs.readFileSync(new URL('../src/css/experience/forge-brand.css',import.meta.url),'utf8');
 const build=fs.readFileSync(new URL('../scripts/build.mjs',import.meta.url),'utf8');
 
-function setup({font='loaded',reduced=false,active=false,hidden=false,suppress=false}={}){
+function setup({font='loaded',reduced=false,active=false,hidden=false,suppress=false,kinetic=false}={}){
  let now=0,seq=0;
- const timers=new Map(),events=new Map(),notices=[];
+ const timers=new Map(),events=new Map(),notices=[],kineticFlights=[];
  const classes=(initial=[])=>{
   const values=new Set(initial);
   return {contains:x=>values.has(x),add:(...items)=>items.forEach(x=>values.add(x)),
@@ -18,14 +18,25 @@ function setup({font='loaded',reduced=false,active=false,hidden=false,suppress=f
  const skipHandlers=[];
  const intro={hidden:true,removed:false,classList:classes(),
   remove(){this.removed=true}};
- const typed={textContent:''};
+ const typed={textContent:'',getBoundingClientRect:()=>({width:typed.textContent.length*15})};
  const mark={dataset:{fullName:'The Forge'},
-  querySelector:q=>q==='.forge-intro-typed'?typed:null};
+  querySelector:q=>q==='.forge-intro-typed'?typed:null,
+  appendChild(glyph){return glyph}};
+ const createElement=()=>({
+  className:'',style:{},textContent:'',removed:false,
+  setAttribute(){},remove(){this.removed=true},
+  getBoundingClientRect:()=>({width:14}),
+  animate(frames,options){
+   kineticFlights.push({frames,options});
+   return {finished:Promise.resolve()};
+  }
+ });
  const skip={addEventListener(_type,fn){skipHandlers.push(fn)},
   click(){for(const fn of skipHandlers)fn()}};
  const home={classList:classes()},app={classList:classes(active?['active']:[])};
  const body={classList:classes()};
  const document={body,visibilityState:hidden?'hidden':'visible',
+  ...(kinetic?{createElement}:{}),
   documentElement:{dataset:{},classList:classes()},
   fonts:{load:spec=>font==='hang'?new Promise(()=>{}):
    font==='failed'?Promise.reject(new Error('offline')):
@@ -63,7 +74,7 @@ function setup({font='loaded',reduced=false,active=false,hidden=false,suppress=f
   }
   now=goal;
  }
- return {advance,typed,intro,skip,document,body,notices,timers,get time(){return now}};
+ return {advance,typed,intro,skip,document,body,notices,timers,kineticFlights,get time(){return now}};
 }
 const settle=async()=>{for(let i=0;i<12;i++)await Promise.resolve()};
 
@@ -128,4 +139,29 @@ test('typing markup reserves full word width and does not mask Kola descender',(
  assert.match(css,/line-height:1\.26!important/);
  assert.ok(!source.includes('function handoff()'));
  assert.ok(!source.includes('mark.animate('));
+});
+
+test('kinetic character echo is deterministic, subtle, and never disturbs native Kola text',async()=>{
+ const h=setup({kinetic:true});
+ await settle();
+ assert.equal(h.typed.textContent,'T');
+ assert.equal(h.kineticFlights.length,1);
+ const arrival=h.kineticFlights[0];
+ assert.equal(arrival.options.duration,245);
+ assert.equal(arrival.frames[0].opacity,.30);
+ assert.match(arrival.frames[0].transform,/translate3d\(-8px,12px,-15px\)/);
+ assert.equal(arrival.frames.at(-1).opacity,0);
+ h.advance(112);
+ assert.equal(h.typed.textContent,'Th');
+ assert.equal(h.kineticFlights.length,2);
+ h.advance(1500);
+ assert.equal(h.typed.textContent,'The Forge');
+ assert.equal(h.intro.removed,true);
+ assert.equal(h.notices.length,1);
+});
+test('What’s new never acquires a global orange-red focus outline',()=>{
+ assert.match(css,/#view-home #forgeWhatsNewTrigger:focus-visible\{/);
+ assert.match(css,/outline:none!important/);
+ assert.match(css,/text-decoration-color:#245b41!important/);
+ assert.match(css,/MICRO-KINETIC TYPE V7/);
 });
