@@ -52,7 +52,7 @@ test('Logo, PDF and video collection cards expose the original inspect action to
     ['src/js/tools/video-stills.js','stack.click();','Inspect stills from ']
   ]) {
     const s = read(path);
-    for (const snippet of ['.tabIndex = 0', 'setAttribute("role", "button")',
+    for (const snippet of ['.tabIndex = 0', 'setAttribute?.("role", "button")',
       'event.key === "Enter" || event.key === " "', action, label]) {
       assert.ok(s.includes(snippet), path + ': missing ' + snippet);
       assert.ok(bundle.includes(snippet), 'bundle missing ' + snippet);
@@ -66,9 +66,9 @@ test('Logo, PDF and video collection cards expose the original inspect action to
 test('Video Stills frame preview is keyboard-operable independently of download checkboxes', () => {
   const source = read('src/js/tools/video-stills.js');
   for (const snippet of [
-    'card.classList.add("vs-frame-row")', 'card.setAttribute("role", "group")',
-    'card.setAttribute("aria-current", "false")',
-    'card.setAttribute("aria-current", "true")',
+    'card.classList.add("vs-frame-row")', 'card.setAttribute?.("role", "group")',
+    'card.setAttribute?.("aria-current", "false")',
+    'card.setAttribute?.("aria-current", "true")',
     'event.target === card', 'card.click();',
     'card.querySelector(".detail-check").onchange'
   ]) {
