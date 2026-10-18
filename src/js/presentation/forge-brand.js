@@ -11,6 +11,10 @@
   const app=document.getElementById('view-app');
   const onHome=home && !home.classList.contains('hidden') &&
     !app?.classList.contains('active');
+  // Explicit suppression is reserved for unattended QA/embeds; ordinary
+  // page reloads never inherit an old auto-seen session flag.
+  let suppressed=false;
+  try{suppressed=sessionStorage.getItem('forge_intro_suppress')==='1';}catch(_){}
   let complete=false,flight=null,safety=0,observer=null;
   function notify(){
     document.documentElement.dataset.forgeIntroFinished='1';
@@ -36,7 +40,7 @@
   }
   // Saved tool preferences and session history are not evidence that a
   // visible homepage should skip its opening. Reload always replays it.
-  if(reduced||!onHome||document.visibilityState==='hidden'){
+  if(reduced||suppressed||!onHome||document.visibilityState==='hidden'){
     intro?.remove();notify();return;
   }
   document.body.classList.add('forge-opening');
