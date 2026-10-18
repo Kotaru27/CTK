@@ -264,6 +264,7 @@ const CTKDownloadRenamer = (() => {
           known.add(actual);
           renamedCount++;
           entry.renamedFilename=target;
+          entry.renameComplete?.(target);
           entry.renameStatus?.('Downloaded with the correct filename: '+target);
           continue;
         }
@@ -273,6 +274,7 @@ const CTKDownloadRenamer = (() => {
           entry.renamedFilename=target;
           cancel(entry);
           renamedCount++;
+          entry.renameComplete?.(target);
           entry.renameStatus?.('Saved as '+target);
         } catch(error) {
           cancel(entry);
@@ -3386,35 +3388,17 @@ const CTKDownloadRenamer = (() => {
             Core.Utils.createDropZone(this.els.drop, (f) =>
               this.handleFiles(f),
             );
-            this.els.input.onchange = (e) => {
-              this.handleFiles([...e.target.files]);
-              this.els.input.value = "";
+            // Keep the established Add Assets control. Directory selection provides
+            // real relative paths without inventing a second import button.
+            this.els.input.setAttribute("webkitdirectory", "");
+            this.els.input.setAttribute("directory", "");
+            this.els.input.multiple = true;
+            this.els.input.parentElement.title = "Select a stills folder, or a parent folder containing one folder per ad. Drag individual files into this area.";
+            this.els.input.onchange = async (event) => {
+              const selected = [...(event.target.files || [])];
+              event.target.value = "";
+              if (selected.length) await this.importSelection(selected);
             };
-            // A multi-file picker cannot reveal its parent directory.
-            // The directory picker supplies File.webkitRelativePath instead.
-            const projectPanel = this.els.tabs?.parentElement;
-            const createBoardRow = projectPanel?.querySelector?.('button[onclick*="addNewProject"]')?.parentElement;
-            if (createBoardRow?.appendChild && !document.getElementById("storyFolderInput")) {
-              createBoardRow.classList.add("story-import-actions");
-              const folderLabel = document.createElement("label");
-              folderLabel.className = "liquid-btn story-folder-import";
-              folderLabel.textContent = "Import stills folder";
-              folderLabel.title = "Import a folder of stills and name an empty board after it.";
-              const folderInput = document.createElement("input");
-              folderInput.id = "storyFolderInput";
-              folderInput.type = "file";
-              folderInput.multiple = true;
-              folderInput.accept = "image/*,video/*";
-              folderInput.hidden = true;
-              folderInput.setAttribute("webkitdirectory", "");
-              folderInput.addEventListener("change", event => {
-                const selected = [...(event.target.files || [])];
-                event.target.value = "";
-                if (selected.length) this.handleFiles(selected);
-              });
-              folderLabel.appendChild(folderInput);
-              createBoardRow.appendChild(folderLabel);
-            }
             this.els.name.oninput = () => {
               this.els.name.value = Core.Utils.sanitize(this.els.name.value);
               this.saveSettings();
@@ -3489,11 +3473,14 @@ const CTKDownloadRenamer = (() => {
             this.els.preview.innerHTML =
               '<span class="text-muted">Preview</span>';
           },
-          addNewProject() {
-            const id = Date.now();
-            this.projects.push({
+          makeProject(name) {
+            // Batch creation must not switch the active project while images
+            // are decoding, or it can save settings onto the wrong board.
+            let id = Date.now();
+            while (this.projects.some(project => project.id === id)) id++;
+            const project = {
               id,
-              name: `Board_${this.projects.length + 1}`,
+              name: name || `Board_${this.projects.length + 1}`,
               images: [],
               settings: {
                 gap: 0,
@@ -3503,8 +3490,23 @@ const CTKDownloadRenamer = (() => {
                 bgColor: "#ffffff",
                 fitMode: "cover",
               },
-            });
-            this.switchProject(id);
+            };
+            this.projects.push(project);
+            return project;
+          },
+          addNewProject() {
+            const project = this.makeProject();
+            this.switchProject(project.id);
+          },
+          uniqueBoardName(folder, project = null) {
+            const base = Core.Utils.sanitize(String(folder || "Board")).trim().slice(0,80) || "Board";
+            let candidate = base;
+            let n = 2;
+            while (this.projects.some(other =>
+              other !== project && other.name.toLowerCase() === candidate.toLowerCase())) {
+              candidate = `${base} ${n++}`;
+            }
+            return candidate;
           },
           switchProject(id) {
             if (this.active) this.saveSettings();
@@ -3624,12 +3626,57 @@ const CTKDownloadRenamer = (() => {
             if (!root || paths.some(path => !path.includes("/") || path.split("/")[0] !== root)) return "";
             return Core.Utils.sanitize(root).trim().slice(0, 80);
           },
-          async handleFiles(files) {
-            const project = this.active;
+          async importSelection(files) {
+            const root = this.folderNameFromFiles(files);
+            if (!root) return this.handleFiles(files);
+            // A single selected folder is Root/frame.jpg. Selecting a main
+            // folder with ad subfolders is Root/AD1/frame.jpg, etc.
+            const groups = new Map();
+            for (const file of files) {
+              const parts = String(file?.webkitRelativePath || "").split("/").filter(Boolean);
+              if (parts.length < 2) continue;
+              const folder = parts.length >= 3 ? parts[1] : root;
+              if (!groups.has(folder)) groups.set(folder, []);
+              groups.get(folder).push(file);
+            }
+            const ordered = [...groups].sort((a,b) => a[0].localeCompare(b[0],undefined,{numeric:true,sensitivity:"base"}));
+            if (!ordered.length) return;
+            // Reuse an untouched empty default board. Never replace populated
+            // boards or overwrite a deliberate custom board name.
+            const initialBoard = this.active && !this.active.images.length &&
+              /^Board_\d+$/.test(this.active.name) ? this.active : null;
+            const imported = [];
+            let rejected = 0;
+            for (const [folder,groupFiles] of ordered) {
+              // FileList traversal order varies by OS. Preserve story sequence
+              // by sorting frame names naturally (2 before 10).
+              groupFiles.sort((a,b) =>
+                String(a.webkitRelativePath || a.name).localeCompare(
+                  String(b.webkitRelativePath || b.name),undefined,{numeric:true,sensitivity:"base"}));
+              const project = !imported.length && initialBoard
+                ? initialBoard : this.makeProject(this.uniqueBoardName(folder));
+              const countBefore = project.images.length;
+              const result = await this.handleFiles(groupFiles,project,folder,true);
+              rejected += result.rejected;
+              if (project.images.length > countBefore) {
+                imported.push(project);
+              } else if (project !== initialBoard) {
+                this.projects.splice(this.projects.indexOf(project),1);
+              }
+            }
+            if (imported.length) {
+              this.switchProject(imported[0].id);
+              this.els.drop.title = imported.length === 1
+                ? "Imported 1 storyboard folder" : `Imported ${imported.length} storyboard folders`;
+            }
+            if (rejected) UI.showError(`${rejected} unsupported, damaged, oversized or over-limit storyboard files skipped.`);
+          },
+          async handleFiles(files, project = this.active, selectedFolder = "", quiet = false) {
             if (!project) return;
             const initialName = project.name;
             const wasEmpty = project.images.length === 0;
-            const folderName = this.folderNameFromFiles(files);
+            const folderName = selectedFolder || this.folderNameFromFiles(files);
+            const beforeCount = project.images.length;
             let rejected=0;
             for (const file of files) {
               if (project.images.length >= 200) {rejected++;continue;}
@@ -3649,21 +3696,19 @@ const CTKDownloadRenamer = (() => {
               if (!this.validateImage(img)) {rejected++;continue; }
               project.images.push({file,img});
             }
-            if (rejected) UI.showError(`${rejected} unsupported, damaged or oversized storyboard files skipped.`);
+            if (rejected && !quiet) UI.showError(`${rejected} unsupported, damaged or oversized storyboard files skipped.`);
             // Rename only a previously empty board that actually received files.
             // Respect edited names and prevent duplicate board names.
-            if (wasEmpty && project.images.length && folderName && project.name === initialName) {
-              let candidate = folderName;
-              for (let n = 2; this.projects.some(other =>
-                other !== project && other.name.toLowerCase() === candidate.toLowerCase()); n++) {
-                candidate = folderName + " " + n;
-              }
+            if (wasEmpty && project.images.length && folderName && project.name === initialName &&
+                (project !== this.active || /^Board_\d+$/.test(initialName))) {
+              const candidate = this.uniqueBoardName(folderName, project);
               project.name = candidate;
               if (this.active === project) this.els.name.value = candidate;
               this.renderTabs();
             }
             // An upload may have finished after the user switched boards.
             if (this.active===project) {this.saveSettings();this.updateList();this.draw();}
+            return {accepted: project.images.length - beforeCount, rejected};
           },
           getVideoFrame(file) {
             return new Promise(resolve=> {
@@ -5347,7 +5392,7 @@ const CTKDownloadRenamer = (() => {
             Array.from(downloadedBody.children).filter(el => el !== downloadedHead).forEach(el => el.remove());
             downloadedHead.style.display = "none";
             const statusCell=downloadedHead.querySelector("td");
-            if (statusCell) statusCell.textContent="Download started";
+            if (statusCell) statusCell.textContent="Downloaded / download requested";
             this.entries = []; this.allNames = []; this.adTypeMap = {};
             const seen = new Set();
             let skipped = 0, inferred = 0;
@@ -5497,12 +5542,25 @@ const CTKDownloadRenamer = (() => {
             document.body.appendChild(a); a.click(); a.remove();
             setTimeout(() => URL.revokeObjectURL(url), 60000);
           },
-          markDownloaded(entry) {
+          markDownloaded(entry, verified = false) {
+            // A CORS-accessible Blob lets us verify file preparation, not the
+            // user's browser download manager. Native SharePoint downloads
+            // are only confirmed when the folder renamer observes the file.
             entry.downloaded = true;
+            entry.downloadVerified = !!(entry.downloadVerified || verified);
+            if (entry.downloadButton) {
+              entry.downloadButton.textContent = "Download again";
+              entry.downloadButton.disabled = false;
+            }
             if (entry.row) {
               entry.row.classList.add("downloaded");
-              entry.row.style.opacity = "0.65";
+              entry.row.style.removeProperty("opacity");
+              entry.row.title = entry.downloadVerified
+                ? "File confirmed in the selected folder. Download again if needed."
+                : "Download requested. Browser save completion is not observable here; Download again is available.";
               document.getElementById("adDlDownloadedHeaderRow").style.display = "table-row";
+              // appendChild safely keeps a previously downloaded row at the
+              // bottom, even after repeated download requests.
               document.getElementById("adDlDownloadedBody").appendChild(entry.row);
             }
             this.updateBulkButton();
@@ -5519,6 +5577,7 @@ const CTKDownloadRenamer = (() => {
             const renamer = typeof CTKDownloadRenamer !== 'undefined' ? CTKDownloadRenamer : null;
             // The tracking starts synchronously from the same user gesture, preserving the
             // native download's trusted click. The chosen folder is never uploaded.
+            entry.renameComplete = () => this.markDownloaded(entry, true);
             entry.renameStatus = (message,isError=false) => {
               const progress=renamer?.stats?.();
               const suffix=progress ? ` · ${progress.renamed} named · ${progress.waiting} waiting · ${progress.failed} failed` : '';
@@ -5567,6 +5626,7 @@ const CTKDownloadRenamer = (() => {
                 selected=candidates[index-1].name;
               }
               const target=await CTKDownloadRenamer.renameExisting(entry,selected);
+              this.markDownloaded(entry, true);
               this.status("Renamed existing file in place: "+selected+" → "+target+". There is no extra copy.");
               if (button) button.textContent="Name fixed";
             } catch(error) {
@@ -5609,7 +5669,8 @@ const CTKDownloadRenamer = (() => {
             picker.click();
           },
           async downloadFile(entry) {
-            if (entry.downloaded || entry.inProgress) return;
+            // Completed/previously requested rows intentionally stay usable.
+            if (entry.inProgress) return;
             if (CTKSharePoint.isSharePoint(entry.url)) {
               try { this.downloadSharePoint(entry); }
               catch (error) { this.status(`${entry.displayName}: ${error.message}`,true); }

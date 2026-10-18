@@ -644,48 +644,6 @@ body.light-mode .undo-toast {
  outline-offset:2px!important;
 }
 
-/* FORGE / table & navigation interaction repair — current design, no geometry changes.
-   The entire sticky table header must paint above previously scrolled action buttons. */
-#view-app #adlinksTabContentDownloader #adDlTableContainer thead{
-  position:sticky!important;top:0!important;z-index:40!important;
-  isolation:isolate!important;
-  background:var(--studio-raised,#edf1e9)!important;
-}
-#view-app #adlinksTabContentDownloader #adDlTableContainer thead tr,
-#view-app #adlinksTabContentDownloader #adDlTableContainer thead th{
-  background:var(--studio-raised,#edf1e9)!important;
-  background-clip:padding-box!important;
-}
-#view-app #adlinksTabContentDownloader #adDlTableContainer tbody tr{
-  z-index:auto!important;
-}
-
-/* Folder import complements Add Assets: it is the only reliable way to
-   receive the user-selected parent folder name through webkitRelativePath. */
-#view-app #stillsTabContentStory .story-import-actions{
-  display:flex!important;align-items:stretch!important;gap:6px!important;
-}
-#view-app #stillsTabContentStory .story-import-actions > button.liquid-btn{
-  flex:1 1 0!important;width:auto!important;min-width:0!important;
-}
-#view-app #stillsTabContentStory .story-folder-import{
-  box-sizing:border-box!important;display:flex!important;align-items:center!important;
-  justify-content:center!important;gap:5px!important;flex:1 1 0!important;
-  width:auto!important;min-width:0!important;white-space:nowrap!important;
-  margin-top:0!important;padding:8px 6px!important;
-  border:1px solid var(--sb-line)!important;border-radius:6px!important;
-  background:var(--sb-shell)!important;color:var(--sb-text)!important;
-  cursor:pointer!important;font:650 12px/1.4 "Plus Jakarta Sans",sans-serif!important;
-  transition:background-color 155ms ease,border-color 155ms ease,color 155ms ease!important;
-}
-#view-app #stillsTabContentStory .story-folder-import:hover{
-  background:var(--sb-panel)!important;border-color:var(--sb-action)!important;
-  color:var(--sb-action)!important;
-}
-#view-app #stillsTabContentStory .story-folder-import:has(input:focus-visible){
-  outline:2px solid var(--sb-focus)!important;outline-offset:2px!important;
-}
-
 /* Tool navigation — remove legacy diagonal shifts, icon enlargements and
    contrast-flash hover. Selected state and keyboard focus stay distinct. */
 .nav-sidebar.visible .nav-item:not(.active){
@@ -781,7 +739,7 @@ body.light-mode .undo-toast {
  #view-app .tool-section .liquid-btn,
  #view-app .tool-section :is(#tabRowPdf,#tabRowStills,#tabRowAdlinks) button[role="tab"],
  #view-app #section-stills-boards #storySubModeToggle button.liquid-btn,
- #view-app #stillsTabContentStory .story-folder-import{
+ #view-app #stillsTabContentStory #storyProjectTabs > div{
    transition:none!important;
  }
 }

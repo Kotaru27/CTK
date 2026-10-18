@@ -5293,29 +5293,9 @@ body:has(#nav-adlinks-dl.active) .nav-sidebar .nav-item:hover{
   }
 }
 
-/* Explicit solid hover paint for selected controls.
-   Headless Chromium occasionally rasterizes the selected background black
-   when a shorthand color-only hover rule is composed. A solid gradient paints
-   the same intended color above that layer without changing button geometry. */
-#view-app #section-stills-boards #storySubModeToggle .liquid-btn.active-mode:hover{
-  background-image:linear-gradient(var(--sb-panel),var(--sb-panel))!important;
-}
-#view-app #section-adlinks #adlinksTabContentDownloader #adlinksDlHeaderControls #adDlDropZone label:hover{
-  background-image:linear-gradient(var(--ad-primary),var(--ad-primary))!important;
-}
-#view-app #section-adlinks #adlinksTabContentDownloader #adlinksDlHeaderControls #adDlBulkButton:hover:not(:disabled){
-  background-image:linear-gradient(var(--ad-primary),var(--ad-primary))!important;
-}
-
-/* Retired legacy whole-view blur+scale animation. Its fill-mode left
-   filter:blur(0) and transform:matrix(1,...) on the entire app, creating
-   an unnecessary compositing layer over hovered buttons. Tool-specific
-   entrance choreography already exists below this shell. */
-#view-app.active{
-  animation:none!important;
-  filter:none!important;
-  transform:none!important;
-}
+/* The app shell no longer needs the legacy blur/scale entrance: individual
+   tool transitions already handle the route animation. */
+#view-app.active{animation:none!important;filter:none!important;transform:none!important;}
 </style>
 <link rel="preconnect" href="https://api.fontshare.com" crossorigin="anonymous">
 <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=kola@400&amp;display=swap">
@@ -7304,48 +7284,6 @@ body.light-mode .undo-toast {
  outline-offset:2px!important;
 }
 
-/* FORGE / table & navigation interaction repair — current design, no geometry changes.
-   The entire sticky table header must paint above previously scrolled action buttons. */
-#view-app #adlinksTabContentDownloader #adDlTableContainer thead{
-  position:sticky!important;top:0!important;z-index:40!important;
-  isolation:isolate!important;
-  background:var(--studio-raised,#edf1e9)!important;
-}
-#view-app #adlinksTabContentDownloader #adDlTableContainer thead tr,
-#view-app #adlinksTabContentDownloader #adDlTableContainer thead th{
-  background:var(--studio-raised,#edf1e9)!important;
-  background-clip:padding-box!important;
-}
-#view-app #adlinksTabContentDownloader #adDlTableContainer tbody tr{
-  z-index:auto!important;
-}
-
-/* Folder import complements Add Assets: it is the only reliable way to
-   receive the user-selected parent folder name through webkitRelativePath. */
-#view-app #stillsTabContentStory .story-import-actions{
-  display:flex!important;align-items:stretch!important;gap:6px!important;
-}
-#view-app #stillsTabContentStory .story-import-actions > button.liquid-btn{
-  flex:1 1 0!important;width:auto!important;min-width:0!important;
-}
-#view-app #stillsTabContentStory .story-folder-import{
-  box-sizing:border-box!important;display:flex!important;align-items:center!important;
-  justify-content:center!important;gap:5px!important;flex:1 1 0!important;
-  width:auto!important;min-width:0!important;white-space:nowrap!important;
-  margin-top:0!important;padding:8px 6px!important;
-  border:1px solid var(--sb-line)!important;border-radius:6px!important;
-  background:var(--sb-shell)!important;color:var(--sb-text)!important;
-  cursor:pointer!important;font:650 12px/1.4 "Plus Jakarta Sans",sans-serif!important;
-  transition:background-color 155ms ease,border-color 155ms ease,color 155ms ease!important;
-}
-#view-app #stillsTabContentStory .story-folder-import:hover{
-  background:var(--sb-panel)!important;border-color:var(--sb-action)!important;
-  color:var(--sb-action)!important;
-}
-#view-app #stillsTabContentStory .story-folder-import:has(input:focus-visible){
-  outline:2px solid var(--sb-focus)!important;outline-offset:2px!important;
-}
-
 /* Tool navigation — remove legacy diagonal shifts, icon enlargements and
    contrast-flash hover. Selected state and keyboard focus stay distinct. */
 .nav-sidebar.visible .nav-item:not(.active){
@@ -7441,8 +7379,80 @@ body.light-mode .undo-toast {
  #view-app .tool-section .liquid-btn,
  #view-app .tool-section :is(#tabRowPdf,#tabRowStills,#tabRowAdlinks) button[role="tab"],
  #view-app #section-stills-boards #storySubModeToggle button.liquid-btn,
- #view-app #stillsTabContentStory .story-folder-import{
+ #view-app #stillsTabContentStory #storyProjectTabs > div{
    transition:none!important;
+ }
+}
+</style>
+<style id="forge-workflow-interactions-styles">/* THE FORGE / Workflow-specific navigation, hover and Ad Downloader queue behavior.
+   Keep this separate from geometry-frozen general workspace refinements. */
+/* AD DOWNLOADER: one continuous page scroll; no boxed row viewport. */
+#view-app #section-adlinks #adlinksTabContentDownloader.ad-download-studio{
+ height:auto!important;min-height:100%!important;overflow:visible!important;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader .ad-download-inner{
+ height:auto!important;min-height:100%!important;overflow:visible!important;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader #adDlTableContainer{
+ flex:0 0 auto!important;height:auto!important;max-height:none!important;
+ overflow:visible!important;overscroll-behavior:auto!important;
+ /* Rows belong to the workspace, not to a framed mini-app. */
+ margin:0 0 28px!important;padding:0!important;border:0!important;
+ border-radius:0!important;box-shadow:none!important;background:transparent!important;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader #adDlTableContainer table{
+ min-width:0!important;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader #adDlTableContainer thead,
+#view-app #section-adlinks #adlinksTabContentDownloader #adDlTableContainer th{
+ position:static!important;z-index:auto!important;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader #adDlDownloadedHeaderRow td{
+ font-weight:750!important;letter-spacing:.075em!important;
+}
+/* The existing Forge view-transition coordinator owns section arrivals.
+   Refine only its easing; never run a second CSS section animation. */
+html.forge-route-running::view-transition-group(forge-workspace-title),
+html.forge-route-running::view-transition-old(root),
+html.forge-route-running::view-transition-new(root){
+ animation-timing-function:cubic-bezier(.22,.78,.28,1)!important;
+}
+.nav-sidebar.visible .nav-item:not(.nav-toggle){
+ transition:background-color 230ms cubic-bezier(.22,.78,.28,1),
+ border-color 230ms cubic-bezier(.22,.78,.28,1),color 230ms cubic-bezier(.22,.78,.28,1)!important;
+}
+.nav-sidebar.visible .nav-item > :is(.material-symbols-rounded,svg){
+ transition:translate 230ms cubic-bezier(.22,.78,.28,1),color 230ms ease!important;
+}
+.nav-sidebar.visible .nav-item:not(.active):hover :is(.material-symbols-rounded,svg){translate:2px 0!important;}
+.nav-sidebar.visible .nav-item.active :is(.material-symbols-rounded,svg){translate:0 0!important;}
+#view-app .tool-section .liquid-btn:not(:disabled),
+#view-app .tool-section label.liquid-btn,
+#view-app .tool-section .ctk-row-menu > summary,
+#view-app .tool-section [role="tab"]:not(:disabled){
+ transition:background-color 220ms cubic-bezier(.22,.78,.28,1),
+ color 220ms cubic-bezier(.22,.78,.28,1),
+ border-color 220ms cubic-bezier(.22,.78,.28,1),
+ box-shadow 220ms cubic-bezier(.22,.78,.28,1),
+ translate 220ms cubic-bezier(.22,.78,.28,1)!important;
+}
+#view-app .tool-section .liquid-btn:hover:not(:disabled),
+#view-app .tool-section label.liquid-btn:hover,
+#view-app .tool-section .ctk-row-menu > summary:hover{translate:0 -1px!important;}
+#view-app .tool-section .liquid-btn:active:not(:disabled),
+#view-app .tool-section label.liquid-btn:active,
+#view-app .tool-section .ctk-row-menu > summary:active{translate:0 0!important;}
+@media(prefers-reduced-motion:reduce){
+ .nav-sidebar.visible .nav-item,.nav-sidebar.visible .nav-item > :is(.material-symbols-rounded,svg),
+ #view-app .tool-section .liquid-btn,#view-app .tool-section label.liquid-btn,
+ #view-app .tool-section [role="tab"],#view-app .tool-section .ctk-row-menu > summary{
+  transition:none!important;translate:none!important;
+ }
+ .nav-sidebar.visible .nav-item:not(.active):hover > :is(.material-symbols-rounded,svg),
+ #view-app .tool-section .liquid-btn:hover:not(:disabled),
+ #view-app .tool-section label.liquid-btn:hover,
+ #view-app .tool-section .ctk-row-menu > summary:hover{
+  transition:none!important;translate:none!important;
  }
 }
 </style>
@@ -7460,6 +7470,7 @@ body.light-mode .undo-toast {
   </div>
  </div>
 </div>
+
 <header class="header">
 <div class="brand-title" onclick="UI.showHome()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();UI.showHome()}" role="button" style="cursor: pointer" tabindex="0">
 
@@ -9367,6 +9378,7 @@ const CTKDownloadRenamer = (() => {
           known.add(actual);
           renamedCount++;
           entry.renamedFilename=target;
+          entry.renameComplete?.(target);
           entry.renameStatus?.('Downloaded with the correct filename: '+target);
           continue;
         }
@@ -9376,6 +9388,7 @@ const CTKDownloadRenamer = (() => {
           entry.renamedFilename=target;
           cancel(entry);
           renamedCount++;
+          entry.renameComplete?.(target);
           entry.renameStatus?.('Saved as '+target);
         } catch(error) {
           cancel(entry);
@@ -12489,35 +12502,17 @@ const CTKDownloadRenamer = (() => {
             Core.Utils.createDropZone(this.els.drop, (f) =>
               this.handleFiles(f),
             );
-            this.els.input.onchange = (e) => {
-              this.handleFiles([...e.target.files]);
-              this.els.input.value = "";
+            // Keep the established Add Assets control. Directory selection provides
+            // real relative paths without inventing a second import button.
+            this.els.input.setAttribute("webkitdirectory", "");
+            this.els.input.setAttribute("directory", "");
+            this.els.input.multiple = true;
+            this.els.input.parentElement.title = "Select a stills folder, or a parent folder containing one folder per ad. Drag individual files into this area.";
+            this.els.input.onchange = async (event) => {
+              const selected = [...(event.target.files || [])];
+              event.target.value = "";
+              if (selected.length) await this.importSelection(selected);
             };
-            // A multi-file picker cannot reveal its parent directory.
-            // The directory picker supplies File.webkitRelativePath instead.
-            const projectPanel = this.els.tabs?.parentElement;
-            const createBoardRow = projectPanel?.querySelector?.('button[onclick*="addNewProject"]')?.parentElement;
-            if (createBoardRow?.appendChild && !document.getElementById("storyFolderInput")) {
-              createBoardRow.classList.add("story-import-actions");
-              const folderLabel = document.createElement("label");
-              folderLabel.className = "liquid-btn story-folder-import";
-              folderLabel.textContent = "Import stills folder";
-              folderLabel.title = "Import a folder of stills and name an empty board after it.";
-              const folderInput = document.createElement("input");
-              folderInput.id = "storyFolderInput";
-              folderInput.type = "file";
-              folderInput.multiple = true;
-              folderInput.accept = "image/*,video/*";
-              folderInput.hidden = true;
-              folderInput.setAttribute("webkitdirectory", "");
-              folderInput.addEventListener("change", event => {
-                const selected = [...(event.target.files || [])];
-                event.target.value = "";
-                if (selected.length) this.handleFiles(selected);
-              });
-              folderLabel.appendChild(folderInput);
-              createBoardRow.appendChild(folderLabel);
-            }
             this.els.name.oninput = () => {
               this.els.name.value = Core.Utils.sanitize(this.els.name.value);
               this.saveSettings();
@@ -12592,11 +12587,14 @@ const CTKDownloadRenamer = (() => {
             this.els.preview.innerHTML =
               '<span class="text-muted">Preview</span>';
           },
-          addNewProject() {
-            const id = Date.now();
-            this.projects.push({
+          makeProject(name) {
+            // Batch creation must not switch the active project while images
+            // are decoding, or it can save settings onto the wrong board.
+            let id = Date.now();
+            while (this.projects.some(project => project.id === id)) id++;
+            const project = {
               id,
-              name: `Board_${this.projects.length + 1}`,
+              name: name || `Board_${this.projects.length + 1}`,
               images: [],
               settings: {
                 gap: 0,
@@ -12606,8 +12604,23 @@ const CTKDownloadRenamer = (() => {
                 bgColor: "#ffffff",
                 fitMode: "cover",
               },
-            });
-            this.switchProject(id);
+            };
+            this.projects.push(project);
+            return project;
+          },
+          addNewProject() {
+            const project = this.makeProject();
+            this.switchProject(project.id);
+          },
+          uniqueBoardName(folder, project = null) {
+            const base = Core.Utils.sanitize(String(folder || "Board")).trim().slice(0,80) || "Board";
+            let candidate = base;
+            let n = 2;
+            while (this.projects.some(other =>
+              other !== project && other.name.toLowerCase() === candidate.toLowerCase())) {
+              candidate = `${base} ${n++}`;
+            }
+            return candidate;
           },
           switchProject(id) {
             if (this.active) this.saveSettings();
@@ -12727,12 +12740,57 @@ const CTKDownloadRenamer = (() => {
             if (!root || paths.some(path => !path.includes("/") || path.split("/")[0] !== root)) return "";
             return Core.Utils.sanitize(root).trim().slice(0, 80);
           },
-          async handleFiles(files) {
-            const project = this.active;
+          async importSelection(files) {
+            const root = this.folderNameFromFiles(files);
+            if (!root) return this.handleFiles(files);
+            // A single selected folder is Root/frame.jpg. Selecting a main
+            // folder with ad subfolders is Root/AD1/frame.jpg, etc.
+            const groups = new Map();
+            for (const file of files) {
+              const parts = String(file?.webkitRelativePath || "").split("/").filter(Boolean);
+              if (parts.length < 2) continue;
+              const folder = parts.length >= 3 ? parts[1] : root;
+              if (!groups.has(folder)) groups.set(folder, []);
+              groups.get(folder).push(file);
+            }
+            const ordered = [...groups].sort((a,b) => a[0].localeCompare(b[0],undefined,{numeric:true,sensitivity:"base"}));
+            if (!ordered.length) return;
+            // Reuse an untouched empty default board. Never replace populated
+            // boards or overwrite a deliberate custom board name.
+            const initialBoard = this.active && !this.active.images.length &&
+              /^Board_\d+$/.test(this.active.name) ? this.active : null;
+            const imported = [];
+            let rejected = 0;
+            for (const [folder,groupFiles] of ordered) {
+              // FileList traversal order varies by OS. Preserve story sequence
+              // by sorting frame names naturally (2 before 10).
+              groupFiles.sort((a,b) =>
+                String(a.webkitRelativePath || a.name).localeCompare(
+                  String(b.webkitRelativePath || b.name),undefined,{numeric:true,sensitivity:"base"}));
+              const project = !imported.length && initialBoard
+                ? initialBoard : this.makeProject(this.uniqueBoardName(folder));
+              const countBefore = project.images.length;
+              const result = await this.handleFiles(groupFiles,project,folder,true);
+              rejected += result.rejected;
+              if (project.images.length > countBefore) {
+                imported.push(project);
+              } else if (project !== initialBoard) {
+                this.projects.splice(this.projects.indexOf(project),1);
+              }
+            }
+            if (imported.length) {
+              this.switchProject(imported[0].id);
+              this.els.drop.title = imported.length === 1
+                ? "Imported 1 storyboard folder" : `Imported ${imported.length} storyboard folders`;
+            }
+            if (rejected) UI.showError(`${rejected} unsupported, damaged, oversized or over-limit storyboard files skipped.`);
+          },
+          async handleFiles(files, project = this.active, selectedFolder = "", quiet = false) {
             if (!project) return;
             const initialName = project.name;
             const wasEmpty = project.images.length === 0;
-            const folderName = this.folderNameFromFiles(files);
+            const folderName = selectedFolder || this.folderNameFromFiles(files);
+            const beforeCount = project.images.length;
             let rejected=0;
             for (const file of files) {
               if (project.images.length >= 200) {rejected++;continue;}
@@ -12752,21 +12810,19 @@ const CTKDownloadRenamer = (() => {
               if (!this.validateImage(img)) {rejected++;continue; }
               project.images.push({file,img});
             }
-            if (rejected) UI.showError(`${rejected} unsupported, damaged or oversized storyboard files skipped.`);
+            if (rejected && !quiet) UI.showError(`${rejected} unsupported, damaged or oversized storyboard files skipped.`);
             // Rename only a previously empty board that actually received files.
             // Respect edited names and prevent duplicate board names.
-            if (wasEmpty && project.images.length && folderName && project.name === initialName) {
-              let candidate = folderName;
-              for (let n = 2; this.projects.some(other =>
-                other !== project && other.name.toLowerCase() === candidate.toLowerCase()); n++) {
-                candidate = folderName + " " + n;
-              }
+            if (wasEmpty && project.images.length && folderName && project.name === initialName &&
+                (project !== this.active || /^Board_\d+$/.test(initialName))) {
+              const candidate = this.uniqueBoardName(folderName, project);
               project.name = candidate;
               if (this.active === project) this.els.name.value = candidate;
               this.renderTabs();
             }
             // An upload may have finished after the user switched boards.
             if (this.active===project) {this.saveSettings();this.updateList();this.draw();}
+            return {accepted: project.images.length - beforeCount, rejected};
           },
           getVideoFrame(file) {
             return new Promise(resolve=> {
@@ -14450,7 +14506,7 @@ const CTKDownloadRenamer = (() => {
             Array.from(downloadedBody.children).filter(el => el !== downloadedHead).forEach(el => el.remove());
             downloadedHead.style.display = "none";
             const statusCell=downloadedHead.querySelector("td");
-            if (statusCell) statusCell.textContent="Download started";
+            if (statusCell) statusCell.textContent="Downloaded / download requested";
             this.entries = []; this.allNames = []; this.adTypeMap = {};
             const seen = new Set();
             let skipped = 0, inferred = 0;
@@ -14600,12 +14656,25 @@ const CTKDownloadRenamer = (() => {
             document.body.appendChild(a); a.click(); a.remove();
             setTimeout(() => URL.revokeObjectURL(url), 60000);
           },
-          markDownloaded(entry) {
+          markDownloaded(entry, verified = false) {
+            // A CORS-accessible Blob lets us verify file preparation, not the
+            // user's browser download manager. Native SharePoint downloads
+            // are only confirmed when the folder renamer observes the file.
             entry.downloaded = true;
+            entry.downloadVerified = !!(entry.downloadVerified || verified);
+            if (entry.downloadButton) {
+              entry.downloadButton.textContent = "Download again";
+              entry.downloadButton.disabled = false;
+            }
             if (entry.row) {
               entry.row.classList.add("downloaded");
-              entry.row.style.opacity = "0.65";
+              entry.row.style.removeProperty("opacity");
+              entry.row.title = entry.downloadVerified
+                ? "File confirmed in the selected folder. Download again if needed."
+                : "Download requested. Browser save completion is not observable here; Download again is available.";
               document.getElementById("adDlDownloadedHeaderRow").style.display = "table-row";
+              // appendChild safely keeps a previously downloaded row at the
+              // bottom, even after repeated download requests.
               document.getElementById("adDlDownloadedBody").appendChild(entry.row);
             }
             this.updateBulkButton();
@@ -14622,6 +14691,7 @@ const CTKDownloadRenamer = (() => {
             const renamer = typeof CTKDownloadRenamer !== 'undefined' ? CTKDownloadRenamer : null;
             // The tracking starts synchronously from the same user gesture, preserving the
             // native download's trusted click. The chosen folder is never uploaded.
+            entry.renameComplete = () => this.markDownloaded(entry, true);
             entry.renameStatus = (message,isError=false) => {
               const progress=renamer?.stats?.();
               const suffix=progress ? ` · ${progress.renamed} named · ${progress.waiting} waiting · ${progress.failed} failed` : '';
@@ -14670,6 +14740,7 @@ const CTKDownloadRenamer = (() => {
                 selected=candidates[index-1].name;
               }
               const target=await CTKDownloadRenamer.renameExisting(entry,selected);
+              this.markDownloaded(entry, true);
               this.status("Renamed existing file in place: "+selected+" → "+target+". There is no extra copy.");
               if (button) button.textContent="Name fixed";
             } catch(error) {
@@ -14712,7 +14783,8 @@ const CTKDownloadRenamer = (() => {
             picker.click();
           },
           async downloadFile(entry) {
-            if (entry.downloaded || entry.inProgress) return;
+            // Completed/previously requested rows intentionally stay usable.
+            if (entry.inProgress) return;
             if (CTKSharePoint.isSharePoint(entry.url)) {
               try { this.downloadSharePoint(entry); }
               catch (error) { this.status(`${entry.displayName}: ${error.message}`,true); }
@@ -15659,8 +15731,8 @@ const CTKDownloadRenamer = (() => {
     const docs=contents(), pages=totalPages(docs);
     stacks.querySelectorAll('.pdf-stack-wrapper').forEach(card=>{
       if(!card.hasAttribute('role')){
-        card.setAttribute?.('role','button'); card.tabIndex=0;
-        card.setAttribute?.('aria-label','Inspect pages in '+(card.querySelector('.stack-title')?.textContent||'PDF document'));
+        card.setAttribute('role','button'); card.tabIndex=0;
+        card.setAttribute('aria-label','Inspect pages in '+(card.querySelector('.stack-title')?.textContent||'PDF document'));
         card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();card.click();}});
       }
     });
@@ -15802,8 +15874,9 @@ const CTKDownloadRenamer = (() => {
           function positionMenu() {
             // Compute position BEFORE native details opens, so a menu at
             // the bottom of the scroll viewport never flashes outside it.
-            const viewport=root.querySelector("#adDlTableContainer")?.getBoundingClientRect();
-            if (!viewport) return;
+            // The whole workspace now scrolls; use the visible window,
+            // not the height of a long (non-scrolling) asset table.
+            const viewport={top:10,bottom:document.documentElement.clientHeight-10};
             const trigger=summary.getBoundingClientRect();
             const downSpace=viewport.bottom-trigger.bottom;
             const upSpace=trigger.top-viewport.top;
@@ -15835,9 +15908,9 @@ const CTKDownloadRenamer = (() => {
     document.addEventListener("keydown",e=>{
       if(e.key==="Escape")closeMenus();
     });
-    root.querySelector("#adDlTableContainer")?.addEventListener("scroll",()=>{
-      closeMenus();
-    },{passive:true});
+    // Closing menus on any ancestor scroll prevents a menu floating away
+    // from its row as the user advances down a long asset list.
+    document.addEventListener("scroll",closeMenus,{passive:true,capture:true});
   }
   if (document.readyState==="loading") document.addEventListener("DOMContentLoaded",boot,{once:true});
   else boot();
