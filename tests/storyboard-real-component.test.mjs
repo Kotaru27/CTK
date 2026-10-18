@@ -61,7 +61,7 @@ test('Filmstrip reuses named, keyboard-accessible rows without changing renderin
    'button.onclick = () => this.removeImage(index)']){
    assert.ok(filmstrip.includes(fragment),'Filmstrip row missing '+fragment);
  }
- const start='          updateList() {\\n            const list = this.els.list;\\n            const countBadge = this.els.countBadge;';
+ const start='          updateList() {\n            const list = this.els.list;\n            const countBadge = this.els.countBadge;';
  const end='          draw() {';
  const part=s=>s.slice(s.indexOf(start),s.indexOf(end,s.indexOf(start)));
  assert.ok(part(filmstrip).length>1300);
