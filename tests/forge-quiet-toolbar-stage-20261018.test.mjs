@@ -27,12 +27,12 @@ test('cross-tool transitions keep the shell stable while new workspace covers th
   const coordinator=read('../src/js/presentation/forge-video-route.js');
   assert.match(coordinator,/root\.dataset\.forgeRouteTravel/);
   assert.match(coordinator,/delete root\.dataset\.forgeRouteTravel/);
-  assert.match(css,/view-transition-name:forge-workspace-stage/);
-  assert.match(css,/::view-transition-old\(forge-workspace-stage\)\{/);
+  assert.match(css,/\[data-forge-route-travel="tool"\]::view-transition-old\(root\)/);
   assert.match(css,/opacity:1!important/);
-  assert.match(css,/::view-transition-new\(forge-workspace-stage\)\{/);
-  assert.match(css,/@keyframes forge-stage-arrive\{/);
-  assert.match(css,/::view-transition-old\(root\),/);
+  assert.match(css,/\[data-forge-route-travel="tool"\]::view-transition-new\(root\)/);
+  assert.match(css,/@keyframes forge-tool-overlay/);
+  assert.match(css,/from\{opacity:0\}to\{opacity:1\}/);
+  assert.doesNotMatch(css,/view-transition-name:forge-workspace-stage/);
   assert.doesNotMatch(css,/backdrop-filter|filter:blur|animation-iteration-count:infinite/);
   assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
 });
