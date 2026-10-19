@@ -17,7 +17,10 @@ const routes=[
 const base='http://127.0.0.1:4173/';
 async function setup(viewport,motion='no-preference'){
  const ctx=await browser.newContext({viewport,reducedMotion:motion});
- await ctx.addInitScript(()=>sessionStorage.setItem('forge_intro_seen_v4','1'));
+ await ctx.addInitScript(()=>{
+   sessionStorage.setItem('forge_intro_suppress','1');
+   sessionStorage.setItem('forge_whatsnew_suppress','1');
+ });
  const page=await ctx.newPage();
  const errors=[];
  page.on('pageerror',e=>errors.push(String(e)));
