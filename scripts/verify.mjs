@@ -78,6 +78,10 @@ if([headerStart,headerEnd,sourceHeaderStart,sourceHeaderEnd].some(i=>i<0))
   throw Error('Header wordmark anchors missing');
 withoutForge=withoutForge.slice(0,headerStart)+a.slice(sourceHeaderStart,sourceHeaderEnd)+withoutForge.slice(headerEnd);
 withoutForge=withoutForge.replace('id="brandText">The Forge</span>','id="brandText">CREATIVE TOOLS SUITE</span>');
+const releaseNotesAction='<button class="forge-hero-updates" id="forgeWhatsNewTrigger" type="button" aria-haspopup="dialog" aria-controls="forgeWhatsNew">What’s new ↗</button>\n';
+if(!withoutForge.includes(releaseNotesAction))
+  throw Error('Release notes header button is missing from standalone');
+withoutForge=withoutForge.replace(releaseNotesAction,'');
 const restored=withoutForge.replace('<script>'+newMain+'</script>','<script>'+originalMain+'</script>');
 // Only five known, textual naming alignments are allowed outside the hero.
 // Reconstruct the legacy terms before the strict byte-for-byte parity check.
