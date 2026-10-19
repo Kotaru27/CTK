@@ -66,7 +66,7 @@ html.forge-welcome-pending body::after{
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
-<title>The Forge — Creative Tools</title>
+<title>The Forge</title>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
 
 <link href="manifest.json" rel="manifest">
@@ -5356,6 +5356,8 @@ body:has(#nav-adlinks-dl.active) .nav-sidebar .nav-item:hover{
    tool transitions already handle the route animation. */
 #view-app.active{animation:none!important;filter:none!important;transform:none!important;}
 </style>
+<link rel="icon" type="image/svg+xml" sizes="any" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%20role%3D%22img%22%20aria-labelledby%3D%22forgeTitle%22%3E%0A%20%20%3Ctitle%20id%3D%22forgeTitle%22%3EThe%20Forge%3C%2Ftitle%3E%0A%20%20%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2215%22%20fill%3D%22%23153c2b%22%2F%3E%0A%20%20%3Cpath%20d%3D%22M19%2014h28v9H30v8h14v9H30v11H19V14Z%22%20fill%3D%22%23f5f7ef%22%2F%3E%0A%20%20%3Cpath%20d%3D%22M34%2014h4v4h-4z%22%20fill%3D%22%23153c2b%22%2F%3E%0A%3C%2Fsvg%3E%0A">
+<meta name="theme-color" content="#e8e7e0">
 <link rel="preconnect" href="https://api.fontshare.com" crossorigin="anonymous">
 <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=kola@400&amp;display=swap">
 <style id="forge-brand-styles">/* THE FORGE / V2: editorial, light-first home and one continuous opening.
@@ -6136,6 +6138,34 @@ body.forge-opening.forge-home-arriving .forge-hero-tagline{
 @media(prefers-reduced-motion:reduce){
   body.forge-opening .forge-hero-tagline{opacity:1;transform:none;transition:none}
   .forge-intro.forge-intro-ready .forge-intro-step-part{opacity:1;transform:none;transition:none}
+}
+
+/* Launch polish: top-right release notes, restrained homepage hero.
+   The eight cards and all tool layouts remain unchanged. */
+#view-home .combined-home-layout .forge-hero{grid-template-rows:1fr;}
+#view-home .forge-hero-middle{padding-top:0;}
+.header #forgeWhatsNewTrigger{
+  margin-left:auto;
+  flex:0 0 auto;
+  padding:10px 2px;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  color:#315d47;
+  font:650 12px/1.4 "Plus Jakarta Sans",sans-serif;
+  letter-spacing:.015em;
+  white-space:nowrap;
+}
+body:not(:has(#view-home:not(.hidden))) .header #forgeWhatsNewTrigger{display:none!important;}
+.header #forgeWhatsNewTrigger:hover{color:#153c2b;text-decoration-color:currentColor;}
+.header #forgeWhatsNewTrigger:focus-visible{
+  outline:2px solid #315d47!important;
+  outline-offset:5px;
+  text-decoration-color:#315d47!important;
+}
+@media(prefers-reduced-motion:reduce){
+  .header #forgeWhatsNewTrigger{transition:none!important;}
 }
 </style>
 <style id="forge-video-route-styles">/* THE FORGE / UNIFIED WORKSPACE ROUTES
@@ -8707,6 +8737,7 @@ html:has(.forge-whatsnew:not([hidden])){overflow:hidden;scrollbar-gutter:stable;
 
 <span class="brand-text" id="brandText">The Forge</span>
 </div>
+<button class="forge-hero-updates" id="forgeWhatsNewTrigger" type="button" aria-haspopup="dialog" aria-controls="forgeWhatsNew">What’s new ↗</button>
 <button aria-label="Toggle light and dark appearance" id="themeToggleBtn" onclick="UI.toggleTheme()" title="Toggle appearance">
 <span class="material-symbols-rounded" id="themeMoonIcon" style="font-size: 14px;">dark_mode</span>
 <span class="toggle-track">
@@ -8751,10 +8782,6 @@ html:has(.forge-whatsnew:not([hidden])){overflow:hidden;scrollbar-gutter:stable;
 <div id="view-home">
 <div class="home-layout combined-home-layout">
 <section class="forge-hero" aria-labelledby="forgeHeroName">
- <div class="forge-hero-top">
-  <span class="forge-hero-edition">EIGHT TOOLS. ONE CREATIVE WORKSPACE.</span>
-  <button class="forge-hero-updates" id="forgeWhatsNewTrigger" type="button" aria-haspopup="dialog" aria-controls="forgeWhatsNew">What’s new ↗</button>
- </div>
  <div class="forge-hero-middle">
   <div class="forge-hero-identity">
    <h1 class="forge-hero-name" id="forgeHeroName">The Forge</h1>
