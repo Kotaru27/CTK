@@ -226,9 +226,13 @@ try {
    for(let i=0;i<10;i++){toggle.click();turns.push(state());}
    return {turns,final:state()};
  });
- check(railProbe.turns.length===10&&
-   railProbe.turns.every((q,i)=>q.collapsed===Boolean(i%2===1) &&
-     Math.abs(q.width-(q.collapsed?64:224))<=1),
+ const expandedWidths=railProbe.turns.filter(x=>!x.collapsed).map(x=>x.width);
+ const collapsedWidths=railProbe.turns.filter(x=>x.collapsed).map(x=>x.width);
+ check(railProbe.turns.length===10 &&
+   railProbe.turns.every((q,i)=>q.collapsed===Boolean(i%2===1)) &&
+   expandedWidths.every(x=>Math.abs(x-expandedWidths[0])<=1) &&
+   collapsedWidths.every(x=>Math.abs(x-collapsedWidths[0])<=1) &&
+   expandedWidths[0]-collapsedWidths[0]>=100,
    'Sidebar width failed to settle in the same task after repeated toggles: '+JSON.stringify(railProbe));
  check(railProbe.final.transition==='none'&&railProbe.final.animation==='none',
    'Sidebar still runs a geometry/entrance animation: '+JSON.stringify(railProbe.final));
@@ -238,6 +242,8 @@ try {
    'Sidebar labels still animate width, causing layout reflow');
  // All real destinations remain operable after rapid sidebar changes.
  await railPage.locator('#nav-pdf-image').click();
+ await railPage.waitForFunction(()=>document.getElementById('nav-pdf-image')?.classList.contains('active'),
+   null,{timeout:5000});
  check(await railPage.locator('#nav-pdf-image').evaluate(el=>el.classList.contains('active')),
    'Sidebar lost an actual navigation click after repeated toggles');
  await railContext.close();
