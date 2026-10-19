@@ -78,3 +78,17 @@ test('Operational typography and navigation are readable without layout changes'
   assert.match(standalone,/01 \/ DESTINATION/);
   assert.match(standalone,/02 \/ INPUT/);
 });
+
+test('sidebar uses immediate geometry, short feedback and no expensive blur',()=>{
+  assert.match(feedback,/#mainSidebar\.nav-sidebar\.visible\s*\{[^}]*transition:none!important;/);
+  assert.match(feedback,/#mainSidebar\.nav-sidebar\.visible\s*\{[^}]*animation:none!important;/);
+  assert.match(feedback,/#mainSidebar\.nav-sidebar\.visible\s*\{[^}]*backdrop-filter:none!important;/);
+  assert.match(feedback,/#mainSidebar\.nav-sidebar\.visible \.nav-item-text\s*\{[^}]*transition-property:opacity!important;/);
+  assert.match(feedback,/#mainSidebar\.nav-sidebar\.visible \.nav-item:not\(\.nav-toggle\)\s*\{[^}]*transition-duration:105ms!important;/);
+  assert.match(feedback,/content:attr\(title\)/);
+  assert.match(feedback,/prefers-reduced-motion:reduce/);
+  assert.match(read('scripts/forge-browser-qa.mjs'),/Sidebar latency guard/);
+  assert.equal((index.match(/<button class="home-card /g)||[]).length,8);
+  assert.ok(index.includes('forge-workflow-interactions.css?v=forge-sidebar-20261019-v10'));
+  assert.equal(distIndex,index.replaceAll('./dist/css/','./css/').replaceAll('./dist/js/','./js/'));
+});
