@@ -29,6 +29,20 @@ try {
  check(initial.homeVisible,'Intro incorrectly replaced the homepage');
  check(initial.width>=1430&&initial.height>=890&&initial.homeVisible,
    'Wordmark intro must occupy full viewport without a boxed stage: '+JSON.stringify(initial));
+ await page.evaluate(()=>{
+   window.__forgeCaptionStages=[];
+   const root=document.getElementById('forgeIntro');
+   const parts=[...root.querySelectorAll('.forge-intro-step-part')];
+   const observer=new MutationObserver(()=>{
+     for(const [index,part] of parts.entries()){
+       if(part.classList.contains('is-visible')&&
+          !window.__forgeCaptionStages.some(entry=>entry.index===index)){
+         window.__forgeCaptionStages.push({index,text:part.textContent,time:performance.now()});
+       }
+     }
+   });
+   observer.observe(root,{subtree:true,attributes:true,attributeFilter:['class']});
+ });
  const trajectoryPromise=page.evaluate(()=>new Promise(resolve=>{
    const samples=[],start=performance.now();
    function sample(){
@@ -54,6 +68,13 @@ try {
  await page.screenshot({path:'artifacts/forge-browser/intro.png'});
  await intro.waitFor({state:'detached',timeout:6000});
  const trajectory=await trajectoryPromise;
+ const captionStages=await page.evaluate(()=>window.__forgeCaptionStages||[]);
+ check(captionStages.map(part=>part.text).join('')==='Import|Recreate|Export',
+   'Intro caption must reveal full words and separators in order');
+ check(captionStages.every((part,index)=>part.index===index),
+   'Intro caption tokens appeared out of sequence');
+ check(captionStages.every((part,index)=>index===0||part.time>captionStages[index-1].time),
+   'Intro caption did not stagger successive complete tokens');
  check(trajectory.length>=12,'Home-native physics intro produced too few frames');
  check(trajectory.every(f=>f.crop==='none'),
    'Intro clipped the Kola g during the wordmark reveal');
@@ -146,6 +167,13 @@ try {
  check(!details.overflow,'Homepage should not overflow horizontally at 1440px');
  check(details.titleRight < 1440,'Wordmark is clipped on the desktop viewport');
  check(details.font.includes('Kola'),'Wordmark must request Kola');
+ check(await page.locator('.forge-hero-tagline').evaluate(el=>
+   el.textContent.replace(/\s+/g,' ').trim()==='Import | Recreate | Export'),
+   'Home tagline under the wordmark is incorrect');
+ check(await page.locator('.forge-hero-aside').evaluate(el=>{
+   const styles=getComputedStyle(el);
+   return styles.borderLeftWidth==='2px'&&el.getBoundingClientRect().height>=110;
+ }), 'Tall description divider is missing from homepage');
  check(Math.abs(details.titleWidth-details.inkWidth)<7,'Hero heading box must match actual kerned text width');
  check(trajectory.length>=12,'Expected at least twelve typing frames');
  if(trajectory.length>=2){

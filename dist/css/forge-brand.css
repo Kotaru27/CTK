@@ -658,3 +658,122 @@ body.forge-opening.forge-handoff #forgeHeroName{
 #view-home #forgeWhatsNewTrigger:focus:not(:focus-visible){
   outline:none!important;
 }
+
+/* FORGE V12 — captioned wordmark, tall description rule; presentation only. */
+#view-home .forge-hero-middle{
+  flex-direction:row;
+  align-items:center;
+  justify-content:flex-start;
+  gap:clamp(42px,5.1vw,98px);
+}
+#view-home .forge-hero-identity{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  flex:0 0 auto;
+  min-width:0;
+}
+#view-home .forge-hero-tagline{
+  display:flex;
+  align-items:center;
+  gap:clamp(9px,.85vw,15px);
+  margin:7px 0 0 4px;
+  color:#3b624e;
+  font:600 clamp(14px,1.07vw,17px)/1.5 "Plus Jakarta Sans",sans-serif;
+  letter-spacing:.005em;
+  white-space:nowrap;
+}
+#view-home .forge-hero-tagline span{color:#669078;font-weight:400}
+#view-home .forge-hero-aside{
+  display:flex;
+  align-items:center;
+  flex:0 1 440px;
+  width:min(440px,100%);
+  min-height:136px;
+  padding:7px 0 7px clamp(24px,2.4vw,39px);
+  border:0;
+  border-left:2px solid rgba(43,101,69,.42);
+  box-sizing:border-box;
+}
+#view-home .forge-hero-aside p{
+  max-width:400px;
+  margin:0;
+  font-size:clamp(15px,1.13vw,17px);
+  line-height:1.62;
+  color:#315b45;
+}
+body.forge-opening .forge-hero-tagline{
+  opacity:.65;
+  transform:translate3d(0,5px,0);
+}
+body.forge-opening.forge-home-arriving .forge-hero-tagline{
+  opacity:1;
+  transform:translate3d(0,0,0);
+  transition:opacity .48s cubic-bezier(.21,.76,.31,1),
+             transform .62s cubic-bezier(.2,.8,.28,1);
+}
+@media(max-width:900px){
+  #view-home .forge-hero-middle{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:22px;
+  }
+  #view-home .forge-hero-aside{
+    flex:none;
+    width:min(600px,100%);
+    min-height:0;
+    padding:0 0 0 21px;
+    border-left-width:2px;
+  }
+}
+@media(max-width:550px){
+  #view-home .forge-hero-tagline{font-size:12px;gap:7px}
+  #view-home .forge-hero-middle{gap:15px}
+  #view-home .forge-hero-aside{padding-left:15px}
+}
+/* Caption is absolutely positioned; it never pushes or rescales the
+   original centered Kola wordmark. Five whole tokens are pre-laid-out. */
+.forge-intro.forge-intro-ready .forge-intro-steps{
+  position:absolute;
+  top:calc(50% + clamp(105px,9.5vw,154px));
+  left:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:clamp(10px,1.1vw,18px);
+  width:max-content;
+  max-width:95vw;
+  margin:0;
+  color:#356b4c;
+  font:600 clamp(14px,1.32vw,19px)/1.5 "Plus Jakarta Sans",sans-serif;
+  letter-spacing:.012em;
+  white-space:nowrap;
+  pointer-events:none;
+  transform:translate3d(-50%,0,0);
+}
+.forge-intro.forge-intro-ready .forge-intro-step-part{
+  display:inline-block;
+  opacity:0;
+  transform:translate3d(0,9px,0);
+  transition:opacity 340ms cubic-bezier(.2,.75,.28,1),
+             transform 410ms cubic-bezier(.2,.78,.28,1);
+}
+.forge-intro.forge-intro-ready .forge-intro-step-part.is-visible{
+  opacity:1;
+  transform:translate3d(0,0,0);
+}
+.forge-intro.forge-intro-ready .forge-intro-step-part[aria-hidden="true"]{
+  color:#749782;
+  font-weight:400;
+}
+@media(max-width:550px){
+  .forge-intro.forge-intro-ready .forge-intro-steps{
+    top:calc(50% + 102px);
+    gap:8px;
+    font-size:12px;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  body.forge-opening .forge-hero-tagline{opacity:1;transform:none;transition:none}
+  .forge-intro.forge-intro-ready .forge-intro-step-part{opacity:1;transform:none;transition:none}
+}

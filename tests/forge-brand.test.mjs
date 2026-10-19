@@ -50,7 +50,7 @@ test('cinematic Forge intro is bounded, skippable and staged before the welcome 
  assert.match(brandJS,/function type\(index\)/);
  assert.match(brandJS,/forge:intro-complete/);
  assert.match(brandJS,/schedule\(finish,380\)/);
- assert.match(brandJS,/schedule\(finish,4400\)/);
+ assert.match(brandJS,/schedule\(finish,6000\)/);
  assert.match(brandJS,/gate\?\.beginWelcome\?\.\(\)/);
  assert.match(brandJS,/clearTimeout\(id\)/);
  assert.doesNotMatch(brandJS,/mark\.animate\(/);
@@ -72,8 +72,12 @@ test('editorial hero is light-first, free of the old dark banner and circular de
     assert.match(page,/class="forge-hero-aside"/);
     assert.match(page,/class="forge-after-hero"/);
     assert.doesNotMatch(page,/class="forge-hero-index"/);
-    assert.doesNotMatch(page,/class="forge-hero-tagline"/);
+    assert.match(page,/class="forge-hero-tagline">Import/);
+    assert.match(page,/class="forge-intro-steps" role="text"/);
   }
+  assert.match(brandCss,/#view-home \.forge-hero-aside\{/);
+  assert.match(brandCss,/border-left:2px solid rgba\(43,101,69,\.42\)/);
+  assert.match(brandCss,/\.forge-intro-step-part\.is-visible/);
   assert.match(brandCss,/background:transparent/);
   assert.match(brandCss,/border-top:1px solid var\(--forge-hero-line\)/);
   assert.doesNotMatch(brandCss,/forge-hero::before|forge-hero::after/);

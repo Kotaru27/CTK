@@ -61,7 +61,7 @@ test('Tool navigation, focus and generated launch links remain intact',()=>{
   assert.match(feedback,/@media\(hover:hover\) and \(pointer:fine\)/);
   assert.match(feedback,/:focus-visible/);
   assert.match(feedback,/prefers-reduced-motion:reduce/);
-  assert.ok(index.includes('forge-launch-20261019-usability-v9'));
+  assert.ok(index.includes('forge-caption-20261019-v12'));
   assert.ok(!index.includes('forge-launch-20261018-kinetic-v8'));
 });
 

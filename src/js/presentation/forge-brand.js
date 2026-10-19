@@ -12,6 +12,7 @@
   const body=document.body;
   const gate=window.__forgePaintGate;
   const caret=mark?.querySelector('.forge-intro-caret');
+  const stepParts=Array.from(intro?.querySelectorAll?.('.forge-intro-step-part')||[]);
   const timers=new Set();
   const kineticGlyphs=new Set();
   let complete=false,observer=null,started=false;
@@ -87,7 +88,7 @@
   }
   // Absolute fail-safe: even if a font or a browser animation stalls, the
   // homepage never remains behind the intro indefinitely.
-  schedule(finish,4400);
+  schedule(finish,6000);
 
   function loadFont(spec){
     try{return Promise.resolve(document.fonts?.load?.(spec)||[]).catch(()=>[]);}
@@ -136,18 +137,30 @@
   // word boundary, and a gentle deceleration without artificial holds.
   const intervals=[112,116,121,150,122,118,124,130,122];
   const letters=Array.from(mark.dataset.fullName||'The Forge');
+  function beginHandoff(){
+    if(complete)return;
+    // Compose the real destination before the translucent intro fades.
+    if(home&&!home.classList.contains('hidden')&&
+       !app?.classList.contains('active')&&
+       document.visibilityState!=='hidden')gate?.beginWelcome?.();
+    body.classList.add('forge-home-arriving','forge-handoff');
+    intro.classList.add('forge-intro-finishing');
+    schedule(finish,380);
+  }
+  function revealCaption(){
+    if(complete)return;
+    intro.classList.add('forge-intro-typed-complete');
+    // Complete words and separators occupy final positions from the start.
+    // Change only opacity and transform; no letter-by-letter layout changes.
+    stepParts.forEach((part,index)=>{
+      schedule(()=>part.classList.add('is-visible'),130+index*175);
+    });
+    schedule(beginHandoff,1490);
+  }
   function type(index){
     if(complete)return;
     if(index>=letters.length){
-      intro.classList.add('forge-intro-typed-complete');
-      // Prepare the destination beneath the intro BEFORE the last fade.
-      // The welcome curtain remains behind the typography until handoff.
-      if(home&&!home.classList.contains('hidden')&&
-         !app?.classList.contains('active')&&
-         document.visibilityState!=='hidden')gate?.beginWelcome?.();
-      body.classList.add('forge-home-arriving','forge-handoff');
-      intro.classList.add('forge-intro-finishing');
-      schedule(finish,380);
+      revealCaption();
       return;
     }
     typed.textContent+=letters[index];
