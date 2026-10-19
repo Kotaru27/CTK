@@ -168,7 +168,7 @@ try {
  check(details.titleRight < 1440,'Wordmark is clipped on the desktop viewport');
  check(details.font.includes('Kola'),'Wordmark must request Kola');
  check(await page.locator('.forge-hero-tagline').evaluate(el=>
-   el.textContent.replace(/\\s+/g,' ').trim()==='Import | Recreate | Export'),
+   el.textContent.replace(/\s+/g,' ').trim()==='Import | Recreate | Export'),
    'Home tagline under the wordmark is incorrect');
  check(await page.locator('.forge-hero-aside').evaluate(el=>{
    const styles=getComputedStyle(el);
