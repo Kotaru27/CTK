@@ -18,7 +18,7 @@ test('all eight cards preserve exact structure and routes except two intentional
 });
 test('brand name and Kola are integrated in both releases',()=>{
   for (const s of [index,standalone]) {
-    assert.match(s,/<title>The Forge — Creative Tools<\/title>/);
+    assert.match(s,/<title>The Forge<\/title>/);
     assert.match(s,/id="brandText">The Forge<\/span>/);
     assert.match(s,/class="forge-hero-name" id="forgeHeroName">The Forge<\/h1>/);
     assert.match(s,/api\.fontshare\.com\/v2\/css\?f\[\]=kola@400&amp;display=swap/);
@@ -107,7 +107,10 @@ test('intro and home avoid expensive animated backdrops and layout font changes'
 });
 test('executive hero states one purpose, one description, then tool selection',()=>{
   for(const page of [index,standalone]){
-    assert.match(page,/EIGHT TOOLS\. ONE CREATIVE WORKSPACE\./);
+    assert.doesNotMatch(page,/class="forge-hero-edition"/);
+    assert.doesNotMatch(page,/class="forge-hero-top"/);
+    assert.match(page,/<header class="header">[\s\S]*?id="forgeWhatsNewTrigger"/);
+    assert.match(page,/<link rel="icon" type="image\/svg\+xml"/);
     assert.match(page,/Resize images, convert PDFs, capture stills and build storyboards/);
     assert.match(page,/class="forge-after-hero"><strong>Choose a tool<\/strong>/);
     assert.doesNotMatch(page,/Everything at your fingertips/);
@@ -122,4 +125,19 @@ test('executive hero states one purpose, one description, then tool selection',(
   assert.match(brandCss,/content:none!important/);
   assert.match(brandCss,/body:has\(#view-home:not\(\.hidden\)\) \.header/);
   assert.match(brandCss,/\.home-card-num/);
+});
+
+test('browser favicon and install manifest have the new Forge identity',()=>{
+  const icon=read('../src/branding/favicon.svg');
+  const manifest=JSON.parse(read('../manifest.json'));
+  assert.match(icon,/<svg[^>]*viewBox="0 0 64 64"/);
+  assert.match(icon,/The Forge<\/title>/);
+  assert.equal(read('../favicon.svg'),icon);
+  assert.equal(read('../dist/favicon.svg'),icon);
+  assert.equal(manifest.name,'The Forge');
+  assert.equal(manifest.start_url,'./');
+  assert.match(index,/href="\.\/favicon\.svg\?v=forge-favicon-launch-20261019"/);
+  assert.match(standalone,/href="data:image\/svg\+xml,/);
+  assert.match(brandCss,/\.header #forgeWhatsNewTrigger\{/);
+  assert.match(brandCss,/grid-template-rows:1fr/);
 });

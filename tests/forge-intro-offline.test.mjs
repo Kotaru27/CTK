@@ -168,7 +168,7 @@ test('kinetic character echo is deterministic, subtle, and never disturbs native
  assert.equal(h.notices.length,1);
 });
 test('What’s new never acquires a global orange-red focus outline',()=>{
- assert.match(css,/#view-home #forgeWhatsNewTrigger:focus-visible\{/);
+ assert.match(css,/\.header #forgeWhatsNewTrigger:focus-visible\{/);
  assert.match(css,/outline:none!important/);
  assert.match(css,/text-decoration-color:#245b41!important/);
  assert.match(css,/MICRO-KINETIC TYPE V7/);

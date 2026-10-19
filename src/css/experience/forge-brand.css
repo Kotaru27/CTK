@@ -777,3 +777,31 @@ body.forge-opening.forge-home-arriving .forge-hero-tagline{
   body.forge-opening .forge-hero-tagline{opacity:1;transform:none;transition:none}
   .forge-intro.forge-intro-ready .forge-intro-step-part{opacity:1;transform:none;transition:none}
 }
+
+/* Launch polish: top-right release notes, restrained homepage hero.
+   The eight cards and all tool layouts remain unchanged. */
+#view-home .combined-home-layout .forge-hero{grid-template-rows:1fr;}
+#view-home .forge-hero-middle{padding-top:0;}
+.header #forgeWhatsNewTrigger{
+  margin-left:auto;
+  flex:0 0 auto;
+  padding:10px 2px;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  color:#315d47;
+  font:650 12px/1.4 "Plus Jakarta Sans",sans-serif;
+  letter-spacing:.015em;
+  white-space:nowrap;
+}
+body:not(:has(#view-home:not(.hidden))) .header #forgeWhatsNewTrigger{display:none!important;}
+.header #forgeWhatsNewTrigger:hover{color:#153c2b;text-decoration-color:currentColor;}
+.header #forgeWhatsNewTrigger:focus-visible{
+  outline:2px solid #315d47!important;
+  outline-offset:5px;
+  text-decoration-color:#315d47!important;
+}
+@media(prefers-reduced-motion:reduce){
+  .header #forgeWhatsNewTrigger{transition:none!important;}
+}

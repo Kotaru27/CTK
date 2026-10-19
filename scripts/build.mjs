@@ -43,12 +43,11 @@ const forgeWorkflowCss=read('src/css/experience/forge-workflow-interactions.css'
 const forgeVideoRouteJs=read('src/js/presentation/forge-video-route.js');
 const forgeWhatsNewCss=read('src/css/experience/forge-whats-new.css');
 const forgeWhatsNewJs=read('src/js/presentation/forge-whats-new.js');
+const forgeFaviconSvg=read('src/branding/favicon.svg');
+const forgeManifest=read('src/branding/manifest.json');
+const forgeReleaseTrigger='<button class="forge-hero-updates" id="forgeWhatsNewTrigger" type="button" aria-haspopup="dialog" aria-controls="forgeWhatsNew">What’s new ↗</button>';
 const forgeHero=[
   '<section class="forge-hero" aria-labelledby="forgeHeroName">',
-  ' <div class="forge-hero-top">',
-  '  <span class="forge-hero-edition">EIGHT TOOLS. ONE CREATIVE WORKSPACE.</span>',
-  '  <button class="forge-hero-updates" id="forgeWhatsNewTrigger" type="button" aria-haspopup="dialog" aria-controls="forgeWhatsNew">What’s new ↗</button>',
-  ' </div>',
   ' <div class="forge-hero-middle">',
   '  <div class="forge-hero-identity">',
   '   <h1 class="forge-hero-name" id="forgeHeroName">The Forge</h1>',
@@ -155,10 +154,16 @@ function forgeBrand(html,standaloneRelease){
   }
 
   if(!html.includes('<title>Creative Tools Suite</title>'))throw Error('Original suite title not found');
-  html=html.replace('<title>Creative Tools Suite</title>','<title>The Forge — Creative Tools</title>');
+  html=html.replace('<title>Creative Tools Suite</title>','<title>The Forge</title>');
   html=html.replace('<link href="Toolkit%20logo.png" rel="icon" type="image/png"/>','');
   html=html.replace('<span class="material-symbols-rounded brand-icon">deployed_code</span>','');
   html=html.replace('<span class="brand-text" id="brandText">CREATIVE TOOLS SUITE</span>','<span class="brand-text" id="brandText">The Forge</span>');
+  const themeToggleAnchor='<button aria-label="Toggle light and dark appearance" id="themeToggleBtn"';
+  if(!html.includes(themeToggleAnchor))throw Error('Header action injection anchor missing');
+  html=html.replace(themeToggleAnchor,forgeReleaseTrigger+'\n'+themeToggleAnchor);
+  const iconHref=standaloneRelease?'data:image/svg+xml,'+encodeURIComponent(forgeFaviconSvg):'./favicon.svg?v=forge-favicon-launch-20261019';
+  const iconLink='<link rel="icon" type="image/svg+xml" sizes="any" href="'+iconHref+'">\n'+
+    '<meta name="theme-color" content="#e8e7e0">\n';
   const fontLink='<link rel="preconnect" href="https://api.fontshare.com" crossorigin="anonymous">\n'+
     '<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=kola@400&amp;display=swap">\n';
   const brandStyle=standaloneRelease?'<style id="forge-brand-styles">'+forgeBrandCss+'</style>\n':
@@ -177,7 +182,7 @@ function forgeBrand(html,standaloneRelease){
     '<link rel="stylesheet" href="./dist/css/forge-workflow-interactions.css?v=forge-sidebar-20261019-v10">\n';
   const welcomeStyle=standaloneRelease?'<style id="forge-whats-new-styles">'+forgeWhatsNewCss+'</style>\n':
     '<link rel="stylesheet" href="./dist/css/forge-whats-new.css?v=forge-caption-20261019-v12">\n';
-  html=html.replace('</head>',fontLink+brandStyle+routeStyle+adaptiveStyle+workspaceFinishStyle+specimenStyle+unifiedStyle+workflowStyle+welcomeStyle+'</head>');
+  html=html.replace('</head>',iconLink+fontLink+brandStyle+routeStyle+adaptiveStyle+workspaceFinishStyle+specimenStyle+unifiedStyle+workflowStyle+welcomeStyle+'</head>');
   // Light-only presentation: do not read an old dark preference on first paint.
   html=html.replace('<body>','<body class="light-mode">\n'+forgeIntro+'\n'+forgeWhatsNew+'\n');
   const brandScript=standaloneRelease?'<script id="forge-brand-intro-js">'+forgeBrandJs+'</script>':
@@ -194,6 +199,10 @@ output=output.replace('<link rel="stylesheet" href="./dist/css/app.css">','<link
 output=output.replace('</body>','<script id="ctk-ad-downloader-v2" src="./dist/js/ad-downloader-v2.js"></script>\n</body>');
 output=output.replace('<link rel="stylesheet" href="./dist/css/ad-downloader-v2.css">',
  '<link rel="stylesheet" href="./dist/css/ad-downloader-v2.css">\n<link rel="stylesheet" href="./dist/css/typography-motion-v3.css">');
+save('favicon.svg',forgeFaviconSvg);
+save('dist/favicon.svg',forgeFaviconSvg);
+save('manifest.json',forgeManifest);
+save('dist/manifest.json',forgeManifest);
 save('dist/css/typography-motion-v3.css',typeMotionCss);
 save('dist/css/forge-brand.css',forgeBrandCss);
 save('dist/js/forge-brand.js',forgeBrandJs);

@@ -15,6 +15,10 @@ try {
  const pageErrors=[];
  page.on('pageerror',error=>pageErrors.push(String(error)));
  await page.goto(base,{waitUntil:'domcontentloaded',timeout:60000});
+ check(await page.title()==='The Forge','Browser tab still carries the legacy title');
+ const iconHref=await page.locator('link[rel="icon"][type="image/svg+xml"]').getAttribute('href');
+ check(iconHref?.startsWith('./favicon.svg?v=forge-favicon-launch-20261019'),
+   'Forge favicon is not linked for the browser tab');
  const intro=page.locator('#forgeIntro');
  await intro.waitFor({state:'visible',timeout:8000});
  check((await page.locator('#forgeHeroName').textContent())?.trim()==='The Forge',
@@ -304,7 +308,10 @@ try {
        heroLeft:Math.round(hr.left),headerWordmarkLeft:Math.round(brand.left),
        titleRight:tr.right,gridTop:gr.top,
        headerGeneratedText:getComputedStyle(document.querySelector('.header'),'::after').content,
-       eyebrow:document.querySelector('.forge-hero-edition')?.textContent,
+       obsoleteEyebrow:!!document.querySelector('.forge-hero-edition'),
+       releaseActionInHeader:document.getElementById('forgeWhatsNewTrigger')?.parentElement===document.querySelector('.header'),
+       releaseActionRightGap:Math.round(hr.right-document.getElementById('forgeWhatsNewTrigger').getBoundingClientRect().right),
+       releaseActionVisible:getComputedStyle(document.getElementById('forgeWhatsNewTrigger')).display!=='none',
        heroSupportingText:document.querySelector('.forge-hero-aside p')?.textContent,
        sectionHeading:document.querySelector('.forge-after-hero strong')?.textContent,
        cardNumberColor:getComputedStyle(number).color,
@@ -318,7 +325,11 @@ try {
      };
    });
    check(values.count===8,'QHD cards count differs from eight');
-   check(values.eyebrow==='EIGHT TOOLS. ONE CREATIVE WORKSPACE.','QHD hero eyebrow lacks clear scope');
+   check(!values.obsoleteEyebrow,'Obsolete QHD hero eyebrow still visible');
+   check(values.releaseActionInHeader&&values.releaseActionVisible,
+     'What’s new action missing from top header');
+   check(Math.abs(values.releaseActionRightGap)<70,
+     'What’s new not aligned with right side of home hero: '+values.releaseActionRightGap);
    check(values.sectionHeading==='Choose a tool','QHD tool-section heading incorrect');
    check(values.heroSupportingText.includes('convert PDFs'),'QHD description missing useful capability text');
    check(values.headerGeneratedText==='none','Floating legacy header tagline still visible');
