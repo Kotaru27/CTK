@@ -96,7 +96,7 @@ test('sidebar uses immediate geometry, short feedback and no expensive blur',()=
 test('V11 cross-tool navigation shows the new workspace immediately without changing shell or home motion',()=>{
  const route=read('src/css/experience/forge-video-route.css');
  assert.match(route,/animation:forge-enter-tool 330ms/);
- assert.match(route,/0%\\{opacity:\\.62;transform:translate3d\\(0,6px,0\\)/);
+ assert.ok(route.includes('0%{opacity:.62;transform:translate3d(0,6px,0)}'));
  assert.match(route,/animation:forge-open-workspace 520ms/);
  assert.match(route,/prefers-reduced-motion:reduce/);
  assert.equal(read('dist/css/forge-video-route.css'),route);
