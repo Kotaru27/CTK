@@ -1,0 +1,10 @@
+{
+  "name": "The Forge",
+  "short_name": "The Forge",
+  "description": "Import | Recreate | Export",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f8f9f5",
+  "theme_color": "#e8e7e0",
+  "icons": [{"src": "./favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any"}]
+}

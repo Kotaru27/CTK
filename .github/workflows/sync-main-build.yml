@@ -34,7 +34,7 @@ jobs:
           npm test
       - name: Commit the exact files served by GitHub Pages to main
         run: |
-          git add -- index.html dist/
+          git add -- index.html dist/ favicon.svg manifest.json
           if git diff --cached --quiet; then
             echo "Published assets already match source."
           else
