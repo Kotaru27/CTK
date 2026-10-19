@@ -7755,6 +7755,56 @@ body.light-mode .undo-toast {
    transition:none!important;
  }
 }
+
+/* V9 / Text-first usability precision: improve small operational type.
+   No width, media, editor, card-size, grid or scroll-container changes. */
+#view-app .tool-section :is(
+  .label-header,.edition-kicker,.edition-rule-label,.pdf-eyebrow,
+  .pdf-stage-topline,.split-studio-meta,.vs-collection-kicker,
+  .vs-overline,.yt-terminal-caption
+){
+  font-size:12.5px!important;
+  line-height:1.5!important;
+  letter-spacing:.025em!important;
+}
+#view-app #section-logo #logoControls :is(label,.label-header){
+  font-size:12.5px!important;
+}
+#view-app #section-pdf :is(.pdf-format-note,.pdf-local-mark small){
+  font-size:12.5px!important;
+}
+#view-app #section-stills-boards #storyBoardControls .label-header,
+#view-app #stillsTabContentStory #storyProjectTabs > div,
+#view-app #stillsTabContentStory #storyFileList > div{
+  font-size:13px!important;
+  line-height:1.5!important;
+}
+#view-app #section-adlinks #adlinksTabContentGen :is(
+  #alg-input,#alg-folder,#alg-server,#alg-out-ads,#alg-out-story,
+  .adgen-output-card textarea
+){
+  font-size:14px!important;
+  line-height:1.58!important;
+}
+#view-app #section-adlinks #adlinksTabContentGen .adgen-output-card .label-header{
+  font-size:13px!important;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader #adDlTableContainer th{
+  font-size:12px!important;
+  letter-spacing:.025em!important;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader #adDlTableContainer tbody td:nth-child(2){
+  font-size:13.5px!important;
+  line-height:1.5!important;
+}
+#view-app #section-yt-helper :is(#ytUrlInput,.yt-studio-input code){
+  font-size:14px!important;
+}
+/* Visible focus should be authoritative even on subtly styled actions. */
+#view-app .tool-section :is(button,summary,[role="tab"],[role="button"]):focus-visible{
+  outline:2px solid var(--studio-accent,#2d6949)!important;
+  outline-offset:2px!important;
+}
 </style>
 <style id="forge-workflow-interactions-styles">/* THE FORGE / Workflow-specific navigation, hover and Ad Downloader queue behavior.
    Keep this separate from geometry-frozen general workspace refinements. */
@@ -8086,6 +8136,52 @@ body.light-mode .undo-toast {
   outline:2px solid var(--ad-primary,#285a43)!important;
   outline-offset:2px!important;
 }
+
+/* V9 / Clearly labelled collapsed navigation, without expanding the rail.
+   Tooltip motion is an opacity + small damped translation, never a reflow. */
+@media (min-width:761px){
+  #mainSidebar.nav-sidebar.visible.collapsed{
+    overflow:visible!important;
+    isolation:isolate;
+  }
+  #mainSidebar.nav-sidebar.visible.collapsed .nav-item:not(.nav-toggle){
+    position:relative;
+  }
+  #mainSidebar.nav-sidebar.visible.collapsed .nav-item:not(.nav-toggle)::after{
+    content:attr(title);
+    position:absolute;
+    top:50%;
+    left:calc(100% + 12px);
+    width:max-content;
+    max-width:210px;
+    padding:8px 11px;
+    border-radius:7px;
+    background:#1c392a;
+    color:#f7fbf6;
+    font:650 12.5px/1.35 "Plus Jakarta Sans",sans-serif;
+    letter-spacing:0;
+    box-shadow:0 8px 22px rgba(16,37,23,.15);
+    white-space:normal;
+    text-align:left;
+    opacity:0;
+    translate:0 calc(-50% + 3px);
+    pointer-events:none;
+    z-index:90;
+    transition:opacity 150ms ease,translate 230ms cubic-bezier(.2,.72,.22,1);
+  }
+  #mainSidebar.nav-sidebar.visible.collapsed .nav-item:not(.nav-toggle):is(:hover,:focus-visible)::after{
+    opacity:1;
+    translate:0 -50%;
+  }
+  #mainSidebar.nav-sidebar.visible.collapsed .nav-item.active{
+    box-shadow:inset 3px 0 0 #39835b!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  #mainSidebar.nav-sidebar.visible.collapsed .nav-item::after{
+    transition:none!important;
+  }
+}
 </style>
 <style id="forge-whats-new-styles">/* THE FORGE / FIRST MAJOR REBRAND
    A single-purpose launch dialog: disciplined editorial typography,
@@ -8359,7 +8455,8 @@ html:has(.forge-whatsnew:not([hidden])){overflow:hidden;scrollbar-gutter:stable;
   .forge-whatsnew-change h3,
   .forge-whatsnew-change p,
   .forge-whatsnew-never,
-  .forge-whatsnew-enter
+  .forge-whatsnew-enter,
+  .forge-whatsnew-never
 ) {
   font-family:Arial,Helvetica,sans-serif!important;
 }
@@ -8389,21 +8486,32 @@ html:has(.forge-whatsnew:not([hidden])){overflow:hidden;scrollbar-gutter:stable;
   background:#fcfdf9;
   isolation:isolate;
 }
+/* Continue is the primary choice. Permanent opt-out is quietly secondary. */
 #forgeWhatsNew .forge-whatsnew-actions{
-  justify-content:flex-end;
+  justify-content:space-between;
 }
 #forgeWhatsNew #forgeWhatsNewNever{
-  min-height:46px;
-  padding:0 20px;
-  border:1px solid #1c4a34;
-  border-radius:8px;
-  background:#1c4a34;
-  color:#f9fcf7;
+  min-height:44px;
+  padding:0 8px;
+  border:0;
+  border-radius:6px;
+  background:transparent;
+  color:#425b4b;
+  font:650 12.5px/1.4 "Plus Jakarta Sans",sans-serif;
 }
 #forgeWhatsNew #forgeWhatsNewNever:hover{
-  background:#153b2a;
-  border-color:#153b2a;
+  color:#163c28;
+  background:#edf3eb;
 }
+#forgeWhatsNew #forgeWhatsNewContinue{
+  min-height:44px;
+  padding:0 19px;
+}
+@media(max-width:550px){
+  #forgeWhatsNew .forge-whatsnew-actions{gap:8px;}
+  #forgeWhatsNew #forgeWhatsNewNever{font-size:12px;}
+}
+
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
   #forgeWhatsNew.forge-whatsnew:not([hidden]){
     background:rgba(20,36,27,.92)!important;
@@ -8456,7 +8564,8 @@ html:has(.forge-whatsnew:not([hidden])){overflow:hidden;scrollbar-gutter:stable;
     </div></article>
    </div>
    <div class="forge-whatsnew-actions">
-    <button type="button" id="forgeWhatsNewNever" class="forge-whatsnew-enter">Don't show again <span aria-hidden="true">→</span></button>
+    <button type="button" id="forgeWhatsNewNever" class="forge-whatsnew-never">Don't show again</button>
+    <button type="button" id="forgeWhatsNewContinue" class="forge-whatsnew-enter">Continue <span aria-hidden="true">→</span></button>
    </div>
   </div>
  </section>
@@ -9310,7 +9419,7 @@ html:has(.forge-whatsnew:not([hidden])){overflow:hidden;scrollbar-gutter:stable;
 </div>
 <div aria-labelledby="adlinksTabGen" id="adlinksTabContentGen" role="tabpanel">
 <div class="editor-layout adgen-studio">
-<div class="sidebar-panel adgen-studio-input"><div class="adgen-intro"><span class="edition-kicker">LINK ENGINE / 01</span><h2>Build your links.</h2><p>Turn campaign filenames into the exposure and storyboard URLs you need.</p></div><div class="edition-rule-label">02 / DESTINATION</div><div class="adgen-source-controls" id="adlinksGenHeaderControls" style="display: flex; gap: 10px; align-items: center;">
+<div class="sidebar-panel adgen-studio-input"><div class="adgen-intro"><span class="edition-kicker">LINK ENGINE / 01</span><h2>Build your links.</h2><p>Turn campaign filenames into the exposure and storyboard URLs you need.</p></div><div class="edition-rule-label">01 / DESTINATION</div><div class="adgen-source-controls" id="adlinksGenHeaderControls" style="display: flex; gap: 10px; align-items: center;">
 <div style="display: flex; gap: 6px; align-items: center;">
 <span class="label-header" style="margin-bottom: 0;">Server:</span>
 <select class="liquid-input persist-val" id="alg-server" style="height: 32px; padding: 0 10px; width: 130px;">
@@ -9322,7 +9431,7 @@ html:has(.forge-whatsnew:not([hidden])){overflow:hidden;scrollbar-gutter:stable;
 <span class="label-header" style="margin-bottom: 0;">Path:</span>
 <input class="liquid-input persist-val" id="alg-folder" placeholder="Folder/Path" style="height: 32px; width: 200px;"/>
 </div>
-</div><div class="edition-rule-label">01 / INPUT</div>
+</div><div class="edition-rule-label">02 / INPUT</div>
 <div class="glass-panel control-group">
 <span class="label-header" style="
                         display: flex;
@@ -17773,9 +17882,9 @@ const CTKDownloadRenamer = (() => {
   window.ForgeVideoRoute=api;
 })();
 </script>
-<script id="forge-whats-new-js">/* The Forge welcome / persistent modal until an explicit opt-out.
-   Only "Don't show again" dismisses it. Font preparation is bounded
-   and the underlying homepage stays inactive under the blurred scrim. */
+<script id="forge-whats-new-js">/* The Forge welcome / purposeful, dismissible onboarding.
+   Continue closes this visit; Don't show again persists across visits.
+   Font preparation remains bounded to avoid an unstyled popup. */
 (function(){
   'use strict';
   const root=document.getElementById('forgeWhatsNew');
@@ -17783,11 +17892,12 @@ const CTKDownloadRenamer = (() => {
   const dialog=root.querySelector('.forge-whatsnew-dialog');
   const trigger=document.getElementById('forgeWhatsNewTrigger');
   const never=root.querySelector('#forgeWhatsNewNever');
-  if(!dialog||!never)return;
+  const continueBtn=root.querySelector('#forgeWhatsNewContinue');
+  if(!dialog||!never||!continueBtn)return;
 
-  // New version intentionally resets previous temporary dismissals.
-  // A visitor must explicitly choose the present modal's opt-out.
+  // Permanent opt-out is distinct from dismissing once this session.
   const permanentKey='forge_whatsnew_dismissed_2026_v3';
+  const sessionKey='forge_whatsnew_seen_2026_v3';
   let opened=false,preparing=false,previousFocus=null;
   let autoAttempted=false,openSerial=0,fontsReady=null;
   const paintGate=typeof window!=='undefined'?window.__forgePaintGate:null;
@@ -17799,6 +17909,8 @@ const CTKDownloadRenamer = (() => {
     try{localStorage.setItem(key,'1');return;}catch(_){}
     try{sessionStorage.setItem(key,'1');}catch(_){}
   }
+  function markSeen(){try{sessionStorage.setItem(sessionKey,'1');}catch(_){}}
+  function sessionSeen(){try{return sessionStorage.getItem(sessionKey)==='1';}catch(_){return false;}}
   function homeActive(){
     const home=document.getElementById('view-home');
     const app=document.getElementById('view-app');
@@ -17849,7 +17961,7 @@ const CTKDownloadRenamer = (() => {
     // An intentional click cancels the intro and its scheduled auto-open.
     if(!automatic&&document.body.classList.contains('forge-opening'))
       document.getElementById('forgeIntroSkip')?.click();
-    if(!homeActive()||(automatic&&safeGet(permanentKey)))return;
+    if(!homeActive()||(automatic&&(safeGet(permanentKey)||sessionSeen())))return;
     autoAttempted=true;
     preparing=true;
     const token=++openSerial;
@@ -17863,12 +17975,13 @@ const CTKDownloadRenamer = (() => {
       root.hidden=false;
       paintGate?.endWelcome?.();
       trigger?.setAttribute?.('aria-expanded','true');
-      never.focus({preventScroll:true});
+      continueBtn.focus({preventScroll:true});
     });
   }
-  function dismiss(){
+  function dismiss(permanent=false){
     if(!opened)return;
-    safeSet(permanentKey);
+    markSeen();
+    if(permanent)safeSet(permanentKey);
     opened=false;
     root.hidden=true;
     trigger?.setAttribute?.('aria-expanded','false');
@@ -17878,11 +17991,11 @@ const CTKDownloadRenamer = (() => {
     previousFocus=null;
   }
   function queueAutomatic(){
-    // Automated browser audits intentionally suppress onboarding, but an
-    // ordinary visitor sees it on every fresh page until explicit opt-out.
+    // Automated audits may suppress onboarding. Normal visitors see it once
+    // per session, while explicit opt-out also covers future sessions.
     let auditSkip=false;
     try{auditSkip=sessionStorage.getItem('forge_whatsnew_suppress')==='1';}catch(_){}
-    if(autoAttempted||safeGet(permanentKey)||auditSkip||
+    if(autoAttempted||safeGet(permanentKey)||sessionSeen()||auditSkip||
        paintGate?.expired){
       paintGate?.endWelcome?.();
       return;
@@ -17899,9 +18012,8 @@ const CTKDownloadRenamer = (() => {
       getComputedStyle(el).visibility!=='hidden');
   }
   root.addEventListener('keydown',event=>{
-    // Explicit opt-out is the only dismissal path: Escape may not
-    // silently skip the onboarding information.
-    if(event.key==='Escape'){event.preventDefault();return;}
+    // Standard dialog dismissal behaves like Continue, never opt-out.
+    if(event.key==='Escape'){event.preventDefault();dismiss(false);return;}
     if(event.key!=='Tab')return;
     const items=focusables();
     if(!items.length)return;
@@ -17912,7 +18024,11 @@ const CTKDownloadRenamer = (() => {
       event.preventDefault();first.focus();
     }
   });
-  never.addEventListener('click',dismiss);
+  never.addEventListener('click',()=>dismiss(true));
+  continueBtn.addEventListener('click',()=>dismiss(false));
+  root.addEventListener('pointerdown',event=>{
+    if(event.target===root)dismiss(false);
+  });
   if(trigger){
     trigger.hidden=false;
     trigger.setAttribute?.('aria-expanded','false');
