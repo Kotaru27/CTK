@@ -329,8 +329,27 @@
   outline-offset:2px!important;
 }
 
-/* V9 / Clearly labelled collapsed navigation, without expanding the rail.
-   Tooltip motion is an opacity + small damped translation, never a reflow. */
+/* V10 / Instant geometry for navigation; motion only where it costs no
+   workspace reflow. The original 440ms width/min-width/padding animation
+   re-laid every open editor and the sidebar blurred that repainted surface.
+   Keep the existing 64px/224px widths and all click handlers unchanged. */
+#mainSidebar.nav-sidebar.visible{
+  transition:none!important;
+  animation:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+#mainSidebar.nav-sidebar.visible .nav-item-text{
+  transition-property:opacity!important;
+  transition-duration:135ms!important;
+  transition-timing-function:cubic-bezier(.2,.72,.25,1)!important;
+}
+#mainSidebar.nav-sidebar.visible .nav-item:not(.nav-toggle){
+  transition-property:background-color,color,border-color!important;
+  transition-duration:105ms!important;
+  transition-timing-function:cubic-bezier(.22,.72,.25,1)!important;
+}
+/* V9 / Tool names stay discoverable when the rail is collapsed. */
 @media (min-width:761px){
   #mainSidebar.nav-sidebar.visible.collapsed{
     overflow:visible!important;
@@ -356,20 +375,21 @@
     white-space:normal;
     text-align:left;
     opacity:0;
-    translate:0 calc(-50% + 3px);
+    translate:0 -50%;
     pointer-events:none;
     z-index:90;
-    transition:opacity 150ms ease,translate 230ms cubic-bezier(.2,.72,.22,1);
+    transition:opacity 110ms cubic-bezier(.22,.72,.25,1);
   }
   #mainSidebar.nav-sidebar.visible.collapsed .nav-item:not(.nav-toggle):is(:hover,:focus-visible)::after{
     opacity:1;
-    translate:0 -50%;
   }
   #mainSidebar.nav-sidebar.visible.collapsed .nav-item.active{
     box-shadow:inset 3px 0 0 #39835b!important;
   }
 }
 @media(prefers-reduced-motion:reduce){
+  #mainSidebar.nav-sidebar.visible .nav-item-text,
+  #mainSidebar.nav-sidebar.visible .nav-item,
   #mainSidebar.nav-sidebar.visible.collapsed .nav-item::after{
     transition:none!important;
   }

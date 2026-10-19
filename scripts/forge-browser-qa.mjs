@@ -196,6 +196,58 @@ try {
  check(await reducedPage.locator('#forgeIntro').count()===0,'Reduced motion should bypass intro');
  await motion.close();
 
+ // Sidebar latency guard: expanding/collapsing must not animate workspace
+ // width (the previous 440ms layout animation looked slow and repainted QHD).
+ // Check immediate geometry after repeated actual toggle clicks in Chromium.
+ const railContext=await browser.newContext({viewport:{width:1920,height:1080},reducedMotion:'no-preference'});
+ await railContext.addInitScript(()=>{
+   sessionStorage.setItem('forge_intro_suppress','1');
+   sessionStorage.setItem('forge_whatsnew_suppress','1');
+ });
+ const railPage=await railContext.newPage();
+ await railPage.goto(base,{waitUntil:'domcontentloaded',timeout:60000});
+ await railPage.locator('button.home-card.tool-logo').click();
+ await railPage.locator('#mainSidebar.visible').waitFor({state:'visible',timeout:4000});
+ await railPage.waitForFunction(()=>!document.documentElement.classList.contains('forge-route-running'));
+ const railProbe=await railPage.locator('#mainSidebar').evaluate(nav=>{
+   const toggle=nav.querySelector('.nav-toggle');
+   const state=()=>{
+     const style=getComputedStyle(nav);
+     return {
+       collapsed:nav.classList.contains('collapsed'),
+       width:Math.round(nav.getBoundingClientRect().width),
+       transition:style.transitionProperty,
+       animation:style.animationName,
+       blur:style.backdropFilter||style.webkitBackdropFilter,
+       textTransition:getComputedStyle(nav.querySelector('#nav-logo .nav-item-text')).transitionProperty
+     };
+   };
+   const turns=[];
+   for(let i=0;i<10;i++){toggle.click();turns.push(state());}
+   return {turns,final:state()};
+ });
+ const expandedWidths=railProbe.turns.filter(x=>!x.collapsed).map(x=>x.width);
+ const collapsedWidths=railProbe.turns.filter(x=>x.collapsed).map(x=>x.width);
+ check(railProbe.turns.length===10 &&
+   railProbe.turns.every((q,i)=>q.collapsed===Boolean(i%2===1)) &&
+   expandedWidths.every(x=>Math.abs(x-expandedWidths[0])<=1) &&
+   collapsedWidths.every(x=>Math.abs(x-collapsedWidths[0])<=1) &&
+   expandedWidths[0]-collapsedWidths[0]>=100,
+   'Sidebar width failed to settle in the same task after repeated toggles: '+JSON.stringify(railProbe));
+ check(railProbe.final.transition==='none'&&railProbe.final.animation==='none',
+   'Sidebar still runs a geometry/entrance animation: '+JSON.stringify(railProbe.final));
+ check(railProbe.final.blur==='none',
+   'Sidebar is still backdrop-blurring the changing workspace');
+ check(railProbe.final.textTransition==='opacity',
+   'Sidebar labels still animate width, causing layout reflow');
+ // All real destinations remain operable after rapid sidebar changes.
+ await railPage.locator('#nav-pdf-image').click();
+ await railPage.waitForFunction(()=>document.getElementById('nav-pdf-image')?.classList.contains('active'),
+   null,{timeout:5000});
+ check(await railPage.locator('#nav-pdf-image').evaluate(el=>el.classList.contains('active')),
+   'Sidebar lost an actual navigation click after repeated toggles');
+ await railContext.close();
+
  // QHD desktop and 125%-scaled equivalent: keep light default and original
  // navigation/card geometry, with no unintended scroll or full-width banner.
  const qhd=[];

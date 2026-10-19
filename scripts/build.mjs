@@ -168,7 +168,7 @@ function forgeBrand(html,standaloneRelease){
   const unifiedStyle=standaloneRelease?'<style id="forge-unified-workspaces-styles">'+forgeUnifiedCss+'</style>\n':
     '<link rel="stylesheet" href="./dist/css/forge-unified-workspaces.css?v=forge-launch-20261019-usability-v9">\n';
   const workflowStyle=standaloneRelease?'<style id="forge-workflow-interactions-styles">'+forgeWorkflowCss+'</style>\n':
-    '<link rel="stylesheet" href="./dist/css/forge-workflow-interactions.css?v=forge-launch-20261019-usability-v9">\n';
+    '<link rel="stylesheet" href="./dist/css/forge-workflow-interactions.css?v=forge-sidebar-20261019-v10">\n';
   const welcomeStyle=standaloneRelease?'<style id="forge-whats-new-styles">'+forgeWhatsNewCss+'</style>\n':
     '<link rel="stylesheet" href="./dist/css/forge-whats-new.css?v=forge-launch-20261019-usability-v9">\n';
   html=html.replace('</head>',fontLink+brandStyle+routeStyle+adaptiveStyle+workspaceFinishStyle+specimenStyle+unifiedStyle+workflowStyle+welcomeStyle+'</head>');
