@@ -7,7 +7,7 @@ const a=rd('source/baseline.html'), b=rd('index.html');
 const ids=s=>[...s.replace(/<script\b[^>]*>[\s\S]*?<\/script>/g,'').matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]).sort();
 const getRoutes=s=>[...s.matchAll(/<button\b[^>]*class="[^"]*home-card[^>]*"[^>]*onclick="([^"]+)"/g)].map(m=>m[1]);
 const beforeIds=ids(a),afterIds=ids(b).filter(id=>!["forgeIntro","forgeHeroName","forgeIntroType","forgeIntroSkip","forgeIntroWordmark","forgeIntroGlyphs",
-  "forgeWhatsNew","forgeWhatsNewTitle","forgeWhatsNewDescription","forgeWhatsNewClose","forgeWhatsNewNever","forgeWhatsNewEnter","forgeWhatsNewTrigger","forge-first-paint-css"].includes(id));
+  "forgeWhatsNew","forgeWhatsNewTitle","forgeWhatsNewDescription","forgeWhatsNewClose","forgeWhatsNewNever","forgeWhatsNewContinue","forgeWhatsNewEnter","forgeWhatsNewTrigger","forge-first-paint-css"].includes(id));
 if(JSON.stringify(beforeIds)!==JSON.stringify(afterIds))throw Error('DOM element IDs changed');
 const beforeRoutes=getRoutes(a),afterRoutes=getRoutes(b);
 if(beforeRoutes.length!==8||JSON.stringify(beforeRoutes)!==JSON.stringify(afterRoutes))throw Error('Homepage routes changed');
@@ -86,7 +86,13 @@ const restoredNames=restored
   .replace('<h2 class="home-card-title">Logo Resizer</h2>','<h2 class="home-card-title">Logo Workspace</h2>')
   .replace('title="Ad Downloader"','title="Ad Link Downloader"')
   .replace('<span class="nav-item-text">Ad Downloader</span>','<span class="nav-item-text">Ad Link Downloader</span>')
-  .replace('<span style="flex: 1">Ad Downloader</span>','<span style="flex: 1">Ad Link Downloader</span>');
+  .replace('<span style="flex: 1">Ad Downloader</span>','<span style="flex: 1">Ad Link Downloader</span>')
+  // V9 changes only the visible sequence numbers; control order, handlers,
+  // values and the original underlying tool source remain byte-identical.
+  .replace('<div class="edition-rule-label">01 / DESTINATION</div>',
+           '<div class="edition-rule-label">02 / DESTINATION</div>')
+  .replace('<div class="edition-rule-label">02 / INPUT</div>',
+           '<div class="edition-rule-label">01 / INPUT</div>');
 if(restoredNames!==a)throw Error('Standalone changes source HTML/CSS or scripts outside the intentional presentation/naming layer');
 if(!standalone.includes(`<script>${newMain}</script>`))throw Error('Standalone does not contain current engine');
 if(!b.includes('./dist/css/ad-downloader-v2.css')||!b.includes('./dist/js/ad-downloader-v2.js'))throw Error('Ad Downloader experience layer missing');
