@@ -158,7 +158,7 @@ function forgeBrand(html,standaloneRelease){
   const brandStyle=standaloneRelease?'<style id="forge-brand-styles">'+forgeBrandCss+'</style>\n':
     '<link rel="stylesheet" href="./dist/css/forge-brand.css?v=forge-launch-20261019-usability-v9">\n';
   const routeStyle=standaloneRelease?'<style id="forge-video-route-styles">'+forgeVideoRouteCss+'</style>\n':
-    '<link rel="stylesheet" href="./dist/css/forge-video-route.css">\n';
+    '<link rel="stylesheet" href="./dist/css/forge-video-route.css?v=forge-route-20261019-fastnav-v11">\n';
   const adaptiveStyle=standaloneRelease?'<style id="forge-adaptive-styles">'+forgeAdaptiveCss+'</style>\n':
     '<link rel="stylesheet" href="./dist/css/forge-adaptive-desktop.css">\n';
   const workspaceFinishStyle=standaloneRelease?'<style id="forge-workspace-finish-styles">'+forgeWorkspaceFinishCss+'</style>\n':

@@ -95,3 +95,17 @@ test('internal route and mode changes animate only presentation, never core logi
  assert.match(css,/forge-return-home 440ms/);
  assert.doesNotMatch(css, /from\{opacity:\.50\}/);
 });
+
+test('sidebar destinations settle promptly while tool navigation stays interruption-safe',()=>{
+ assert.match(css,/forge-enter-tool 285ms/);
+ assert.doesNotMatch(css,/forge-enter-tool 450ms/);
+ assert.match(css,/0%\{opacity:\.56;transform:translate3d\(0,5px,0\)\}/);
+ assert.match(css,/100%\{opacity:1;transform:translate3d\(0,0,0\)\}/);
+ assert.doesNotMatch(css,/view-transition-name:forge-shell-nav/);
+ assert.doesNotMatch(css,/view-transition-name:forge-shell-header/);
+ assert.match(css,/\.nav-sidebar\.visible,\s*html\.forge-route-running\[data-forge-route-travel="tool"\] \.header\{\s*view-transition-name:none!important;/);
+ assert.match(index,/forge-video-route\.css\?v=forge-route-20261019-fastnav-v11/);
+ const built=read('../dist/index.html');
+ assert.match(built,/forge-video-route\.css\?v=forge-route-20261019-fastnav-v11/);
+ assert.match(css,/prefers-reduced-motion:reduce/);
+});

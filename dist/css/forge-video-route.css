@@ -190,15 +190,16 @@ html.forge-route-running::view-transition-group(forge-tool-surface){
 html.forge-route-running::view-transition-old(forge-tool-surface){
   animation:none!important;opacity:1!important;
 }
+/* Sidebar destinations should be readable as soon as they are selected.
+   Travel settles critically and monotonically, not as a 450ms fade-in. */
 html.forge-route-running::view-transition-new(forge-tool-surface){
-  animation:forge-enter-tool 450ms cubic-bezier(.18,.78,.22,1) both!important;
+  animation:forge-enter-tool 285ms cubic-bezier(.2,.78,.24,1) both!important;
 }
 @keyframes forge-enter-tool{
-  0%{opacity:.16;transform:translate3d(0,10px,0)}
-  14%{opacity:.48;transform:translate3d(0,7px,0)}
-  32%{opacity:.80;transform:translate3d(0,3.7px,0)}
-  54%{opacity:.96;transform:translate3d(0,1.3px,0)}
-  75%{opacity:1;transform:translate3d(0,.23px,0)}
+  0%{opacity:.56;transform:translate3d(0,5px,0)}
+  20%{opacity:.82;transform:translate3d(0,2.7px,0)}
+  45%{opacity:.97;transform:translate3d(0,.75px,0)}
+  72%{opacity:1;transform:translate3d(0,.1px,0)}
   100%{opacity:1;transform:translate3d(0,0,0)}
 }
 @media(prefers-reduced-motion:reduce){
@@ -207,25 +208,13 @@ html.forge-route-running::view-transition-new(forge-tool-surface){
     animation-duration:.01ms!important;
   }
 }
-/* In an internal workspace switch the navigation chrome is one stable,
-   unanimated visual layer. Only the actual tool content crossfades; the
-   sidebar and global header don't blink at 60 Hz when the route changes. */
-html.forge-route-running[data-forge-route-travel="tool"] .nav-sidebar.visible{
-  view-transition-name:forge-shell-nav;
-}
+/* Keep sidebar and header live during tool-to-tool navigation.
+   Redundant old/new shell snapshots delay selected icon feedback and
+   rasterize extra layers at QHD. Only the changing tool is captured.
+   Header and sidebar already have stationary transforms below. */
+html.forge-route-running[data-forge-route-travel="tool"] .nav-sidebar.visible,
 html.forge-route-running[data-forge-route-travel="tool"] .header{
-  view-transition-name:forge-shell-header;
-}
-html.forge-route-running::view-transition-old(forge-shell-nav),
-html.forge-route-running::view-transition-new(forge-shell-nav),
-html.forge-route-running::view-transition-old(forge-shell-header),
-html.forge-route-running::view-transition-new(forge-shell-header){
-  animation:none!important;
-  opacity:1!important;
-}
-html.forge-route-running::view-transition-group(forge-shell-nav),
-html.forge-route-running::view-transition-group(forge-shell-header){
-  animation-duration:0ms!important;
+  view-transition-name:none!important;
 }
 /* Storyboard internal modes: a persistent 2px marker follows the selected
    button's *real* bounds. No per-button scaling or moving the workspace. */
