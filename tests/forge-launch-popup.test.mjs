@@ -9,7 +9,7 @@ function storage(seed={}){
  const map=new Map(Object.entries(seed));
  return {getItem:k=>map.get(k)||null,setItem:(k,v)=>map.set(k,v)};
 }
-function fixture({local=storage(),opening=false,active=false,font='loaded',introFinished=true}={}){
+function fixture({local=storage(),session=storage(),opening=false,active=false,font='loaded',introFinished=true}={}){
  const timers=[],listeners=new Map(),rootListeners=new Map();
  const listen=(bucket,type,fn)=>{
   if(!bucket.has(type))bucket.set(type,[]);
@@ -23,14 +23,15 @@ function fixture({local=storage(),opening=false,active=false,font='loaded',intro
    addEventListener:(t,f)=>listen(events,t,f),
    click(){for(const fn of events.get('click')||[])fn({target:this});}};
  };
- const trigger=button('trigger'),never=button('never');
+ const trigger=button('trigger'),never=button('never'),continueBtn=button('continue');
  let skips=0;
  const root={hidden:true,classList:classes(),
   addEventListener:(t,f)=>listen(rootListeners,t,f),
   querySelector:q=>q==='.forge-whatsnew-dialog'?dialog:
-   q==='#forgeWhatsNewNever'?never:null,
+   q==='#forgeWhatsNewNever'?never:
+   q==='#forgeWhatsNewContinue'?continueBtn:null,
   fire(type,event){for(const fn of rootListeners.get(type)||[])fn(event);}};
- const dialog={querySelectorAll:()=>[never]};
+ const dialog={querySelectorAll:()=>[continueBtn,never]};
  const home={classList:{contains:()=>false}},
   app={classList:{contains:k=>k==='active'&&active}};
  const doc={visibilityState:'visible',activeElement:null,
@@ -45,38 +46,53 @@ function fixture({local=storage(),opening=false,active=false,font='loaded',intro
   addEventListener:(t,f)=>listen(listeners,t,f),
   dispatch(t){for(const fn of listeners.get(t)||[])fn();}};
  const schedule=(fn,ms)=>{const t={fn,ms,cleared:false};timers.push(t);return t};
- const context={document:doc,localStorage:local,sessionStorage:storage(),
+ const context={document:doc,localStorage:local,sessionStorage:session,
   Promise,setTimeout:schedule,clearTimeout:t=>{if(t)t.cleared=true},
   getComputedStyle:()=>({visibility:'visible'})};
  vm.runInNewContext(js,context,{filename:'forge-whats-new.js'});
  const fire=ms=>{for(const t of timers.filter(t=>t.ms===ms&&!t.cleared)){t.cleared=true;t.fn()}};
- return {doc,root,trigger,never,local,timers,fire,get skips(){return skips}};
+ return {doc,root,trigger,never,continueBtn,local,session,timers,fire,get skips(){return skips}};
 }
 const flush=async()=>{for(let i=0;i<14;i++)await Promise.resolve()};
-test('welcome remains visible through Escape and outside click',async()=>{
+test('Continue and Escape dismiss without permanently opting out',async()=>{
  const h=fixture();
  await flush();
  assert.equal(h.root.hidden,false);
+ assert.equal(h.doc.activeElement,h.continueBtn);
  let prevented=false;
  h.root.fire('keydown',{key:'Escape',preventDefault(){prevented=true}});
  assert.equal(prevented,true);
+ assert.equal(h.root.hidden,true);
+ assert.equal(h.local.getItem('forge_whatsnew_dismissed_2026_v3'),null);
+ assert.equal(h.session.getItem('forge_whatsnew_seen_2026_v3'),'1');
+ const sameSession=fixture({local:h.local,session:h.session});await flush();
+ assert.equal(sameSession.root.hidden,true,'Continue suppresses repeat during session');
+ const nextSession=fixture({local:h.local});await flush();
+ assert.equal(nextSession.root.hidden,false,'Continue must not permanently suppress launch');
+ nextSession.continueBtn.click();
+ assert.equal(nextSession.root.hidden,true);
+ assert.equal(nextSession.local.getItem('forge_whatsnew_dismissed_2026_v3'),null);
+});
+test('clicking outside the modal behaves like Continue',async()=>{
+ const h=fixture();await flush();
  assert.equal(h.root.hidden,false);
  h.root.fire('pointerdown',{target:h.root});
- assert.equal(h.root.hidden,false);
- h.never.click();
  assert.equal(h.root.hidden,true);
- assert.equal(h.local.getItem('forge_whatsnew_dismissed_2026_v3'),'1');
+ assert.equal(h.local.getItem('forge_whatsnew_dismissed_2026_v3'),null);
 });
-test('only Dont show again suppresses next launch, manual replay remains',async()=>{
+test('Dont show again alone suppresses future sessions; manual replay remains',async()=>{
  const local=storage({'forge_whatsnew_dismissed_2026_v1':'1'});
  const first=fixture({local});await flush();
- assert.equal(first.root.hidden,false,'Old dismissal must not hide new announcement');
+ assert.equal(first.root.hidden,false,'Old dismissal does not hide new announcement');
  first.never.click();
- const again=fixture({local});
- await flush();
- assert.equal(again.root.hidden,true,'New opt-out prevents future automatic popup');
- again.trigger.click();await flush();
- assert.equal(again.root.hidden,false,'Manual What’s New always works');
+ assert.equal(first.root.hidden,true);
+ assert.equal(local.getItem('forge_whatsnew_dismissed_2026_v3'),'1');
+ const another=fixture({local});await flush();
+ assert.equal(another.root.hidden,true,'Permanent opt-out persists across visits');
+ another.trigger.click();await flush();
+ assert.equal(another.root.hidden,false,'Manual What’s New can still open');
+ another.continueBtn.click();
+ assert.equal(another.root.hidden,true);
 });
 test('popup waits for end of intro and never interrupts restored tool',async()=>{
  const pending=fixture({opening:true,introFinished:false});
@@ -104,8 +120,9 @@ test('font stalls preserve hidden dialog until fallback is stable',async()=>{
   'forge-fallback-serif','forge-fallback-mono'])
    assert.equal(h.root.classList.contains(cls),true);
 });
-test('build contains exactly one welcome dismissal action and real backdrop',()=>{
+test('build exposes separate Continue and permanent opt-out actions with a real backdrop',()=>{
  assert.match(build,/forgeWhatsNewNever/);
+ assert.match(build,/forgeWhatsNewContinue/);
  assert.equal(build.includes('forgeWhatsNewEnter'),false);
  assert.equal(build.includes('forgeWhatsNewClose'),false);
  assert.match(css,/PERSISTENT WELCOME/);

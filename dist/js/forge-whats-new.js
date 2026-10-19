@@ -1,6 +1,6 @@
-/* The Forge welcome / persistent modal until an explicit opt-out.
-   Only "Don't show again" dismisses it. Font preparation is bounded
-   and the underlying homepage stays inactive under the blurred scrim. */
+/* The Forge welcome / purposeful, dismissible onboarding.
+   Continue closes this visit; Don't show again persists across visits.
+   Font preparation remains bounded to avoid an unstyled popup. */
 (function(){
   'use strict';
   const root=document.getElementById('forgeWhatsNew');
@@ -8,11 +8,12 @@
   const dialog=root.querySelector('.forge-whatsnew-dialog');
   const trigger=document.getElementById('forgeWhatsNewTrigger');
   const never=root.querySelector('#forgeWhatsNewNever');
-  if(!dialog||!never)return;
+  const continueBtn=root.querySelector('#forgeWhatsNewContinue');
+  if(!dialog||!never||!continueBtn)return;
 
-  // New version intentionally resets previous temporary dismissals.
-  // A visitor must explicitly choose the present modal's opt-out.
+  // Permanent opt-out is distinct from dismissing once this session.
   const permanentKey='forge_whatsnew_dismissed_2026_v3';
+  const sessionKey='forge_whatsnew_seen_2026_v3';
   let opened=false,preparing=false,previousFocus=null;
   let autoAttempted=false,openSerial=0,fontsReady=null;
   const paintGate=typeof window!=='undefined'?window.__forgePaintGate:null;
@@ -24,6 +25,8 @@
     try{localStorage.setItem(key,'1');return;}catch(_){}
     try{sessionStorage.setItem(key,'1');}catch(_){}
   }
+  function markSeen(){try{sessionStorage.setItem(sessionKey,'1');}catch(_){}}
+  function sessionSeen(){try{return sessionStorage.getItem(sessionKey)==='1';}catch(_){return false;}}
   function homeActive(){
     const home=document.getElementById('view-home');
     const app=document.getElementById('view-app');
@@ -74,7 +77,7 @@
     // An intentional click cancels the intro and its scheduled auto-open.
     if(!automatic&&document.body.classList.contains('forge-opening'))
       document.getElementById('forgeIntroSkip')?.click();
-    if(!homeActive()||(automatic&&safeGet(permanentKey)))return;
+    if(!homeActive()||(automatic&&(safeGet(permanentKey)||sessionSeen())))return;
     autoAttempted=true;
     preparing=true;
     const token=++openSerial;
@@ -88,12 +91,13 @@
       root.hidden=false;
       paintGate?.endWelcome?.();
       trigger?.setAttribute?.('aria-expanded','true');
-      never.focus({preventScroll:true});
+      continueBtn.focus({preventScroll:true});
     });
   }
-  function dismiss(){
+  function dismiss(permanent=false){
     if(!opened)return;
-    safeSet(permanentKey);
+    markSeen();
+    if(permanent)safeSet(permanentKey);
     opened=false;
     root.hidden=true;
     trigger?.setAttribute?.('aria-expanded','false');
@@ -103,11 +107,11 @@
     previousFocus=null;
   }
   function queueAutomatic(){
-    // Automated browser audits intentionally suppress onboarding, but an
-    // ordinary visitor sees it on every fresh page until explicit opt-out.
+    // Automated audits may suppress onboarding. Normal visitors see it once
+    // per session, while explicit opt-out also covers future sessions.
     let auditSkip=false;
     try{auditSkip=sessionStorage.getItem('forge_whatsnew_suppress')==='1';}catch(_){}
-    if(autoAttempted||safeGet(permanentKey)||auditSkip||
+    if(autoAttempted||safeGet(permanentKey)||sessionSeen()||auditSkip||
        paintGate?.expired){
       paintGate?.endWelcome?.();
       return;
@@ -124,9 +128,8 @@
       getComputedStyle(el).visibility!=='hidden');
   }
   root.addEventListener('keydown',event=>{
-    // Explicit opt-out is the only dismissal path: Escape may not
-    // silently skip the onboarding information.
-    if(event.key==='Escape'){event.preventDefault();return;}
+    // Standard dialog dismissal behaves like Continue, never opt-out.
+    if(event.key==='Escape'){event.preventDefault();dismiss(false);return;}
     if(event.key!=='Tab')return;
     const items=focusables();
     if(!items.length)return;
@@ -137,7 +140,11 @@
       event.preventDefault();first.focus();
     }
   });
-  never.addEventListener('click',dismiss);
+  never.addEventListener('click',()=>dismiss(true));
+  continueBtn.addEventListener('click',()=>dismiss(false));
+  root.addEventListener('pointerdown',event=>{
+    if(event.target===root)dismiss(false);
+  });
   if(trigger){
     trigger.hidden=false;
     trigger.setAttribute?.('aria-expanded','false');

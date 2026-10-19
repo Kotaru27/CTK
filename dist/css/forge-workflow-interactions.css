@@ -328,3 +328,49 @@
   outline:2px solid var(--ad-primary,#285a43)!important;
   outline-offset:2px!important;
 }
+
+/* V9 / Clearly labelled collapsed navigation, without expanding the rail.
+   Tooltip motion is an opacity + small damped translation, never a reflow. */
+@media (min-width:761px){
+  #mainSidebar.nav-sidebar.visible.collapsed{
+    overflow:visible!important;
+    isolation:isolate;
+  }
+  #mainSidebar.nav-sidebar.visible.collapsed .nav-item:not(.nav-toggle){
+    position:relative;
+  }
+  #mainSidebar.nav-sidebar.visible.collapsed .nav-item:not(.nav-toggle)::after{
+    content:attr(title);
+    position:absolute;
+    top:50%;
+    left:calc(100% + 12px);
+    width:max-content;
+    max-width:210px;
+    padding:8px 11px;
+    border-radius:7px;
+    background:#1c392a;
+    color:#f7fbf6;
+    font:650 12.5px/1.35 "Plus Jakarta Sans",sans-serif;
+    letter-spacing:0;
+    box-shadow:0 8px 22px rgba(16,37,23,.15);
+    white-space:normal;
+    text-align:left;
+    opacity:0;
+    translate:0 calc(-50% + 3px);
+    pointer-events:none;
+    z-index:90;
+    transition:opacity 150ms ease,translate 230ms cubic-bezier(.2,.72,.22,1);
+  }
+  #mainSidebar.nav-sidebar.visible.collapsed .nav-item:not(.nav-toggle):is(:hover,:focus-visible)::after{
+    opacity:1;
+    translate:0 -50%;
+  }
+  #mainSidebar.nav-sidebar.visible.collapsed .nav-item.active{
+    box-shadow:inset 3px 0 0 #39835b!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  #mainSidebar.nav-sidebar.visible.collapsed .nav-item::after{
+    transition:none!important;
+  }
+}

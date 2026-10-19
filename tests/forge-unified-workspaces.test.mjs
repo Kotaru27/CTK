@@ -6,8 +6,8 @@ const css=read('src/css/experience/forge-unified-workspaces.css');
 
 test('unified workspace CSS is identical in modular Pages and standalone releases',()=>{
  assert.equal(read('dist/css/forge-unified-workspaces.css'),css);
- assert.ok(read('index.html').includes('href="./dist/css/forge-unified-workspaces.css"'));
- assert.ok(read('dist/index.html').includes('href="./css/forge-unified-workspaces.css"'));
+ assert.match(read('index.html'),/href="\.\/dist\/css\/forge-unified-workspaces\.css(?:\?v=[^"]+)?"/);
+ assert.match(read('dist/index.html'),/href="\.\/css\/forge-unified-workspaces\.css(?:\?v=[^"]+)?"/);
  assert.ok(read('dist/creative-tools-standalone.html').includes('<style id="forge-unified-workspaces-styles">'+css+'</style>'));
  assert.ok(read('scripts/build.mjs').includes("save('dist/css/forge-unified-workspaces.css',forgeUnifiedCss)"));
 });

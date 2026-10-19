@@ -743,3 +743,53 @@ body.light-mode .undo-toast {
    transition:none!important;
  }
 }
+
+/* V9 / Text-first usability precision: improve small operational type.
+   No width, media, editor, card-size, grid or scroll-container changes. */
+#view-app .tool-section :is(
+  .label-header,.edition-kicker,.edition-rule-label,.pdf-eyebrow,
+  .pdf-stage-topline,.split-studio-meta,.vs-collection-kicker,
+  .vs-overline,.yt-terminal-caption
+){
+  font-size:12.5px!important;
+  line-height:1.5!important;
+  letter-spacing:.025em!important;
+}
+#view-app #section-logo #logoControls :is(label,.label-header){
+  font-size:12.5px!important;
+}
+#view-app #section-pdf :is(.pdf-format-note,.pdf-local-mark small){
+  font-size:12.5px!important;
+}
+#view-app #section-stills-boards #storyBoardControls .label-header,
+#view-app #stillsTabContentStory #storyProjectTabs > div,
+#view-app #stillsTabContentStory #storyFileList > div{
+  font-size:13px!important;
+  line-height:1.5!important;
+}
+#view-app #section-adlinks #adlinksTabContentGen :is(
+  #alg-input,#alg-folder,#alg-server,#alg-out-ads,#alg-out-story,
+  .adgen-output-card textarea
+){
+  font-size:14px!important;
+  line-height:1.58!important;
+}
+#view-app #section-adlinks #adlinksTabContentGen .adgen-output-card .label-header{
+  font-size:13px!important;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader #adDlTableContainer th{
+  font-size:12px!important;
+  letter-spacing:.025em!important;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader #adDlTableContainer tbody td:nth-child(2){
+  font-size:13.5px!important;
+  line-height:1.5!important;
+}
+#view-app #section-yt-helper :is(#ytUrlInput,.yt-studio-input code){
+  font-size:14px!important;
+}
+/* Visible focus should be authoritative even on subtly styled actions. */
+#view-app .tool-section :is(button,summary,[role="tab"],[role="button"]):focus-visible{
+  outline:2px solid var(--studio-accent,#2d6949)!important;
+  outline-offset:2px!important;
+}
