@@ -17506,7 +17506,7 @@ const CTKDownloadRenamer = (() => {
   const body=document.body;
   const gate=window.__forgePaintGate;
   const caret=mark?.querySelector('.forge-intro-caret');
-  const stepParts=Array.from(intro?.querySelectorAll('.forge-intro-step-part')||[]);
+  const stepParts=Array.from(intro?.querySelectorAll?.('.forge-intro-step-part')||[]);
   const timers=new Set();
   const kineticGlyphs=new Set();
   let complete=false,observer=null,started=false;
