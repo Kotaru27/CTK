@@ -106,8 +106,8 @@ const forgeWhatsNew=[
   '    </div></article>',
   '   </div>',
   '   <div class="forge-whatsnew-actions">',
-  '    <button type="button" id="forgeWhatsNewNever" class="forge-whatsnew-enter">Don\'t show again <span aria-hidden="true">→</span></button>',
-
+  '    <button type="button" id="forgeWhatsNewNever" class="forge-whatsnew-never">Don\'t show again</button>',
+  '    <button type="button" id="forgeWhatsNewContinue" class="forge-whatsnew-enter">Continue <span aria-hidden="true">→</span></button>',
   '   </div>',
   '  </div>',
   ' </section>',
@@ -124,6 +124,17 @@ function forgeBrand(html,standaloneRelease){
   const end=html.indexOf('<div class="home-grid combined-home-grid" id="homeContent">',start);
   if(start<0||end<0)throw Error('Forge home injection anchors not found: refusing to modify tool cards');
   html=html.slice(0,start)+forgeHero+'\n'+html.slice(end);
+  // Correct the visible numbered workflow without changing control order
+  // or changing the processing code (destination comes before input).
+  for(const [before,after] of [
+    ['<div class="edition-rule-label">02 / DESTINATION</div>',
+     '<div class="edition-rule-label">01 / DESTINATION</div>'],
+    ['<div class="edition-rule-label">01 / INPUT</div>',
+     '<div class="edition-rule-label">02 / INPUT</div>']
+  ]){
+    if(!html.includes(before))throw Error('Link Gen step label missing: '+before);
+    html=html.replace(before,after);
+  }
   // Two strictly textual naming alignments. Keep card artwork, structure,
   // navigation handlers, tool logic and all eight button routes unchanged.
   for(const [before,after] of [
@@ -145,7 +156,7 @@ function forgeBrand(html,standaloneRelease){
   const fontLink='<link rel="preconnect" href="https://api.fontshare.com" crossorigin="anonymous">\n'+
     '<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=kola@400&amp;display=swap">\n';
   const brandStyle=standaloneRelease?'<style id="forge-brand-styles">'+forgeBrandCss+'</style>\n':
-    '<link rel="stylesheet" href="./dist/css/forge-brand.css?v=forge-launch-20261018-kinetic-v8">\n';
+    '<link rel="stylesheet" href="./dist/css/forge-brand.css?v=forge-launch-20261019-usability-v9">\n';
   const routeStyle=standaloneRelease?'<style id="forge-video-route-styles">'+forgeVideoRouteCss+'</style>\n':
     '<link rel="stylesheet" href="./dist/css/forge-video-route.css">\n';
   const adaptiveStyle=standaloneRelease?'<style id="forge-adaptive-styles">'+forgeAdaptiveCss+'</style>\n':
@@ -155,20 +166,20 @@ function forgeBrand(html,standaloneRelease){
   const specimenStyle=standaloneRelease?'<style id="forge-tool-specimens-styles">'+forgeSpecimensCss+'</style>\n':
     '<link rel="stylesheet" href="./dist/css/forge-tool-specimens.css">\n';
   const unifiedStyle=standaloneRelease?'<style id="forge-unified-workspaces-styles">'+forgeUnifiedCss+'</style>\n':
-    '<link rel="stylesheet" href="./dist/css/forge-unified-workspaces.css">\n';
+    '<link rel="stylesheet" href="./dist/css/forge-unified-workspaces.css?v=forge-launch-20261019-usability-v9">\n';
   const workflowStyle=standaloneRelease?'<style id="forge-workflow-interactions-styles">'+forgeWorkflowCss+'</style>\n':
-    '<link rel="stylesheet" href="./dist/css/forge-workflow-interactions.css">\n';
+    '<link rel="stylesheet" href="./dist/css/forge-workflow-interactions.css?v=forge-launch-20261019-usability-v9">\n';
   const welcomeStyle=standaloneRelease?'<style id="forge-whats-new-styles">'+forgeWhatsNewCss+'</style>\n':
-    '<link rel="stylesheet" href="./dist/css/forge-whats-new.css?v=forge-launch-20261018-kinetic-v8">\n';
+    '<link rel="stylesheet" href="./dist/css/forge-whats-new.css?v=forge-launch-20261019-usability-v9">\n';
   html=html.replace('</head>',fontLink+brandStyle+routeStyle+adaptiveStyle+workspaceFinishStyle+specimenStyle+unifiedStyle+workflowStyle+welcomeStyle+'</head>');
   // Light-only presentation: do not read an old dark preference on first paint.
   html=html.replace('<body>','<body class="light-mode">\n'+forgeIntro+'\n'+forgeWhatsNew+'\n');
   const brandScript=standaloneRelease?'<script id="forge-brand-intro-js">'+forgeBrandJs+'</script>':
-    '<script id="forge-brand-intro-js" src="./dist/js/forge-brand.js?v=forge-launch-20261018-kinetic-v8"></script>';
+    '<script id="forge-brand-intro-js" src="./dist/js/forge-brand.js?v=forge-launch-20261019-usability-v9"></script>';
   const routeScript=standaloneRelease?'<script id="forge-video-route-js">'+forgeVideoRouteJs+'</script>':
     '<script id="forge-video-route-js" src="./dist/js/forge-video-route.js"></script>';
   const welcomeScript=standaloneRelease?'<script id="forge-whats-new-js">'+forgeWhatsNewJs+'</script>':
-    '<script id="forge-whats-new-js" src="./dist/js/forge-whats-new.js?v=forge-launch-20261018-kinetic-v8"></script>';
+    '<script id="forge-whats-new-js" src="./dist/js/forge-whats-new.js?v=forge-launch-20261019-usability-v9"></script>';
   html=html.replace('</body>',brandScript+'\n'+routeScript+'\n'+welcomeScript+'\n</body>');
   return html;
 }
