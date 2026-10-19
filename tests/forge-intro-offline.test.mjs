@@ -16,7 +16,9 @@ function setup({font='loaded',reduced=false,active=false,hidden=false,suppress=f
    remove:(...items)=>items.forEach(x=>values.delete(x))};
  };
  const skipHandlers=[];
+ const parts=['Import','|','Recreate','|','Export'].map(text=>({textContent:text,classList:classes()}));
  const intro={hidden:true,removed:false,classList:classes(),
+  querySelectorAll:selector=>selector==='.forge-intro-step-part'?parts:[],
   remove(){this.removed=true}};
  const typed={textContent:'',getBoundingClientRect:()=>({width:typed.textContent.length*15})};
  const mark={dataset:{fullName:'The Forge'},
@@ -74,7 +76,7 @@ function setup({font='loaded',reduced=false,active=false,hidden=false,suppress=f
   }
   now=goal;
  }
- return {advance,typed,intro,skip,document,body,notices,timers,kineticFlights,get time(){return now}};
+ return {advance,typed,intro,parts,skip,document,body,notices,timers,kineticFlights,get time(){return now}};
 }
 const settle=async()=>{for(let i=0;i<12;i++)await Promise.resolve()};
 
@@ -89,6 +91,9 @@ test('real character-by-character typing, steady rhythm and composed exit',async
  assert.equal(h.intro.removed,false);
  h.advance(1100);
  assert.equal(h.typed.textContent,'The Forge');
+ assert.equal(h.intro.classList.contains('forge-intro-finishing'),false);
+ h.advance(1500);
+ assert.equal(h.parts.map(p=>p.classList.contains('is-visible')).every(Boolean),true);
  assert.equal(h.intro.classList.contains('forge-intro-finishing'),true);
  assert.equal(h.intro.removed,false,'Intro must not be removed before its exit fade');
  h.advance(170);
@@ -96,7 +101,7 @@ test('real character-by-character typing, steady rhythm and composed exit',async
  assert.equal(h.document.documentElement.dataset.forgeIntroFinished,'1');
  assert.equal(h.body.classList.contains('forge-opening'),false);
  assert.deepEqual(h.notices,['forge:intro-complete']);
- assert.ok(h.time<1700,'Unexpected extra FLIP or wordmark hold');
+ assert.ok(h.time<3500,'Caption and handoff took unexpectedly long');
 });
 
 test('slow and failed font loads still finish typing and unlock homepage',async()=>{
@@ -105,7 +110,7 @@ test('slow and failed font loads still finish typing and unlock homepage',async(
   if(font!=='failed')h.advance(1350);
   await settle();
   assert.equal(h.typed.textContent,'T');
-  h.advance(1620);
+  h.advance(3200);
   assert.equal(h.intro.removed,true);
   assert.equal(h.typed.textContent,'The Forge');
   assert.equal(h.notices.length,1);
@@ -157,7 +162,7 @@ test('kinetic character echo is deterministic, subtle, and never disturbs native
  h.advance(112);
  assert.equal(h.typed.textContent,'Th');
  assert.equal(h.kineticFlights.length,2);
- h.advance(1500);
+ h.advance(3500);
  assert.equal(h.typed.textContent,'The Forge');
  assert.equal(h.intro.removed,true);
  assert.equal(h.notices.length,1);
