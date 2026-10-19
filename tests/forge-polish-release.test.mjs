@@ -51,7 +51,8 @@ test('Welcome stays intentional and fits in a compact, scrollable panel',()=>{
   assert.match(welcome,/width:min\(920px,100%\)/);
   assert.match(welcome,/min-height:0;/);
   assert.match(welcome,/\.forge-whatsnew-changes\{[\s\S]*?overflow-y:auto;/);
-  assert.match(welcomeJS,/never\.addEventListener\('click',dismiss\)/);
+  assert.match(welcomeJS,/never\.addEventListener\('click',\(\)=>dismiss\(true\)\)/);
+  assert.match(welcomeJS,/continueBtn\.addEventListener\('click',\(\)=>dismiss\(false\)\)/);
   assert.match(welcomeJS,/safeSet\(permanentKey\)/);
 });
 
@@ -60,6 +61,20 @@ test('Tool navigation, focus and generated launch links remain intact',()=>{
   assert.match(feedback,/@media\(hover:hover\) and \(pointer:fine\)/);
   assert.match(feedback,/:focus-visible/);
   assert.match(feedback,/prefers-reduced-motion:reduce/);
-  assert.ok(index.includes('forge-launch-20261018-kinetic-v8'));
-  assert.ok(!index.includes('forge-launch-20261018-kinetic-v7'));
+  assert.ok(index.includes('forge-launch-20261019-usability-v9'));
+  assert.ok(!index.includes('forge-launch-20261018-kinetic-v8'));
+});
+
+test('Operational typography and navigation are readable without layout changes',()=>{
+  const ui=read('src/css/experience/forge-unified-workspaces.css');
+  const workflow=read('src/css/experience/forge-workflow-interactions.css');
+  assert.match(ui,/font-size:14px!important/);
+  assert.match(ui,/#alg-out-ads/);
+  assert.match(workflow,/#mainSidebar\.nav-sidebar\.visible\.collapsed/);
+  assert.match(workflow,/content:attr\(title\)/);
+  assert.match(workflow,/prefers-reduced-motion:reduce/);
+  assert.match(index,/01 \/ DESTINATION/);
+  assert.match(index,/02 \/ INPUT/);
+  assert.match(standalone,/01 \/ DESTINATION/);
+  assert.match(standalone,/02 \/ INPUT/);
 });
