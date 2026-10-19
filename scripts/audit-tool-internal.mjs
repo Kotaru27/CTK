@@ -178,8 +178,16 @@ try{
    return document.documentElement.dataset.forgeRouteTravel;
  });
  assert.equal(openingMode,'home','Opening from Home did not use the dedicated launch transition');
- await page.waitForFunction(()=>document.querySelector('#section-stills-boards.active .tool-header h2')?.textContent.trim()==='Storyboard');
- await page.waitForTimeout(560);
+ // A section can retain its "active" class while its entire view is
+ // hidden on Home. Wait for the actual workspace, active nav and completed
+ // native snapshot: otherwise a stale Storyboard heading creates a false
+ // tool-to-tool routing failure on slower QHD CI machines.
+ await page.waitForFunction(()=>
+   document.getElementById('view-app').classList.contains('active') &&
+   document.querySelector('#section-stills-boards.active .tool-header h2')?.textContent.trim()==='Storyboard' &&
+   document.getElementById('nav-stills-story').classList.contains('active')
+ ,null,{timeout:6000});
+ await page.waitForFunction(()=>!document.documentElement.classList.contains('forge-route-running'),null,{timeout:6000});
  const switchingMode=await page.evaluate(()=>{
    UI.openTool('section-adlinks','downloader');
    return document.documentElement.dataset.forgeRouteTravel;
