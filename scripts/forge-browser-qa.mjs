@@ -90,9 +90,16 @@ try {
  check(await launch.evaluate(el=>getComputedStyle(el).backdropFilter.includes('blur(')),
    'Welcome overlay did not blur the underlying homepage');
  await page.screenshot({path:'artifacts/forge-browser/first-rebrand-welcome.png',fullPage:false});
- // Escape and backdrop cannot dismiss the persistent modal.
+ // Escape behaves like Continue: session dismissal without permanent opt-out.
  await page.keyboard.press('Escape');
- check(await launch.isVisible(),'Escape unexpectedly dismissed persistent welcome');
+ await launch.waitFor({state:'hidden',timeout:1500});
+ check(await page.evaluate(()=>sessionStorage.getItem('forge_whatsnew_seen_2026_v3'))==='1',
+   'Escape should mark welcome as seen for this session');
+ check(await page.evaluate(()=>localStorage.getItem('forge_whatsnew_dismissed_2026_v3'))!=='1',
+   'Escape must not permanently opt users out of release notes');
+ // A manual replay remains available, including the deliberate permanent opt-out.
+ await launchTrigger.click();
+ await launch.waitFor({state:'visible',timeout:1500});
  await page.locator('#forgeWhatsNewNever').click();
  await launch.waitFor({state:'hidden',timeout:1500});
 
