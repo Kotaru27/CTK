@@ -70,10 +70,10 @@
   // The intro starts hidden in HTML and can never block the app if the
   // presentation script fails. Skip works during font loading and typing.
   body.classList.add('forge-opening');
-  intro.hidden=false;
-  intro.classList.add('forge-intro-ready');
   typed.textContent='';
-  gate?.release?.();
+  // Keep the first-paint shield in place until the actual intro font has
+  // resolved (or the bounded fallback is selected). Showing the wordmark
+  // before this decision caused a late font-metric jump during typing.
   document.getElementById('forgeIntroSkip')
     ?.addEventListener('click',finish,{once:true});
   document.addEventListener('keydown',onKey);
@@ -182,6 +182,11 @@
       document.documentElement.classList.add('forge-launch-fallback-kola');
     if(!available[1])
       intro.classList.add('forge-intro-fallback-ui');
+    // Commit the font family before the first visible intro frame. Never
+    // switch families while the reserved Kola wordmark is on screen.
+    intro.hidden=false;
+    intro.classList.add('forge-intro-ready');
+    gate?.release?.();
     intro.classList.add('forge-intro-playing');
     requestAnimationFrame(()=>requestAnimationFrame(()=>type(0)));
   }
