@@ -92,3 +92,14 @@ test('sidebar uses immediate geometry, short feedback and no expensive blur',()=
   assert.ok(index.includes('forge-workflow-interactions.css?v=forge-sidebar-20261019-v10'));
   assert.equal(distIndex,index.replaceAll('./dist/css/','./css/').replaceAll('./dist/js/','./js/'));
 });
+
+test('V11 cross-tool navigation shows the new workspace immediately without changing shell or home motion',()=>{
+ const route=read('src/css/experience/forge-video-route.css');
+ assert.match(route,/animation:forge-enter-tool 330ms/);
+ assert.ok(route.includes('0%{opacity:.62;transform:translate3d(0,6px,0)}'));
+ assert.match(route,/animation:forge-open-workspace 520ms/);
+ assert.match(route,/prefers-reduced-motion:reduce/);
+ assert.equal(read('dist/css/forge-video-route.css'),route);
+ assert.ok(index.includes('forge-video-route.css?v=forge-tool-nav-20261019-v11'));
+ assert.ok(standalone.includes('<style id="forge-video-route-styles">'+route+'</style>'));
+});

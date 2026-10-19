@@ -190,15 +190,18 @@ html.forge-route-running::view-transition-group(forge-tool-surface){
 html.forge-route-running::view-transition-old(forge-tool-surface){
   animation:none!important;opacity:1!important;
 }
+/* V11 / Tool selection should feel immediate. Keep the native snapshot
+   for continuity, but reveal the new surface early rather than hiding it
+   behind a low-opacity 450ms entrance. Strictly monotonic, no bounce. */
 html.forge-route-running::view-transition-new(forge-tool-surface){
-  animation:forge-enter-tool 450ms cubic-bezier(.18,.78,.22,1) both!important;
+  animation:forge-enter-tool 330ms cubic-bezier(.18,.78,.22,1) both!important;
 }
 @keyframes forge-enter-tool{
-  0%{opacity:.16;transform:translate3d(0,10px,0)}
-  14%{opacity:.48;transform:translate3d(0,7px,0)}
-  32%{opacity:.80;transform:translate3d(0,3.7px,0)}
-  54%{opacity:.96;transform:translate3d(0,1.3px,0)}
-  75%{opacity:1;transform:translate3d(0,.23px,0)}
+  0%{opacity:.62;transform:translate3d(0,6px,0)}
+  14%{opacity:.79;transform:translate3d(0,4px,0)}
+  32%{opacity:.93;transform:translate3d(0,2px,0)}
+  54%{opacity:.99;transform:translate3d(0,.55px,0)}
+  75%{opacity:1;transform:translate3d(0,.08px,0)}
   100%{opacity:1;transform:translate3d(0,0,0)}
 }
 @media(prefers-reduced-motion:reduce){
