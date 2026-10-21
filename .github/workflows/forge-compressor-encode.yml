@@ -1,0 +1,53 @@
+name: Forge compressor actual WebAssembly encode
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'compressor/**'
+      - 'scripts/build.mjs'
+      - 'scripts/forge-compressor-encode-qa.mjs'
+      - '.github/workflows/forge-compressor-encode.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  encode:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser testing framework in CI
+        run: npm install --no-save --no-package-lock playwright@1.58.2
+      - name: Provision CI Chromium
+        run: npx playwright install chromium --with-deps
+      - name: Generate short synthetic source with video and audio
+        run: |
+          mkdir -p artifacts/forge-compressor-encode
+          ffmpeg -hide_banner -loglevel error -y \
+            -f lavfi -i testsrc2=size=640x360:rate=24 \
+            -f lavfi -i sine=frequency=760:sample_rate=48000 \
+            -t 6 -c:v libx264 -preset ultrafast -crf 15 -pix_fmt yuv420p \
+            -c:a aac -b:a 128k -movflags +faststart -shortest \
+            artifacts/forge-compressor-encode/synthetic-source.mp4
+          ffprobe -v error -show_entries format=size,duration -of json artifacts/forge-compressor-encode/synthetic-source.mp4
+      - name: Start production-like Pages development server
+        run: |
+          node scripts/dev.mjs > /tmp/forge-encode-server.log 2>&1 &
+          for i in $(seq 1 50); do
+            if curl -fsS http://127.0.0.1:4173/compressor/index.html >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/forge-encode-server.log
+          exit 1
+      - name: Encode through actual browser WASM and inspect downloaded MP4
+        run: node scripts/forge-compressor-encode-qa.mjs
+      - name: Keep genuine encode results or failure evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: forge-compressor-real-encode
+          path: artifacts/forge-compressor-encode/
+          if-no-files-found: ignore
