@@ -36,6 +36,7 @@ const forgePaintCss=read('src/css/experience/forge-first-paint.css');
 const forgePaintJs=read('src/js/presentation/forge-first-paint.js');
 const forgeVideoRouteCss=read('src/css/experience/forge-video-route.css');
 const forgeCompressorFrameCss=read('src/css/experience/forge-compressor-frame.css');
+const forgeCompressorFitJs=read('src/js/presentation/forge-compressor-fit.js');
 const forgeAdaptiveCss=read('src/css/experience/forge-adaptive-desktop.css');
 const forgeWorkspaceFinishCss=read('src/css/experience/forge-workspace-finish.css');
 const forgeSpecimensCss=read('src/css/experience/forge-tool-specimens.css');
@@ -218,9 +219,11 @@ function forgeBrand(html,standaloneRelease){
     '<script id="forge-brand-intro-js" src="./dist/js/forge-brand.js?v=forge-caption-20261019-v12"></script>';
   const routeScript=standaloneRelease?'<script id="forge-video-route-js">'+forgeVideoRouteJs+'</script>':
     '<script id="forge-video-route-js" src="./dist/js/forge-video-route.js"></script>';
+  const compressorFitScript=standaloneRelease?'<script id="forge-compressor-fit-js">'+forgeCompressorFitJs+'</script>':
+    '<script id="forge-compressor-fit-js" src="./dist/js/forge-compressor-fit.js"></script>';
   const welcomeScript=standaloneRelease?'<script id="forge-whats-new-js">'+forgeWhatsNewJs+'</script>':
     '<script id="forge-whats-new-js" src="./dist/js/forge-whats-new.js?v=forge-caption-20261019-v12"></script>';
-  html=html.replace('</body>',brandScript+'\n'+routeScript+'\n'+welcomeScript+'\n</body>');
+  html=html.replace('</body>',brandScript+'\n'+routeScript+'\n'+compressorFitScript+'\n'+welcomeScript+'\n</body>');
   return html;
 }
 
@@ -237,6 +240,7 @@ save('dist/css/forge-brand.css',forgeBrandCss);
 save('dist/js/forge-brand.js',forgeBrandJs);
 save('dist/css/forge-video-route.css',forgeVideoRouteCss);
 save('dist/css/forge-compressor-frame.css',forgeCompressorFrameCss);
+save('dist/js/forge-compressor-fit.js',forgeCompressorFitJs);
 save('dist/css/forge-adaptive-desktop.css',forgeAdaptiveCss);
 save('dist/css/forge-workspace-finish.css',forgeWorkspaceFinishCss);
 save('dist/css/forge-tool-specimens.css',forgeSpecimensCss);
