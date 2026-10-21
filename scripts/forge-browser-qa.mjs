@@ -104,7 +104,7 @@ try {
  const launchTrigger=page.locator('#forgeWhatsNewTrigger');
  check(await launchTrigger.isVisible(),'Release-notes replay link missing');
  check(await page.locator('#forgeWhatsNewTitle').innerText()!=='' ,'Launch title is missing');
- check(await launch.locator('.forge-whatsnew-change').count()===5,
+ check(await launch.locator('.forge-whatsnew-change').count()===6,
    'Launch popup is missing some rebrand workflow changes');
  const popupGeometry=await launch.locator('.forge-whatsnew-dialog').evaluate(el=>{
    const box=el.getBoundingClientRect();

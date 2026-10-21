@@ -23,7 +23,10 @@ test('all eight card routes keep their existing HTML and click handlers',()=>{
  const original=[...baseline.matchAll(/<button class="home-card\b[\s\S]*?<\/button>/g)]
    .map(m=>m[0].replaceAll('Logo Workspace','Logo Resizer'));
  const latest=[...index.matchAll(/<button class="home-card\b[\s\S]*?<\/button>/g)]
-   .map(m=>m[0]);
+   .map(m=>m[0]
+     .replaceAll('Video Compressor','Video Downloads')
+     .replaceAll('Compress videos to a chosen size.','Create video download commands.')
+     .replaceAll('<b>compress</b>','<b>download</b>'));
  assert.equal(original.length,8);
  assert.deepEqual(latest,original);
 });
