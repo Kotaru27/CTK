@@ -9,6 +9,7 @@ test('tool route 08 becomes compressor and retains eight homepage routes',()=>{
   assert.match(html,/class="forge-compressor-frame"[^>]*src="\.\/compressor\/index\.html"/);
   assert.equal((html.match(/class="home-card home-item/g)||[]).length,8);
 });
+/* Added compressor surface is a deliberate overlay; legacy IDs remain in the baseline. */
 test('legacy downloader is visually hidden while the compressor loads same-origin',()=>{
   const css=read('../src/css/experience/forge-compressor-frame.css');
   assert.match(css,/#section-yt-helper > :not\(\.forge-compressor-surface\)\{display:none!important\}/);

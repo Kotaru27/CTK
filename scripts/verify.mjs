@@ -60,7 +60,7 @@ let withoutForge=withoutVisual
   .replace('<script id="forge-first-paint-js">'+firstPaintJs+'</script>\n','')
   .replace('<script id="forge-brand-intro-js">'+forgeJs+'</script>\n','')
   .replace('<script id="forge-whats-new-js">'+whatsNewJs+'</script>\n','')
-  .replace(/<div class="forge-compressor-surface">[\s\S]*?<\/iframe><\/div>\n/,'');
+  .replace(/\n<div class="forge-compressor-surface">[\s\S]*?<\/iframe><\/div>\n/,'');
 const brandStart=withoutForge.indexOf('<section class="forge-hero"');
 const brandEnd=withoutForge.indexOf('<div class="home-grid combined-home-grid" id="homeContent">',brandStart);
 const originalStart=a.indexOf('<div class="home-wordmark">');
