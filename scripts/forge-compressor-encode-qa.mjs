@@ -32,7 +32,7 @@ try {
   await page.goto('http://127.0.0.1:4173/',{waitUntil:'domcontentloaded',timeout:60000});
   await page.locator('.home-card.tool-video').click();
   const iframe=page.frameLocator('#section-yt-helper iframe.forge-compressor-frame');
-  await iframe.locator('#fileInput').waitFor({timeout:20000});
+  await iframe.locator('#fileInput').waitFor({state:'attached',timeout:20000});
   await iframe.locator('#fileInput').setInputFiles(input);
   await iframe.locator('.batch-item').first().waitFor({timeout:15000});
   await iframe.locator('#targetSize').fill(String(targetMB));
