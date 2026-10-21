@@ -8,7 +8,7 @@ const routes=[
  ['section-logo',null,'Logo Resizer'],['section-pdf','convert','PDF to Image'],
  ['section-pdf','split','Image Splitter'],['section-stills-boards','video','Video Stills'],
  ['section-stills-boards','story','Storyboard'],['section-adlinks','gen','Link Gen'],
- ['section-adlinks','downloader','Ad Downloader'],['section-yt-helper',null,'Video Downloads']
+ ['section-adlinks','downloader','Ad Downloader'],['section-yt-helper',null,'Video Compressor']
 ];
 try{
  const context=await browser.newContext({viewport:{width:1920,height:1080}});
@@ -24,6 +24,27 @@ try{
  for(const [section,mode,name] of routes){
    await page.evaluate(({section,mode})=>UI.openTool(section,mode),{section,mode});
    await page.waitForFunction(()=>!document.documentElement.classList.contains('forge-route-running'));
+   if(section==='section-yt-helper'){
+     // The replacement's real controls live in a same-origin iframe,
+     // so a parent-only query would incorrectly report zero controls.
+     const frame=page.frameLocator('#section-yt-helper .forge-compressor-frame');
+     await frame.locator('#targetSize').waitFor({timeout:20000});
+     const measured=await frame.locator('body').evaluate(()=>{
+       const nodes=['#dropzone','.number-wrap','#compressButton']
+         .map(selector=>document.querySelector(selector));
+       return nodes.map(el=>{
+         const css=getComputedStyle(el);
+         return {control:el.id||el.className,
+           visible:el.getClientRects().length>0,
+           duration:Math.max(...css.transitionDuration.split(',').map(x=>parseFloat(x)||0))}
+       });
+     });
+     assert.equal(measured.length,3,'Compressor transition samples are missing');
+     assert.ok(measured.every(x=>x.visible&&x.duration>=.10),
+       'Compressor working surfaces lack semantic transitions: '+JSON.stringify(measured));
+     results.push({name,count:measured.length,instant:0});
+     continue;
+   }
    const measured=await page.evaluate(()=>{
      const selectors=[
        '#view-app .tool-section.active button:not(:disabled)',
