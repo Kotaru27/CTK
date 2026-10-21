@@ -8341,6 +8341,16 @@ body.light-mode .undo-toast {
   }
 }
 </style>
+<style id="forge-compressor-frame-styles">/* Tool 08: Forge-native compressor route, legacy command UI hidden. */
+#section-yt-helper > :not(.forge-compressor-surface){display:none!important}
+#section-yt-helper > .forge-compressor-surface{width:100%;min-width:0;display:flex;flex-direction:column;gap:10px}
+#section-yt-helper .forge-compressor-surface > .tool-header{display:flex;align-items:center;flex:none;gap:11px;margin:0;padding:0 2px;min-height:54px;border:0}
+#section-yt-helper .forge-compressor-surface > .tool-header h2{font-size:clamp(22px,1.85vw,30px);font-weight:720;letter-spacing:-.04em;margin:0}
+#section-yt-helper .forge-compressor-surface > .tool-header .tool-icon{color:var(--studio-accent,#2d6949)}
+#section-yt-helper .forge-compressor-frame{display:block;width:100%;height:max(610px,calc(100dvh - 205px));min-height:610px;border:0;border-radius:8px;background:transparent;color-scheme:light}
+@media(max-width:1150px){#section-yt-helper .forge-compressor-frame{height:max(690px,calc(100dvh - 180px))}}
+@media(prefers-reduced-motion:reduce){#section-yt-helper .forge-compressor-surface{scroll-behavior:auto}}
+</style>
 <style id="forge-whats-new-styles">/* THE FORGE / FIRST MAJOR REBRAND
    A single-purpose launch dialog: disciplined editorial typography,
    forest/ivory surfaces, restrained entrances, no illustrations or extra UI. */
@@ -8695,7 +8705,7 @@ html:has(.forge-whatsnew:not([hidden])){overflow:hidden;scrollbar-gutter:stable;
 <div class="forge-whatsnew" id="forgeWhatsNew" hidden>
  <section class="forge-whatsnew-dialog" role="dialog" aria-modal="true" aria-labelledby="forgeWhatsNewTitle" aria-describedby="forgeWhatsNewDescription">
   <div class="forge-whatsnew-opening">
-   <div class="forge-whatsnew-edition">FIRST MAJOR REBRAND / 2026</div>
+   <div class="forge-whatsnew-edition">THE FORGE / OCTOBER 2026</div>
    <div>
     <span class="forge-whatsnew-brand" aria-label="The Forge">The Forge</span>
     <h2 id="forgeWhatsNewTitle">Same purpose.<br><em>A new beginning.</em></h2>
@@ -8709,18 +8719,21 @@ html:has(.forge-whatsnew:not([hidden])){overflow:hidden;scrollbar-gutter:stable;
    </div>
    <div class="forge-whatsnew-changes">
     <article class="forge-whatsnew-change"><span class="forge-whatsnew-number">01</span><div>
-     <h3>The Forge</h3><p>Creative Tool Kit has a new name and a more focused experience. Your eight familiar tools are still here.</p>
+     <h3>The Forge</h3><p>Creative Tool Kit has a new name and a more focused experience. Seven familiar tools remain, alongside the new Video Compressor.</p>
     </div></article>
     <article class="forge-whatsnew-change"><span class="forge-whatsnew-number">02</span><div>
-     <h3>Video Stills</h3><p>Choose frames from several videos. One Send to Board action creates a separate storyboard for each video.</p>
+     <h3>Video Compressor · New</h3><p>Video Downloads is now Video Compressor. Compress up to five local videos per session with quality guidance, previews and MP4 or ZIP exports.</p>
     </div></article>
     <article class="forge-whatsnew-change"><span class="forge-whatsnew-number">03</span><div>
-     <h3>Storyboard</h3><p>Use Add Assets to select a main campaign folder. A board is created for each ad's stills folder.</p>
+     <h3>Video Stills</h3><p>Choose frames from several videos. One Send to Board action creates a separate storyboard for each video.</p>
     </div></article>
     <article class="forge-whatsnew-change"><span class="forge-whatsnew-number">04</span><div>
-     <h3>Ad Downloader · Auto-name</h3><p>Choose a writable folder before uploading Excel. The tool can automatically rename supported SharePoint downloads in that folder.</p>
+     <h3>Storyboard</h3><p>Use Add Assets to select a main campaign folder. A board is created for each ad's stills folder.</p>
     </div></article>
     <article class="forge-whatsnew-change"><span class="forge-whatsnew-number">05</span><div>
+     <h3>Ad Downloader · Auto-name</h3><p>Choose a writable folder before uploading Excel. The tool can automatically rename supported SharePoint downloads in that folder.</p>
+    </div></article>
+    <article class="forge-whatsnew-change"><span class="forge-whatsnew-number">06</span><div>
      <h3>Ad Downloader · Downloads</h3><p>Pending ads stay first. Requested and confirmed downloads move below, with Download again always available.</p>
     </div></article>
    </div>
@@ -8774,8 +8787,8 @@ html:has(.forge-whatsnew:not([hidden])){overflow:hidden;scrollbar-gutter:stable;
 <button class="nav-item" id="nav-adlinks-dl" onclick="UI.openTool('section-adlinks','downloader')" title="Ad Downloader">
 <span class="material-symbols-rounded">download</span><span class="nav-item-text">Ad Downloader</span>
 </button>
-<button class="nav-item" id="nav-yt-helper" onclick="UI.openTool('section-yt-helper')" title="Video Downloads">
-<span class="material-symbols-rounded">video_library</span><span class="nav-item-text">Video Downloads</span>
+<button class="nav-item" id="nav-yt-helper" onclick="UI.openTool('section-yt-helper')" title="Video Compressor">
+<span class="material-symbols-rounded">video_library</span><span class="nav-item-text">Video Compressor</span>
 </button>
 </nav>
 <div class="view-container">
@@ -8843,11 +8856,11 @@ html:has(.forge-whatsnew:not([hidden])){overflow:hidden;scrollbar-gutter:stable;
 <h2 class="home-card-title">Ad Downloader</h2>
 <p class="home-card-desc">Extract links from Excel.</p>
 </button>
-<button class="home-card home-item tool-video" onclick="UI.openTool('section-yt-helper')" aria-label="Open Video Downloads">
+<button class="home-card home-item tool-video" onclick="UI.openTool('section-yt-helper')" aria-label="Open Video Compressor">
 <div class="home-card-top"><span class="home-card-num">08</span><span class="home-card-go" aria-hidden="true">↗</span></div>
-<div class="home-card-art art-video" aria-hidden="true"><div class="video-poster"><i class="video-orbit"></i><i class="video-triangle"></i><div class="video-progress"><i></i></div></div><div class="video-command"><span>›</span><b>download</b><span class="video-caret"></span></div></div>
-<h2 class="home-card-title">Video Downloads</h2>
-<p class="home-card-desc">Create video download commands.</p>
+<div class="home-card-art art-video" aria-hidden="true"><div class="video-poster"><i class="video-orbit"></i><i class="video-triangle"></i><div class="video-progress"><i></i></div></div><div class="video-command"><span>›</span><b>compress</b><span class="video-caret"></span></div></div>
+<h2 class="home-card-title">Video Compressor</h2>
+<p class="home-card-desc">Compress videos to a chosen size.</p>
 </button>
 </div>
 </div>
@@ -9736,9 +9749,11 @@ html:has(.forge-whatsnew:not([hidden])){overflow:hidden;scrollbar-gutter:stable;
 </div>
 </div>
 <div class="tool-section" id="section-yt-helper">
+<div class="forge-compressor-surface"><div class="tool-header"><span class="material-symbols-rounded tool-icon" aria-hidden="true">video_settings</span><h2>Video Compressor</h2></div><iframe class="forge-compressor-frame" title="Video Compressor workspace" src="./compressor/index.html" loading="lazy" referrerpolicy="no-referrer"></iframe></div>
+
 <div class="tool-header">
 <span class="material-symbols-rounded tool-icon">smart_display</span>
-<h2 style="flex: 1">Video Downloads</h2>
+<h2 style="flex: 1">Video Compressor</h2>
 </div>
 <div class="editor-layout yt-studio">
 <div class="sidebar-panel yt-studio-input"><div class="yt-studio-identity"><span class="edition-kicker">COMMAND STUDIO / 08</span><h2>Get the right file.</h2><p>Prepare a download command for your video without guessing formats or flags.</p></div><div class="edition-rule-label">01 / SOURCE LINK</div>
