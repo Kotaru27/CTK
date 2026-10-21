@@ -6,7 +6,7 @@
   "description": "The Forge — eight browser-based creative workspaces with a Kola wordmark, branded intro and preserved tool functionality",
   "scripts": {
     "build": "node scripts/build.mjs",
-    "test": "node scripts/build.mjs && node --check dist/js/app.js && node --check dist/js/home-interactions.js && node --check dist/js/vector-icons.js && node --check dist/js/video-downloads-presentation.js && node --check dist/js/pdf-to-image-presentation.js && node scripts/verify.mjs && node --test tests/*.test.mjs",
+    "test": "node scripts/build.mjs && node --check dist/js/app.js && node --check dist/js/home-interactions.js && node --check dist/js/vector-icons.js && node --check dist/js/video-downloads-presentation.js && node --check dist/js/pdf-to-image-presentation.js && node scripts/verify.mjs && node --test tests/*.test.mjs && node --test compressor/tests/*.test.mjs",
     "dev": "node scripts/dev.mjs"
   }
 }

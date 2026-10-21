@@ -35,6 +35,7 @@ const forgeBrandJs=read('src/js/presentation/forge-brand.js');
 const forgePaintCss=read('src/css/experience/forge-first-paint.css');
 const forgePaintJs=read('src/js/presentation/forge-first-paint.js');
 const forgeVideoRouteCss=read('src/css/experience/forge-video-route.css');
+const forgeCompressorFrameCss=read('src/css/experience/forge-compressor-frame.css');
 const forgeAdaptiveCss=read('src/css/experience/forge-adaptive-desktop.css');
 const forgeWorkspaceFinishCss=read('src/css/experience/forge-workspace-finish.css');
 const forgeSpecimensCss=read('src/css/experience/forge-tool-specimens.css');
@@ -80,7 +81,7 @@ const forgeWhatsNew=[
   '<div class="forge-whatsnew" id="forgeWhatsNew" hidden>',
   ' <section class="forge-whatsnew-dialog" role="dialog" aria-modal="true" aria-labelledby="forgeWhatsNewTitle" aria-describedby="forgeWhatsNewDescription">',
   '  <div class="forge-whatsnew-opening">',
-  '   <div class="forge-whatsnew-edition">FIRST MAJOR REBRAND / 2026</div>',
+  '   <div class="forge-whatsnew-edition">THE FORGE / OCTOBER 2026</div>',
   '   <div>',
   '    <span class="forge-whatsnew-brand" aria-label="The Forge">The Forge</span>',
   '    <h2 id="forgeWhatsNewTitle">Same purpose.<br><em>A new beginning.</em></h2>',
@@ -95,18 +96,21 @@ const forgeWhatsNew=[
   '   </div>',
   '   <div class="forge-whatsnew-changes">',
   '    <article class="forge-whatsnew-change"><span class="forge-whatsnew-number">01</span><div>',
-  '     <h3>The Forge</h3><p>Creative Tool Kit has a new name and a more focused experience. Your eight familiar tools are still here.</p>',
+  '     <h3>The Forge</h3><p>Creative Tool Kit has a new name and a more focused experience. Seven familiar tools remain, alongside the new Video Compressor.</p>',
   '    </div></article>',
   '    <article class="forge-whatsnew-change"><span class="forge-whatsnew-number">02</span><div>',
-  '     <h3>Video Stills</h3><p>Choose frames from several videos. One Send to Board action creates a separate storyboard for each video.</p>',
+  '     <h3>Video Compressor · New</h3><p>Video Downloads is now Video Compressor. Compress up to five local videos per session with quality guidance, previews and MP4 or ZIP exports.</p>',
   '    </div></article>',
   '    <article class="forge-whatsnew-change"><span class="forge-whatsnew-number">03</span><div>',
-  '     <h3>Storyboard</h3><p>Use Add Assets to select a main campaign folder. A board is created for each ad\'s stills folder.</p>',
+  '     <h3>Video Stills</h3><p>Choose frames from several videos. One Send to Board action creates a separate storyboard for each video.</p>',
   '    </div></article>',
   '    <article class="forge-whatsnew-change"><span class="forge-whatsnew-number">04</span><div>',
-  '     <h3>Ad Downloader · Auto-name</h3><p>Choose a writable folder before uploading Excel. The tool can automatically rename supported SharePoint downloads in that folder.</p>',
+  '     <h3>Storyboard</h3><p>Use Add Assets to select a main campaign folder. A board is created for each ad\'s stills folder.</p>',
   '    </div></article>',
   '    <article class="forge-whatsnew-change"><span class="forge-whatsnew-number">05</span><div>',
+  '     <h3>Ad Downloader · Auto-name</h3><p>Choose a writable folder before uploading Excel. The tool can automatically rename supported SharePoint downloads in that folder.</p>',
+  '    </div></article>',
+  '    <article class="forge-whatsnew-change"><span class="forge-whatsnew-number">06</span><div>',
   '     <h3>Ad Downloader · Downloads</h3><p>Pending ads stay first. Requested and confirmed downloads move below, with Download again always available.</p>',
   '    </div></article>',
   '   </div>',
@@ -153,6 +157,29 @@ function forgeBrand(html,standaloneRelease){
     html=html.replace(before,after);
   }
 
+
+  // Route 08 is now the local compressor. Keep original nodes in the DOM
+  // but visually inert to preserve upstream baseline and the other seven tools.
+  const videoSection='<div class="tool-section" id="section-yt-helper">';
+  const compressorSurface='<div class="forge-compressor-surface">'+
+    '<div class="tool-header"><span class="material-symbols-rounded tool-icon" aria-hidden="true">video_settings</span><h2>Video Compressor</h2></div>'+
+    '<iframe class="forge-compressor-frame" title="Video Compressor workspace" src="./compressor/index.html" loading="lazy" referrerpolicy="no-referrer"></iframe>'+
+    '</div>\n';
+  if(!html.includes(videoSection))throw Error('Video compressor workspace anchor missing');
+  html=html.replace(videoSection,videoSection+'\n'+compressorSurface);
+  for(const [before,after] of [
+    ['title="Video Downloads"','title="Video Compressor"'],
+    ['<span class="nav-item-text">Video Downloads</span>','<span class="nav-item-text">Video Compressor</span>'],
+    ['aria-label="Open Video Downloads"','aria-label="Open Video Compressor"'],
+    ['<h2 class="home-card-title">Video Downloads</h2>','<h2 class="home-card-title">Video Compressor</h2>'],
+    ['<p class="home-card-desc">Create video download commands.</p>','<p class="home-card-desc">Compress videos to a chosen size.</p>'],
+    ['<div class="video-command"><span>›</span><b>download</b>','<div class="video-command"><span>›</span><b>compress</b>'],
+    ['<h2 style="flex: 1">Video Downloads</h2>','<h2 style="flex: 1">Video Compressor</h2>']
+  ]) {
+    if(!html.includes(before))throw Error('Video compressor name anchor missing: '+before);
+    html=html.replace(before,after);
+  }
+
   if(!html.includes('<title>Creative Tools Suite</title>'))throw Error('Original suite title not found');
   html=html.replace('<title>Creative Tools Suite</title>','<title>The Forge</title>');
   html=html.replace('<link href="Toolkit%20logo.png" rel="icon" type="image/png"/>','');
@@ -180,9 +207,11 @@ function forgeBrand(html,standaloneRelease){
     '<link rel="stylesheet" href="./dist/css/forge-unified-workspaces.css?v=forge-caption-20261019-v12">\n';
   const workflowStyle=standaloneRelease?'<style id="forge-workflow-interactions-styles">'+forgeWorkflowCss+'</style>\n':
     '<link rel="stylesheet" href="./dist/css/forge-workflow-interactions.css?v=forge-sidebar-20261019-v10">\n';
+  const compressorStyle=standaloneRelease?'<style id="forge-compressor-frame-styles">'+forgeCompressorFrameCss+'</style>\n':
+    '<link rel="stylesheet" href="./dist/css/forge-compressor-frame.css?v=forge-compressor-20261021">\n';
   const welcomeStyle=standaloneRelease?'<style id="forge-whats-new-styles">'+forgeWhatsNewCss+'</style>\n':
     '<link rel="stylesheet" href="./dist/css/forge-whats-new.css?v=forge-caption-20261019-v12">\n';
-  html=html.replace('</head>',iconLink+fontLink+brandStyle+routeStyle+adaptiveStyle+workspaceFinishStyle+specimenStyle+unifiedStyle+workflowStyle+welcomeStyle+'</head>');
+  html=html.replace('</head>',iconLink+fontLink+brandStyle+routeStyle+adaptiveStyle+workspaceFinishStyle+specimenStyle+unifiedStyle+workflowStyle+compressorStyle+welcomeStyle+'</head>');
   // Light-only presentation: do not read an old dark preference on first paint.
   html=html.replace('<body>','<body class="light-mode">\n'+forgeIntro+'\n'+forgeWhatsNew+'\n');
   const brandScript=standaloneRelease?'<script id="forge-brand-intro-js">'+forgeBrandJs+'</script>':
@@ -207,6 +236,7 @@ save('dist/css/typography-motion-v3.css',typeMotionCss);
 save('dist/css/forge-brand.css',forgeBrandCss);
 save('dist/js/forge-brand.js',forgeBrandJs);
 save('dist/css/forge-video-route.css',forgeVideoRouteCss);
+save('dist/css/forge-compressor-frame.css',forgeCompressorFrameCss);
 save('dist/css/forge-adaptive-desktop.css',forgeAdaptiveCss);
 save('dist/css/forge-workspace-finish.css',forgeWorkspaceFinishCss);
 save('dist/css/forge-tool-specimens.css',forgeSpecimensCss);
@@ -215,6 +245,8 @@ save('dist/css/forge-workflow-interactions.css',forgeWorkflowCss);
 save('dist/css/forge-whats-new.css',forgeWhatsNewCss);
 save('dist/js/forge-whats-new.js',forgeWhatsNewJs);
 save('dist/js/forge-video-route.js',forgeVideoRouteJs);
+for(const file of ['index.html','app.mjs','codec.mjs','probe.mjs','styles.css','forge-theme.css','video-worker.js','zip.mjs'])
+  save('dist/compressor/'+file,read('compressor/'+file));
 save('dist/css/ad-downloader-v2.css',visualCss);
 save('dist/js/ad-downloader-v2.js',visualJs);
 save('dist/css/app.css',css);save('dist/js/app.js',main);

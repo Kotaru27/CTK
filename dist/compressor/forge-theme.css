@@ -1,0 +1,46 @@
+/* The Forge visual treatment. Compression/codec logic is unchanged. */
+:root{color-scheme:light;--base:#f7f8f3;--surface:#fdfefa;--ink:#1b3729;--muted:#586d5c;--subtle:#708373;--line:#dce6dc;--accent:#2c694a;--accent-hover:#20553b;--accent-soft:#e8f1e8;--success:#207251;--danger:#ae4f49;font-family:"Plus Jakarta Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+html{scroll-behavior:auto;background:var(--base)}
+body{min-height:0;background:transparent}
+.site-header{display:none}
+.layout{padding:9px clamp(8px,1.1vw,18px) 26px;max-width:none}
+.workarea{grid-template-columns:clamp(260px,23vw,338px) minmax(0,1fr);gap:15px}
+.work-panel,.preview-panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:none}
+.work-panel{padding:22px 19px}
+.panel-head{margin-bottom:16px}.panel-head h2{font-size:15px;letter-spacing:-.025em}
+.step-dot,.item-number{background:var(--accent-soft);color:var(--accent);border-radius:7px}
+.dropzone{background:#f4f8f2;border-color:#b9cfbc;border-radius:10px;min-height:150px;transition:border-color 160ms ease,background-color 160ms ease}
+.dropzone:hover,.dropzone.drag-over{background:#ebf3e9;border-color:var(--accent)}
+.field-help,.queue-info,.item-meta,.item-note,.footer{color:var(--muted)}
+.field-help{font-size:11.5px;line-height:1.6}.upload-title{font-size:14px}.upload-sub{font-size:12px}
+.preview-top{padding:20px;gap:15px}
+.queue-heading{font-size:clamp(22px,1.75vw,28px);color:var(--ink);letter-spacing:-.04em}
+.queue-eyebrow{letter-spacing:.09em;font-size:10px;color:var(--accent)}
+.queue-info{max-width:none;text-align:left;font-size:11px}
+.queue-controls{gap:9px}.queue-size-field{flex:0 0 138px;min-width:118px}
+.queue-size-field .number-wrap{border-color:#cbdccc;background:#fff}
+.primary-action{background:var(--accent);border-radius:8px;box-shadow:none}
+.primary-action:disabled{background:#a6bcae;color:#fdfefa}
+.cancel-batch{border-color:#cad8cc;color:var(--ink);background:#fdfefa}
+.progress-track{background:#e2eee0}.progress-track>div{background:#2c694a}
+.batch-columns{background:#f5f8f2;border-color:var(--line);color:#657c6a}
+.batch-panel{min-height:480px}.batch-list{gap:7px;padding:10px}
+.batch-item{background:#fff;border-color:var(--line);border-radius:9px;padding:16px 12px;transition:background-color 160ms ease,border-color 160ms ease}
+.batch-item:hover{border-color:#acc9b4;background:#fdfefa}
+.batch-item.is-working{background:#f0f8ef;border-color:#85ba94}
+.item-name{color:var(--ink);font-size:13px;font-weight:710}
+.item-quality{color:#536e5c;line-height:1.55}.item-quality .quality-label{color:#365b42}
+.item-quality[data-tone=warning]{color:#835921}.item-quality[data-tone=critical]{color:#a44736}
+.item-status{color:#657c6c}.item-status.ok{color:#207251}
+.item-actions button,.item-actions a{border-color:#d6e2d6;color:#31523b;background:#fff;border-radius:7px}
+.item-actions button:hover:not(:disabled),.item-actions a:hover{background:#eef6eb;border-color:#a7c5ae}
+.item-actions a.download-one,.download-all{background:#214b35;border-color:#214b35;color:#fff}
+.item-actions a.download-one:hover,.download-all:hover:not(:disabled){background:#2c694a}
+.batch-empty{min-height:310px;color:#809585}.batch-empty-glyph{color:#afc7b3}.batch-empty strong{color:#41674d}
+.batch-footer{border-color:var(--line)}.footer{margin-top:12px;font-size:11px}
+.preview-dialog{border-color:var(--line);border-radius:12px}
+.dialog-close,.preview-tab{background:#ecf3ea;color:#315640}.preview-tab.active{background:var(--accent);color:white}
+button:focus-visible,input:focus-visible,.dropzone:focus-visible,a:focus-visible{outline:2px solid #347b51;outline-offset:3px}
+@media(max-width:1250px){.workarea{grid-template-columns:290px minmax(0,1fr)}.preview-top{display:flex;flex-direction:column;align-items:stretch}.queue-control-stack{max-width:none}.queue-heading{font-size:23px}}
+@media(max-width:850px){.workarea{grid-template-columns:1fr}.batch-panel{min-height:380px}.layout{padding:10px 8px 24px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition-duration:0s!important;animation-duration:0s!important}}

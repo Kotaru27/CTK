@@ -22,6 +22,7 @@ const visualCss=rd('src/css/experience/ad-downloader-v2.css');
 const visualJs=rd('src/js/presentation/ad-downloader-v2.js');
 const typeMotionCss=rd('src/css/experience/typography-motion-v3.css');
 const videoRouteCss=rd('src/css/experience/forge-video-route.css');
+const compressorFrameCss=rd('src/css/experience/forge-compressor-frame.css');
 const videoRouteJs=rd('src/js/presentation/forge-video-route.js');
 const whatsNewJs=rd('src/js/presentation/forge-whats-new.js');
 const whatsNewCss=rd('src/css/experience/forge-whats-new.css');
@@ -49,6 +50,7 @@ const withoutVisual=standalone
   .replace('<style id="ctk-ad-downloader-v2">'+visualCss+'</style>\n','')
   .replace('<script id="ctk-ad-downloader-v2">'+visualJs+'</script>\n','')
   .replace('<style id="forge-video-route-styles">'+videoRouteCss+'</style>\n','')
+  .replace('<style id="forge-compressor-frame-styles">'+compressorFrameCss+'</style>\n','')
   .replace('<script id="forge-video-route-js">'+videoRouteJs+'</script>\n','');
 // Remove only the new, explicitly-scoped Forge presentation layer before
 // comparing to the untouched original. Tool sections and cards must be identical.
@@ -57,7 +59,8 @@ let withoutForge=withoutVisual
   .replace('<style id="forge-first-paint-css">'+firstPaintCss+'</style>\n','')
   .replace('<script id="forge-first-paint-js">'+firstPaintJs+'</script>\n','')
   .replace('<script id="forge-brand-intro-js">'+forgeJs+'</script>\n','')
-  .replace('<script id="forge-whats-new-js">'+whatsNewJs+'</script>\n','');
+  .replace('<script id="forge-whats-new-js">'+whatsNewJs+'</script>\n','')
+  .replace(/<div class="forge-compressor-surface">[\s\S]*?<\/iframe><\/div>\n/,'');
 const brandStart=withoutForge.indexOf('<section class="forge-hero"');
 const brandEnd=withoutForge.indexOf('<div class="home-grid combined-home-grid" id="homeContent">',brandStart);
 const originalStart=a.indexOf('<div class="home-wordmark">');
@@ -86,6 +89,13 @@ const restored=withoutForge.replace('<script>'+newMain+'</script>','<script>'+or
 // Only five known, textual naming alignments are allowed outside the hero.
 // Reconstruct the legacy terms before the strict byte-for-byte parity check.
 const restoredNames=restored
+  .replace('title="Video Compressor"','title="Video Downloads"')
+  .replace('<span class="nav-item-text">Video Compressor</span>','<span class="nav-item-text">Video Downloads</span>')
+  .replace('aria-label="Open Video Compressor"','aria-label="Open Video Downloads"')
+  .replace('<h2 class="home-card-title">Video Compressor</h2>','<h2 class="home-card-title">Video Downloads</h2>')
+  .replace('<p class="home-card-desc">Compress videos to a chosen size.</p>','<p class="home-card-desc">Create video download commands.</p>')
+  .replace('<div class="video-command"><span>›</span><b>compress</b>','<div class="video-command"><span>›</span><b>download</b>')
+  .replace('<h2 style="flex: 1">Video Compressor</h2>','<h2 style="flex: 1">Video Downloads</h2>')
   .replace('aria-label="Open Logo Resizer"','aria-label="Open Logo Workspace"')
   .replace('<h2 class="home-card-title">Logo Resizer</h2>','<h2 class="home-card-title">Logo Workspace</h2>')
   .replace('title="Ad Downloader"','title="Ad Link Downloader"')
@@ -104,6 +114,8 @@ if(!standalone.includes('<style id="ctk-ad-downloader-v2">')||!standalone.includ
 if(!b.includes('./dist/css/typography-motion-v3.css')||!standalone.includes('<style id="ctk-type-motion-v3">'))throw Error('Typography & motion design layer missing');
 if(rd('dist/css/typography-motion-v3.css')!==typeMotionCss)throw Error('Typography & motion modular stylesheet mismatch');
 if(!b.includes('./dist/css/forge-brand.css')||!b.includes('./dist/js/forge-brand.js'))throw Error('Forge brand assets missing');
+if(!b.includes('./dist/css/forge-compressor-frame.css')||rd('dist/css/forge-compressor-frame.css')!==compressorFrameCss)
+  throw Error('Compressor frame stylesheet missing or stale');
 if(!b.includes('./dist/css/forge-video-route.css')||!b.includes('./dist/js/forge-video-route.js'))
   throw Error('Video Stills shared transition assets missing');
 if(!standalone.includes('<style id="forge-brand-styles">')||!standalone.includes('<script id="forge-brand-intro-js">'))throw Error('Forge standalone assets missing');

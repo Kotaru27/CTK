@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f8f7f4">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' blob: https://cdnjs.cloudflare.com 'wasm-unsafe-eval'; connect-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; worker-src 'self' blob:; style-src 'self'; img-src 'self' data:; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'">
+  <title>Video Compressor — Compress with care</title>
+  <meta name="description" content="Compress several videos to a chosen target size, privately in your browser.">
+  <link rel="stylesheet" href="./styles.css?v=9">
+  <link rel="stylesheet" href="./forge-theme.css?v=1">
+</head>
+<body>
+  <header class="site-header"><div class="brand"><span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>compress<span class="brand-dot">.</span></div><div class="header-right"><span class="local-tag"><span class="local-indicator"></span>On-device processing</span></div></header>
+  <main class="layout">
+    <div class="workarea">
+      <section class="work-panel" aria-label="Compression settings">
+        <div class="panel-head"><div class="step-dot">01</div><h2>Source videos</h2></div>
+        <div id="dropzone" class="dropzone" role="button" tabindex="0" aria-describedby="uploadHelp" aria-label="Choose video files or drop them here">
+          <input id="fileInput" type="file" accept="video/*,.mov,.mkv,.avi,.m4v,.ts,.mts" multiple hidden>
+          <div class="upload-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0-4 4m4-4 4 4"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg></div>
+          <p class="upload-title">Drop your videos here</p><p id="uploadHelp" class="upload-sub">or <span class="choose-text">browse files</span> · up to 5 per session</p>
+        </div>
+        <p class="field-help">Up to 450 MB per video on capable devices (lower on low-memory devices), 900 MB per batch. Download results and refresh to start another session. Files stay on your device.</p>
+        <div class="error-box" id="errorBox" hidden role="alert"></div>
+      </section>
+      <section class="preview-panel batch-panel" aria-label="Compression queue">
+        <div class="preview-top">
+          <div class="queue-headline"><span class="eyebrow queue-eyebrow">YOUR WORKSPACE</span><h2 class="queue-heading">Video queue <span id="batchCount" class="batch-counter">0 selected</span></h2><p class="queue-info">Processed one at a time · MP4 output</p></div>
+          <div class="queue-control-stack">
+            <div class="queue-controls">
+              <div class="queue-size-field"><label class="field-label" for="targetSize">Target per video</label><div class="number-wrap"><input id="targetSize" type="number" min="0.1" step="0.1" max="1024" value="8" inputmode="decimal"><span>MB</span></div></div>
+              <button class="primary-action" type="button" id="compressButton" disabled><span id="actionLabel">Compress videos</span><span class="action-arrow" aria-hidden="true">↗</span></button>
+              <button type="button" class="cancel-batch" id="cancelButton" hidden>Cancel</button>
+            </div>
+            <div class="queue-progress" id="progressBlock" hidden aria-live="off"><div class="progress-line"><strong id="statusText">Preparing...</strong><span id="progressValue">0%</span></div><div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Compression progress" id="progressTrack"><div id="progressFill"></div></div></div>
+          </div>
+        </div>
+        <div class="batch-columns" aria-hidden="true"><span>VIDEO</span><span>ORIGINAL</span><span>COMPRESSED</span><span>STATUS</span><span>ACTIONS</span></div>
+        <div id="emptyState" class="batch-empty"><div class="batch-empty-glyph" aria-hidden="true">▤</div><strong>Ready when you are.</strong><span>Your selected videos will appear here. Previews open only when you choose to watch.</span></div>
+        <div id="batchList" class="batch-list" aria-live="polite"></div>
+        <div class="batch-footer" id="batchFooter" hidden><span id="batchSummary" class="batch-summary"></span><button type="button" id="downloadAll" class="download-all" hidden>Download all as ZIP <span aria-hidden="true">↓</span></button></div>
+      </section>
+    </div>
+    <footer class="footer"><span>Resolution and frame timing preserved when supported; quality depends on target size.</span><span>MP4 · H.264 · AAC</span></footer>
+  </main>
+  <dialog id="previewDialog" class="preview-dialog" aria-label="Video preview">
+    <div class="dialog-head"><strong id="dialogTitle">Video preview</strong><button type="button" id="closePreview" aria-label="Close preview" class="dialog-close">×</button></div>
+    <div class="dialog-tabs"><button type="button" id="originalTab" aria-pressed="true" class="preview-tab active">Original</button><button type="button" id="outputTab" aria-pressed="false" class="preview-tab">Compressed</button></div>
+    <video id="previewVideo" controls playsinline preload="metadata"></video><p id="previewHelp" class="dialog-help">Click play to preview the video.</p>
+  </dialog>
+  <script type="module" src="./app.mjs?v=9"></script>
+</body>
+</html>
