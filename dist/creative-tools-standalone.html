@@ -8340,6 +8340,124 @@ body.light-mode .undo-toast {
     transition:none!important;
   }
 }
+
+
+/* 2026-10-21 / FUNCTION-FIRST DETAIL PASS
+   A different job in each workspace; no shared card template, new previews,
+   control additions, media scaling, route changes or output alterations. */
+
+/* Storyboard / multiple boards: compact/list state should be legible even
+   where the shell provides global button colors. Active choice is explicit. */
+#view-app #stillsTabContentStory .story-board-layout-choice{
+  color:#365b46!important;
+  font-size:12px!important;
+  line-height:1.3!important;
+}
+#view-app #stillsTabContentStory .story-board-layout-choice.selected{
+  color:#fff!important;
+  background:#285a43!important;
+}
+#view-app #stillsTabContentStory .story-board-layout-choice:not(.selected):hover{
+  color:#1e4933!important;
+  background:#e1ede2!important;
+}
+/* Storyboard and Filmstrip / file order: complete asset names are more
+   valuable than forcing every row into a one-line truncated tile. */
+#view-app :is(#stillsTabContentStory,#stillsTabContentFilmstrip)
+  .story-asset-filename{
+  font-size:12px!important;
+  line-height:1.42!important;
+  white-space:normal!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+  overflow-wrap:anywhere!important;
+  word-break:normal!important;
+}
+#view-app :is(#stillsTabContentStory,#stillsTabContentFilmstrip)
+  .story-asset-number{
+  font-size:11px!important;
+  color:#587260!important;
+}
+/* Still collections / the media collection identity must remain legible
+   without increasing thumbnail dimensions or showing any automatic player. */
+#view-app #stillsTabContentVideo #stillsStacksContainer .stack-title{
+  font-size:13px!important;
+  line-height:1.5!important;
+  font-weight:700!important;
+  color:#264937!important;
+}
+#stillsDetailOverlay #stillsOverlayGrid>.vs-frame-row.active-still{
+  background:color-mix(in srgb,var(--vs-primary,#286347) 8%,#fff)!important;
+  box-shadow:inset 3px 0 0 var(--vs-primary,#286347)!important;
+}
+/* PDF collections / clarify source document identity and page count. */
+#view-app #section-pdf #pdfStacksContainer .stack-title{
+  font-size:13.5px!important;
+  line-height:1.48!important;
+  font-weight:700!important;
+  overflow-wrap:anywhere!important;
+}
+#view-app #section-pdf #pdfStacksContainer .stack-count{
+  font-size:12px!important;
+  line-height:1.45!important;
+}
+/* Image Splitter / source filenames may encode important campaign metadata.
+   Do not cut them off while showing split geometry. */
+#view-app #pdfTabContentSplit #splitGrid .split-file-name{
+  display:block!important;
+  flex:1 1 auto;
+  min-width:0!important;
+  font-size:13px!important;
+  line-height:1.46!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+  text-overflow:clip!important;
+}
+/* Logo Resizer / labels are operational data beside a real preview. */
+#view-app #section-logo #logoGrid .logo-card-item .card-fname-lbl{
+  font-size:13px!important;
+  line-height:1.45!important;
+}
+#view-app #section-logo #logoControls :is(label,.label-header){
+  line-height:1.55!important;
+  color:#375945!important;
+}
+/* Link Gen / generated code, not artwork, is the output. More predictable
+   reading and selection for actual filenames and URLs. */
+#view-app #section-adlinks #adlinksTabContentGen
+  :is(#alg-input,#alg-out-ads,#alg-out-story){
+  font-size:14px!important;
+  line-height:1.6!important;
+  tab-size:2;
+}
+#view-app #section-adlinks #adlinksTabContentGen
+  :is(#alg-out-ads,#alg-out-story)::selection{
+  background:#bfdac5;
+  color:#173825;
+}
+/* Ad Downloader / filename identity and bulk queue readability: preserve
+   real statuses, order, actions, and single workspace scroll owner. */
+#view-app #section-adlinks #adlinksTabContentDownloader
+  #adDlTableContainer tbody td:nth-child(2){
+  font-size:13.5px!important;
+  line-height:1.55!important;
+  overflow-wrap:anywhere!important;
+  word-break:normal!important;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader
+  #adDlTableContainer td:nth-child(3) :is(button,summary){
+  font-size:12px!important;
+  line-height:1.35!important;
+}
+#view-app #section-adlinks #adlinksTabContentDownloader
+  #adDlTableContainer :is(th,td):focus-within{
+  outline-offset:-2px;
+}
+@media(prefers-reduced-motion:reduce){
+  #stillsDetailOverlay #stillsOverlayGrid>.vs-frame-row.active-still{
+    transition:none!important;
+  }
+}
 </style>
 <style id="forge-compressor-frame-styles">/* Tool 08: Forge-native compressor route, legacy command UI hidden. */
 #section-yt-helper > :not(.forge-compressor-surface){display:none!important}
