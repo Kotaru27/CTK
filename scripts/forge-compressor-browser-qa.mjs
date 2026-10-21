@@ -93,6 +93,21 @@ try {
       assert.notEqual(mobileSize,'none','Compact file rows must retain inline size context');
     }
     assert.equal(metrics.listOverflow,'visible',label+': Batch rows must not gain an internal scroll pane');
+    await page.waitForFunction(()=>{
+      const iframe=document.querySelector('#section-yt-helper iframe.forge-compressor-frame');
+      if(!iframe?.contentDocument)return false;
+      const child=iframe.contentDocument.documentElement;
+      return iframe.clientHeight+3>=child.scrollHeight;
+    },{timeout:8000});
+    const fit=await page.locator('#section-yt-helper iframe.forge-compressor-frame').evaluate(el=>({
+      iframeHeight:el.clientHeight,
+      contentHeight:el.contentDocument?.documentElement.scrollHeight,
+      bodyHeight:el.contentDocument?.body?.scrollHeight,
+      innerScroll:el.contentDocument?.documentElement.scrollHeight>el.clientHeight+3
+    }));
+    assert.equal(fit.innerScroll,false,label+': Batch queue still trapped inside nested frame scroll');
+    assert.ok(fit.iframeHeight>=fit.contentHeight-3,label+': iframe must fit batch content');
+    console.log('FORGE_BATCH_NATIVE_SCROLL',label,JSON.stringify(fit));
     console.log('FORGE_FIVE_FILE_BATCH_LAYOUT',label,JSON.stringify(metrics));
     await page.screenshot({path:'artifacts/forge-browser/compressor-five-'+label+'.png'});
   }
