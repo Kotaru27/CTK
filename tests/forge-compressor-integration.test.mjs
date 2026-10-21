@@ -31,3 +31,9 @@ test('what’s new announces the replacement without defeating opt-out',()=>{
   assert.match(html,/Video Downloads is now Video Compressor/);
   assert.match(js,/forge_whatsnew_dismissed_2026_v3/);
 });
+
+test('development server serves the native ESM compressor entrypoint as JavaScript',()=>{
+  const dev=read('../scripts/dev.mjs');
+  assert.match(dev,/'\.mjs':'text\/javascript'/);
+  assert.match(dev,/'\.wasm':'application\/wasm'/);
+});
