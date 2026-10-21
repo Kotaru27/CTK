@@ -83,7 +83,16 @@ try {
     assert.equal(metrics.previewOpen,false,label+': Preview opened without user action');
     assert.equal(metrics.overflowingRows,0,label+': Row content overflows the queue');
     assert.ok(metrics.documentWidth<=metrics.viewport+3,label+': Horizontal scroll from five-file layout '+JSON.stringify(metrics));
-    assert.equal(metrics.headerVisible,true,label+': Column context missing');
+    if (label==='fullhd') {
+      assert.equal(metrics.headerVisible,true,'Full HD should show file columns');
+    } else {
+      // Under 1380px the established responsive layout hides columns and
+      // moves original/output size into the filename metadata to save width.
+      assert.equal(metrics.headerVisible,false,'Compact layout must not crowd the five-file queue');
+      const mobileSize=await frame.locator('.mobile-sizes').first().evaluate(el=>getComputedStyle(el).display);
+      assert.notEqual(mobileSize,'none','Compact file rows must retain inline size context');
+    }
+    assert.equal(metrics.listOverflow,'visible',label+': Batch rows must not gain an internal scroll pane');
     console.log('FORGE_FIVE_FILE_BATCH_LAYOUT',label,JSON.stringify(metrics));
     await page.screenshot({path:'artifacts/forge-browser/compressor-five-'+label+'.png'});
   }
