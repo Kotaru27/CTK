@@ -480,13 +480,16 @@ try{
       ad:style('#adDlTableContainer tbody td:nth-child(2)')
     };
   });
-  const thresholds={logo:13,pdf:13,split:13,stills:13,storyboard:12,link:14,ad:13.5};
+  const thresholds={logo:13,pdf:13,split:13,storyboard:12,link:14,ad:13.5};
+  // Video Stills extraction is intentionally scheduled at Full HD only.
+  // Other viewports cannot assert a collection that was never uploaded.
+  if(label==='fullhd')thresholds.stills=13;
   for(const [name,threshold] of Object.entries(thresholds)){
     const data=functionFirst[name];
     assert.ok(data&&data.font>=threshold,
       label+': '+name+' operational text too small or missing '+JSON.stringify(data));
   }
-  for(const name of ['split','stills','storyboard','ad']){
+  for(const name of ['split','storyboard','ad',...(label==='fullhd'?['stills']:[])]){
     const data=functionFirst[name];
     assert.equal(data.whiteSpace,'normal',label+': '+name+' filename still forces a single line');
   }
