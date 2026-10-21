@@ -458,6 +458,44 @@ try{
   const performanceReport={frames:perf.frames,elapsedMs:perf.elapsed,
     p95GapMs:quantile(sorted,.95),maxGapMs:perf.maxGapMs,
     missed33ms:perf.framesOver33ms,maxRouteLatencyMs:Math.max(...perf.routeLatenciesMs),longTasks:perf.longTasks};
+  // Function-first design gates: inspect actual populated DOM rather than
+  // scoring color swatches or generic empty-state mockups.
+  const functionFirst=await page.evaluate(()=>{
+    const style=selector=>{
+      const el=document.querySelector(selector);
+      if(!el)return null;
+      const css=getComputedStyle(el),rect=el.getBoundingClientRect();
+      return {font:parseFloat(css.fontSize),whiteSpace:css.whiteSpace,
+        overflow:css.overflowX,color:css.color,background:css.backgroundColor,
+        width:Math.round(rect.width),visible:css.visibility!=='hidden'};
+    };
+    return {
+      logo:style('#section-logo #logoGrid .card-fname-lbl'),
+      pdf:style('#section-pdf #pdfStacksContainer .stack-title'),
+      split:style('#pdfTabContentSplit #splitGrid .split-file-name'),
+      stills:style('#stillsStacksContainer .stack-title'),
+      storyboard:style('#storyFileList .story-asset-filename'),
+      selectedLayout:style('#storyBoardNavigator .story-board-layout-choice.selected'),
+      link:style('#alg-out-ads'),
+      ad:style('#adDlTableContainer tbody td:nth-child(2)')
+    };
+  });
+  const thresholds={logo:13,pdf:13,split:13,stills:13,storyboard:12,link:14,ad:13.5};
+  for(const [name,threshold] of Object.entries(thresholds)){
+    const data=functionFirst[name];
+    assert.ok(data&&data.font>=threshold,
+      label+': '+name+' operational text too small or missing '+JSON.stringify(data));
+  }
+  for(const name of ['split','stills','storyboard','ad']){
+    const data=functionFirst[name];
+    assert.equal(data.whiteSpace,'normal',label+': '+name+' filename still forces a single line');
+  }
+  assert.ok(functionFirst.selectedLayout&&functionFirst.selectedLayout.font>=12,
+    label+': Storyboard board mode text too small');
+  assert.equal(functionFirst.selectedLayout.color,'rgb(255, 255, 255)',
+    label+': selected storyboard board-layout label is not readable');
+  console.log('FORGE_FUNCTION_FIRST_DETAIL_GATES',label,JSON.stringify(functionFirst));
+
   const rec={viewport:label,link,logo,focus,storyboard,splitter,pdf,ads,stills,video,motion:performanceReport,
     screenshotMode:'synthetic files + actual application workflows',
     videoMetadata:'synthetic local upload queue; no actual encode'};
