@@ -6,6 +6,8 @@ on:
       - 'src/**'
       - 'scripts/build.mjs'
       - 'scripts/source-map.json'
+      - 'package.json'
+      - 'compressor/**'
       - 'tests/**'
       - '.github/workflows/sync-main-build.yml'
   workflow_dispatch:
