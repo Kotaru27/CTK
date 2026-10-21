@@ -23,6 +23,7 @@ const visualJs=rd('src/js/presentation/ad-downloader-v2.js');
 const typeMotionCss=rd('src/css/experience/typography-motion-v3.css');
 const videoRouteCss=rd('src/css/experience/forge-video-route.css');
 const compressorFrameCss=rd('src/css/experience/forge-compressor-frame.css');
+const compressorFitJs=rd('src/js/presentation/forge-compressor-fit.js');
 const videoRouteJs=rd('src/js/presentation/forge-video-route.js');
 const whatsNewJs=rd('src/js/presentation/forge-whats-new.js');
 const whatsNewCss=rd('src/css/experience/forge-whats-new.css');
@@ -51,7 +52,8 @@ const withoutVisual=standalone
   .replace('<script id="ctk-ad-downloader-v2">'+visualJs+'</script>\n','')
   .replace('<style id="forge-video-route-styles">'+videoRouteCss+'</style>\n','')
   .replace('<style id="forge-compressor-frame-styles">'+compressorFrameCss+'</style>\n','')
-  .replace('<script id="forge-video-route-js">'+videoRouteJs+'</script>\n','');
+  .replace('<script id="forge-video-route-js">'+videoRouteJs+'</script>\n','')
+  .replace('<script id="forge-compressor-fit-js">'+compressorFitJs+'</script>\n','');
 // Remove only the new, explicitly-scoped Forge presentation layer before
 // comparing to the untouched original. Tool sections and cards must be identical.
 const forgeJs=rd('src/js/presentation/forge-brand.js');
@@ -114,6 +116,10 @@ if(!standalone.includes('<style id="ctk-ad-downloader-v2">')||!standalone.includ
 if(!b.includes('./dist/css/typography-motion-v3.css')||!standalone.includes('<style id="ctk-type-motion-v3">'))throw Error('Typography & motion design layer missing');
 if(rd('dist/css/typography-motion-v3.css')!==typeMotionCss)throw Error('Typography & motion modular stylesheet mismatch');
 if(!b.includes('./dist/css/forge-brand.css')||!b.includes('./dist/js/forge-brand.js'))throw Error('Forge brand assets missing');
+if(!b.includes('./dist/js/forge-compressor-fit.js') ||
+   rd('dist/js/forge-compressor-fit.js')!==compressorFitJs ||
+   !standalone.includes('<script id="forge-compressor-fit-js">'+compressorFitJs+'</script>'))
+  throw Error('Compressor frame auto-fit presentation is missing or stale');
 if(!b.includes('./dist/css/forge-compressor-frame.css')||rd('dist/css/forge-compressor-frame.css')!==compressorFrameCss)
   throw Error('Compressor frame stylesheet missing or stale');
 if(!b.includes('./dist/css/forge-video-route.css')||!b.includes('./dist/js/forge-video-route.js'))
