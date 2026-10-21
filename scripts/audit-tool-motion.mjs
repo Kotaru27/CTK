@@ -10,7 +10,7 @@ const tools=[
   {key:'storyboard',section:'section-stills-boards',mode:'story',card:4},
   {key:'link-gen',section:'section-adlinks',mode:'gen',card:5},
   {key:'ad-downloader',section:'section-adlinks',mode:'downloader',card:6},
-  {key:'video-downloads',section:'section-yt-helper',mode:'',card:7}
+  {key:'video-compressor',section:'section-yt-helper',mode:'',card:7}
 ];
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 const records=[];

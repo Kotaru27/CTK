@@ -11,7 +11,7 @@ const tools=[
   ['storyboard','section-stills-boards','story'],
   ['link-gen','section-adlinks','gen'],
   ['ad-downloader','section-adlinks','downloader'],
-  ['video-downloads','section-yt-helper',null],
+  ['video-compressor','section-yt-helper',null],
 ];
 const sizes=[
   ['laptop-1366',1366,768],
@@ -43,7 +43,7 @@ try{
         const sidebar=name==='logo-resizer'?section.querySelector('.editor-layout>.sidebar-panel'):
           name==='pdf-to-image'?section.querySelector('.pdf-setup-panel'):
           name==='link-gen'?section.querySelector('.adgen-studio-input'):
-          name==='video-downloads'?section.querySelector('.yt-studio-input'):null;
+          null;
         const editor=name==='logo-resizer'?section.querySelector('#logoGrid'):
           name==='pdf-to-image'?section.querySelector('.pdf-output-column'):
           name==='video-stills'?section.querySelector('.vs-collection-body'):
@@ -51,7 +51,7 @@ try{
           name==='image-splitter'?section.querySelector('.split-studio-canvas'):
           name==='ad-downloader'?section.querySelector('#adDlEmptyState'):
           name==='link-gen'?section.querySelector('.adgen-studio-results'):
-          name==='video-downloads'?section.querySelector('.yt-studio-results'):null;
+          name==='video-compressor'?section.querySelector('.forge-compressor-frame'):null;
         return {name,mode,active:active.length,section:box(section),header:box(header),
           rail:box(sidebar),work:box(editor),
           emptyHeight:name==='logo-resizer'?Math.round(section.querySelector('#logoEmpty')?.getBoundingClientRect().height||0):null,
@@ -61,7 +61,7 @@ try{
       assert.equal(result.active,1,`${label} ${name}: unexpected active sections`);
       assert.ok(result.header?.w>180&&result.header.h>=45,`${label} ${name}: header missing`);
       assert.ok(result.header.x>=-3&&result.header.x+result.header.w<=width+4,`${label} ${name}: header clipped horizontally`);
-      if(result.rail && ['logo-resizer','pdf-to-image','link-gen','video-downloads'].includes(name)){
+      if(result.rail && ['logo-resizer','pdf-to-image','link-gen'].includes(name)){
         assert.ok(result.rail.w>=245&&result.rail.w<=415,`${label} ${name}: rail width ${result.rail.w} out of bounds`);
       }
       if(name==='logo-resizer')assert.ok(Math.abs(result.logoLayoutHeight-result.emptyHeight)<=3,

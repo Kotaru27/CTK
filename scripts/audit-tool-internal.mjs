@@ -31,7 +31,7 @@ try{
   ['storyboard','section-stills-boards','story'],
   ['link-gen','section-adlinks','gen'],
   ['ad-downloader','section-adlinks','downloader'],
-  ['video-downloads','section-yt-helper',null]
+  ['video-compressor','section-yt-helper',null]
  ];
  const record=[];
  for(const [label,id,mode]of cases){

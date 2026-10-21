@@ -12,7 +12,7 @@ const routes=[
  {key:'story',id:'section-stills-boards',mode:'story',nav:'nav-stills-story',heading:'Storyboard',panel:'stillsTabContentStory'},
  {key:'links',id:'section-adlinks',mode:'gen',nav:'nav-adlinks-gen',heading:'Link Gen',panel:'adlinksTabContentGen'},
  {key:'ads',id:'section-adlinks',mode:'downloader',nav:'nav-adlinks-dl',heading:'Ad Downloader',panel:'adlinksTabContentDownloader'},
- {key:'video',id:'section-yt-helper',mode:null,nav:'nav-yt-helper',heading:'Video Downloads'}
+ {key:'video',id:'section-yt-helper',mode:null,nav:'nav-yt-helper',heading:'Video Compressor'}
 ];
 try {
   const context=await browser.newContext({viewport:{width:1920,height:1080},reducedMotion:'no-preference'});
