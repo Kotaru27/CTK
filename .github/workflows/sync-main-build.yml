@@ -5,6 +5,7 @@ on:
     paths:
       - 'src/**'
       - 'scripts/build.mjs'
+      - 'scripts/verify.mjs'
       - 'scripts/source-map.json'
       - 'package.json'
       - 'compressor/**'
