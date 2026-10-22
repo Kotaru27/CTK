@@ -1,7 +1,7 @@
 import { MB, MAX_INPUT_BYTES, MAX_TARGET_MB, formatBytes, formatTime, parseDuration, parseVideoInfo, makePlan, suggestVisualTargetMB, parseAudioInfo, parseAudioTracks, fastArgs, passArgs, chooseEncodingStrategy, safeDownloadName, shouldRetry, retryBitrate, validateMp4 } from './codec.mjs';
 import { makeZip, MAX_BATCH_ZIP_BYTES } from './zip.mjs';
 import { parseProbeReport } from './probe.mjs';
-import { compressNative } from './native-encode.mjs';
+import { compressNativeInWorker } from './native-worker-bridge.mjs';
 import {folderSaveSupported,saveOutputToFolder} from './save-folder.mjs';
 
 const WRAPPER_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/ffmpeg/0.12.15/umd';
@@ -406,7 +406,7 @@ async function compressOne(item,token,index,total){
     // or sizes the hardware encoder cannot meet, retain the proven FFmpeg path.
     activeProgress(1,`Video ${index} of ${total} · Checking native encoder…`);
     try {
-      const native=await compressNative({
+      const native=await compressNativeInWorker({
         file:item.file,targetMB:selectedTarget,
         isCanceled:()=>token!==state.token||state.cancelRequested,
         registerCancel:cancel=>{state.nativeCancel=cancel;},
@@ -598,6 +598,20 @@ els.outputTab.addEventListener('click',()=>setPreviewMode('output'));
 els.close.addEventListener('click',()=>els.dialog.close());els.dialog.addEventListener('close',closePreview);
 els.video.addEventListener('error',()=>{if(state.previewItem)els.previewHelp.textContent='This browser could not open this video preview. The downloaded file is still available; check it in your preferred player.';});
 els.downloadAll.addEventListener('click',downloadAll);
+// Processing stays in the selected worker while this tab is hidden whenever
+// the browser permits it. Visibility changes must not cancel the queue.
+// Chromium may still suspend a whole background page under Energy Saver.
+document.addEventListener('visibilitychange',()=>{
+  if(!state.busy)return;
+  const status=document.hidden?'Background tab · encoding continues when allowed by your browser.':'Forge tab active · encoding in progress';
+  state.log=(state.log+'\n'+status).slice(-50000);
+});
+document.addEventListener('freeze',()=>{
+  if(state.busy)state.log=(state.log+'\nBrowser suspended this tab; work may resume when active.').slice(-50000);
+});
+document.addEventListener('resume',()=>{
+  if(state.busy)state.log=(state.log+'\nBrowser resumed the tab.').slice(-50000);
+});
 window.addEventListener('beforeunload',event=>{
   if(state.busy || state.zipBusy || state.items.some(item=>item.outputBlob)){
     event.preventDefault();event.returnValue='';
