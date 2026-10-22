@@ -54,7 +54,16 @@ try {
         codec:'avc1.42001e',width:640,height:360,bitrate:550_000,framerate:24,
         hardwareAcceleration:'no-preference'
       });
-      return {api:true,avcSupported:!!probe.supported};
+      let aacSupported=false;
+      try{
+        if(typeof AudioEncoder==='function'){
+          const audio=await AudioEncoder.isConfigSupported({
+            codec:'mp4a.40.2',sampleRate:48000,numberOfChannels:2,bitrate:160_000
+          });
+          aacSupported=!!audio.supported;
+        }
+      }catch{}
+      return {api:true,avcSupported:!!probe.supported,aacSupported};
     }catch(e){return {api:true,error:String(e)};}
   });
   console.log('FORGE_BROWSER_NATIVE_SUPPORT',JSON.stringify(nativeSupport));
@@ -77,7 +86,7 @@ try {
     browser:variant,nativeSupport,engineHint:itemText.includes('Native H.264')?'native':'wasm',
     recentDiagnostics:logs.slice(-8),resultText:itemText.slice(-550)
   }));
-  if(nativeSupport.avcSupported && !forceWasm){
+  if(nativeSupport.avcSupported && (!highAudio || nativeSupport.aacSupported) && !forceWasm){
     assert.match(itemText,/Native H\.264 encoding completed/,
       'Browser supports H264 native encoding but silently fell back to FFmpeg.');
   }
