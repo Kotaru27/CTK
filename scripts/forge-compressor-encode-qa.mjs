@@ -12,10 +12,11 @@ import {chromium} from 'playwright';
 const root=path.resolve('artifacts/forge-compressor-encode');
 const highAudio=process.env.FORGE_QA_HIGH_AUDIO==='1';
 const quicktime=process.env.FORGE_QA_MOV==='1';
+const background=process.env.FORGE_QA_BACKGROUND==='1';
 const input=path.join(root,highAudio?'synthetic-high-audio.mp4':quicktime?'synthetic-source.mov':'synthetic-source.mp4');
 const browserChannel=process.env.FORGE_BROWSER_CHANNEL==='chrome'?'chrome':null;
 const forceWasm=process.env.FORGE_COMPARE_WASM==='1';
-const variant=(browserChannel||'chromium')+(forceWasm?'-wasm':'')+(highAudio?'-high-audio':'')+(quicktime?'-mov':'');
+const variant=(browserChannel||'chromium')+(forceWasm?'-wasm':'')+(highAudio?'-high-audio':'')+(quicktime?'-mov':'')+(background?'-background':'');
 const output=path.join(root,'verified-compressed-'+variant+'.mp4');
 fs.mkdirSync(root,{recursive:true});
 if(!fs.existsSync(input))throw Error('Synthetic FFmpeg fixture was not generated');
@@ -73,6 +74,17 @@ try {
   await iframe.locator('#targetSize').fill(String(targetMB));
   await iframe.locator('#compressButton').click();
   const startTime=Date.now();
+  let backgroundTab=null;
+  if(background){
+    // Simulate the user's actual workflow: start encoding, then browse
+    // in another Chrome tab while the Forge iframe remains mounted.
+    backgroundTab=await context.newPage();
+    await backgroundTab.goto('about:blank');
+    await backgroundTab.bringToFront();
+    const visibility=await iframe.locator('html').evaluate(()=>document.visibilityState);
+    assert.equal(visibility,'hidden','Test must run with Forge genuinely hidden');
+    console.log('FORGE_BACKGROUND_STARTED',JSON.stringify({visibility}));
+  }
   let itemText='';
   try{
     await iframe.locator('a.download-one').first().waitFor({state:'visible',timeout:240000});
@@ -81,13 +93,18 @@ try {
     const errorBox=await iframe.locator('#errorBox').textContent().catch(()=>'<unavailable>');
     throw Error('Actual wasm encode did not finish: '+itemText+' | error: '+errorBox+' | browser: '+logs.slice(-10).join(' ; ')+' | '+String(e));
   }
+  if(background){
+    const visibility=await iframe.locator('html').evaluate(()=>document.visibilityState);
+    assert.equal(visibility,'hidden','Compression must complete before returning to Forge');
+    await page.bringToFront();
+  }
   const item=iframe.locator('.batch-item').first();
   itemText=await item.innerText();
   if(highAudio)console.log('FORGE_HIGH_AUDIO_RESULT',JSON.stringify({
     browser:variant,nativeSupport,engineHint:itemText.includes('Native H.264')?'native':'wasm',
     recentDiagnostics:logs.slice(-8),resultText:itemText.slice(-550)
   }));
-  if(nativeSupport.avcSupported && (!highAudio || nativeSupport.aacSupported) && !forceWasm){
+  if(nativeSupport.avcSupported && !quicktime && (!highAudio || nativeSupport.aacSupported) && !forceWasm){
     assert.match(itemText,/Native H\.264 encoding completed/,
       'Browser supports H264 native encoding but silently fell back to FFmpeg.');
   }
@@ -127,7 +144,7 @@ try {
     durationSeconds:Number(info.format.duration),videoCodec:video.codec_name,
     audioCodec:audio.codec_name,videoWidth:video.width,videoHeight:video.height,
     targetMet:outputBytes<=targetMB*1e6,
-    browser:variant,forcedWasm:forceWasm,highAudio,nativeSupport,
+    browser:variant,forcedWasm:forceWasm,highAudio,background,nativeSupport,
     engine:itemText.includes('Native H.264 encoding completed')?'native':'wasm-fallback',
     encodeWallMs:Date.now()-startTime,
     statusText:itemText.slice(0,400),consoleDiagnostics:logs.slice(-8)};
