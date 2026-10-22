@@ -1,6 +1,7 @@
 import { MB, MAX_INPUT_BYTES, MAX_TARGET_MB, formatBytes, formatTime, parseDuration, parseVideoInfo, makePlan, parseAudioInfo, parseAudioTracks, fastArgs, passArgs, chooseEncodingStrategy, safeDownloadName, shouldRetry, retryBitrate, validateMp4 } from './codec.mjs';
 import { makeZip, MAX_BATCH_ZIP_BYTES } from './zip.mjs';
 import { parseProbeReport } from './probe.mjs';
+import { compressNative } from './native-encode.mjs';
 
 const WRAPPER_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/ffmpeg/0.12.15/umd';
 const CORE_CDN = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd';
@@ -29,7 +30,7 @@ const els = {
 const state = {
   items:[], nextId:1, busy:false, cancelRequested:false, sessionStarted:false, token:0, ffmpeg:null,
   engineURLs:[], phase:null, active:null, log:'', previewItem:null, previewSourceURL:'',
-  zipBusy:false, progressValue:-1
+  zipBusy:false, progressValue:-1, nativeCancel:null
 };
 
 function setError(message) { els.error.textContent=message; els.error.hidden=!message; }
@@ -367,6 +368,37 @@ async function compressOne(item,token,index,total){
       activeProgress(100,`Video ${index} of ${total} · Original already fits`);
       return;
     }
+    // Try native browser H.264 first. For unsupported streams, damaged output,
+    // or sizes the hardware encoder cannot meet, retain the proven FFmpeg path.
+    activeProgress(1,`Video ${index} of ${total} · Checking native encoder…`);
+    try {
+      const native=await compressNative({
+        file:item.file,targetMB:selectedTarget,
+        isCanceled:()=>token!==state.token||state.cancelRequested,
+        registerCancel:cancel=>{state.nativeCancel=cancel;},
+        onProgress:fraction=>activeProgress(10+fraction*82,`Video ${index} of ${total} · Native encoding…`)
+      });
+      if(token!==state.token||state.cancelRequested)throw new Error('Canceled.');
+      // Native output was validated for H.264/AAC count and duration by
+      // Mediabunny; the existing MP4 container verifier ran as well.
+      const blob=new Blob([native.data],{type:'video/mp4'});
+      const url=URL.createObjectURL(blob);
+      if(previous?.url)URL.revokeObjectURL(previous.url);
+      item.outputBlob=blob;item.outputURL=url;item.resultBytes=blob.size;
+      item.duration=native.duration;item.width=native.width;item.height=native.height;
+      item.fps=native.fps;item.audioTracks=native.audioTracks;
+      item.audioPresent=native.audioTracks.length>0;
+      item.status='done';item.percent=100;item.encodedTargetMB=selectedTarget;item.recompress=false;
+      item.note='Native H.264 encoding completed. Original dimensions and AAC track count retained; preview to inspect picture and audio.';
+      activeProgress(100,`Video ${index} of ${total} · Complete`);
+      return;
+    }catch(nativeError){
+      if(token!==state.token||state.cancelRequested)throw nativeError;
+      // A capability rejection does not fail the user's job. Never publish
+      // a partial native output or discard a previously valid download.
+      state.log='Native encoder fallback: '+String(nativeError).slice(0,220);
+      activeProgress(4,`Video ${index} of ${total} · Loading compatible encoder…`);
+    }finally{state.nativeCancel=null;}
     activeProgress(1,`Video ${index} of ${total} · Loading engine…`);
     ffmpeg=await ensureEngine(token);
     activeProgress(6,`Video ${index} of ${total} · Reading source…`);
@@ -435,7 +467,7 @@ async function compressOne(item,token,index,total){
     
     if(/memory|terminated|Cannot load|core|engine/i.test(message)&&!state.cancelRequested)terminateEngine();
   }finally{
-    state.phase=null;
+    state.phase=null;state.nativeCancel=null;
     if(ffmpeg&&ffmpeg===state.ffmpeg){await safeDelete(ffmpeg,input);await safeDelete(ffmpeg,output);
       await safeDelete(ffmpeg,'ratepass-0.log');await safeDelete(ffmpeg,'ratepass-0.log.mbtree');
       // Release retained WASM heap after a large encode; smaller clips reuse the engine for speed.
@@ -466,6 +498,7 @@ function cancelBatch(){
   if(!state.busy||state.cancelRequested)return;
   state.cancelRequested=true;++state.token;
   if(state.active && !state.active.outputBlob){state.active.status='canceled';state.active.note='Canceled; original video unchanged.';}
+  if(state.nativeCancel){try{state.nativeCancel();}catch{}}
   terminateEngine();activeProgress(0,'Canceling current video…');renderQueue();
 }
 function closePreview(){els.video.pause();els.video.removeAttribute('src');els.video.load();if(state.previewSourceURL)URL.revokeObjectURL(state.previewSourceURL);state.previewSourceURL='';state.previewItem=null;}
