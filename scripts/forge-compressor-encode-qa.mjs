@@ -124,6 +124,7 @@ try {
   if(nativeSupport.avcSupported && !quicktime && (!highAudio || nativeSupport.aacSupported) && !forceWasm){
     assert.match(itemText,/Native H\.264 encoding completed/,
       'Browser supports H264 native encoding but silently fell back to FFmpeg.');
+    assert.match(itemText,/Dedicated worker/,'Native encoding did not run in its intended dedicated worker.');
   }
   if(forceWasm)assert.match(itemText,/Size-aware encoding|Quality-focused two-pass/,
     'Forced FFmpeg comparison did not use the established software path.');
