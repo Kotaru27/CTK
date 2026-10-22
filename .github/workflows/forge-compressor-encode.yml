@@ -1,4 +1,4 @@
-name: Forge compressor actual WebAssembly encode
+name: Forge compressor native and fallback real encode
 on:
   push:
     branches: [main]
@@ -23,6 +23,8 @@ jobs:
         run: npm install --no-save --no-package-lock playwright@1.58.2
       - name: Provision CI Chromium
         run: npx playwright install chromium --with-deps
+      - name: Provision Google Chrome for native codec compatibility check
+        run: npx playwright install chrome --with-deps
       - name: Provision FFmpeg encoder for synthetic fixture
         run: |
           sudo apt-get update -qq
@@ -46,7 +48,11 @@ jobs:
           done
           cat /tmp/forge-encode-server.log
           exit 1
-      - name: Encode through actual browser WASM and inspect downloaded MP4
+      - name: Encode through browser and inspect downloaded H264/AAC MP4
+        run: node scripts/forge-compressor-encode-qa.mjs
+      - name: Encode again in Google Chrome with production codecs
+        env:
+          FORGE_BROWSER_CHANNEL: chrome
         run: node scripts/forge-compressor-encode-qa.mjs
       - name: Keep genuine encode results or failure evidence
         if: always()
