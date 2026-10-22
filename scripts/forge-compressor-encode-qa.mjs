@@ -27,7 +27,7 @@ try {
   });
   const page=await context.newPage();
   page.on('pageerror',e=>logs.push('PAGE_ERROR '+e.message));
-  page.on('console',m=>{if(m.type()==='error')logs.push('CONSOLE_ERROR '+m.text());});
+  page.on('console',m=>{if(m.type()==='error'||m.text().startsWith('FORGE_NATIVE_FALLBACK'))logs.push('CONSOLE '+m.text());});
   page.on('requestfailed',r=>logs.push('REQUEST_FAILED '+r.url()+' '+r.failure()?.errorText));
   await page.goto('http://127.0.0.1:4173/',{waitUntil:'domcontentloaded',timeout:60000});
   await page.locator('.home-card.tool-video').click();
@@ -37,6 +37,7 @@ try {
   await iframe.locator('.batch-item').first().waitFor({timeout:15000});
   await iframe.locator('#targetSize').fill(String(targetMB));
   await iframe.locator('#compressButton').click();
+  const startTime=Date.now();
   let itemText='';
   try{
     await iframe.locator('a.download-one').first().waitFor({state:'visible',timeout:240000});
@@ -68,6 +69,8 @@ try {
     durationSeconds:Number(info.format.duration),videoCodec:video.codec_name,
     audioCodec:audio.codec_name,videoWidth:video.width,videoHeight:video.height,
     targetMet:outputBytes<=targetMB*1e6,
+    engine:itemText.includes('Native H.264 encoding completed')?'native':'wasm-fallback',
+    encodeWallMs:Date.now()-startTime,
     statusText:itemText.slice(0,400),consoleDiagnostics:logs.slice(-8)};
   fs.writeFileSync(path.join(root,'result.json'),JSON.stringify(result,null,2));
   console.log('FORGE_ACTUAL_BROWSER_ENCODE_VERIFIED '+JSON.stringify(result));
