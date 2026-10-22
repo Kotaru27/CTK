@@ -100,10 +100,10 @@ export function suggestVisualTargetMB({duration,width,height,fps=30,originalByte
  * output, never claims to measure perceptual quality, and avoids doubling
  * expensive encodes. The caller must retain the valid first result.
  */
-export function nativeRefinementBitrate({targetBytes,outputBytes,videoBps,audioBps=0,duration=0,elapsedMs=Infinity}={}){
+export function nativeRefinementBitrate({targetBytes,outputBytes,videoBps,audioBps=0,duration=0,elapsedMs=Infinity,originalBytes=0}={}){
   if (![targetBytes,outputBytes,videoBps,audioBps,duration,elapsedMs].every(Number.isFinite) ||
       targetBytes<350000 || targetBytes>120*MB || outputBytes<=0 || videoBps<70000 || audioBps<0 ||
-      duration<=0 || elapsedMs<0 || elapsedMs>12000 ||
+      duration<=0 || duration>12 || originalBytes>24*MB || elapsedMs<0 || elapsedMs>1800 ||
       outputBytes>=targetBytes*.84) return null;
   const expectedAudioBytes=audioBps*duration/8;
   const observedVideoBytes=outputBytes-expectedAudioBytes;
@@ -121,7 +121,10 @@ export function chooseEncodingStrategy(plan,{duration=0,sourceBytes=0,deviceMemo
   const constrained=Number.isFinite(plan.bpp)?plan.bpp<0.075:plan.videoKbps<600;
   // Two-pass x264 improves bitrate allocation for demanding size targets, but
   // is expensive in browser WASM; fall back to a fast single pass on large/low-RAM files.
-  const reasonable=duration>0&&duration<=120&&sourceBytes>0&&sourceBytes<=150*MB;
+  // In-browser x264 is single-threaded. Do not run multi-pass analysis
+  // on ordinary uploads: a 33 MB or minute-long video can become painfully slow.
+  // Reserve two-pass only for very short, small sources that can finish promptly.
+  const reasonable=duration>0&&duration<=12&&sourceBytes>0&&sourceBytes<=12*MB;
   if(constrained&&reasonable&&!lowMemory)return {twoPass:true,preset:'medium'};
   return {twoPass:false,preset:constrained?'fast':'veryfast'};
 }
