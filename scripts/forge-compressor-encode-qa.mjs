@@ -83,11 +83,17 @@ try {
       'Switching Forge tools must not destroy the working compressor iframe');
   }
   if(background){
+    // Playwright ordinarily forces focus on every tab for predictable tests.
+    // Disable that focus emulation before switching tabs so the browser
+    // actually gives Forge document.visibilityState='hidden'.
+    const cdp=await context.newCDPSession(page);
+    await cdp.send('Emulation.setFocusEmulationEnabled',{enabled:false});
     // Simulate the user's actual workflow: start encoding, then browse
     // in another Chrome tab while the Forge iframe remains mounted.
     backgroundTab=await context.newPage();
     await backgroundTab.goto('about:blank');
     await backgroundTab.bringToFront();
+    await backgroundTab.waitForTimeout(150);
     const visibility=await iframe.locator('html').evaluate(()=>document.visibilityState);
     assert.equal(visibility,'hidden','Test must run with Forge genuinely hidden');
     console.log('FORGE_BACKGROUND_STARTED',JSON.stringify({visibility}));
