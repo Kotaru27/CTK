@@ -110,7 +110,7 @@ export async function compressNative({file,targetMB,onProgress=()=>{},registerCa
     const betterBitrate=nativeRefinementBitrate({
       targetBytes:plan.targetBytes,outputBytes:data.length,
       videoBps:startBitrate,audioBps:plan.audioTotalKbps*1000,
-      duration,elapsedMs:performance.now()-startTime
+      duration,elapsedMs:performance.now()-startTime,originalBytes:file.size
     });
     if(betterBitrate!==null&&!isCanceled()){
       try{
