@@ -6,7 +6,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import {execFileSync} from 'node:child_process';
+import {execFileSync,spawnSync} from 'node:child_process';
 import {chromium} from 'playwright';
 
 const root=path.resolve('artifacts/forge-compressor-encode');
@@ -77,7 +77,13 @@ try {
   assert.equal(video?.width,640,'Video dimensions must be retained');
   assert.equal(video?.height,360,'Video dimensions must be retained');
   assert.ok(Number(info.format?.duration)>4,'Output duration is too short');
-  const result={sourceBytes,outputBytes,targetBytes:targetMB*1e6,
+  // Compare decoded frames only on synthetic input. SSIM is useful
+  // regression telemetry, not a promise of perceptual identity.
+  const compare=spawnSync('ffmpeg',['-hide_banner','-i',input,'-i',output,
+    '-lavfi','ssim','-f','null','-'],{encoding:'utf8',timeout:45000,maxBuffer:8*1024*1024});
+  const ssimMatch=compare.stderr?.match(/SSIM\s+Y:[^\n]*?All:([\d.]+)/);
+  const ssim=compare.status===0 && ssimMatch?Number(ssimMatch[1]):null;
+  const result={sourceBytes,outputBytes,targetBytes:targetMB*1e6,ssim,
     reductionPercent:Math.round((1-outputBytes/sourceBytes)*100),
     durationSeconds:Number(info.format.duration),videoCodec:video.codec_name,
     audioCodec:audio.codec_name,videoWidth:video.width,videoHeight:video.height,
