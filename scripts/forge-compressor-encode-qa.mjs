@@ -11,10 +11,11 @@ import {chromium} from 'playwright';
 
 const root=path.resolve('artifacts/forge-compressor-encode');
 const highAudio=process.env.FORGE_QA_HIGH_AUDIO==='1';
-const input=path.join(root,highAudio?'synthetic-high-audio.mp4':'synthetic-source.mp4');
+const quicktime=process.env.FORGE_QA_MOV==='1';
+const input=path.join(root,highAudio?'synthetic-high-audio.mp4':quicktime?'synthetic-source.mov':'synthetic-source.mp4');
 const browserChannel=process.env.FORGE_BROWSER_CHANNEL==='chrome'?'chrome':null;
 const forceWasm=process.env.FORGE_COMPARE_WASM==='1';
-const variant=(browserChannel||'chromium')+(forceWasm?'-wasm':'')+(highAudio?'-high-audio':'');
+const variant=(browserChannel||'chromium')+(forceWasm?'-wasm':'')+(highAudio?'-high-audio':'')+(quicktime?'-mov':'');
 const output=path.join(root,'verified-compressed-'+variant+'.mp4');
 fs.mkdirSync(root,{recursive:true});
 if(!fs.existsSync(input))throw Error('Synthetic FFmpeg fixture was not generated');
