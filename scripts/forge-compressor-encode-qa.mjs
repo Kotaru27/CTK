@@ -11,7 +11,9 @@ import {chromium} from 'playwright';
 
 const root=path.resolve('artifacts/forge-compressor-encode');
 const input=path.join(root,'synthetic-source.mp4');
-const output=path.join(root,'verified-compressed.mp4');
+const browserChannel=process.env.FORGE_BROWSER_CHANNEL==='chrome'?'chrome':null;
+const variant=browserChannel||'chromium';
+const output=path.join(root,'verified-compressed-'+variant+'.mp4');
 fs.mkdirSync(root,{recursive:true});
 if(!fs.existsSync(input))throw Error('Synthetic FFmpeg fixture was not generated');
 const sourceBytes=fs.statSync(input).size;
@@ -19,7 +21,7 @@ assert.ok(sourceBytes>750_000,'Synthetic source unexpectedly small; fixture woul
 const targetMB=0.60;
 assert.ok(sourceBytes>targetMB*1e6,'Fixture must exceed the target');
 const logs=[];
-const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+const browser=await chromium.launch({headless:true,args:['--no-sandbox'],...(browserChannel?{channel:browserChannel}:{})});
 try {
   const context=await browser.newContext({viewport:{width:1920,height:1080},acceptDownloads:true});
   await context.addInitScript(()=>{
@@ -38,7 +40,7 @@ try {
     try{
       const probe=await VideoEncoder.isConfigSupported({
         codec:'avc1.42001e',width:640,height:360,bitrate:550_000,framerate:24,
-        hardwareAcceleration:'prefer-hardware'
+        hardwareAcceleration:'no-preference'
       });
       return {api:true,avcSupported:!!probe.supported};
     }catch(e){return {api:true,error:String(e)};}
@@ -80,11 +82,11 @@ try {
     durationSeconds:Number(info.format.duration),videoCodec:video.codec_name,
     audioCodec:audio.codec_name,videoWidth:video.width,videoHeight:video.height,
     targetMet:outputBytes<=targetMB*1e6,
-    nativeSupport,
+    browser:variant,nativeSupport,
     engine:itemText.includes('Native H.264 encoding completed')?'native':'wasm-fallback',
     encodeWallMs:Date.now()-startTime,
     statusText:itemText.slice(0,400),consoleDiagnostics:logs.slice(-8)};
-  fs.writeFileSync(path.join(root,'result.json'),JSON.stringify(result,null,2));
+  fs.writeFileSync(path.join(root,'result-'+variant+'.json'),JSON.stringify(result,null,2));
   console.log('FORGE_ACTUAL_BROWSER_ENCODE_VERIFIED '+JSON.stringify(result));
   await context.close();
 } finally {await browser.close();}
