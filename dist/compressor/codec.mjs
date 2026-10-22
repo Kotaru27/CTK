@@ -78,6 +78,23 @@ export function makePlan({duration, targetMB, originalBytes, width=0, height=0, 
   return {targetBytes,totalBps,audioKbps,audioTotalKbps,audioCount:count,copyAudio,videoKbps,bpp,warning};
 }
 
+/** Metadata-only visual-size starting point, NOT a quality guarantee.
+ * A 0.075 bits/pixel/frame budget generally avoids the most extreme
+ * blockiness; motion, noise, codec and prior compression change the result.
+ */
+export function suggestVisualTargetMB({duration,width,height,fps=30,originalBytes=0,audioTracks=[]}={}){
+  if(!Number.isFinite(duration)||duration<=0 || !Number.isFinite(width)||width<=0 ||
+     !Number.isFinite(height)||height<=0)return null;
+  const frameRate=Number.isFinite(fps)&&fps>0?Math.min(fps,60):30;
+  const audioKbps=Array.isArray(audioTracks)&&audioTracks.length
+    ?audioTracks.reduce((sum,t)=>sum+(Number.isFinite(t.kbps)&&t.kbps>0?Math.min(t.kbps,256):128),0)
+    :128;
+  const bps=width*height*frameRate*.075 + audioKbps*1000;
+  const mb=Math.ceil(bps*duration/(8*MB*.93));
+  const originalMB=originalBytes>0?originalBytes/MB:Infinity;
+  return Math.max(1,Math.min(mb,Math.floor(originalMB)));
+}
+
 /** Choose a quality-first strategy without claiming to detect motion from metadata alone. */
 export function chooseEncodingStrategy(plan,{duration=0,sourceBytes=0,deviceMemory=0}={}) {
   const gb=Number(deviceMemory);
