@@ -249,7 +249,7 @@ save('dist/css/forge-workflow-interactions.css',forgeWorkflowCss);
 save('dist/css/forge-whats-new.css',forgeWhatsNewCss);
 save('dist/js/forge-whats-new.js',forgeWhatsNewJs);
 save('dist/js/forge-video-route.js',forgeVideoRouteJs);
-for(const file of ['index.html','app.mjs','codec.mjs','probe.mjs','native-encode.mjs','save-folder.mjs','styles.css','forge-theme.css','video-worker.js','zip.mjs'])
+for(const file of ['index.html','app.mjs','codec.mjs','probe.mjs','native-encode.mjs','native-worker.mjs','native-worker-bridge.mjs','save-folder.mjs','styles.css','forge-theme.css','video-worker.js','zip.mjs'])
   save('dist/compressor/'+file,read('compressor/'+file));
 for(const file of ['mediabunny-1.61.6.mjs','MEDIABUNNY-LICENSE.txt'])
   save('dist/compressor/vendor/'+file,read('compressor/vendor/'+file));
