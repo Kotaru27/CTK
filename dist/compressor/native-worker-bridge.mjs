@@ -5,7 +5,7 @@
 import {compressNative} from './native-encode.mjs';
 
 export function compressNativeInWorker(options){
-  if(typeof Worker!=='function')return compressNative(options);
+  if(typeof Worker!=='function')return compressNative(options).then(result=>({...result,ranInWorker:false}));
   let worker;
   try{
     worker=new Worker(new URL('./native-worker.mjs',import.meta.url),{
@@ -13,7 +13,7 @@ export function compressNativeInWorker(options){
     });
   }catch{
     // Module workers are not universal. Keep the established browser path.
-    return compressNative(options);
+    return compressNative(options).then(result=>({...result,ranInWorker:false}));
   }
   return new Promise((resolve,reject)=>{
     let completed=false;
@@ -39,7 +39,7 @@ export function compressNativeInWorker(options){
         if(Number.isFinite(data.progress))options.onProgress?.(data.progress);
       }else if(data?.type==='complete'){
         if(options.isCanceled?.())return finish(new Error('Canceled.'));
-        finish(null,data.result);
+        finish(null,{...data.result,ranInWorker:true});
       }else if(data?.type==='error'){
         const error=new Error(String(data.message||'Native worker could not process the file.'));
         error.name=data.name||'Error';
