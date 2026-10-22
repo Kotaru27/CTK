@@ -3,7 +3,7 @@
  * Pages origin. Original files are always local to the browser.
  * Every unsupported stream and encoder configuration falls back to FFmpeg.
  */
-import {makePlan,validateMp4,MB} from './codec.mjs';
+import {makePlan,validateMp4,nativeRefinementBitrate} from './codec.mjs';
 
 export class NativeUnavailable extends Error {
   constructor(message){super(message);this.name='NativeUnavailable';}
@@ -30,7 +30,7 @@ export async function compressNative({file,targetMB,onProgress=()=>{},registerCa
   if(typeof VideoEncoder!=='function'||typeof VideoDecoder!=='function')
     throw new NativeUnavailable('Browser does not expose native video encoding and decoding.');
   if(isCanceled())throw new Error('Canceled.');
-  let input=null,outputInput=null,conversion=null;
+  let input=null,outputInput=null,refinementInput=null,conversion=null;
   try{
     const lib=await library();
     if(isCanceled())throw new Error('Canceled.');
@@ -49,8 +49,8 @@ export async function compressNative({file,targetMB,onProgress=()=>{},registerCa
     ]);
     if(!Number.isFinite(duration)||duration<=0||!width||!height)
       throw new NativeUnavailable('Source dimensions or duration need FFprobe.');
-    // Conservative, accurate audio budgeting: only directly copy AAC tracks
-    // when their bitrate metadata confirms they fit. Otherwise use FFmpeg.
+    // Audio bitrates determine how much of the strict size budget is available
+    // to the picture. Preserve compatible AAC directly whenever possible.
     const tracks=await Promise.all(audios.map(async a=>({
       codec:'aac',kbps:(await a.getAverageBitrate())/1000
     })));
@@ -60,53 +60,92 @@ export async function compressNative({file,targetMB,onProgress=()=>{},registerCa
       duration,targetMB,originalBytes:file.size,width,height,fps:rate||30,
       audioPresent:audios.length>0,audioTracks:tracks
     });
-    if(audios.length && !plan.copyAudio)
-      throw new NativeUnavailable('Audio needs transcoding to fit; use the FFmpeg verified path.');
-    const output=new lib.Output({format:new lib.Mp4OutputFormat(),target:new lib.BufferTarget()});
-    conversion=await lib.Conversion.init({
-      input,output,tracks:'all',
-      video:{
-        codec:'avc',
-        // Browser encoder bitrates are approximate. Reserve a safety margin for the
-        // output muxer and rate control; never promise exact target sizing.
-        bitrate:Math.max(70_000,Math.floor(plan.videoKbps*950)),
-        forceTranscode:true,
-        hardwareAcceleration:'no-preference'
-      },
-      audio:{codec:'aac'},
-      showWarnings:false
-    });
-    if(!conversion.isValid || conversion.discardedTracks.length)
-      throw new NativeUnavailable('Native encoder cannot preserve every media track.');
-    if(isCanceled())throw new Error('Canceled.');
-    registerCancel(()=>{void conversion.cancel().catch(()=>{});});
-    conversion.onProgress=fraction=>{
-      if(isCanceled()){void conversion.cancel().catch(()=>{});return;}
-      if(Number.isFinite(fraction))onProgress(Math.min(1,Math.max(0,fraction)));
+    const startBitrate=Math.max(70_000,Math.floor(plan.videoKbps*950));
+    // Native AAC encoding is attempted only when a high-bitrate source
+    // would consume too much of the target; incompatible devices still
+    // fall back to the existing FFmpeg path.
+    const audioOptions=plan.copyAudio?{codec:'aac'}:{
+      codec:'aac',bitrate:plan.audioKbps*1000,forceTranscode:true
     };
-    await conversion.execute();
-    if(isCanceled())throw new Error('Canceled.');
-    const buffer=output.target.buffer;
-    if(!(buffer instanceof ArrayBuffer))throw new Error('Native encoder returned no completed output.');
-    const data=new Uint8Array(buffer);
-    validateMp4(data);
-    // Keep exact-size semantics: if hardware encoding overshoots, the
-    // software fallback will retry with more exact bitrate control.
+    const encodeAttempt=async(source,videoBitrate,from,to)=>{
+      const output=new lib.Output({format:new lib.Mp4OutputFormat(),target:new lib.BufferTarget()});
+      conversion=await lib.Conversion.init({
+        input:source,output,tracks:'all',
+        video:{
+          codec:'avc',
+          bitrate:videoBitrate,
+          forceTranscode:true,
+          hardwareAcceleration:'no-preference'
+        },
+        audio:audioOptions,
+        showWarnings:false
+      });
+      if(!conversion.isValid||conversion.discardedTracks.length)
+        throw new NativeUnavailable('Native encoder cannot preserve every media track.');
+      if(isCanceled())throw new Error('Canceled.');
+      registerCancel(()=>{void conversion.cancel().catch(()=>{});});
+      conversion.onProgress=fraction=>{
+        if(isCanceled()){void conversion.cancel().catch(()=>{});return;}
+        if(Number.isFinite(fraction))
+          onProgress(from+Math.min(1,Math.max(0,fraction))*(to-from));
+      };
+      await conversion.execute();
+      if(isCanceled())throw new Error('Canceled.');
+      const buffer=output.target.buffer;
+      if(!(buffer instanceof ArrayBuffer))
+        throw new Error('Native encoder returned no completed output.');
+      const candidate=new Uint8Array(buffer);
+      validateMp4(candidate);
+      registerCancel(null);
+      conversion=null;
+      return candidate;
+    };
+    const startTime=performance.now();
+    let data=await encodeAttempt(input,startBitrate,0,.76);
+    // Hardware bitrate control is approximate. Never offer an output above
+    // target and never re-encode merely because a larger one was requested.
     if(data.length>plan.targetBytes)
       throw new NativeUnavailable('Native bitrate overshot the requested size.');
+    let refined=false;
+    const betterBitrate=nativeRefinementBitrate({
+      targetBytes:plan.targetBytes,outputBytes:data.length,
+      videoBps:startBitrate,audioBps:plan.audioTotalKbps*1000,
+      duration,elapsedMs:performance.now()-startTime
+    });
+    if(betterBitrate!==null&&!isCanceled()){
+      try{
+        // A fresh BlobSource ensures a second encode starts at frame zero.
+        // Keep the entire first valid result if the refinement overshoots
+        // or fails: quality must never regress because a retry misbehaved.
+        refinementInput=new lib.Input({formats:lib.ALL_FORMATS,source:new lib.BlobSource(file)});
+        const candidate=await encodeAttempt(refinementInput,betterBitrate,.76,.98);
+        if(candidate.length<=plan.targetBytes && candidate.length>data.length){
+          data=candidate;
+          refined=true;
+        }
+      }catch(error){
+        if(isCanceled())throw error;
+        // Refinement is opportunistic, not a reason to discard a valid MP4.
+      }
+    }
+    if(isCanceled())throw new Error('Canceled.');
+    onProgress(1);
     outputInput=new lib.Input({formats:lib.ALL_FORMATS,source:new lib.BlobSource(new Blob([data],{type:'video/mp4'}))});
     const [outVideos,outAudio,outDuration]=await Promise.all([
       outputInput.getVideoTracks(),outputInput.getAudioTracks(),outputInput.getDurationFromMetadata()
     ]);
     if(outVideos.length!==1||await outVideos[0].getCodec()!=='avc' ||
+       await outVideos[0].getDisplayWidth()!==width ||
+       await outVideos[0].getDisplayHeight()!==height ||
        outAudio.length!==audios.length ||
        (await Promise.all(outAudio.map(a=>a.getCodec()))).some(x=>x!=='aac') ||
        !Number.isFinite(outDuration)||Math.abs(outDuration-duration)>Math.max(.45,duration*.02))
       throw new Error('Native MP4 verification failed: streams or duration changed.');
-    return {data,plan,duration,width,height,fps:rate||30,audioTracks:tracks};
+    return {data,plan,duration,width,height,fps:rate||30,audioTracks:tracks,refined,audioCopied:plan.copyAudio};
   }finally{
     registerCancel(null);
     try{outputInput?.dispose();}catch{}
+    try{refinementInput?.dispose();}catch{}
     try{input?.dispose();}catch{}
   }
 }
