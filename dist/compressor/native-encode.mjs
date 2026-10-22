@@ -67,11 +67,11 @@ export async function compressNative({file,targetMB,onProgress=()=>{},registerCa
       input,output,tracks:'all',
       video:{
         codec:'avc',
-        // Hardware bitrates are approximate. Reserve a safety margin for the
+        // Browser encoder bitrates are approximate. Reserve a safety margin for the
         // output muxer and rate control; never promise exact target sizing.
         bitrate:Math.max(70_000,Math.floor(plan.videoKbps*950)),
         forceTranscode:true,
-        hardwareAcceleration:'prefer-hardware'
+        hardwareAcceleration:'no-preference'
       },
       audio:{codec:'aac'},
       showWarnings:false
