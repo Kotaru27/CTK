@@ -70,6 +70,11 @@ jobs:
         env:
           FORGE_BROWSER_CHANNEL: chrome
         run: node scripts/forge-compressor-encode-qa.mjs
+      - name: Verify compression survives switching to another Forge tool
+        env:
+          FORGE_BROWSER_CHANNEL: chrome
+          FORGE_QA_SWITCH_TOOL: '1'
+        run: node scripts/forge-compressor-encode-qa.mjs
       - name: Verify conversion finishes while Forge is in a hidden browser tab
         env:
           FORGE_BROWSER_CHANNEL: chrome
