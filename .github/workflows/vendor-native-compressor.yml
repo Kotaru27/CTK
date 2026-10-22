@@ -1,0 +1,46 @@
+name: Vendor pinned native video engine
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/vendor-native-compressor.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: forge-vendor-native-engine
+  cancel-in-progress: false
+jobs:
+  vendor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Bundle pinned Mediabunny for browser ESM
+        run: |
+          set -euo pipefail
+          PREFIX="$RUNNER_TEMP/forge-native-vendor"
+          npm install --no-package-lock --no-save --prefix "$PREFIX" mediabunny@1.61.6 esbuild@0.25.12
+          mkdir -p compressor/vendor
+          "$PREFIX/node_modules/.bin/esbuild" "$PREFIX/node_modules/mediabunny/dist/modules/src/index.js" \
+            --bundle --platform=browser --format=esm --target=es2022 --minify \
+            --outfile=compressor/vendor/mediabunny-1.61.6.mjs
+          cp "$PREFIX/node_modules/mediabunny/LICENSE" compressor/vendor/MEDIABUNNY-LICENSE.txt
+          node --check compressor/vendor/mediabunny-1.61.6.mjs
+          test "$(wc -c < compressor/vendor/mediabunny-1.61.6.mjs)" -gt 30000
+          sha256sum compressor/vendor/mediabunny-1.61.6.mjs
+      - name: Save vendored assets to main
+        run: |
+          git add -- compressor/vendor/mediabunny-1.61.6.mjs compressor/vendor/MEDIABUNNY-LICENSE.txt
+          if ! git diff --cached --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "Vendor Mediabunny 1.61.6 for same-origin native compressor"
+            git push origin HEAD:main
+          fi
