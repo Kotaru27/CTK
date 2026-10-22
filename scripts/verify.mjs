@@ -114,7 +114,7 @@ if(!standalone.includes(`<script>${newMain}</script>`))throw Error('Standalone d
 // Native video is optional at runtime, but the pinned bundle must be
 // present and byte-identical on GitHub Pages or the codec fallback would
 // activate for every visitor without a clear reason.
-for(const file of ['native-encode.mjs','save-folder.mjs']){
+for(const file of ['native-encode.mjs','native-worker.mjs','native-worker-bridge.mjs','save-folder.mjs']){
   if(rd('compressor/'+file)!==rd('dist/compressor/'+file))
     throw Error('Missing or stale native compressor source: '+file);
 }
