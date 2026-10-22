@@ -95,6 +95,25 @@ export function suggestVisualTargetMB({duration,width,height,fps=30,originalByte
   return Math.max(1,Math.min(mb,Math.floor(originalMB)));
 }
 
+/** One bounded quality refinement for a native encoder that substantially
+ * undershoots the requested bytes. This estimates bitrate from the observed
+ * output, never claims to measure perceptual quality, and avoids doubling
+ * expensive encodes. The caller must retain the valid first result.
+ */
+export function nativeRefinementBitrate({targetBytes,outputBytes,videoBps,audioBps=0,duration=0,elapsedMs=Infinity}={}){
+  if (![targetBytes,outputBytes,videoBps,audioBps,duration,elapsedMs].every(Number.isFinite) ||
+      targetBytes<350000 || outputBytes<=0 || videoBps<70000 || audioBps<0 ||
+      duration<=0 || elapsedMs<0 || elapsedMs>12000 ||
+      outputBytes>=targetBytes*.84) return null;
+  const expectedAudioBytes=audioBps*duration/8;
+  const observedVideoBytes=outputBytes-expectedAudioBytes;
+  const targetVideoBytes=targetBytes*.96-expectedAudioBytes;
+  if(observedVideoBytes<=0 || targetVideoBytes<=observedVideoBytes) return null;
+  const scale=Math.min(1.65,targetVideoBytes/observedVideoBytes);
+  if(scale<1.10) return null;
+  return Math.round(videoBps*scale);
+}
+
 /** Choose a quality-first strategy without claiming to detect motion from metadata alone. */
 export function chooseEncodingStrategy(plan,{duration=0,sourceBytes=0,deviceMemory=0}={}) {
   const gb=Number(deviceMemory);
