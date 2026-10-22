@@ -12,7 +12,8 @@ import {chromium} from 'playwright';
 const root=path.resolve('artifacts/forge-compressor-encode');
 const input=path.join(root,'synthetic-source.mp4');
 const browserChannel=process.env.FORGE_BROWSER_CHANNEL==='chrome'?'chrome':null;
-const variant=browserChannel||'chromium';
+const forceWasm=process.env.FORGE_COMPARE_WASM==='1';
+const variant=(browserChannel||'chromium')+(forceWasm?'-wasm':'');
 const output=path.join(root,'verified-compressed-'+variant+'.mp4');
 fs.mkdirSync(root,{recursive:true});
 if(!fs.existsSync(input))throw Error('Synthetic FFmpeg fixture was not generated');
@@ -24,9 +25,13 @@ const logs=[];
 const browser=await chromium.launch({headless:true,args:['--no-sandbox'],...(browserChannel?{channel:browserChannel}:{})});
 try {
   const context=await browser.newContext({viewport:{width:1920,height:1080},acceptDownloads:true});
-  await context.addInitScript(()=>{
+  await context.addInitScript((disableNative)=>{
     try{sessionStorage.setItem('forge_intro_suppress','1');sessionStorage.setItem('forge_whatsnew_suppress','1');}catch{}
-  });
+    if(disableNative && location.pathname.includes('/compressor/')){
+      // Test-only, before any encoder is used. No production switch is added.
+      Object.defineProperty(window,'VideoEncoder',{configurable:true,value:undefined});
+    }
+  },forceWasm);
   const page=await context.newPage();
   page.on('pageerror',e=>logs.push('PAGE_ERROR '+e.message));
   page.on('console',m=>{if(m.type()==='error'||m.text().startsWith('FORGE_NATIVE_FALLBACK'))logs.push('CONSOLE '+m.text());});
@@ -88,7 +93,7 @@ try {
     durationSeconds:Number(info.format.duration),videoCodec:video.codec_name,
     audioCodec:audio.codec_name,videoWidth:video.width,videoHeight:video.height,
     targetMet:outputBytes<=targetMB*1e6,
-    browser:variant,nativeSupport,
+    browser:variant,forcedWasm:forceWasm,nativeSupport,
     engine:itemText.includes('Native H.264 encoding completed')?'native':'wasm-fallback',
     encodeWallMs:Date.now()-startTime,
     statusText:itemText.slice(0,400),consoleDiagnostics:logs.slice(-8)};
