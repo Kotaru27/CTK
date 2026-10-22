@@ -10,10 +10,11 @@ import {execFileSync,spawnSync} from 'node:child_process';
 import {chromium} from 'playwright';
 
 const root=path.resolve('artifacts/forge-compressor-encode');
-const input=path.join(root,'synthetic-source.mp4');
+const highAudio=process.env.FORGE_QA_HIGH_AUDIO==='1';
+const input=path.join(root,highAudio?'synthetic-high-audio.mp4':'synthetic-source.mp4');
 const browserChannel=process.env.FORGE_BROWSER_CHANNEL==='chrome'?'chrome':null;
 const forceWasm=process.env.FORGE_COMPARE_WASM==='1';
-const variant=(browserChannel||'chromium')+(forceWasm?'-wasm':'');
+const variant=(browserChannel||'chromium')+(forceWasm?'-wasm':'')+(highAudio?'-high-audio':'');
 const output=path.join(root,'verified-compressed-'+variant+'.mp4');
 fs.mkdirSync(root,{recursive:true});
 if(!fs.existsSync(input))throw Error('Synthetic FFmpeg fixture was not generated');
@@ -87,11 +88,16 @@ try {
   const outputBytes=fs.statSync(output).size;
   assert.ok(outputBytes>10_000,'Output is empty or not a real MP4');
   assert.ok(outputBytes<sourceBytes,'Output did not reduce the original file');
-  const info=JSON.parse(execFileSync('ffprobe',['-v','error','-show_entries','format=duration:stream=codec_type,codec_name,width,height','-of','json',output],{encoding:'utf8'}));
+  const info=JSON.parse(execFileSync('ffprobe',['-v','error','-show_entries','format=duration:stream=codec_type,codec_name,width,height,bit_rate','-of','json',output],{encoding:'utf8'}));
   const video=info.streams.find(x=>x.codec_type==='video');
   const audio=info.streams.find(x=>x.codec_type==='audio');
   assert.equal(video?.codec_name,'h264','Actual encoded video must be H.264');
   assert.equal(audio?.codec_name,'aac','Actual encoded audio must be AAC');
+  if(highAudio){
+    const audioKbps=Number(audio?.bit_rate)/1000;
+    assert.ok(Number.isFinite(audioKbps)&&audioKbps>=48&&audioKbps<300,
+      'Native high-bitrate AAC source must be re-encoded under the size budget');
+  }
   assert.equal(video?.width,640,'Video dimensions must be retained');
   assert.equal(video?.height,360,'Video dimensions must be retained');
   assert.ok(Number(info.format?.duration)>4,'Output duration is too short');
@@ -107,7 +113,7 @@ try {
     durationSeconds:Number(info.format.duration),videoCodec:video.codec_name,
     audioCodec:audio.codec_name,videoWidth:video.width,videoHeight:video.height,
     targetMet:outputBytes<=targetMB*1e6,
-    browser:variant,forcedWasm:forceWasm,nativeSupport,
+    browser:variant,forcedWasm:forceWasm,highAudio,nativeSupport,
     engine:itemText.includes('Native H.264 encoding completed')?'native':'wasm-fallback',
     encodeWallMs:Date.now()-startTime,
     statusText:itemText.slice(0,400),consoleDiagnostics:logs.slice(-8)};
