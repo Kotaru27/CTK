@@ -357,6 +357,8 @@ async function compressOne(item,token,index,total){
   const input=virtualName(item),output='compressed.mp4';let ffmpeg;
   const previous=item.outputBlob?{blob:item.outputBlob,url:item.outputURL,bytes:item.resultBytes,targetMB:item.encodedTargetMB}:null;
   const selectedTarget=targetMB();
+  const wallStart=performance.now();
+  let fallbackReason='';
   item.status='working';item.note='';item.percent=0;state.active=item;state.progressValue=-1;renderQueue();
   try{
     if(item.file.size<=selectedTarget*MB){
@@ -392,16 +394,23 @@ async function compressOne(item,token,index,total){
       item.fps=native.fps;item.audioTracks=native.audioTracks;
       item.audioPresent=native.audioTracks.length>0;
       item.status='done';item.percent=100;item.encodedTargetMB=selectedTarget;item.recompress=false;
-      item.note='Native H.264 encoding completed. Original dimensions and AAC track count retained; preview to inspect picture and audio.';
+      item.note=`Native H.264 encoding completed in ${((performance.now()-wallStart)/1000).toFixed(1)}s · ${native.refined?'Two quick passes':'One pass'} · Original dimensions and AAC track count retained. Preview to inspect picture and audio.`;
       activeProgress(100,`Video ${index} of ${total} · Complete`);
       return;
     }catch(nativeError){
       if(token!==state.token||state.cancelRequested)throw nativeError;
       // A capability rejection does not fail the user's job. Never publish
       // a partial native output or discard a previously valid download.
-      state.log='Native encoder fallback: '+String(nativeError).slice(0,220);
-      console.info('FORGE_NATIVE_FALLBACK',nativeError?.name||'Error',String(nativeError?.message||nativeError).slice(0,180));
-      activeProgress(4,`Video ${index} of ${total} · Loading compatible encoder…`);
+      fallbackReason=(nativeError instanceof Error?nativeError.message:String(nativeError)).replace(/https?:\/\/\S+/g,'remote asset').slice(0,150);
+      state.log='Native encoder fallback: '+fallbackReason;
+      console.info('FORGE_NATIVE_FALLBACK',nativeError?.name||'Error',fallbackReason);
+      // A native encoder can already have reached 90% when it fails. Reset
+      // progress visibly for the new full encode instead of leaving a
+      // misleading 90% bar during minutes of software transcoding.
+      item.percent=0;state.progressValue=-1;
+      item.note='Compatibility encoder selected · '+fallbackReason;
+      renderQueue();
+      activeProgress(0,`Video ${index} of ${total} · Switching to compatibility encoder…`);
     }finally{state.nativeCancel=null;}
     activeProgress(1,`Video ${index} of ${total} · Loading engine…`);
     ffmpeg=await ensureEngine(token);
@@ -458,9 +467,11 @@ async function compressOne(item,token,index,total){
     if(previous && previous.url)URL.revokeObjectURL(previous.url);
     item.outputBlob=blob;item.outputURL=url;item.resultBytes=blob.size;item.status='done';item.percent=100;
     item.encodedTargetMB=selectedTarget;item.recompress=false;
+    const elapsed=((performance.now()-wallStart)/1000).toFixed(1);
+    const engineInfo=`FFmpeg software fallback · ${elapsed}s${fallbackReason?' · Reason: '+fallbackReason:''}`;
     item.note=blob.size>plan.targetBytes
-      ? 'The output is above your requested size after retry. Try a larger target. Preview to check playback.'
-      : `${strategy.twoPass&&!twoPassFallback?'Quality-focused two-pass encoding':'Size-aware encoding'} complete. MP4 and sampled media verified; preview to check picture, audio, and seeking.`;
+      ? `${engineInfo} · Output exceeded the requested size after retry. Try a larger target.`
+      : `${strategy.twoPass&&!twoPassFallback?'Quality-focused two-pass encoding':'Size-aware encoding'} complete · ${engineInfo} · MP4 and sampled media verified; preview to check picture, audio, and seeking.`;
     activeProgress(100,`Video ${index} of ${total} · Complete`);
   }catch(e){
     const message=e instanceof Error?e.message:String(e);
