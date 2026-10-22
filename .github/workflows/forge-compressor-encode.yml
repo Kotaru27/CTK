@@ -39,6 +39,15 @@ jobs:
             -c:a aac -b:a 128k -movflags +faststart -shortest \
             artifacts/forge-compressor-encode/synthetic-source.mp4
           ffprobe -v error -show_entries format=size,duration -of json artifacts/forge-compressor-encode/synthetic-source.mp4
+          # Distinct audio-budget fixture: native AAC must be resized rather
+          # than losing picture bits or silently discarding its audio track.
+          ffmpeg -hide_banner -loglevel error -y \
+            -f lavfi -i testsrc2=size=640x360:rate=24 \
+            -f lavfi -i anoisesrc=color=white:sample_rate=48000 \
+            -t 6 -c:v libx264 -preset ultrafast -crf 15 -pix_fmt yuv420p \
+            -c:a aac -ac 2 -b:a 320k -movflags +faststart -shortest \
+            artifacts/forge-compressor-encode/synthetic-high-audio.mp4
+          ffprobe -v error -show_entries stream=codec_type,codec_name,bit_rate -of json artifacts/forge-compressor-encode/synthetic-high-audio.mp4
       - name: Start production-like Pages development server
         run: |
           node scripts/dev.mjs > /tmp/forge-encode-server.log 2>&1 &
@@ -53,6 +62,11 @@ jobs:
       - name: Encode again in Google Chrome with production codecs
         env:
           FORGE_BROWSER_CHANNEL: chrome
+        run: node scripts/forge-compressor-encode-qa.mjs
+      - name: Validate high-bitrate AAC reduction in Chrome
+        env:
+          FORGE_BROWSER_CHANNEL: chrome
+          FORGE_QA_HIGH_AUDIO: '1'
         run: node scripts/forge-compressor-encode-qa.mjs
       - name: Measure unchanged FFmpeg fallback on the same source
         env:
