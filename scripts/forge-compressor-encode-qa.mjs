@@ -25,18 +25,20 @@ const logs=[];
 const browser=await chromium.launch({headless:true,args:['--no-sandbox'],...(browserChannel?{channel:browserChannel}:{})});
 try {
   const context=await browser.newContext({viewport:{width:1920,height:1080},acceptDownloads:true});
-  await context.addInitScript({content:`
-    (() => {
-      try {
-        sessionStorage.setItem('forge_intro_suppress','1');
-        sessionStorage.setItem('forge_whatsnew_suppress','1');
-      } catch {}
-      if (${forceWasm?'true':'false'} && location.pathname.includes('/compressor/')) {
-        Object.defineProperty(window,'VideoEncoder',{configurable:true,value:undefined});
-      }
-    })();
-  `});
+  await context.addInitScript(()=>{
+    try {
+      sessionStorage.setItem('forge_intro_suppress','1');
+      sessionStorage.setItem('forge_whatsnew_suppress','1');
+    } catch {}
+  });
   const page=await context.newPage();
+  // Simulate the native engine being unavailable via a local asset
+  // request failure. This exercises the real production fallback without
+  // adding any production-only test toggle.
+  if(forceWasm){
+    await page.route('**/compressor/vendor/mediabunny-1.61.6.mjs',
+      route=>route.abort('failed'));
+  }
   page.on('pageerror',e=>logs.push('PAGE_ERROR '+e.message));
   page.on('console',m=>{if(m.type()==='error'||m.text().startsWith('FORGE_NATIVE_FALLBACK'))logs.push('CONSOLE '+m.text());});
   page.on('requestfailed',r=>logs.push('REQUEST_FAILED '+r.url()+' '+r.failure()?.errorText));
