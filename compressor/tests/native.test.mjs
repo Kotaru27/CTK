@@ -8,7 +8,11 @@ test('Native engine is gated to one-video MP4 with compatible AAC tracks',()=>{
   assert.equal(nativeCandidate('silent.MP4',1,[]),true);
   assert.equal(nativeCandidate('multi.mp4',2,['aac']),false);
   assert.equal(nativeCandidate('voice.mp4',1,['opus']),false);
-  assert.equal(nativeCandidate('archive.mkv',1,['aac']),false);
+  assert.equal(nativeCandidate('archive.mkv',1,['aac']),true);
+  assert.equal(nativeCandidate('clip.mov',1,['aac']),true);
+  assert.equal(nativeCandidate('clip.m4v',1,['aac']),true);
+  assert.equal(nativeCandidate('video.webm',1,['opus']),false);
+  assert.equal(nativeCandidate('video.mkv',2,['aac']),false);
   assert.equal(nativeCandidate('sound.mp4',1,['aac','aac','aac']),false);
 });
 
