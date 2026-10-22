@@ -1,4 +1,4 @@
-import { MB, MAX_INPUT_BYTES, MAX_TARGET_MB, formatBytes, formatTime, parseDuration, parseVideoInfo, makePlan, parseAudioInfo, parseAudioTracks, fastArgs, passArgs, chooseEncodingStrategy, safeDownloadName, shouldRetry, retryBitrate, validateMp4 } from './codec.mjs';
+import { MB, MAX_INPUT_BYTES, MAX_TARGET_MB, formatBytes, formatTime, parseDuration, parseVideoInfo, makePlan, suggestVisualTargetMB, parseAudioInfo, parseAudioTracks, fastArgs, passArgs, chooseEncodingStrategy, safeDownloadName, shouldRetry, retryBitrate, validateMp4 } from './codec.mjs';
 import { makeZip, MAX_BATCH_ZIP_BYTES } from './zip.mjs';
 import { parseProbeReport } from './probe.mjs';
 import { compressNative } from './native-encode.mjs';
@@ -198,7 +198,10 @@ function qualityOutlook(item) {
   try {
     const plan=makePlan({duration:item.duration,targetMB:item.status==='done'&&!item.recompress && item.encodedTargetMB!=null?item.encodedTargetMB:targetMB(),originalBytes:item.file.size,width:item.width,height:item.height,fps:item.fps,audioPresent:item.audioPresent,sourceAudio:item.sourceAudio,audioTracks:item.audioTracks});
     const tone=/very aggressive|visible quality loss/i.test(plan.warning)?'critical':/soften/i.test(plan.warning)?'warning':'normal';
-    return {tone,message:plan.warning};
+    const reference=suggestVisualTargetMB({duration:item.duration,width:item.width,height:item.height,fps:item.fps,originalBytes:item.file.size,audioTracks:item.audioTracks||[]});
+    const guidance=tone==='critical'&&reference&&reference>estimateTarget
+      ?` For less visible blockiness, try roughly ${reference} MB or more as a starting point; results depend on the video.`:'';
+    return {tone,message:plan.warning+guidance};
   }catch(e){return {tone:'critical',message:e instanceof Error?e.message:String(e)};}
 }
 function populateQuality(node,item) {
