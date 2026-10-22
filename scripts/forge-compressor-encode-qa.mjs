@@ -33,6 +33,17 @@ try {
   await page.locator('.home-card.tool-video').click();
   const iframe=page.frameLocator('#section-yt-helper iframe.forge-compressor-frame');
   await iframe.locator('#fileInput').waitFor({state:'attached',timeout:20000});
+  const nativeSupport=await iframe.locator('html').evaluate(async()=>{
+    if(typeof VideoEncoder!=='function'||typeof VideoDecoder!=='function')return {api:false};
+    try{
+      const probe=await VideoEncoder.isConfigSupported({
+        codec:'avc1.42001e',width:640,height:360,bitrate:550_000,framerate:24,
+        hardwareAcceleration:'prefer-hardware'
+      });
+      return {api:true,avcSupported:!!probe.supported};
+    }catch(e){return {api:true,error:String(e)};}
+  });
+  console.log('FORGE_BROWSER_NATIVE_SUPPORT',JSON.stringify(nativeSupport));
   await iframe.locator('#fileInput').setInputFiles(input);
   await iframe.locator('.batch-item').first().waitFor({timeout:15000});
   await iframe.locator('#targetSize').fill(String(targetMB));
@@ -69,6 +80,7 @@ try {
     durationSeconds:Number(info.format.duration),videoCodec:video.codec_name,
     audioCodec:audio.codec_name,videoWidth:video.width,videoHeight:video.height,
     targetMet:outputBytes<=targetMB*1e6,
+    nativeSupport,
     engine:itemText.includes('Native H.264 encoding completed')?'native':'wasm-fallback',
     encodeWallMs:Date.now()-startTime,
     statusText:itemText.slice(0,400),consoleDiagnostics:logs.slice(-8)};
