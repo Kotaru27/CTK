@@ -100,7 +100,7 @@ try {
   }
   let itemText='';
   try{
-    await iframe.locator('a.download-one').first().waitFor({state:'visible',timeout:background||switchTool?45000:240000});
+    await iframe.locator('a.download-one').first().waitFor({state:switchTool?'attached':'visible',timeout:background||switchTool?45000:240000});
   }catch(e){
     itemText=await iframe.locator('.batch-item').first().innerText().catch(()=>'<unavailable>');
     const errorBox=await iframe.locator('#errorBox').textContent().catch(()=>'<unavailable>');
