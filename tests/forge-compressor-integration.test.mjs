@@ -20,7 +20,7 @@ test('root and dist publish the same compressor logic and style',()=>{
   assert.equal(source,read('../dist/compressor/index.html'));
   assert.match(source,/src="\.\/app\.mjs\?v=12"/);
   assert.match(source,/href="\.\/forge-theme\.css\?v=1"/);
-  for(const p of ['app.mjs','codec.mjs','probe.mjs','native-encode.mjs','save-folder.mjs','video-worker.js','zip.mjs','styles.css','forge-theme.css'])
+  for(const p of ['app.mjs','codec.mjs','probe.mjs','native-encode.mjs','native-worker.mjs','native-worker-bridge.mjs','save-folder.mjs','video-worker.js','zip.mjs','styles.css','forge-theme.css'])
     assert.equal(read('../compressor/'+p),read('../dist/compressor/'+p),p);
   assert.match(read('../dist/creative-tools-standalone.html'),/src="\.\/compressor\/index\.html\?v=fast-20261022"/);
 });
