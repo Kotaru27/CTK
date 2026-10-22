@@ -43,6 +43,9 @@ jobs:
             -c:a aac -b:a 128k -movflags +faststart -shortest \
             artifacts/forge-compressor-encode/synthetic-source.mp4
           ffprobe -v error -show_entries format=size,duration -of json artifacts/forge-compressor-encode/synthetic-source.mp4
+          ffmpeg -hide_banner -loglevel error -y \
+            -i artifacts/forge-compressor-encode/synthetic-source.mp4 \
+            -map 0 -c copy artifacts/forge-compressor-encode/synthetic-source.mov
           # Distinct audio-budget fixture: native AAC must be resized rather
           # than losing picture bits or silently discarding its audio track.
           ffmpeg -hide_banner -loglevel error -y \
@@ -66,6 +69,11 @@ jobs:
       - name: Encode again in Google Chrome with production codecs
         env:
           FORGE_BROWSER_CHANNEL: chrome
+        run: node scripts/forge-compressor-encode-qa.mjs
+      - name: Verify MOV input uses native browser H264 when compatible
+        env:
+          FORGE_BROWSER_CHANNEL: chrome
+          FORGE_QA_MOV: '1'
         run: node scripts/forge-compressor-encode-qa.mjs
       - name: Validate high-bitrate AAC reduction in Chrome
         env:
