@@ -32,6 +32,8 @@ test('Native refinement spends unused video budget only when first pass is fast'
  assert.ok(next>args.videoBps && next<=args.videoBps*1.65);
  assert.equal(nativeRefinementBitrate({...args,outputBytes:550000}),null,'close enough: keep speed');
  assert.equal(nativeRefinementBitrate({...args,elapsedMs:15000}),null,'long encode: never double work');
+ assert.equal(nativeRefinementBitrate({...args,duration:25}),null,'long video: never double the work');
+ assert.equal(nativeRefinementBitrate({...args,originalBytes:33*MB}),null,'33 MB source: always single native pass');
  assert.equal(nativeRefinementBitrate({...args,targetBytes:200000}),null,'tiny outputs should not be retried');
  assert.equal(nativeRefinementBitrate({...args,outputBytes:800000}),null,'oversize outputs are not refined');
  assert.equal(nativeRefinementBitrate({...args,audioBps:2000000}),null,'never steal bits reserved for audio');
