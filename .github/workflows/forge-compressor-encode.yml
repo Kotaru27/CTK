@@ -70,6 +70,11 @@ jobs:
         env:
           FORGE_BROWSER_CHANNEL: chrome
         run: node scripts/forge-compressor-encode-qa.mjs
+      - name: Verify conversion finishes while Forge is in a hidden browser tab
+        env:
+          FORGE_BROWSER_CHANNEL: chrome
+          FORGE_QA_BACKGROUND: '1'
+        run: node scripts/forge-compressor-encode-qa.mjs
       - name: Verify MOV input uses native browser H264 when compatible
         env:
           FORGE_BROWSER_CHANNEL: chrome
