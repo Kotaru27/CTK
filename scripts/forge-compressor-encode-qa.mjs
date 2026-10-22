@@ -73,6 +73,10 @@ try {
   }
   const item=iframe.locator('.batch-item').first();
   itemText=await item.innerText();
+  if(highAudio)console.log('FORGE_HIGH_AUDIO_RESULT',JSON.stringify({
+    browser:variant,nativeSupport,engineHint:itemText.includes('Native H.264')?'native':'wasm',
+    recentDiagnostics:logs.slice(-8),resultText:itemText.slice(-550)
+  }));
   if(nativeSupport.avcSupported && !forceWasm){
     assert.match(itemText,/Native H\.264 encoding completed/,
       'Browser supports H264 native encoding but silently fell back to FFmpeg.');
