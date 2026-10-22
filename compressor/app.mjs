@@ -2,6 +2,7 @@ import { MB, MAX_INPUT_BYTES, MAX_TARGET_MB, formatBytes, formatTime, parseDurat
 import { makeZip, MAX_BATCH_ZIP_BYTES } from './zip.mjs';
 import { parseProbeReport } from './probe.mjs';
 import { compressNative } from './native-encode.mjs';
+import {folderSaveSupported,saveOutputToFolder} from './save-folder.mjs';
 
 const WRAPPER_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/ffmpeg/0.12.15/umd';
 const CORE_CDN = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd';
@@ -30,7 +31,7 @@ const els = {
 const state = {
   items:[], nextId:1, busy:false, cancelRequested:false, sessionStarted:false, token:0, ffmpeg:null,
   engineURLs:[], phase:null, active:null, log:'', previewItem:null, previewSourceURL:'',
-  zipBusy:false, progressValue:-1, nativeCancel:null
+  zipBusy:false, folderBusy:false, progressValue:-1, nativeCancel:null
 };
 
 function setError(message) { els.error.textContent=message; els.error.hidden=!message; }
@@ -117,6 +118,14 @@ function renderQueue() {
     if(item.outputURL){
       const a=document.createElement('a');a.href=item.outputURL;a.download=safeDownloadName(item.file.name);
       a.textContent='Download ↓';a.className='download-one';actions.append(a);
+      if(folderSaveSupported()){
+        const folder=document.createElement('button');folder.type='button';
+        folder.textContent='Save to folder';
+        folder.disabled=state.busy||state.zipBusy||state.folderBusy;
+        folder.title='Choose a folder on this computer. Your original video is never overwritten.';
+        folder.addEventListener('click',()=>saveItemToFolder(item.id));
+        actions.append(folder);
+      }
     }
     if(item.status==='done' && item.outputURL){
       const retry=document.createElement('button');retry.type='button';retry.textContent=item.recompress?'Recompress queued':'Recompress';
@@ -145,6 +154,26 @@ function renderQueue() {
   els.downloadAll.title=total>MAX_BATCH_ZIP_BYTES?'Batch ZIP exceeds 300 MB. Download individual videos.':'';
   if(total>MAX_BATCH_ZIP_BYTES && completed>1) els.summary.textContent+=' · ZIP too large; download individually';
   updateControls();
+}
+async function saveItemToFolder(id){
+  const item=state.items.find(row=>row.id===id);
+  if(!item?.outputBlob||state.folderBusy||state.busy||state.zipBusy)return;
+  state.folderBusy=true;
+  // Invoke the directory picker directly from the click gesture.
+  const operation=saveOutputToFolder(item.outputBlob,item.file.name);
+  renderQueue();
+  try{
+    const saved=await operation;
+    item.note=`Saved as ${saved.name} in ${saved.folder} · Original source unchanged.`;
+    setError('');
+  }catch(e){
+    if(e?.name!=='AbortError'){
+      item.note=`Folder save unsuccessful: ${e instanceof Error?e.message:String(e)} The Download button remains available.`;
+    }
+  }finally{
+    state.folderBusy=false;
+    renderQueue();
+  }
 }
 function removeItem(id) {
   if(state.busy || state.zipBusy) return;
