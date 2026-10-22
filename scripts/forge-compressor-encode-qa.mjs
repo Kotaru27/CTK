@@ -25,13 +25,17 @@ const logs=[];
 const browser=await chromium.launch({headless:true,args:['--no-sandbox'],...(browserChannel?{channel:browserChannel}:{})});
 try {
   const context=await browser.newContext({viewport:{width:1920,height:1080},acceptDownloads:true});
-  await context.addInitScript((disableNative)=>{
-    try{sessionStorage.setItem('forge_intro_suppress','1');sessionStorage.setItem('forge_whatsnew_suppress','1');}catch{}
-    if(disableNative && location.pathname.includes('/compressor/')){
-      // Test-only, before any encoder is used. No production switch is added.
-      Object.defineProperty(window,'VideoEncoder',{configurable:true,value:undefined});
-    }
-  },forceWasm);
+  await context.addInitScript({content:`
+    (() => {
+      try {
+        sessionStorage.setItem('forge_intro_suppress','1');
+        sessionStorage.setItem('forge_whatsnew_suppress','1');
+      } catch {}
+      if (${forceWasm?'true':'false'} && location.pathname.includes('/compressor/')) {
+        Object.defineProperty(window,'VideoEncoder',{configurable:true,value:undefined});
+      }
+    })();
+  `});
   const page=await context.newPage();
   page.on('pageerror',e=>logs.push('PAGE_ERROR '+e.message));
   page.on('console',m=>{if(m.type()==='error'||m.text().startsWith('FORGE_NATIVE_FALLBACK'))logs.push('CONSOLE '+m.text());});
