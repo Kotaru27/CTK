@@ -10,7 +10,7 @@ export class NativeUnavailable extends Error {
 }
 
 export function nativeCandidate(name,videoCount,audioCodecs) {
-  return /\.mp4$/i.test(String(name)) &&
+  return /\.(mp4|m4v|mov|mkv|webm)$/i.test(String(name)) &&
     videoCount===1 &&
     Array.isArray(audioCodecs) &&
     audioCodecs.length<=2 &&
@@ -26,7 +26,7 @@ function library(){
 }
 
 export async function compressNative({file,targetMB,onProgress=()=>{},registerCancel=()=>{},isCanceled=()=>false}){
-  if(!/\.mp4$/i.test(file.name))throw new NativeUnavailable('Non-MP4 source uses the compatible encoder.');
+  if(!/\.(mp4|m4v|mov|mkv|webm)$/i.test(file.name))throw new NativeUnavailable('Source container needs the compatible encoder.');
   if(typeof VideoEncoder!=='function'||typeof VideoDecoder!=='function')
     throw new NativeUnavailable('Browser does not expose native video encoding and decoding.');
   if(isCanceled())throw new Error('Canceled.');
