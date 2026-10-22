@@ -26,7 +26,7 @@ assert.ok(sourceBytes>750_000,'Synthetic source unexpectedly small; fixture woul
 const targetMB=0.60;
 assert.ok(sourceBytes>targetMB*1e6,'Fixture must exceed the target');
 const logs=[];
-const browser=await chromium.launch({headless:true,args:['--no-sandbox'],...(browserChannel?{channel:browserChannel}:{})});
+const browser=await chromium.launch({headless:!background,args:['--no-sandbox'],...(browserChannel?{channel:browserChannel}:{})});
 try {
   const context=await browser.newContext({viewport:{width:1920,height:1080},acceptDownloads:true});
   await context.addInitScript(()=>{
