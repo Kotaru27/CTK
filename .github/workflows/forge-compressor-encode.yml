@@ -79,7 +79,12 @@ jobs:
         env:
           FORGE_BROWSER_CHANNEL: chrome
           FORGE_QA_BACKGROUND: '1'
-        run: node scripts/forge-compressor-encode-qa.mjs
+        run: |
+          if ! command -v xvfb-run >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq xvfb
+          fi
+          xvfb-run -a node scripts/forge-compressor-encode-qa.mjs
       - name: Verify MOV input uses native browser H264 when compatible
         env:
           FORGE_BROWSER_CHANNEL: chrome
