@@ -423,7 +423,7 @@ async function compressOne(item,token,index,total){
       item.fps=native.fps;item.audioTracks=native.audioTracks;
       item.audioPresent=native.audioTracks.length>0;
       item.status='done';item.percent=100;item.encodedTargetMB=selectedTarget;item.recompress=false;
-      item.note=`Native H.264 encoding completed in ${((performance.now()-wallStart)/1000).toFixed(1)}s · ${native.refined?'Two quick passes':'One pass'} · Original dimensions and AAC track count retained. Preview to inspect picture and audio.`;
+      item.note=`Native H.264 encoding completed in ${((performance.now()-wallStart)/1000).toFixed(1)}s · ${native.refined?'Two quick passes':'One pass'} · ${native.ranInWorker?'Dedicated worker':'Page encoder'} · Original dimensions and AAC track count retained. Preview to inspect picture and audio.`;
       activeProgress(100,`Video ${index} of ${total} · Complete`);
       return;
     }catch(nativeError){
