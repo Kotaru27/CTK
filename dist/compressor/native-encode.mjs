@@ -64,7 +64,7 @@ export async function compressNative({file,targetMB,onProgress=()=>{},registerCa
     // Native AAC encoding is attempted only when a high-bitrate source
     // would consume too much of the target; incompatible devices still
     // fall back to the existing FFmpeg path.
-    const audioOptions=plan.copyAudio?{codec:'aac'}:{
+    const audioOptions=!audios.length?{discard:true}:plan.copyAudio?{codec:'aac'}:{
       codec:'aac',bitrate:plan.audioKbps*1000,forceTranscode:true
     };
     const encodeAttempt=async(source,videoBitrate,from,to)=>{

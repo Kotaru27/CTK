@@ -102,7 +102,7 @@ export function suggestVisualTargetMB({duration,width,height,fps=30,originalByte
  */
 export function nativeRefinementBitrate({targetBytes,outputBytes,videoBps,audioBps=0,duration=0,elapsedMs=Infinity}={}){
   if (![targetBytes,outputBytes,videoBps,audioBps,duration,elapsedMs].every(Number.isFinite) ||
-      targetBytes<350000 || outputBytes<=0 || videoBps<70000 || audioBps<0 ||
+      targetBytes<350000 || targetBytes>120*MB || outputBytes<=0 || videoBps<70000 || audioBps<0 ||
       duration<=0 || elapsedMs<0 || elapsedMs>12000 ||
       outputBytes>=targetBytes*.84) return null;
   const expectedAudioBytes=audioBps*duration/8;
