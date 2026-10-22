@@ -28,6 +28,7 @@ test('native encoder runs in dedicated worker and transfers completed MP4 result
   assert.equal(started.targetMB,8);
   assert.equal(progress,.55);
   assert.deepEqual([...result.data],[1,2,3]);
+  assert.equal(result.ranInWorker,true);
   assert.equal(terminated,1);
   assert.equal(registered,null);
  }finally{if(prior===undefined)delete globalThis.Worker;else globalThis.Worker=prior;}
