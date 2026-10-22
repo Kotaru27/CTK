@@ -400,6 +400,7 @@ async function compressOne(item,token,index,total){
       // A capability rejection does not fail the user's job. Never publish
       // a partial native output or discard a previously valid download.
       state.log='Native encoder fallback: '+String(nativeError).slice(0,220);
+      console.info('FORGE_NATIVE_FALLBACK',nativeError?.name||'Error',String(nativeError?.message||nativeError).slice(0,180));
       activeProgress(4,`Video ${index} of ${total} · Loading compatible encoder…`);
     }finally{state.nativeCancel=null;}
     activeProgress(1,`Video ${index} of ${total} · Loading engine…`);
