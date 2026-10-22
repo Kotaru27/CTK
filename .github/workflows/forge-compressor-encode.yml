@@ -54,6 +54,10 @@ jobs:
         env:
           FORGE_BROWSER_CHANNEL: chrome
         run: node scripts/forge-compressor-encode-qa.mjs
+      - name: Measure unchanged FFmpeg fallback on the same source
+        env:
+          FORGE_COMPARE_WASM: '1'
+        run: node scripts/forge-compressor-encode-qa.mjs
       - name: Keep genuine encode results or failure evidence
         if: always()
         uses: actions/upload-artifact@v4
