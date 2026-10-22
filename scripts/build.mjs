@@ -164,7 +164,7 @@ function forgeBrand(html,standaloneRelease){
   const videoSection='<div class="tool-section" id="section-yt-helper">';
   const compressorSurface='<div class="forge-compressor-surface">'+
     '<div class="tool-header"><span class="material-symbols-rounded tool-icon" aria-hidden="true">video_settings</span><h2>Video Compressor</h2></div>'+
-    '<iframe class="forge-compressor-frame" title="Video Compressor workspace" src="./compressor/index.html?v=background-20261022" loading="lazy" referrerpolicy="no-referrer"></iframe>'+
+    '<iframe class="forge-compressor-frame" title="Video Compressor workspace" src="./compressor/index.html?v=bg-worker-20261022" loading="lazy" referrerpolicy="no-referrer"></iframe>'+
     '</div>\n';
   if(!html.includes(videoSection))throw Error('Video compressor workspace anchor missing');
   html=html.replace(videoSection,videoSection+'\n'+compressorSurface);
