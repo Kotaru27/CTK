@@ -13,10 +13,11 @@ const root=path.resolve('artifacts/forge-compressor-encode');
 const highAudio=process.env.FORGE_QA_HIGH_AUDIO==='1';
 const quicktime=process.env.FORGE_QA_MOV==='1';
 const background=process.env.FORGE_QA_BACKGROUND==='1';
+const switchTool=process.env.FORGE_QA_SWITCH_TOOL==='1';
 const input=path.join(root,highAudio?'synthetic-high-audio.mp4':quicktime?'synthetic-source.mov':'synthetic-source.mp4');
 const browserChannel=process.env.FORGE_BROWSER_CHANNEL==='chrome'?'chrome':null;
 const forceWasm=process.env.FORGE_COMPARE_WASM==='1';
-const variant=(browserChannel||'chromium')+(forceWasm?'-wasm':'')+(highAudio?'-high-audio':'')+(quicktime?'-mov':'')+(background?'-background':'');
+const variant=(browserChannel||'chromium')+(forceWasm?'-wasm':'')+(highAudio?'-high-audio':'')+(quicktime?'-mov':'')+(background?'-background':'')+(switchTool?'-tool-switch':'');
 const output=path.join(root,'verified-compressed-'+variant+'.mp4');
 fs.mkdirSync(root,{recursive:true});
 if(!fs.existsSync(input))throw Error('Synthetic FFmpeg fixture was not generated');
@@ -75,6 +76,12 @@ try {
   await iframe.locator('#compressButton').click();
   const startTime=Date.now();
   let backgroundTab=null;
+  if(switchTool){
+    await page.locator('#nav-logo').click();
+    await page.locator('#section-logo').waitFor({state:'visible',timeout:12000});
+    assert.equal(await page.locator('#section-yt-helper iframe.forge-compressor-frame').count(),1,
+      'Switching Forge tools must not destroy the working compressor iframe');
+  }
   if(background){
     // Simulate the user's actual workflow: start encoding, then browse
     // in another Chrome tab while the Forge iframe remains mounted.
@@ -92,6 +99,10 @@ try {
     itemText=await iframe.locator('.batch-item').first().innerText().catch(()=>'<unavailable>');
     const errorBox=await iframe.locator('#errorBox').textContent().catch(()=>'<unavailable>');
     throw Error('Actual wasm encode did not finish: '+itemText+' | error: '+errorBox+' | browser: '+logs.slice(-10).join(' ; ')+' | '+String(e));
+  }
+  if(switchTool){
+    await page.locator('#nav-yt-helper').click();
+    await iframe.locator('#fileInput').waitFor({state:'attached',timeout:10000});
   }
   if(background){
     const visibility=await iframe.locator('html').evaluate(()=>document.visibilityState);
@@ -144,7 +155,7 @@ try {
     durationSeconds:Number(info.format.duration),videoCodec:video.codec_name,
     audioCodec:audio.codec_name,videoWidth:video.width,videoHeight:video.height,
     targetMet:outputBytes<=targetMB*1e6,
-    browser:variant,forcedWasm:forceWasm,highAudio,background,nativeSupport,
+    browser:variant,forcedWasm:forceWasm,highAudio,background,switchTool,nativeSupport,
     engine:itemText.includes('Native H.264 encoding completed')?'native':'wasm-fallback',
     encodeWallMs:Date.now()-startTime,
     statusText:itemText.slice(0,400),consoleDiagnostics:logs.slice(-8)};
