@@ -111,6 +111,17 @@ const restoredNames=restored
            '<div class="edition-rule-label">01 / INPUT</div>');
 if(restoredNames!==a)throw Error('Standalone changes source HTML/CSS or scripts outside the intentional presentation/naming layer');
 if(!standalone.includes(`<script>${newMain}</script>`))throw Error('Standalone does not contain current engine');
+// Native video is optional at runtime, but the pinned bundle must be
+// present and byte-identical on GitHub Pages or the codec fallback would
+// activate for every visitor without a clear reason.
+for(const file of ['native-encode.mjs']){
+  if(rd('compressor/'+file)!==rd('dist/compressor/'+file))
+    throw Error('Missing or stale native compressor source: '+file);
+}
+for(const file of ['mediabunny-1.61.6.mjs','MEDIABUNNY-LICENSE.txt']){
+  if(rd('compressor/vendor/'+file)!==rd('dist/compressor/vendor/'+file))
+    throw Error('Missing or stale version-pinned native engine: '+file);
+}
 if(!b.includes('./dist/css/ad-downloader-v2.css')||!b.includes('./dist/js/ad-downloader-v2.js'))throw Error('Ad Downloader experience layer missing');
 if(!standalone.includes('<style id="ctk-ad-downloader-v2">')||!standalone.includes('<script id="ctk-ad-downloader-v2">'))throw Error('Standalone experience layer missing');
 if(!b.includes('./dist/css/typography-motion-v3.css')||!standalone.includes('<style id="ctk-type-motion-v3">'))throw Error('Typography & motion design layer missing');
