@@ -11,9 +11,11 @@ test('five-video session limit, fixed after processing begins',()=>{
   assert.match(app,/els\.input\.disabled=state\.busy \|\| state\.zipBusy \|\| state\.sessionStarted/);
   assert.match(html,/up to 5 per session/);
 });
-test('constrained videos use quality-focused two-pass on capable devices',()=>{
-  const p=makePlan({duration:24,targetMB:8,originalBytes:56e6,width:1920,height:1080,fps:30,audioTracks:[{codec:'aac',kbps:128}]});
-  assert.equal(chooseEncodingStrategy(p,{duration:24,sourceBytes:56e6,deviceMemory:8}).twoPass,true);
+test('two-pass is reserved for short small files, not ordinary 33 MB uploads',()=>{
+  const p=makePlan({duration:8,targetMB:.8,originalBytes:10e6,width:1920,height:1080,fps:30,audioTracks:[{codec:'aac',kbps:128}]});
+  assert.equal(chooseEncodingStrategy(p,{duration:8,sourceBytes:10e6,deviceMemory:8}).twoPass,true);
+  assert.equal(chooseEncodingStrategy(p,{duration:24,sourceBytes:33e6,deviceMemory:8}).twoPass,false);
+  assert.equal(chooseEncodingStrategy(p,{duration:8,sourceBytes:33e6,deviceMemory:8}).twoPass,false);
   const args=passArgs({input:'input.mp4',videoKbps:p.videoKbps,audioKbps:p.audioKbps,pass:2});
   assert.ok(args.includes('-pass')); assert.ok(args.includes('0:a?'));
 });
