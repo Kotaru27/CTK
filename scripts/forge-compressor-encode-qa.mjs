@@ -66,6 +66,13 @@ try {
   }
   const item=iframe.locator('.batch-item').first();
   itemText=await item.innerText();
+  if(nativeSupport.avcSupported && !forceWasm){
+    assert.match(itemText,/Native H\.264 encoding completed/,
+      'Browser supports H264 native encoding but silently fell back to FFmpeg.');
+  }
+  if(forceWasm)assert.match(itemText,/Size-aware encoding|Quality-focused two-pass/,
+    'Forced FFmpeg comparison did not use the established software path.');
+
   const [download]=await Promise.all([
     page.waitForEvent('download',{timeout:60000}),
     iframe.locator('a.download-one').first().click()
@@ -88,6 +95,7 @@ try {
     '-lavfi','ssim','-f','null','-'],{encoding:'utf8',timeout:45000,maxBuffer:8*1024*1024});
   const ssimMatch=compare.stderr?.match(/SSIM\s+Y:[^\n]*?All:([\d.]+)/);
   const ssim=compare.status===0 && ssimMatch?Number(ssimMatch[1]):null;
+  assert.ok(ssim===null || ssim>0.90,'Synthetic video has severe measured visual degradation');
   const result={sourceBytes,outputBytes,targetBytes:targetMB*1e6,ssim,
     reductionPercent:Math.round((1-outputBytes/sourceBytes)*100),
     durationSeconds:Number(info.format.duration),videoCodec:video.codec_name,
