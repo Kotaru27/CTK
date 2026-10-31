@@ -8,7 +8,7 @@ globalThis.document={getElementById:()=>null};
 const [{default:{Story}}]=await Promise.all([import('../src/js/tools/storyboard.js')]);
 globalThis.document=previous;
 
-test('fresh boards default to three columns from third still, but not earlier',()=>{
+test('fresh boards remain in adaptive Auto mode after the third still',()=>{
   const columns={value:'0'};
   const documentBefore=globalThis.document;
   globalThis.document={getElementById:id=>id==='storyCols'?columns:null};
@@ -21,11 +21,11 @@ test('fresh boards default to three columns from third still, but not earlier',(
     assert.equal(first.settings.cols,0);
     first.images.push({});
     assert.equal(board.applyDefaultColumns(first),true);
-    assert.equal(first.settings.cols,3);
-    assert.equal(columns.value,'3');
+    assert.equal(first.settings.cols,0);
+    assert.equal(columns.value,'0');
     first.images.push({});
     assert.equal(board.applyDefaultColumns(first),false);
-    assert.equal(first.settings.cols,3);
+    assert.equal(first.settings.cols,0);
     const manual=board.makeProject('AD2');
     manual.images.push({},{},{});
     manual.settings.cols=2;

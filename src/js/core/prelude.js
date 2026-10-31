@@ -233,24 +233,17 @@
           renderBoard(images, options) {
             const count = images.length;
             if (count === 0) return null;
-            let cols = options.cols || 0,
-              rows = options.rows || 0;
+            let cols = Number(options.cols) || 0,
+              rows = Number(options.rows) || 0;
+            // Auto mode: at most three columns, except four frames form a 2x2.
+            // The existing drawing loop centers any incomplete final row.
             if (cols <= 0) {
-              if (count === 4) {
-                cols = 2;
-                rows = 2;
-              } else if (count === 9) {
-                cols = 3;
-                rows = 3;
-              } else if (count === 16) {
-                cols = 4;
-                rows = 4;
-              } else {
-                cols = Math.ceil(Math.sqrt(count));
-                rows = Math.ceil(count / cols);
-              }
-            } else if (rows <= 0) {
+              cols = count === 4 ? 2 : Math.min(3, count);
               rows = Math.ceil(count / cols);
+            } else {
+              // A manual setting can change the column count, never exceed three.
+              cols = Math.min(3, Math.max(1, Math.floor(cols)));
+              if (rows <= 0) rows = Math.ceil(count / cols);
             }
             
             let maxSrcW = 0,

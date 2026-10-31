@@ -32,6 +32,12 @@ export default {
               this.saveSettings();
               this.renderTabs();
             };
+            const columnsInput = document.getElementById("storyCols");
+            columnsInput.min = "0";
+            columnsInput.max = "3";
+            columnsInput.step = "1";
+            columnsInput.title = "0 = Auto (1-3 columns; four stills use 2x2). Incomplete final rows are centered.";
+
             [
               "storyGap",
               "storyWidth",
@@ -172,16 +178,11 @@ export default {
             return project;
           },
           applyDefaultColumns(project) {
-            // Choose three columns only for a fresh/unconfigured board
-            // after its third still. Never override a deliberate user choice.
+            // Preserve Auto (0) when the third still arrives. The renderer
+            // now adapts on every add, remove, reorder, and export.
             if (!project || project.images.length <= 2 ||
                 !project.defaultColumnsPending || Number(project.settings.cols) !== 0) return false;
-            project.settings.cols = 3;
             project.defaultColumnsPending = false;
-            if (this.active === project) {
-              const cols = document.getElementById("storyCols");
-              if (cols) cols.value = "3";
-            }
             return true;
           },
           addNewProject() {
@@ -218,7 +219,9 @@ export default {
             s.width =
               parseInt(document.getElementById("storyWidth").value) || 1920;
             s.autoWidth = document.getElementById("storyAutoWidth").checked;
-            s.cols = parseInt(document.getElementById("storyCols").value) || 0;
+            const columnsInput = document.getElementById("storyCols");
+            s.cols = Math.max(0, Math.min(3, parseInt(columnsInput.value, 10) || 0));
+            columnsInput.value = String(s.cols);
             s.bgColor = document.getElementById("storyBgColor").value;
             s.fitMode = document.getElementById("storyFitMode").value;
             this.active.name = this.els.name.value;
@@ -228,7 +231,8 @@ export default {
             const s = this.active.settings;
             document.getElementById("storyGap").value = s.gap;
             document.getElementById("storyWidth").value = s.width;
-            document.getElementById("storyCols").value = s.cols || 0;
+            s.cols = Math.max(0, Math.min(3, Number(s.cols) || 0));
+            document.getElementById("storyCols").value = s.cols;
             document.getElementById("storyAutoWidth").checked = s.autoWidth;
             document.getElementById("storyBgColor").value =
               s.bgColor || "#ffffff";
