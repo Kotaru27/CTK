@@ -15,8 +15,8 @@ test('Forge V2 ships identical CSS and JS across main, dist and standalone',()=>
   assert.ok(standalone.includes('<style id="forge-workbench-v2-styles">'+css+'</style>'));
   assert.ok(standalone.includes('<script id="forge-workbench-v2-js">'+js+'</script>'));
   assert.equal(dist,index.replaceAll('./dist/css/','./css/').replaceAll('./dist/js/','./js/'));
-  assert.match(index,/forge-workbench-v2\.css\?v=forge-original-workbench-v2-20261103/);
-  assert.match(index,/forge-workbench-v2\.js\?v=forge-original-workbench-v2-20261103/);
+  assert.match(index,/forge-workbench-v2\.css\?v=forge-original-workbench-v2-hover-20261103/);
+  assert.match(index,/forge-workbench-v2\.js\?v=forge-original-workbench-v2-hover-20261103/);
   assert.match(build,/forgeWorkbenchCss=read\('src\/css\/experience\/forge-workbench-v2\.css'\)/);
   assert.match(build,/forgeWorkbenchJs=read\('src\/js\/presentation\/forge-workbench-v2\.js'\)/);
 });

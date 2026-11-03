@@ -10276,6 +10276,189 @@ body.light-mode #view-home .combined-home-grid > .home-card:nth-child(8)::after{
     top:59px!important;
   }
 }
+
+/* V2 / INTERACTION QUALITY PASS — home hover/focus and shared workbench
+   Older global styles used :nth-child(n):is(:hover,:focus-visible) and
+   turned the deep featured tile nearly white without changing its ivory
+   foreground. This block owns BOTH background and foreground states.
+   Do not change original click targets, graphics, routes or media stages. */
+body.light-mode #view-home .combined-home-grid > .home-card:nth-child(1):is(:hover,:focus-visible){
+  background:#153d2b!important;
+  color:#f8fcf5!important;
+  border-color:#69a780!important;
+  box-shadow:0 15px 34px rgba(22,70,42,.20)!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card:nth-child(1):is(:hover,:focus-visible) :is(.home-card-title,.home-card-go){
+  color:#f8fcf5!important;
+  opacity:1!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card:nth-child(1):is(:hover,:focus-visible) .home-card-desc{
+  color:#d4ebd8!important;
+  opacity:1!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card:nth-child(1):is(:hover,:focus-visible) .home-card-num{
+  color:#c9e5ce!important;
+  opacity:1!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card:nth-child(1):is(:hover,:focus-visible) .home-card-go{
+  background:rgba(242,255,243,.16)!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card:nth-child(1):is(:hover,:focus-visible) > .home-card-art{
+  opacity:.85!important;
+  filter:brightness(1.2) saturate(1.06)!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card:nth-child(2):is(:hover,:focus-visible){
+  background:#cce2d2!important;
+  border-color:#78a98b!important;
+  box-shadow:0 12px 27px rgba(30,82,48,.10)!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card:nth-child(2):is(:hover,:focus-visible) :is(.home-card-title,.home-card-go){
+  color:#153a28!important;
+  opacity:1!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card:nth-child(2):is(:hover,:focus-visible) .home-card-desc{
+  color:#315d42!important;
+  opacity:1!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card:nth-child(2):is(:hover,:focus-visible) .home-card-num{
+  color:#285c3f!important;opacity:1!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card:nth-child(n+3):is(:hover,:focus-visible){
+  background:#e9f3e9!important;
+  border-color:#92bda0!important;
+  box-shadow:0 10px 24px rgba(30,82,48,.09)!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card:nth-child(n+3):is(:hover,:focus-visible) .home-card-title{
+  color:#193d2a!important;
+  opacity:1!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card:nth-child(n+3):is(:hover,:focus-visible) .home-card-desc{
+  color:#3c6448!important;
+  opacity:1!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card:nth-child(n+3):is(:hover,:focus-visible) :is(.home-card-num,.home-card-go){
+  color:#285d40!important;
+  opacity:1!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card:nth-child(n+3):is(:hover,:focus-visible)::after{
+  color:#456a51!important;
+}
+/* The full tile is an accessible button: hold its geometry stable while
+   the card changes surface/ink, not scale, position or negative filters. */
+body.light-mode #view-home .combined-home-grid > .home-card:nth-child(n):is(:hover,:focus-visible){
+  filter:none!important;
+  transform:none!important;
+  translate:none!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card:nth-child(n):focus-visible{
+  outline:3px solid #367b55!important;
+  outline-offset:3px!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card:nth-child(1):focus-visible{
+  outline-color:#adddb8!important;
+}
+
+/* Unified accessible interaction feedback across the existing eight
+   tool routes. Leave mode selection, danger actions and processing states
+   to their semantic owners instead of flattening their meaning. */
+body.light-mode #view-app .tool-section .liquid-btn:not(.active-mode):not(.danger-btn):not([role="tab"]):not(:disabled):is(:hover,:focus-visible),
+body.light-mode #view-app .tool-section label.liquid-btn:not(.active-mode):not(.danger-btn):is(:hover,:focus-visible){
+  background:#e1ede3!important;
+  color:#193f2d!important;
+  border-color:#7ba98b!important;
+  text-shadow:none!important;
+  filter:none!important;
+}
+body.light-mode #view-app .tool-section .liquid-btn.danger-btn:not(:disabled):is(:hover,:focus-visible){
+  background:#fff1ee!important;
+  color:#8c332c!important;
+  border-color:#c8867d!important;
+}
+body.light-mode #view-app .tool-section .liquid-btn.active-mode:not(.danger-btn):not([role="tab"]):not(#subModeBtnBoard):not(#subModeBtnFilmstrip):not(#subModeBtnFit):not(:disabled):is(:hover,:focus-visible){
+  background:#20563c!important;
+  color:#fff!important;
+  border-color:#20563c!important;
+}
+body.light-mode #view-app .tool-section :is(#tabRowPdf,#tabRowStills,#tabRowAdlinks) button[role="tab"]:not(.active-mode):is(:hover,:focus-visible){
+  background:#e1ede3!important;
+  color:#234b34!important;
+  border-color:#9ac4a4!important;
+}
+body.light-mode #view-app .tool-section :is(#tabRowPdf,#tabRowStills,#tabRowAdlinks) button[role="tab"].active-mode:is(:hover,:focus-visible){
+  color:#153b29!important;
+  border-color:#70a67e!important;
+}
+body.light-mode #view-app .tool-section :is(.liquid-btn,button,[role="tab"],summary):focus-visible,
+body.light-mode #view-app .tool-section :is(input,textarea,select):focus-visible{
+  outline:2px solid #347951!important;
+  outline-offset:2px!important;
+}
+/* Improve surface separation on real workflows, without changing editor
+   sizing, pane widths, canvas compositing or output rendering. */
+body.light-mode #view-app .tool-section .tool-header{
+  border-bottom-color:#cbdcce!important;
+}
+body.light-mode #view-app .tool-section .tool-header > h2{
+  color:#173b2a!important;
+}
+body.light-mode #view-app .tool-section .sidebar-panel{
+  border-right-color:#cbdacd!important;
+}
+body.light-mode #view-app .tool-section .drop-zone:not(:hover){
+  border-color:#aecdb4!important;
+}
+body.light-mode #view-app .tool-section .drop-zone:is(:hover,:focus-within){
+  border-color:#4a9063!important;
+  background-color:#edf6ec!important;
+}
+body.light-mode #mainSidebar.nav-sidebar.visible .nav-item:not(.nav-toggle):not(.active):is(:hover,:focus-visible){
+  background:#285940!important;
+  color:#fffdf7!important;
+  border-color:#47775a!important;
+}
+body.light-mode #mainSidebar.nav-sidebar.visible .nav-item.active:not(.nav-toggle):is(:hover,:focus-visible){
+  background:#cce4d0!important;
+  color:#143723!important;
+  border-color:#a1c9ad!important;
+}
+body.light-mode #mainSidebar.nav-sidebar.visible .nav-item.active:not(.nav-toggle):is(:hover,:focus-visible) :is(.nav-item-text,.material-symbols-rounded,svg){
+  color:#143723!important;
+}
+/* Keep keyboard/hover polish quiet on touch or reduced-motion devices. */
+@media(prefers-reduced-motion:reduce){
+  body.light-mode #view-home .combined-home-grid > .home-card:nth-child(n),
+  body.light-mode #view-app .tool-section .liquid-btn,
+  body.light-mode #mainSidebar.nav-sidebar.visible .nav-item{
+    animation:none!important;transition:none!important;
+  }
+}
+
+/* Storyboard and Filmstrip export headers have a high-specificity
+   legacy hover rule that can paint a pale action surface under white text.
+   Give export actions a stable, high-contrast deep-green treatment without
+   overriding upload labels or segmented mode selectors. */
+body.light-mode #view-app #section-stills-boards :is(#storyHeaderControls,#filmstripHeaderControls,#fitHeaderControls)
+  :is(#downloadStoryBtn,#downloadFilmstripJpgBtn,#fitExportPngBtn).liquid-btn.active-mode:not(:disabled):is(:hover,:focus-visible){
+  background:#20563c!important;
+  color:#fff!important;
+  border-color:#20563c!important;
+  filter:none!important;
+  text-shadow:none!important;
+}
+/* Keep the hover surface and text synchronized on the same frame.
+   Two individually interpolated color channels briefly produced 3.62:1,
+   even though the resting and final colors were fully readable. */
+body.light-mode #view-app #section-stills-boards :is(#storyHeaderControls,#filmstripHeaderControls,#fitHeaderControls)
+  :is(#downloadStoryBtn,#downloadFilmstripJpgBtn,#fitExportPngBtn).liquid-btn.active-mode:not(:disabled){
+  transition:none!important;
+}
+/* Keep the icon the same color as the export text: it inherits old
+   storyboard action tokens in some modes. */
+body.light-mode #view-app #section-stills-boards :is(#storyHeaderControls,#filmstripHeaderControls,#fitHeaderControls)
+  :is(#downloadStoryBtn,#downloadFilmstripJpgBtn,#fitExportPngBtn).liquid-btn.active-mode:not(:disabled):is(:hover,:focus-visible) .material-symbols-rounded{
+  color:inherit!important;
+  opacity:1!important;
+}
 </style>
 </head>
 <body class="light-mode">
