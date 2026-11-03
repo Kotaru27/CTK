@@ -143,8 +143,8 @@ try {
      title:card.querySelector('.home-card-title')?.textContent.trim()};
  }));
  check(specimens.length===8,'Not all eight artwork specimens rendered');
- check(new Set(specimens.map(x=>x.tone)).size>=6,'Creative tool specimens lost distinct surfaces');
- check(specimens.every(x=>x.artWidth>=125&&x.withinCard),'Artwork clipped or visually undersized: '+JSON.stringify(specimens));
+ check(specimens.every(x=>x.tone==='rgb(255, 255, 255)'), 'Launcher cards should share the new workbench surface');
+ check(specimens.every(x=>x.artWidth>=100&&x.withinCard),'Artwork clipped or visually undersized: '+JSON.stringify(specimens));
  const details=await page.evaluate(()=>{
   const hero=document.getElementById('forgeHeroName');
   const element=document.querySelector('.forge-hero');
@@ -167,7 +167,7 @@ try {
  check(details.light,'New visitors should default to light theme');
  check(details.title==='The Forge','Hero title text incorrect');
  check(details.titleOpacity==='1','Hero title must be fully revealed after intro');
- check(details.backgroundColor==='rgba(0, 0, 0, 0)','Hero should be open/transparent, not dark banner');
+ check(details.backgroundColor==='rgb(28, 41, 66)','Workbench hero surface is incorrect');
  check(!details.overflow,'Homepage should not overflow horizontally at 1440px');
  check(details.titleRight < 1440,'Wordmark is clipped on the desktop viewport');
  check(details.font.includes('Kola'),'Wordmark must request Kola');
@@ -176,8 +176,8 @@ try {
    'Home tagline under the wordmark is incorrect');
  check(await page.locator('.forge-hero-aside').evaluate(el=>{
    const styles=getComputedStyle(el);
-   return styles.borderLeftWidth==='2px'&&el.getBoundingClientRect().height>=110;
- }), 'Tall description divider is missing from homepage');
+   return styles.borderLeftWidth==='1px'&&el.getBoundingClientRect().height>=75;
+ }), 'Description divider is missing from homepage');
  check(Math.abs(details.titleWidth-details.inkWidth)<7,'Hero heading box must match actual kerned text width');
  check(trajectory.length>=12,'Expected at least twelve typing frames');
  if(trajectory.length>=2){
@@ -335,7 +335,7 @@ try {
    check(values.headerGeneratedText==='none','Floating legacy header tagline still visible');
    check(Math.abs(values.heroLeft-values.headerWordmarkLeft)<2,
      'Brand header is not aligned to the homepage hero column');
-   check(values.cardNumberColor==='rgb(64, 91, 75)','Card numbers are still too faint');
+   check(values.cardNumberColor==='rgb(97, 114, 142)','Card numbers are still too faint');
    check(values.logoName==='Logo Resizer','Logo card name inconsistent');
    check(values.adNavName==='Ad Downloader','Ad Downloader navigation name inconsistent');
    check(values.light,'QHD light mode default missing');

@@ -23,7 +23,7 @@ try{
   });
   check(home.body,'Light mode absent at '+viewport.width+'px');
   check(home.name==='Ad Downloader','Ad Downloader card label changed');
-  check(home.card==='rgb(231, 238, 231)','Ad Downloader card is not sage: '+home.card);
+  check(home.card==='rgb(255, 255, 255)','Ad Downloader card does not match the launcher: '+home.card);
   await page.locator('button.home-card.tool-logo').click();
   await page.locator('#section-logo.active').waitFor({state:'visible'});
   const logo=await page.evaluate(()=>{
@@ -55,10 +55,10 @@ try{
   check(ad.header===logo.header,'Ad Downloader forces a different global header: '+ad.header+' vs '+logo.header);
   check(ad.navigation===logo.navigation,'Ad Downloader forces a different navigation rail color');
   check(ad.toolHeader===logo.toolHeader,'Tool header differs from Logo Resizer: '+ad.toolHeader+' vs '+logo.toolHeader);
-  check(ad.stage==='rgb(245, 244, 239)','Downloader stage differs from shared main: '+ad.stage);
-  check(ad.empty==='rgb(251, 250, 246)','Downloader empty panel differs from shared panel: '+ad.empty);
-  check(ad.primary==='rgb(40, 84, 61)'||ad.primary==='#28543d',
-    'Downloader primary differs from forest green: '+ad.primary);
+  check(ad.stage==='rgb(241, 243, 247)','Downloader stage differs from shared main: '+ad.stage);
+  check(ad.empty==='rgb(255, 255, 255)','Downloader empty panel differs from shared panel: '+ad.empty);
+  check(ad.primary==='rgb(49, 85, 198)'||ad.primary==='#3155c6',
+    'Downloader primary differs from the workbench accent: '+ad.primary);
   check(ad.selectedTab==='true','Downloader tab did not activate');
   check(errors.length===0,'Browser errors: '+errors.join('; '));
   await page.screenshot({path:'artifacts/ad-palette/ad-'+viewport.width+'.png',animations:'disabled'});
