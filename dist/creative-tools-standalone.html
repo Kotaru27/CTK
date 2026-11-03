@@ -7943,6 +7943,15 @@ body.light-mode .undo-toast {
   outline:2px solid var(--studio-accent,#2d6949)!important;
   outline-offset:2px!important;
 }
+
+/* Keep the compact settings legible without changing editor or canvas sizes. */
+#view-app #section-logo #logoControls :is(input.liquid-input,select.liquid-input){
+  font-size:14px!important;
+}
+#view-app #section-logo #logoControls input.liquid-input::placeholder{
+  color:var(--studio-muted,#526b5a)!important;
+  opacity:1!important;
+}
 </style>
 <style id="forge-workflow-interactions-styles">/* THE FORGE / Workflow-specific navigation, hover and Ad Downloader queue behavior.
    Keep this separate from geometry-frozen general workspace refinements. */
@@ -8457,6 +8466,17 @@ body.light-mode .undo-toast {
   #stillsDetailOverlay #stillsOverlayGrid>.vs-frame-row.active-still{
     transition:none!important;
   }
+}
+
+/* Give the tool chooser a clear keyboard state and more readable supporting
+   copy without changing the existing cards or their click targets. */
+#view-home .combined-home-grid > .home-card:focus-visible{
+  outline:3px solid #37714f!important;
+  outline-offset:-3px!important;
+  z-index:2;
+}
+#view-home .combined-home-grid > .home-card .home-card-desc{
+  line-height:1.55!important;
 }
 </style>
 <style id="forge-compressor-frame-styles">/* Tool 08: Forge-native compressor route, legacy command UI hidden. */
@@ -17350,7 +17370,25 @@ const CTKDownloadRenamer = (() => {
           initDependencyGuard();
         }
       })();
-    </script>
+    
+/* Name the existing controls without altering their handlers or values. */
+(function(){
+  const labels={
+    globalFontFamily:'Font family', fontSizeInput:'Font size in pixels',
+    globalPadding:'Image padding in pixels', globalImgPos:'Vertical image offset',
+    exportWidth:'Export width in pixels', exportHeight:'Export height in pixels',
+    exportFormat:'Export format', clearLogoBtn:'Clear all logos and reset settings'
+  };
+  for(const [id,label] of Object.entries(labels)){
+    const element=document.getElementById(id);
+    if(element&&!element.hasAttribute('aria-label'))element.setAttribute('aria-label',label);
+  }
+  const width=document.getElementById('exportWidth');
+  const height=document.getElementById('exportHeight');
+  if(width)width.placeholder='Width';
+  if(height)height.placeholder='Height';
+})();
+</script>
 <script>
       /* Decorative spotlights and keyboard affordances. Does not touch tool processing. */
       document.querySelectorAll('.home-card').forEach((card) => {

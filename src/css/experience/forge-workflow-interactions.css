@@ -512,3 +512,14 @@
     transition:none!important;
   }
 }
+
+/* Give the tool chooser a clear keyboard state and more readable supporting
+   copy without changing the existing cards or their click targets. */
+#view-home .combined-home-grid > .home-card:focus-visible{
+  outline:3px solid #37714f!important;
+  outline-offset:-3px!important;
+  z-index:2;
+}
+#view-home .combined-home-grid > .home-card .home-card-desc{
+  line-height:1.55!important;
+}

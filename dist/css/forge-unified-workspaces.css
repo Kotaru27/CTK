@@ -793,3 +793,12 @@ body.light-mode .undo-toast {
   outline:2px solid var(--studio-accent,#2d6949)!important;
   outline-offset:2px!important;
 }
+
+/* Keep the compact settings legible without changing editor or canvas sizes. */
+#view-app #section-logo #logoControls :is(input.liquid-input,select.liquid-input){
+  font-size:14px!important;
+}
+#view-app #section-logo #logoControls input.liquid-input::placeholder{
+  color:var(--studio-muted,#526b5a)!important;
+  opacity:1!important;
+}
