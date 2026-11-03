@@ -160,6 +160,20 @@ try{
           samples.push({surface:name,label:before.text,contrast,baseContrast});
           checked++;
         }
+        if(name==='Storyboard'){
+          // Filmstrip has a second independent Save JPG action that inherited
+          // the same high-specificity bright-on-bright hover regression.
+          await page.evaluate(()=>UI.switchStillsTab('filmstrip'));
+          const exportBtn=page.locator('#downloadFilmstripJpgBtn');
+          await exportBtn.waitFor({state:'visible',timeout:6000});
+          await exportBtn.hover();
+          await page.waitForTimeout(90);
+          const fg=await exportBtn.evaluate(el=>getComputedStyle(el).color);
+          const bg=await exportBtn.evaluate(el=>getComputedStyle(el).backgroundColor);
+          const contrast=ratio(fg,bg);
+          samples.push({surface:'Filmstrip',label:'Save JPG',contrast,fg,bg});
+          if(contrast<4.5)failures.push('Filmstrip Save JPG hover unreadable '+contrast);
+        }
         if(checked<1)failures.push(name+': no visible tool controls audited');
       }
       await page.screenshot({path:'artifacts/forge-browser/workbench-workspace-hover-audit.png'});
