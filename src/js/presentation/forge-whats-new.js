@@ -153,7 +153,13 @@
   // Start preparing presentation fonts while the logo is still typing.
   // This avoids the previous 420ms dead time plus network delay.
   readyTypography();
-  document.addEventListener('forge:intro-complete',queueAutomatic,{once:true});
+  // Let the cinematic panels uncover a usable homepage before onboarding.
+  // A skipped / reduced-motion intro retains the original immediate behavior.
+  document.addEventListener('forge:intro-complete',()=>{
+    if(document.documentElement.dataset.forgeIntroAnimated==='1')
+      setTimeout(queueAutomatic,700);
+    else queueAutomatic();
+  },{once:true});
   if(document.documentElement.dataset.forgeIntroFinished==='1'||
      (!document.body.classList.contains('forge-opening')&&
        document.getElementById('forgeIntro')?.hidden))

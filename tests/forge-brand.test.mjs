@@ -44,24 +44,25 @@ test('light-only release hides appearance toggle and ignores legacy dark selecti
   assert.doesNotMatch(index,/localStorage\.getItem\("cts_theme"\)==="dark"/);
   assert.doesNotMatch(standalone,/localStorage\.getItem\("cts_theme"\)==="dark"/);
 });
-test('cinematic Forge intro is bounded, skippable and staged before the welcome dialog',()=>{
+test('cinematic Forge intro is bounded, skippable, and hands off to the real home',()=>{
  assert.match(index,/id="forgeIntro"/);
  assert.match(index,/id="forgeIntroSkip"/);
+ assert.match(index,/id="forgeCineCounter"/);
  assert.match(brandJS,/sessionStorage\.getItem\('forge_intro_suppress'\)/);
  assert.match(brandJS,/prefers-reduced-motion/);
  assert.match(brandJS,/Escape/);
  assert.match(brandJS,/document\.fonts\?\.load/);
- assert.match(brandJS,/function type\(index\)/);
  assert.match(brandJS,/forge:intro-complete/);
- assert.match(brandJS,/schedule\(finish,380\)/);
- assert.match(brandJS,/schedule\(finish,6000\)/);
- assert.match(brandJS,/gate\?\.beginWelcome\?\.\(\)/);
+ assert.match(brandJS,/schedule\(handoff,2750\)/);
+ assert.match(brandJS,/schedule\(finish,1160\)/);
+ assert.match(brandJS,/schedule\(finish,6200\)/);
+ assert.match(brandJS,/forge-cine-home-reveal/);
+ assert.match(brandJS,/gate\?\.endWelcome\?\.\(\)/);
  assert.match(brandJS,/clearTimeout\(id\)/);
- assert.doesNotMatch(brandJS,/mark\.animate\(/);
- assert.match(brandCss,/\.forge-intro\.forge-intro-ready\{[\s\S]*?position:fixed;inset:0/);
- assert.match(brandCss,/html\.forge-welcome-pending body\.forge-opening::after/);
+ assert.match(brandCss,/\.forge-intro\.forge-intro-ready\.forge-cinematic\{/);
+ assert.match(brandCss,/forge-cine-curtain/);
  assert.match(brandCss,/@media\(prefers-reduced-motion:reduce\)/);
-});
+});\n
 test('card polish is strictly visual and confined to the home page',()=>{
   const cssRulesOnly = brandCss.replace(/\/\*[\s\S]*?\*\//g,'');
   assert.doesNotMatch(cssRulesOnly,/\.tool-section\b|#view-app\b|\.editor-layout\b/);
@@ -70,45 +71,38 @@ test('card polish is strictly visual and confined to the home page',()=>{
   assert.doesNotMatch(brandJS,/home-card|\.tool-section|openTool/);
 });
 
-test('editorial hero is light-first, free of the old dark banner and circular decoration',()=>{
-  for (const page of [index,standalone]) {
-    assert.match(page,/class="forge-hero-middle"/);
-    assert.match(page,/class="forge-hero-aside"/);
-    assert.match(page,/class="forge-after-hero"/);
-    assert.doesNotMatch(page,/class="forge-hero-index"/);
-    assert.match(page,/class="forge-hero-tagline">Import/);
-    assert.match(page,/class="forge-intro-steps" role="text"/);
-  }
-  assert.match(brandCss,/#view-home \.forge-hero-aside\{/);
-  assert.match(brandCss,/border-left:2px solid rgba\(43,101,69,\.42\)/);
-  assert.match(brandCss,/\.forge-intro-step-part\.is-visible/);
-  assert.match(brandCss,/background:transparent/);
-  assert.match(brandCss,/border-top:1px solid var\(--forge-hero-line\)/);
-  assert.doesNotMatch(brandCss,/forge-hero::before|forge-hero::after/);
-  assert.doesNotMatch(brandCss,/\.forge-hero\s*\{[^}]*linear-gradient/);
-});
-test('real Kola heading keeps native character geometry and a single kinetic echo',()=>{
+test('editorial hero stays intact and intro uses all eight named pictogram tiles',()=>{
+ for (const page of [index,standalone]) {
+  assert.match(page,/class="forge-hero-middle"/);
+  assert.match(page,/class="forge-hero-aside"/);
+  assert.match(page,/class="forge-after-hero"/);
+  assert.match(page,/class="forge-hero-tagline">Import/);
+  const scene=page.split('id="forgeIntro"')[1]?.split('id="forgeWhatsNew"')[0]||'';
+  assert.equal((scene.match(/class="forge-cine-piece"/g)||[]).length,8);
+  assert.equal((scene.match(/<svg viewBox="0 0 24 24"/g)||[]).length,8);
+  for(const name of ['Logo Resizer','PDF to Image','Image Splitter','Video Stills',
+    'Storyboard','Link Gen','Ad Downloader','Video Compressor'])
+   assert.ok(scene.includes('title="'+name+'"'),'Missing iconic tile: '+name);
+ }
+ assert.match(brandCss,/#view-home \.forge-hero-aside\{/);
+ assert.match(brandCss,/border-top:1px solid var\(--forge-hero-line\)/);
+});\n
+test('cinematic wordmark uses Kola while preserving the original home wordmark',()=>{
  assert.match(index,/class="forge-hero-name" id="forgeHeroName">The Forge/);
- assert.doesNotMatch(index,/class="forge-intro-glyphs"/);
- assert.doesNotMatch(brandCss,/@keyframes forge-mask-unveil|@keyframes forge-draw-letter/);
- assert.match(brandCss,/\.forge-intro\.forge-intro-ready \.forge-intro-type\{/);
- assert.match(brandCss,/#forgeIntroWordmark::before\{/);
- assert.match(brandCss,/content:attr\(data-full-name\)/);
- assert.match(brandCss,/clip-path:none!important/);
- assert.match(brandJS,/function kineticArrival\(char,index\)/);
- assert.match(brandJS,/translate3d\(/);
- assert.doesNotMatch(brandJS,/\.createRange\(|clipPath/);
-});
-test('intro and home avoid expensive animated backdrops and layout font changes',()=>{
- assert.doesNotMatch(brandCss,/\.forge-intro::before\s*\{\s*content:""/);
- assert.doesNotMatch(brandCss,/transition:background-color \.82s/);
+ assert.match(index,/class="forge-cine-wordmark">The Forge/);
+ assert.match(brandCss,/\.forge-cine-wordmark\{/);
+ assert.match(brandCss,/html\.forge-launch-fallback-kola \.forge-cine-wordmark/);
+ assert.match(brandCss,/body\.forge-opening\.forge-home-arriving\.forge-cine-home-reveal #forgeHeroName/);
+ assert.doesNotMatch(brandJS,/openTool|home-card|createRange/);
+});\n
+test('intro animates transforms and opacity, not homepage layout',()=>{
  assert.match(brandCss,/min-height:clamp\(322px,27vw,392px\)/);
  assert.match(brandCss,/\.home-card:hover\s*\{\s*box-shadow:none!important/);
- assert.match(brandCss,/\.home-card-go[\s\S]*?transform:translate3d/);
- assert.match(brandJS,/duration:245/);
- assert.match(brandJS,/schedule\(finish,380\)/);
- assert.doesNotMatch(brandJS,/fontSize|backdropFilter/);
-});
+ assert.match(brandCss,/@keyframes forge-cine-curtain/);
+ assert.match(brandCss,/@keyframes forge-cine-piece-in/);
+ assert.match(brandJS,/schedule\(handoff,2750\)/);
+ assert.doesNotMatch(brandJS,/fontSize|backdropFilter|\.animate\(/);
+});\n
 test('executive hero states one purpose, one description, then tool selection',()=>{
   for(const page of [index,standalone]){
     assert.doesNotMatch(page,/class="forge-hero-edition"/);
