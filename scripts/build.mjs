@@ -82,8 +82,8 @@ const forgeIntro=[
     '  <span class="forge-cine-piece" style="--col:1;--row:2;--dx:100px;--dy:155px;--rot:54deg;--delay:720ms" title="Link Gen"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.07 0l2.12-2.12a5 5 0 0 0-7.07-7.07L10 5.93"/><path d="M14 11a5 5 0 0 0-7.07 0l-2.12 2.12a5 5 0 0 0 7.07 7.07L14 18.07"/></svg><small>06</small></span>',
     '  <span class="forge-cine-piece" style="--col:0;--row:3;--dx:-80px;--dy:190px;--rot:-32deg;--delay:832ms" title="Ad Downloader"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13m-5-5 5 5 5-5"/><path d="M4 16v4h16v-4"/><path d="M6 4h3M15 4h3"/></svg><small>07</small></span>',
     '  <span class="forge-cine-piece" style="--col:0;--row:4;--dx:190px;--dy:120px;--rot:35deg;--delay:944ms" title="Video Compressor"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m10 9 5 3-5 3z"/><path d="M6 22h12M8 2h8"/></svg><small>08</small></span>',
+  '    <div class="forge-cine-identity"><span class="forge-cine-kicker">EIGHT TOOLS. ONE WORKSPACE.</span><div class="forge-cine-wordmark">The Forge</div><div class="forge-cine-rule"></div><p>Ideas become something here.</p></div>',
   '   </div>',
-  '   <div class="forge-cine-identity"><span class="forge-cine-kicker">EIGHT TOOLS. ONE WORKSPACE.</span><div class="forge-cine-wordmark">The Forge</div><div class="forge-cine-rule"></div><p>Ideas become something here.</p></div>',
   '   <div class="forge-cine-foot"><div><span class="forge-cine-footnote">BUILDING YOUR CREATIVE WORKSPACE</span><span class="forge-cine-counter">Assembling <b id="forgeCineCounter">00</b> of 08</span></div><div><div class="forge-cine-ticks" aria-hidden="true">'+Array.from({length:8},()=>'<i></i>').join('')+'</div><span class="forge-cine-footnote">08 PARTS → 01 WORKBENCH</span></div></div>',
   '   <button type="button" class="forge-cine-skip forge-intro-skip" id="forgeIntroSkip" aria-label="Skip introduction">Skip intro ↗</button>',
   '  </div>',
@@ -207,7 +207,7 @@ function forgeBrand(html,standaloneRelease){
   const fontLink='<link rel="preconnect" href="https://api.fontshare.com" crossorigin="anonymous">\n'+
     '<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=kola@400&amp;display=swap">\n';
   const brandStyle=standaloneRelease?'<style id="forge-brand-styles">'+forgeBrandCss+'</style>\n':
-    '<link rel="stylesheet" href="./dist/css/forge-brand.css?v=forge-cinematic-20261103">\n';
+    '<link rel="stylesheet" href="./dist/css/forge-brand.css?v=forge-cinematic-spacing-20261103-v2">\n';
   const routeStyle=standaloneRelease?'<style id="forge-video-route-styles">'+forgeVideoRouteCss+'</style>\n':
     '<link rel="stylesheet" href="./dist/css/forge-video-route.css?v=forge-route-20261019-fastnav-v11">\n';
   const adaptiveStyle=standaloneRelease?'<style id="forge-adaptive-styles">'+forgeAdaptiveCss+'</style>\n':
@@ -230,7 +230,7 @@ function forgeBrand(html,standaloneRelease){
   // Light-only presentation: do not read an old dark preference on first paint.
   html=html.replace('<body>','<body class="light-mode">\n'+forgeIntro+'\n'+forgeWhatsNew+'\n');
   const brandScript=standaloneRelease?'<script id="forge-brand-intro-js">'+forgeBrandJs+'</script>':
-    '<script id="forge-brand-intro-js" src="./dist/js/forge-brand.js?v=forge-cinematic-20261103"></script>';
+    '<script id="forge-brand-intro-js" src="./dist/js/forge-brand.js?v=forge-cinematic-spacing-20261103-v2"></script>';
   const routeScript=standaloneRelease?'<script id="forge-video-route-js">'+forgeVideoRouteJs+'</script>':
     '<script id="forge-video-route-js" src="./dist/js/forge-video-route.js"></script>';
   const compressorFitScript=standaloneRelease?'<script id="forge-compressor-fit-js">'+forgeCompressorFitJs+'</script>':

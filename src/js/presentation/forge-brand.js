@@ -90,7 +90,7 @@
         ticks[i]?.classList.add('is-lit');
       },160+i*112+630);
     }
-    schedule(handoff,2750);
+    schedule(handoff,3100);
   }
   let fontReady=false;
   const loadFont=spec=>{

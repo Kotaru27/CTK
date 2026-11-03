@@ -49,7 +49,7 @@ test('intro assembles eight named icons, then synchronizes reveal and completion
  assert.equal(h.counter.textContent,'08');
  assert.equal(h.ticks.every(t=>t.contains('is-lit')),true);
  assert.equal(h.body.classList.contains('forge-home-arriving'),false);
- h.advance(1100);
+ h.advance(1500);
  assert.equal(h.intro.classList.contains('forge-cine-leaving'),true);
  assert.equal(h.body.classList.contains('forge-home-arriving'),true);
  assert.equal(h.body.classList.contains('forge-handoff'),true);
@@ -66,7 +66,7 @@ test('offline font still starts the assembly and releases the app',async()=>{
   if(font==='hang')h.advance(900);
   await settle();
   assert.equal(h.intro.hidden,false);
-  h.advance(4000);
+  h.advance(4500);
   assert.equal(h.intro.removed,true);
   assert.deepEqual(h.events,['forge:intro-complete']);
  }

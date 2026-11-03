@@ -7,6 +7,13 @@ const index = read('../index.html');
 const standalone = read('../dist/creative-tools-standalone.html');
 const brandCss = read('../src/css/experience/forge-brand.css');
 const brandJS = read('../src/js/presentation/forge-brand.js');
+function buildWithIdentityNested(){
+ const output=read('../scripts/build.mjs');
+ const icon=output.indexOf('title="Video Compressor"');
+ const identity=output.indexOf('class="forge-cine-identity"');
+ const close=output.indexOf("'   </div>',",icon);
+ return icon>=0&&identity>icon&&identity<close;
+}
 function cards(s) {return [...s.matchAll(/<button class="home-card\b[\s\S]*?<\/button>/g)].map(m=>m[0]);}
 test('all eight cards preserve exact structure and routes except two intentional Logo Resizer texts',()=>{
   assert.equal(cards(baseline).length,8);
@@ -53,7 +60,7 @@ test('cinematic Forge intro is bounded, skippable, and hands off to the real hom
  assert.match(brandJS,/Escape/);
  assert.match(brandJS,/document\.fonts\?\.load/);
  assert.match(brandJS,/forge:intro-complete/);
- assert.match(brandJS,/schedule\(handoff,2750\)/);
+ assert.match(brandJS,/schedule\(handoff,3100\)/);
  assert.match(brandJS,/schedule\(finish,1160\)/);
  assert.match(brandJS,/schedule\(finish,6200\)/);
  assert.match(brandJS,/forge-cine-home-reveal/);
@@ -93,6 +100,11 @@ test('cinematic wordmark uses Kola while preserving the original home wordmark',
  assert.match(index,/class="forge-hero-name" id="forgeHeroName">The Forge/);
  assert.match(index,/class="forge-cine-wordmark">The Forge/);
  assert.match(brandCss,/\.forge-cine-wordmark\{/);
+ assert.match(brandCss,/left:calc\(100% \+ clamp\(20px,2vw,36px\)\)/);
+ assert.match(brandCss,/@media\(max-width:520px\)/);
+ assert.match(brandCss,/2060ms both/);
+ assert.ok(buildWithIdentityNested(), 'The Forge title must be positioned inside the assembled F');
+
  assert.match(brandCss,/html\.forge-launch-fallback-kola \.forge-cine-wordmark/);
  assert.match(brandCss,/body\.forge-opening\.forge-home-arriving\.forge-cine-home-reveal #forgeHeroName/);
  assert.doesNotMatch(brandJS,/openTool|home-card|createRange/);
@@ -103,7 +115,7 @@ test('intro animates transforms and opacity, not homepage layout',()=>{
  assert.match(brandCss,/\.home-card:hover\s*\{\s*box-shadow:none!important/);
  assert.match(brandCss,/@keyframes forge-cine-curtain/);
  assert.match(brandCss,/@keyframes forge-cine-piece-in/);
- assert.match(brandJS,/schedule\(handoff,2750\)/);
+ assert.match(brandJS,/schedule\(handoff,3100\)/);
  assert.doesNotMatch(brandJS,/fontSize|backdropFilter|\.animate\(/);
 });
 

@@ -38,7 +38,7 @@ test('Forge source, modular outputs and standalone release stay aligned',()=>{
 });
 
 test('Intro assembles all eight tiles and uncovers the live home in one synchronized exit',()=>{
-  assert.match(intro,/schedule\(handoff,2750\)/);
+  assert.match(intro,/schedule\(handoff,3100\)/);
   assert.match(intro,/schedule\(finish,1160\)/);
   assert.match(brand,/@keyframes forge-cine-curtain/);
   assert.match(intro,/body\.classList\.add\('forge-home-arriving','forge-handoff','forge-cine-home-reveal'\)/);

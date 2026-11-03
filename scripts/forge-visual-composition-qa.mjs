@@ -81,37 +81,66 @@ try{
     samples.push({viewport,metrics,nav,contrast:navContrast});
     await context.close();
   }
-  const context=await browser.newContext({viewport:{width:1440,height:900},reducedMotion:'no-preference'});
-  const page=await context.newPage();
-  await page.goto('http://127.0.0.1:4173/',{waitUntil:'domcontentloaded'});
-  await page.locator('#forgeIntro').waitFor({state:'visible',timeout:8000});
-  // After the F is assembled, the eight named icons should sit to the
-  // left of the wordmark without colliding or leaving the viewport.
-  await page.waitForFunction(()=>
-    document.getElementById('forgeCineCounter')?.textContent==='08',
-    null,{timeout:5000});
-  await page.waitForTimeout(400);
-  const intro=await page.evaluate(()=>{
-    const box=(selector)=>{const r=document.querySelector(selector).getBoundingClientRect();
-      return {top:r.top,bottom:r.bottom,left:r.left,right:r.right,width:r.width};};
-    return {mark:box('.forge-cine-identity'),
-      assembly:box('.forge-cine-assembly'),
-      footer:box('.forge-cine-foot'),
-      header:box('.forge-cine-head'),
-      tiles:[...document.querySelectorAll('.forge-cine-piece')].map(el=>el.getAttribute('title')),
-      viewport:innerWidth};
-  });
-  assert.equal(intro.tiles.length,8,'Cinematic intro must have eight tool icons');
-  assert.ok(intro.mark.left>=intro.assembly.right-20,'Icons overlap the Forge title');
-  assert.ok(intro.mark.right<intro.viewport+10,'Forge title clipped by intro viewport');
-  assert.ok(intro.assembly.left>=0,'Assembling icons escaped left of viewport');
-  assert.ok(intro.assembly.bottom<intro.footer.top+12,'Assembling tools overlap footer');
-  assert.ok(intro.header.bottom<intro.mark.top,'Intro header overlaps wordmark');
-  await page.screenshot({path:'artifacts/forge-browser/intro-balanced.png'});
-  await page.locator('#forgeIntroSkip').click();
-  await page.locator('#forgeIntro').waitFor({state:'detached',timeout:2500});
-  await context.close();
-  console.log('FORGE_VISUAL_COMPOSITION '+JSON.stringify({samples,intro}));
+  const introLayouts=[];
+  // Verify the real intro at desktop, the reported short landscape size,
+  // and both normal and short mobile screens. This checks *visible* boxes,
+  // not just CSS selectors, to prevent the screenshot's kicker/icon overlap.
+  for(const viewport of [
+    {width:1440,height:900},
+    {width:806,height:387},
+    {width:390,height:844},
+    {width:390,height:390}
+  ]){
+    const ctx=await browser.newContext({viewport,reducedMotion:'no-preference'});
+    const page=await ctx.newPage();
+    await page.goto('http://127.0.0.1:4173/',{waitUntil:'domcontentloaded'});
+    await page.locator('#forgeIntro').waitFor({state:'visible',timeout:8000});
+    await page.waitForFunction(()=>
+      document.getElementById('forgeCineCounter')?.textContent==='08',
+      null,{timeout:5000});
+    await page.waitForFunction(()=>
+      Number(getComputedStyle(document.querySelector('.forge-cine-identity')).opacity)>.95,
+      null,{timeout:5000});
+    await page.waitForTimeout(140);
+    const intro=await page.evaluate(()=>{
+      const box=(el)=>{
+        const r=el.getBoundingClientRect();
+        return {top:r.top,bottom:r.bottom,left:r.left,right:r.right,width:r.width,height:r.height};
+      };
+      const select=s=>document.querySelector(s);
+      const pieceBoxes=[...document.querySelectorAll('.forge-cine-piece')].map(el=>box(el));
+      const overlap=(a,b,pad=3)=>a.left<b.right+pad&&a.right+pad>b.left&&
+        a.top<b.bottom+pad&&a.bottom+pad>b.top;
+      const kicker=box(select('.forge-cine-kicker'));
+      const wordmark=box(select('.forge-cine-wordmark'));
+      const footer=box(select('.forge-cine-foot'));
+      const head=box(select('.forge-cine-head'));
+      const labels=[...document.querySelectorAll('.forge-cine-piece')].map(el=>el.getAttribute('title'));
+      return {width:innerWidth,height:innerHeight,kicker,wordmark,footer,head,
+        tiles:pieceBoxes.length,labels,
+        collideWithKicker:pieceBoxes.some(r=>overlap(r,kicker)),
+        collideWithWordmark:pieceBoxes.some(r=>overlap(r,wordmark)),
+        footerCollision:overlap(wordmark,footer)||overlap(kicker,footer),
+        headerCollision:overlap(head,wordmark)||overlap(head,kicker),
+        horizontallyClipped:wordmark.left<0||wordmark.right>innerWidth+2,
+        totalVisible:pieceBoxes.filter(x=>x.left>=-2&&x.right<=innerWidth+2).length};
+    });
+    assert.equal(intro.tiles,8,'Expected eight original tool pictograms at '+viewport.width);
+    assert.equal(intro.totalVisible,8,'The assembled F is clipped at '+JSON.stringify(viewport));
+    assert.equal(intro.collideWithKicker,false,
+      'Icon squares overlap EIGHT TOOLS caption: '+JSON.stringify(intro));
+    assert.equal(intro.collideWithWordmark,false,
+      'Icon squares overlap The Forge wordmark: '+JSON.stringify(intro));
+    assert.equal(intro.footerCollision,false,'Wordmark overlaps intro footer: '+JSON.stringify(intro));
+    assert.equal(intro.headerCollision,false,'Wordmark overlaps intro header: '+JSON.stringify(intro));
+    assert.equal(intro.horizontallyClipped,false,'Wordmark runs outside screen: '+JSON.stringify(intro));
+    await page.screenshot({path:'artifacts/forge-browser/intro-balanced-'+viewport.width+'x'+viewport.height+'.png'});
+    await page.locator('#forgeIntroSkip').click();
+    await page.locator('#forgeIntro').waitFor({state:'detached',timeout:2500});
+    introLayouts.push(intro);
+    await ctx.close();
+  }
+  console.log('FORGE_VISUAL_COMPOSITION '+JSON.stringify({samples,introLayouts}));
 }finally{
   await browser.close();
 }
