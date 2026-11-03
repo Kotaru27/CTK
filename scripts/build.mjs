@@ -42,6 +42,8 @@ const forgeWorkspaceFinishCss=read('src/css/experience/forge-workspace-finish.cs
 const forgeSpecimensCss=read('src/css/experience/forge-tool-specimens.css');
 const forgeUnifiedCss=read('src/css/experience/forge-unified-workspaces.css');
 const forgeWorkflowCss=read('src/css/experience/forge-workflow-interactions.css');
+const forgeWorkbenchCss=read('src/css/experience/forge-workbench-v2.css');
+const forgeWorkbenchJs=read('src/js/presentation/forge-workbench-v2.js');
 const forgeVideoRouteJs=read('src/js/presentation/forge-video-route.js');
 const forgeWhatsNewCss=read('src/css/experience/forge-whats-new.css');
 const forgeWhatsNewJs=read('src/js/presentation/forge-whats-new.js');
@@ -50,6 +52,7 @@ const forgeManifest=read('src/branding/manifest.json');
 const forgeReleaseTrigger='<button class="forge-hero-updates" id="forgeWhatsNewTrigger" type="button" aria-haspopup="dialog" aria-controls="forgeWhatsNew">What’s new ↗</button>';
 const forgeHero=[
   '<section class="forge-hero" aria-labelledby="forgeHeroName">',
+  ' <div class="forge-workbench-head"><span>WORKSPACE / THE FORGE</span><span class="forge-workbench-led">READY TO CREATE</span></div>',
   ' <div class="forge-hero-middle">',
   '  <div class="forge-hero-identity">',
   '   <h1 class="forge-hero-name" id="forgeHeroName">The Forge</h1>',
@@ -59,12 +62,14 @@ const forgeHero=[
   '   <p>Resize images, convert PDFs, capture stills and build storyboards. One focused workspace from start to finish.</p>',
   '  </div>',
   ' </div>',
+  ' <div class="forge-workbench-foot"><div><small>YOUR NEXT STEP</small><span id="forgeFeaturedLabel">Select a workspace</span></div><span class="forge-workbench-signature" aria-hidden="true">08</span></div>',
   '</section>',
-  '<div class="forge-after-hero"><strong>Choose a tool</strong></div>'
+  '<div class="forge-after-hero"><strong>Choose a tool</strong><div class="forge-search-wrap"><label class="forge-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.7"/><path d="m16 16 5 5"/></svg><input id="forgeToolSearch" type="search" aria-label="Find a Forge tool" placeholder="Find a tool · /" autocomplete="off"></label><span id="forgeSearchCount" aria-live="polite">08 / 08</span></div></div>'
 ].join('\n');
 const forgeIntro=[
   '<div class="forge-intro" id="forgeIntro" role="region" aria-label="The Forge introduction" hidden>',
   ' <div class="forge-intro-layout">',
+  '  <div class="forge-intro-stage-mark" aria-hidden="true">THE CREATIVE WORKBENCH · 08 TOOLS</div>',
   '  <div class="forge-intro-label">CREATIVE TOOL KIT / REIMAGINED</div>',
   '  <div class="forge-intro-type" id="forgeIntroType" role="img" aria-label="The Forge">',
   '   <div class="forge-intro-wordmark" id="forgeIntroWordmark" data-full-name="The Forge" aria-hidden="true"><span class="forge-intro-typed"></span><span class="forge-intro-caret" aria-hidden="true"></span></div>',
@@ -213,7 +218,9 @@ function forgeBrand(html,standaloneRelease){
     '<link rel="stylesheet" href="./dist/css/forge-compressor-frame.css?v=forge-compressor-20261021">\n';
   const welcomeStyle=standaloneRelease?'<style id="forge-whats-new-styles">'+forgeWhatsNewCss+'</style>\n':
     '<link rel="stylesheet" href="./dist/css/forge-whats-new.css?v=green-welcome-20261103">\n';
-  html=html.replace('</head>',iconLink+fontLink+brandStyle+routeStyle+adaptiveStyle+workspaceFinishStyle+specimenStyle+unifiedStyle+workflowStyle+compressorStyle+welcomeStyle+'</head>');
+  const workbenchStyle=standaloneRelease?'<style id="forge-workbench-v2-styles">'+forgeWorkbenchCss+'</style>\n':
+    '<link rel="stylesheet" href="./dist/css/forge-workbench-v2.css?v=forge-original-workbench-v2-20261103">\n';
+  html=html.replace('</head>',iconLink+fontLink+brandStyle+routeStyle+adaptiveStyle+workspaceFinishStyle+specimenStyle+unifiedStyle+workflowStyle+compressorStyle+welcomeStyle+workbenchStyle+'</head>');
   // Light-only presentation: do not read an old dark preference on first paint.
   html=html.replace('<body>','<body class="light-mode">\n'+forgeIntro+'\n'+forgeWhatsNew+'\n');
   const brandScript=standaloneRelease?'<script id="forge-brand-intro-js">'+forgeBrandJs+'</script>':
@@ -224,7 +231,9 @@ function forgeBrand(html,standaloneRelease){
     '<script id="forge-compressor-fit-js" src="./dist/js/forge-compressor-fit.js"></script>';
   const welcomeScript=standaloneRelease?'<script id="forge-whats-new-js">'+forgeWhatsNewJs+'</script>':
     '<script id="forge-whats-new-js" src="./dist/js/forge-whats-new.js?v=forge-caption-20261019-v12"></script>';
-  html=html.replace('</body>',brandScript+'\n'+routeScript+'\n'+compressorFitScript+'\n'+welcomeScript+'\n</body>');
+  const workbenchScript=standaloneRelease?'<script id="forge-workbench-v2-js">'+forgeWorkbenchJs+'</script>':
+    '<script id="forge-workbench-v2-js" src="./dist/js/forge-workbench-v2.js?v=forge-original-workbench-v2-20261103"></script>';
+  html=html.replace('</body>',brandScript+'\n'+routeScript+'\n'+compressorFitScript+'\n'+welcomeScript+'\n'+workbenchScript+'\n</body>');
   return html;
 }
 
@@ -247,6 +256,8 @@ save('dist/css/forge-workspace-finish.css',forgeWorkspaceFinishCss);
 save('dist/css/forge-tool-specimens.css',forgeSpecimensCss);
 save('dist/css/forge-unified-workspaces.css',forgeUnifiedCss);
 save('dist/css/forge-workflow-interactions.css',forgeWorkflowCss);
+save('dist/css/forge-workbench-v2.css',forgeWorkbenchCss);
+save('dist/js/forge-workbench-v2.js',forgeWorkbenchJs);
 save('dist/css/forge-whats-new.css',forgeWhatsNewCss);
 save('dist/js/forge-whats-new.js',forgeWhatsNewJs);
 save('dist/js/forge-video-route.js',forgeVideoRouteJs);
