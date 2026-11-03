@@ -7,7 +7,9 @@ const a=rd('source/baseline.html'), b=rd('index.html');
 const ids=s=>[...s.replace(/<script\b[^>]*>[\s\S]*?<\/script>/g,'').matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]).sort();
 const getRoutes=s=>[...s.matchAll(/<button\b[^>]*class="[^"]*home-card[^>]*"[^>]*onclick="([^"]+)"/g)].map(m=>m[1]);
 const beforeIds=ids(a),afterIds=ids(b).filter(id=>!["forgeIntro","forgeHeroName","forgeIntroType","forgeIntroSkip","forgeIntroWordmark","forgeIntroGlyphs",
-  "forgeWhatsNew","forgeWhatsNewTitle","forgeWhatsNewDescription","forgeWhatsNewClose","forgeWhatsNewNever","forgeWhatsNewContinue","forgeWhatsNewEnter","forgeWhatsNewTrigger","forge-first-paint-css"].includes(id));
+  "forgeWhatsNew","forgeWhatsNewTitle","forgeWhatsNewDescription","forgeWhatsNewClose","forgeWhatsNewNever","forgeWhatsNewContinue","forgeWhatsNewEnter","forgeWhatsNewTrigger","forge-first-paint-css",
+  // Workbench V2 adds search and a read-only preview label; none are tool IDs.
+  "forgeFeaturedLabel","forgeToolSearch","forgeSearchCount"].includes(id));
 if(JSON.stringify(beforeIds)!==JSON.stringify(afterIds))throw Error('DOM element IDs changed');
 const beforeRoutes=getRoutes(a),afterRoutes=getRoutes(b);
 if(beforeRoutes.length!==8||JSON.stringify(beforeRoutes)!==JSON.stringify(afterRoutes))throw Error('Homepage routes changed');
@@ -29,6 +31,15 @@ const whatsNewJs=rd('src/js/presentation/forge-whats-new.js');
 const whatsNewCss=rd('src/css/experience/forge-whats-new.css');
 const firstPaintCss=rd('src/css/experience/forge-first-paint.css');
 const firstPaintJs=rd('src/js/presentation/forge-first-paint.js');
+const workbenchCss=rd('src/css/experience/forge-workbench-v2.css');
+const workbenchJs=rd('src/js/presentation/forge-workbench-v2.js');
+if(rd('dist/css/forge-workbench-v2.css')!==workbenchCss ||
+   rd('dist/js/forge-workbench-v2.js')!==workbenchJs ||
+   !b.includes('./dist/css/forge-workbench-v2.css') ||
+   !b.includes('./dist/js/forge-workbench-v2.js') ||
+   !standalone.includes('<style id="forge-workbench-v2-styles">'+workbenchCss+'</style>') ||
+   !standalone.includes('<script id="forge-workbench-v2-js">'+workbenchJs+'</script>'))
+  throw Error('Workbench V2 source, publication and standalone parity failed');
 if(!b.includes('<style id="forge-first-paint-css">'+firstPaintCss+'</style>') ||
    !b.includes('<script id="forge-first-paint-js">'+firstPaintJs+'</script>') ||
    !standalone.includes('<style id="forge-first-paint-css">'+firstPaintCss+'</style>') ||
@@ -53,7 +64,9 @@ const withoutVisual=standalone
   .replace('<style id="forge-video-route-styles">'+videoRouteCss+'</style>\n','')
   .replace('<style id="forge-compressor-frame-styles">'+compressorFrameCss+'</style>\n','')
   .replace('<script id="forge-video-route-js">'+videoRouteJs+'</script>\n','')
-  .replace('<script id="forge-compressor-fit-js">'+compressorFitJs+'</script>\n','');
+  .replace('<script id="forge-compressor-fit-js">'+compressorFitJs+'</script>\n','')
+  // Remove only the new presentation script; original app and tools remain.
+  .replace('<script id="forge-workbench-v2-js">'+workbenchJs+'</script>\n','');
 // Remove only the new, explicitly-scoped Forge presentation layer before
 // comparing to the untouched original. Tool sections and cards must be identical.
 const forgeJs=rd('src/js/presentation/forge-brand.js');
