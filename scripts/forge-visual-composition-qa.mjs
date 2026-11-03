@@ -85,19 +85,28 @@ try{
   const page=await context.newPage();
   await page.goto('http://127.0.0.1:4173/',{waitUntil:'domcontentloaded'});
   await page.locator('#forgeIntro').waitFor({state:'visible',timeout:8000});
+  // After the F is assembled, the eight named icons should sit to the
+  // left of the wordmark without colliding or leaving the viewport.
+  await page.waitForFunction(()=>
+    document.getElementById('forgeCineCounter')?.textContent==='08',
+    null,{timeout:5000});
+  await page.waitForTimeout(400);
   const intro=await page.evaluate(()=>{
-    const box=(id)=>{const r=document.getElementById(id).getBoundingClientRect();
+    const box=(selector)=>{const r=document.querySelector(selector).getBoundingClientRect();
       return {top:r.top,bottom:r.bottom,left:r.left,right:r.right,width:r.width};};
-    return {mark:box('forgeIntroWordmark'),
-      steps:document.querySelector('.forge-intro-steps').getBoundingClientRect().toJSON(),
-      summary:document.querySelector('.forge-intro-summary').getBoundingClientRect().toJSON(),
-      footer:document.querySelector('.forge-intro-caption').getBoundingClientRect().toJSON(),
+    return {mark:box('.forge-cine-identity'),
+      assembly:box('.forge-cine-assembly'),
+      footer:box('.forge-cine-foot'),
+      header:box('.forge-cine-head'),
+      tiles:[...document.querySelectorAll('.forge-cine-piece')].map(el=>el.getAttribute('title')),
       viewport:innerWidth};
   });
-  assert.ok(Math.abs((intro.mark.left+intro.mark.right)/2-intro.viewport/2)<intro.viewport*.13,
-    'Intro wordmark is not centered');
-  assert.ok(intro.summary.top>intro.steps.bottom+7,'Intro summary overlaps its steps');
-  assert.ok(intro.summary.bottom<intro.footer.top-10,'Intro summary overlaps footer');
+  assert.equal(intro.tiles.length,8,'Cinematic intro must have eight tool icons');
+  assert.ok(intro.mark.left>=intro.assembly.right-20,'Icons overlap the Forge title');
+  assert.ok(intro.mark.right<intro.viewport+10,'Forge title clipped by intro viewport');
+  assert.ok(intro.assembly.left>=0,'Assembling icons escaped left of viewport');
+  assert.ok(intro.assembly.bottom<intro.footer.top+12,'Assembling tools overlap footer');
+  assert.ok(intro.header.bottom<intro.mark.top,'Intro header overlaps wordmark');
   await page.screenshot({path:'artifacts/forge-browser/intro-balanced.png'});
   await page.locator('#forgeIntroSkip').click();
   await page.locator('#forgeIntro').waitFor({state:'detached',timeout:2500});
