@@ -62,7 +62,8 @@ test('cinematic Forge intro is bounded, skippable, and hands off to the real hom
  assert.match(brandCss,/\.forge-intro\.forge-intro-ready\.forge-cinematic\{/);
  assert.match(brandCss,/forge-cine-curtain/);
  assert.match(brandCss,/@media\(prefers-reduced-motion:reduce\)/);
-});\n
+});
+
 test('card polish is strictly visual and confined to the home page',()=>{
   const cssRulesOnly = brandCss.replace(/\/\*[\s\S]*?\*\//g,'');
   assert.doesNotMatch(cssRulesOnly,/\.tool-section\b|#view-app\b|\.editor-layout\b/);
@@ -86,7 +87,8 @@ test('editorial hero stays intact and intro uses all eight named pictogram tiles
  }
  assert.match(brandCss,/#view-home \.forge-hero-aside\{/);
  assert.match(brandCss,/border-top:1px solid var\(--forge-hero-line\)/);
-});\n
+});
+
 test('cinematic wordmark uses Kola while preserving the original home wordmark',()=>{
  assert.match(index,/class="forge-hero-name" id="forgeHeroName">The Forge/);
  assert.match(index,/class="forge-cine-wordmark">The Forge/);
@@ -94,7 +96,8 @@ test('cinematic wordmark uses Kola while preserving the original home wordmark',
  assert.match(brandCss,/html\.forge-launch-fallback-kola \.forge-cine-wordmark/);
  assert.match(brandCss,/body\.forge-opening\.forge-home-arriving\.forge-cine-home-reveal #forgeHeroName/);
  assert.doesNotMatch(brandJS,/openTool|home-card|createRange/);
-});\n
+});
+
 test('intro animates transforms and opacity, not homepage layout',()=>{
  assert.match(brandCss,/min-height:clamp\(322px,27vw,392px\)/);
  assert.match(brandCss,/\.home-card:hover\s*\{\s*box-shadow:none!important/);
@@ -102,7 +105,8 @@ test('intro animates transforms and opacity, not homepage layout',()=>{
  assert.match(brandCss,/@keyframes forge-cine-piece-in/);
  assert.match(brandJS,/schedule\(handoff,2750\)/);
  assert.doesNotMatch(brandJS,/fontSize|backdropFilter|\.animate\(/);
-});\n
+});
+
 test('executive hero states one purpose, one description, then tool selection',()=>{
   for(const page of [index,standalone]){
     assert.doesNotMatch(page,/class="forge-hero-edition"/);
