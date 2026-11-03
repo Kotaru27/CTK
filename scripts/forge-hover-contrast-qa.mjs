@@ -153,7 +153,7 @@ try{
           });
           const contrast=rgb(after.bg).alpha>=.95?ratio(after.color,after.bg):null;
           const baseContrast=rgb(before.bg).alpha>=.95?ratio(before.color,before.bg):null;
-          if(contrast!==null&&contrast<3.1&&baseContrast!==null&&baseContrast>=3.5)
+          if(contrast!==null&&contrast<4.5&&baseContrast!==null&&baseContrast>=4.5)
             failures.push(name+' '+before.text+' hover contrast dropped '+baseContrast+' to '+contrast);
           if(Number(after.opacity)<.66)
             failures.push(name+' '+before.text+' hover faded to opacity '+after.opacity);
