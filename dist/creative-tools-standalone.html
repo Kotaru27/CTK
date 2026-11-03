@@ -10432,6 +10432,27 @@ body.light-mode #mainSidebar.nav-sidebar.visible .nav-item.active:not(.nav-toggl
     animation:none!important;transition:none!important;
   }
 }
+
+/* Storyboard and Filmstrip export headers have a high-specificity legacy
+   hover rule that paints a pale --sb-action below white export text.
+   Keep all three real export actions dark-on-light? No: use an explicit
+   high-contrast deep-green primary treatment, including keyboard focus.
+   Upload labels and segmented mode selectors retain their own semantics. */
+body.light-mode #view-app #section-stills-boards :is(#storyHeaderControls,#filmstripHeaderControls,#fitHeaderControls)
+  :is(#downloadStoryBtn,#downloadFilmstripJpgBtn,#fitExportPngBtn).liquid-btn.active-mode:not(:disabled):is(:hover,:focus-visible){
+  background:#20563c!important;
+  color:#fff!important;
+  border-color:#20563c!important;
+  filter:none!important;
+  text-shadow:none!important;
+}
+/* Keep the icon the same color as the export text: it inherits old
+   storyboard action tokens in some modes. */
+body.light-mode #view-app #section-stills-boards :is(#storyHeaderControls,#filmstripHeaderControls,#fitHeaderControls)
+  :is(#downloadStoryBtn,#downloadFilmstripJpgBtn,#fitExportPngBtn).liquid-btn.active-mode:not(:disabled):is(:hover,:focus-visible) .material-symbols-rounded{
+  color:inherit!important;
+  opacity:1!important;
+}
 </style>
 </head>
 <body class="light-mode">
