@@ -765,3 +765,13 @@ body.light-mode #forgeWhatsNew .forge-whatsnew-intro,
 body.light-mode #forgeWhatsNew .forge-whatsnew-foot{color:#d1dbef!important;}
 /* The empty panel has horizontal margins; let its width account for them. */
 #section-adlinks #adlinksTabContentDownloader #adDlEmptyState{width:auto!important;}
+/* Keep import and export distinct in the storyboard toolbar. */
+body.light-mode #view-app #section-stills-boards #downloadStoryBtn{
+  background:#fff!important;color:#2746a7!important;border:1px solid #8da2d8!important;
+}
+body.light-mode #view-app #section-stills-boards #downloadStoryBtn:hover:not(:disabled){
+  background:#eef2fc!important;color:#1d3688!important;
+}
+body.light-mode #view-app #storyBoardNavigator .story-board-layout-choice.selected{
+  background:#3155c6!important;color:#fff!important;border-color:#3155c6!important;
+}
