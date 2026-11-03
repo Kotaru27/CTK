@@ -139,12 +139,20 @@ try {
    return {tool:[...card.classList].find(c=>c.startsWith('tool-')),
      tone:getComputedStyle(card).backgroundColor,
      artWidth:Math.round(rect.width),
+     artVisible:getComputedStyle(art).display!=='none',
      withinCard:rect.left>=box.left-8&&rect.right<=box.right+8&&rect.top>=box.top-8,
      title:card.querySelector('.home-card-title')?.textContent.trim()};
  }));
  check(specimens.length===8,'Not all eight artwork specimens rendered');
- check(specimens.every(x=>x.tone==='rgb(255, 255, 255)'), 'Launcher cards should share the new workbench surface');
- check(specimens.every(x=>x.artWidth>=80&&x.withinCard),'Artwork clipped or visually undersized: '+JSON.stringify(specimens));
+ // The original design displayed eight identical white illustration cards.
+ // V2 replaces that pattern with two editorial feature surfaces and six
+ // compact text-first actions, while retaining all original route buttons.
+ check(specimens[0].tone!==specimens[2].tone&&specimens[1].tone!==specimens[2].tone,
+   'Featured entries must have distinct surfaces');
+ check(specimens.slice(0,2).every(x=>x.artVisible&&x.artWidth>=110&&x.withinCard),
+   'Featured illustration clipped: '+JSON.stringify(specimens.slice(0,2)));
+ check(specimens.slice(2).every(x=>!x.artVisible&&x.title.length>2),
+   'Compact tool directory entries must remain scannable: '+JSON.stringify(specimens.slice(2)));
  const details=await page.evaluate(()=>{
   const hero=document.getElementById('forgeHeroName');
   const element=document.querySelector('.forge-hero');
@@ -168,7 +176,7 @@ try {
  check(details.light,'New visitors should default to light theme');
  check(details.title==='The Forge','Hero title text incorrect');
  check(details.titleOpacity==='1','Hero title must be fully revealed after intro');
- check(details.backgroundColor==='rgb(28, 65, 48)','Workbench hero surface is incorrect');
+ check(details.backgroundColor==='rgb(252, 253, 248)','Editorial hero must use the mineral-paper surface');
  check(!details.overflow,'Homepage should not overflow horizontally at 1440px');
  check(details.titleRight < 1440,'Wordmark is clipped on the desktop viewport');
  check(details.font.includes('Kola') || (details.fontFallback && details.font.includes('Arial')),
@@ -337,7 +345,7 @@ try {
    check(values.headerGeneratedText==='none','Floating legacy header tagline still visible');
    check(Math.abs(values.heroLeft-values.headerWordmarkLeft)<6,
      'Brand header is not aligned to the homepage hero column');
-   check(values.cardNumberColor==='rgb(73, 103, 85)','Card numbers are still too faint');
+   check(values.cardNumberColor==='rgb(197, 221, 200)','Featured card number must contrast with its deep-green surface');
    check(values.logoName==='Logo Resizer','Logo card name inconsistent');
    check(values.adNavName==='Ad Downloader','Ad Downloader navigation name inconsistent');
    check(values.light,'QHD light mode default missing');
