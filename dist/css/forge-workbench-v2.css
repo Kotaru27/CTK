@@ -662,3 +662,14 @@ body.light-mode #view-app .tool-section :is(button,[role="button"],[role="tab"],
     transition:none!important;animation:none!important;
   }
 }
+
+/* Wide desktop alignment: the 1920px index and top brand use the same rail.
+   The legacy 2000px header bound previously introduced a 40px QHD offset. */
+body.light-mode:has(#view-home:not(.hidden)) .header{
+  padding-inline:max(clamp(22px,3.5vw,64px),calc((100vw - 1920px)/2 + 64px))!important;
+}
+@media(max-width:1000px){
+  body.light-mode:has(#view-home:not(.hidden)) .header{
+    padding-inline:clamp(17px,4vw,37px)!important;
+  }
+}
