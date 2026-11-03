@@ -10433,11 +10433,10 @@ body.light-mode #mainSidebar.nav-sidebar.visible .nav-item.active:not(.nav-toggl
   }
 }
 
-/* Storyboard and Filmstrip export headers have a high-specificity legacy
-   hover rule that paints a pale --sb-action below white export text.
-   Keep all three real export actions dark-on-light? No: use an explicit
-   high-contrast deep-green primary treatment, including keyboard focus.
-   Upload labels and segmented mode selectors retain their own semantics. */
+/* Storyboard and Filmstrip export headers have a high-specificity
+   legacy hover rule that can paint a pale action surface under white text.
+   Give export actions a stable, high-contrast deep-green treatment without
+   overriding upload labels or segmented mode selectors. */
 body.light-mode #view-app #section-stills-boards :is(#storyHeaderControls,#filmstripHeaderControls,#fitHeaderControls)
   :is(#downloadStoryBtn,#downloadFilmstripJpgBtn,#fitExportPngBtn).liquid-btn.active-mode:not(:disabled):is(:hover,:focus-visible){
   background:#20563c!important;
@@ -10445,6 +10444,13 @@ body.light-mode #view-app #section-stills-boards :is(#storyHeaderControls,#films
   border-color:#20563c!important;
   filter:none!important;
   text-shadow:none!important;
+}
+/* Keep the hover surface and text synchronized on the same frame.
+   Two individually interpolated color channels briefly produced 3.62:1,
+   even though the resting and final colors were fully readable. */
+body.light-mode #view-app #section-stills-boards :is(#storyHeaderControls,#filmstripHeaderControls,#fitHeaderControls)
+  :is(#downloadStoryBtn,#downloadFilmstripJpgBtn,#fitExportPngBtn).liquid-btn.active-mode:not(:disabled){
+  transition:none!important;
 }
 /* Keep the icon the same color as the export text: it inherits old
    storyboard action tokens in some modes. */
