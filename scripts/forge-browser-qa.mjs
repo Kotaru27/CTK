@@ -33,71 +33,50 @@ try {
  check(initial.homeVisible,'Intro incorrectly replaced the homepage');
  check(initial.width>=1430&&initial.height>=890&&initial.homeVisible,
    'Wordmark intro must occupy full viewport without a boxed stage: '+JSON.stringify(initial));
- await page.evaluate(()=>{
-   window.__forgeCaptionStages=[];
-   const root=document.getElementById('forgeIntro');
-   const parts=[...root.querySelectorAll('.forge-intro-step-part')];
-   const observer=new MutationObserver(()=>{
-     for(const [index,part] of parts.entries()){
-       if(part.classList.contains('is-visible')&&
-          !window.__forgeCaptionStages.some(entry=>entry.index===index)){
-         window.__forgeCaptionStages.push({index,text:part.textContent,time:performance.now()});
-       }
-     }
-   });
-   observer.observe(root,{subtree:true,attributes:true,attributeFilter:['class']});
- });
+ // Cinematic entry: eight assembling tiles contain real tool pictograms.
+ const expectedTools=['Logo Resizer','PDF to Image','Image Splitter','Video Stills',
+   'Storyboard','Link Gen','Ad Downloader','Video Compressor'];
+ const iconTiles=await page.locator('#forgeIntro .forge-cine-piece').evaluateAll(nodes=>
+   nodes.map(el=>({name:el.getAttribute('title'),hasSvg:!!el.querySelector('svg path,svg rect')})));
+ check(iconTiles.length===8,'Intro must contain eight assembling tool cards');
+ check(iconTiles.every((tile,i)=>tile.name===expectedTools[i]&&tile.hasSvg),
+   'Intro icon mapping does not match the eight real workspaces: '+JSON.stringify(iconTiles));
  const trajectoryPromise=page.evaluate(()=>new Promise(resolve=>{
-   const samples=[],start=performance.now();
+   const samples=[],started=performance.now();
    function sample(){
-     const hero=document.getElementById('forgeHeroName');
-     if(!hero||!document.body.classList.contains('forge-opening')||
-        performance.now()-start>4700){resolve(samples);return;}
-     const rect=hero.getBoundingClientRect();
-     const style=getComputedStyle(hero);
-     const source=document.getElementById('forgeIntroWordmark');
-     const typed=source?.querySelector('.forge-intro-typed');
-     const crop=source?getComputedStyle(source).clipPath:'none';
-     const fixedWidth=source?.getBoundingClientRect().width||0;
-     samples.push({time:performance.now(),left:rect.left,top:rect.top,
-       width:rect.width,opacity:parseFloat(style.opacity),
-       crop,fixedWidth,visibleText:typed?.textContent||''});
+     const intro=document.getElementById('forgeIntro');
+     const heading=document.getElementById('forgeHeroName');
+     if(!intro?.isConnected||performance.now()-started>6500){resolve(samples);return;}
+     samples.push({time:performance.now(),phase:intro.classList.contains('forge-cine-leaving')?'leaving':'assembling',
+       homeReveal:document.body.classList.contains('forge-cine-home-reveal'),
+       headingVisible:getComputedStyle(heading).visibility==='visible',
+       livePanels:intro.querySelectorAll('.forge-cine-shutter').length});
      requestAnimationFrame(sample);
    }
    requestAnimationFrame(sample);
  }));
  await page.waitForFunction(()=>
-   (document.querySelector('#forgeIntroWordmark .forge-intro-typed')?.textContent.length||0)>=3,
-   null,{timeout:4000});
+   document.getElementById('forgeCineCounter')?.textContent==='08',
+   null,{timeout:5000});
  await page.screenshot({path:'artifacts/forge-browser/intro.png'});
- await intro.waitFor({state:'detached',timeout:6000});
+ await page.waitForFunction(()=>
+   document.getElementById('forgeIntro')?.classList.contains('forge-cine-leaving'),
+   null,{timeout:5000});
+ const handoff=await page.evaluate(()=>({
+   synchronized:document.body.classList.contains('forge-home-arriving')&&
+     document.body.classList.contains('forge-handoff')&&
+     document.body.classList.contains('forge-cine-home-reveal'),
+   visible:getComputedStyle(document.getElementById('forgeHeroName')).visibility==='visible',
+   panels:document.querySelectorAll('#forgeIntro .forge-cine-shutter').length
+ }));
+ check(handoff.synchronized&&handoff.visible&&handoff.panels===8,
+   'Home must become visible beneath all eight leaving panels: '+JSON.stringify(handoff));
+ await page.screenshot({path:'artifacts/forge-browser/handoff.png'});
+ await intro.waitFor({state:'detached',timeout:5000});
  const trajectory=await trajectoryPromise;
- const captionStages=await page.evaluate(()=>window.__forgeCaptionStages||[]);
- check(captionStages.map(part=>part.text).join('')==='Import|Recreate|Export',
-   'Intro caption must reveal full words and separators in order');
- check(captionStages.every((part,index)=>part.index===index),
-   'Intro caption tokens appeared out of sequence');
- check(captionStages.every((part,index)=>index===0||part.time>captionStages[index-1].time),
-   'Intro caption did not stagger successive complete tokens');
- check(trajectory.length>=12,'Home-native physics intro produced too few frames');
- check(trajectory.every(f=>f.crop==='none'),
-   'Intro clipped the Kola g during the wordmark reveal');
- check(new Set(trajectory.map(f=>f.visibleText)).size>=3,
-   'Typing animation did not reveal characters one by one');
- check(trajectory.some(f=>f.visibleText==='The Forge'),
-   'Final complete wordmark never appeared');
- check(trajectory.every(f=>f.fixedWidth>0),
-   'Typing wordmark lost its reserved width');
- const stableWidths=trajectory.map(f=>f.fixedWidth);
- check(Math.max(...stableWidths)-Math.min(...stableWidths)<2,
-   'Typing text is shifting its reserved wordmark container');
- check(trajectory.every(f=>f.width>0),
-   'Wordmark disappeared or collapsed mid-animation');
- if(trajectory.length>=10){
-   const jumps=trajectory.slice(1).map((f,i)=>Math.abs(f.top-trajectory[i].top));
-   check(Math.max(...jumps)<14,
-     'Wordmark jumped rather than settling continuously: '+Math.max(...jumps).toFixed(1)+'px');
- }
+ check(trajectory.length>=12,'Cinematic reveal produced too few frame samples');
+ check(trajectory.some(x=>x.phase==='leaving'&&x.homeReveal&&x.headingVisible),
+   'The real homepage did not appear during the synchronized curtain');
  // First-launch popup follows the completed wordmark handoff automatically.
  const launch=page.locator('#forgeWhatsNew');
  await launch.waitFor({state:'visible',timeout:2500});
@@ -189,14 +168,8 @@ try {
    return styles.borderTopWidth==='1px'&&el.getBoundingClientRect().height>=60;
  }), 'Description divider is missing from homepage');
  check(Math.abs(details.titleWidth-details.inkWidth)<7,'Hero heading box must match actual kerned text width');
- check(trajectory.length>=12,'Expected at least twelve typing frames');
- if(trajectory.length>=2){
-   const last=trajectory[trajectory.length-1];
-   check(Math.abs(last.width-details.titleWidth)<8,
-     'Home heading should keep a stable width throughout typing');
-   check(Math.abs(last.left-details.titleLeft)<5,
-     'Home heading should not move while the typed overlay is displayed');
- }
+ check(trajectory.every(x=>x.livePanels===8),'An intro shutter disappeared mid-handoff');
+ check(handoff.synchronized,'Eight-panel transition and homepage were out of sync');
  // Legacy dark preference must not strand users in dark mode after hiding the toggle.
  await page.evaluate(()=>localStorage.setItem('cts_theme','dark'));
  await page.reload({waitUntil:'domcontentloaded'});
