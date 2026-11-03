@@ -523,3 +523,69 @@
 #view-home .combined-home-grid > .home-card .home-card-desc{
   line-height:1.55!important;
 }
+
+/* Visual refresh: a brighter studio index and more distinct work surfaces.
+   Tool handlers, artwork, canvases and workspace geometry remain untouched. */
+body.light-mode #view-home .combined-home-layout .forge-hero{
+  background:#e0ece0!important;
+  border:1px solid #b7cfbd!important;
+  border-radius:20px!important;
+  padding-inline:clamp(24px,3.2vw,48px)!important;
+}
+body.light-mode #view-home .forge-hero-aside{
+  border-left-color:#7ca48a!important;
+}
+body.light-mode #view-home .forge-after-hero strong{
+  color:#193f2e!important;
+  font-size:clamp(24px,2vw,30px)!important;
+}
+body.light-mode #view-home .combined-home-grid{
+  gap:12px!important;
+  border:0!important;
+  background:transparent!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card{
+  border:1px solid #c9d8ca!important;
+  border-radius:16px!important;
+  box-shadow:0 3px 12px rgba(30,67,43,.045)!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card:nth-child(3n+1){background:#e3eee4!important;}
+body.light-mode #view-home .combined-home-grid > .home-card:nth-child(3n+2){background:#f4f6ee!important;}
+body.light-mode #view-home .combined-home-grid > .home-card:nth-child(3n){background:#eaf1e6!important;}
+body.light-mode #view-home .combined-home-grid > .home-card:is(:hover,:focus-visible){
+  background:#f8fcf5!important;
+  border-color:#5d9472!important;
+  box-shadow:0 8px 20px rgba(26,70,43,.1)!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card .home-card-title{
+  font-size:clamp(20px,1.45vw,24px)!important;
+  letter-spacing:-.035em!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card .home-card-desc{
+  font-size:13.5px!important;
+  color:#385a46!important;
+}
+body.light-mode #view-app .tool-section .tool-header{
+  background-color:#f5f8f0!important;
+  border-bottom:1px solid #c6d7c5!important;
+}
+body.light-mode #view-app .tool-section .tool-header h2{
+  color:#153e29!important;
+}
+body.light-mode #view-app .tool-section .sidebar-panel{
+  background-color:#e8f0e5!important;
+}
+@media(max-width:760px){
+  body.light-mode #view-home .combined-home-layout .forge-hero{
+    padding-inline:22px!important;
+    border-radius:16px!important;
+  }
+  body.light-mode #view-home .combined-home-grid{gap:10px!important;}
+}
+@media(min-width:761px){
+  body.light-mode #view-home .combined-home-grid > .home-card > .home-card-art.art-split{
+    transform:scale(.72)!important;
+    transform-origin:top right!important;
+    top:20px!important;
+  }
+}
