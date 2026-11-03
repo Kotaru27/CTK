@@ -9,6 +9,8 @@ test('Forge keeps a wide viewport-filling responsive launcher',()=>{
   assert.match(source,/min-height:calc\(100dvh - 66px\)!important/);
   assert.match(source,/grid-template-rows:repeat\(4,minmax\(0,1fr\)\)!important/);
   assert.match(source,/@media\(max-width:580px\)/);
+  assert.match(source,/Compact screens must GROW/);
+  assert.match(source,/flex:0 0 auto!important/);
 });
 test('Header uses legible text and sidebar collapse has explicit high contrast',()=>{
   assert.match(source,/\.header #brandText\{[\s\S]*?font-family:"Plus Jakarta Sans","Segoe UI",Arial,sans-serif!important/);
