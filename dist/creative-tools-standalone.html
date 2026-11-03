@@ -10230,6 +10230,52 @@ body.light-mode:has(#view-home:not(.hidden)) .header{
     padding-inline:clamp(17px,4vw,37px)!important;
   }
 }
+
+/* Screenshot-review finishing pass / tighter hierarchy, not tighter letters.
+   Make condensed display typography readable on 390px and QHD alike. */
+body.light-mode .header #brandText{letter-spacing:-.026em!important;}
+#view-home .forge-after-hero strong{letter-spacing:-.037em!important;}
+body.light-mode #view-home .forge-hero-aside p{letter-spacing:-.005em!important;}
+body.light-mode #view-home .combined-home-grid > .home-card .home-card-title{
+  letter-spacing:-.028em!important;
+}
+#view-home .forge-workbench-signature {
+  font:600 clamp(31px,3vw,52px)/1 "JetBrains Mono",monospace!important;
+  letter-spacing:-.07em!important;
+  color:#b5cbb9!important;
+}
+/* Compact cards communicate their job without repeating illustrations or
+   adding a cheap icon pack. The lower area remains a large click target. */
+body.light-mode #view-home .combined-home-grid > .home-card:nth-child(n+3)::after {
+  position:absolute!important;
+  display:block!important;
+  top:clamp(65px,5.2vw,81px)!important;
+  left:clamp(19px,1.65vw,27px)!important;
+  right:15px!important;
+  width:auto!important;
+  margin:0!important;
+  color:#668571!important;
+  font:700 10px/1.5 "JetBrains Mono",monospace!important;
+  letter-spacing:.06em!important;
+  text-transform:uppercase!important;
+  background:none!important;
+  border:0!important;
+  box-shadow:none!important;
+  opacity:1!important;
+  pointer-events:none!important;
+  transform:none!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card:nth-child(3)::after{content:"IMAGE / GRID"!important;}
+body.light-mode #view-home .combined-home-grid > .home-card:nth-child(4)::after{content:"VIDEO / FRAMES"!important;}
+body.light-mode #view-home .combined-home-grid > .home-card:nth-child(5)::after{content:"STORY / SEQUENCE"!important;}
+body.light-mode #view-home .combined-home-grid > .home-card:nth-child(6)::after{content:"LINK / BUILD"!important;}
+body.light-mode #view-home .combined-home-grid > .home-card:nth-child(7)::after{content:"DATA / DOWNLOAD"!important;}
+body.light-mode #view-home .combined-home-grid > .home-card:nth-child(8)::after{content:"VIDEO / OPTIMIZE"!important;}
+@media(max-width:680px){
+  body.light-mode #view-home .combined-home-grid > .home-card:nth-child(n+3)::after{
+    top:59px!important;
+  }
+}
 </style>
 </head>
 <body class="light-mode">
