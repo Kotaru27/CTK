@@ -6167,6 +6167,156 @@ body:not(:has(#view-home:not(.hidden))) .header #forgeWhatsNewTrigger{display:no
 @media(prefers-reduced-motion:reduce){
   .header #forgeWhatsNewTrigger{transition:none!important;}
 }
+\n
+/* FORGE CINEMATIC / 08 tool icons become the F. The actual homepage is
+   composited underneath a staggered curtain: no screenshot and no fake app. */
+.forge-intro.forge-intro-ready.forge-cinematic{
+  display:block!important;position:fixed;inset:0;overflow:hidden;
+  background:transparent!important;z-index:2147483000;isolation:isolate;
+}
+.forge-intro.forge-intro-ready.forge-cinematic::before{
+  position:absolute;inset:0;display:block!important;
+  content:"";background:#102c20!important;opacity:1;
+  transition:none!important;z-index:-1;
+}
+.forge-intro.forge-cinematic .forge-intro-layout{display:block;position:absolute;inset:0}
+.forge-cine-shutters{position:absolute;inset:0;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));z-index:0;pointer-events:none}
+.forge-cine-shutter{display:block;background:#102c20;border-right:1px solid rgba(210,243,199,.065);transform:translate3d(0,0,0)}
+.forge-cine-shell{position:absolute;inset:0;z-index:1;overflow:hidden;color:#eaf4e5;
+  font-family:"Plus Jakarta Sans",Arial,sans-serif;
+  background:radial-gradient(ellipse 58% 52% at 50% 44%,rgba(179,244,137,.10),transparent 77%);
+}
+.forge-cine-shell::before{content:"";position:absolute;inset:0;pointer-events:none;
+ background:linear-gradient(90deg,rgba(222,247,205,.065) 1px,transparent 1px),
+ linear-gradient(0deg,rgba(222,247,205,.038) 1px,transparent 1px);
+ background-size:12.5% 100%,100% 20%;
+}
+.forge-cine-head{position:absolute;top:clamp(23px,5.4vh,54px);left:5%;right:5%;
+  display:flex;align-items:center;justify-content:space-between;gap:18px;
+  border-bottom:1px solid rgba(215,247,206,.22);padding-bottom:16px;
+  font:650 10px/1.5 "Plus Jakarta Sans",Arial,sans-serif;letter-spacing:.15em;
+}
+.forge-cine-headline{color:#c4eea4}
+.forge-cine-headline::before{content:"";display:inline-block;width:8px;height:8px;
+ border:1px solid #c4eea4;transform:rotate(45deg);margin-right:12px}
+.forge-cine-edition{color:#a6c2a7}
+.forge-cine-orbit{position:absolute;left:50%;top:45%;width:min(37vw,370px);
+ height:min(37vw,370px);transform:translate(-50%,-50%);
+ border:1px solid rgba(203,246,180,.12);border-radius:50%;pointer-events:none;
+}
+.forge-cine-orbit::after{content:"";position:absolute;inset:20%;
+ border:1px dashed rgba(203,246,180,.16);border-radius:50%}
+.forge-cine-assembly{--tile:clamp(38px,4.15vw,60px);--step:calc(var(--tile) + 5px);
+ --travel:clamp(115px,17vw,225px);
+ position:absolute;left:50%;top:45%;width:calc(3*var(--step));
+ height:calc(5*var(--step));transform:translate(-50%,-50%);
+ pointer-events:none;
+}
+.forge-cine-piece{position:absolute;left:calc(var(--col)*var(--step));top:calc(var(--row)*var(--step));
+ width:var(--tile);height:var(--tile);display:grid;place-items:center;
+ border:1px solid #e1facf;background:#c9f6a4;color:#163c25;
+ opacity:0;transform:translate3d(var(--dx),var(--dy),0) rotate(var(--rot)) scale(.68);
+ box-shadow:0 0 0 1px rgba(17,53,29,.15) inset;
+}
+.forge-cine-piece:nth-child(3n){background:#e0f3d6}
+.forge-cine-piece:nth-child(4n){background:#a5e3a0}
+.forge-cine-piece svg{display:block;width:55%;height:55%;flex:none}
+.forge-cine-piece small{position:absolute;right:4px;bottom:3px;font:700 8px/1 "JetBrains Mono",monospace;
+ opacity:.65}
+.forge-cine-identity{position:absolute;left:40.5%;top:45%;width:max-content;
+ max-width:57%;transform:translateY(-50%);opacity:0;pointer-events:none}
+.forge-cine-kicker{display:block;color:#c7f4a2;font:600 10px/1.5 "Plus Jakarta Sans",sans-serif;
+ letter-spacing:.16em;margin-bottom:7px}
+.forge-cine-wordmark{font:400 clamp(58px,8.1vw,133px)/1.17 "Kola","Plus Jakarta Sans",Arial,sans-serif;
+ letter-spacing:-.035em;white-space:nowrap;transform:translate3d(0,115%,0) skewY(4deg)}
+.forge-cine-rule{height:1px;background:#d2f6bb;transform:scaleX(0);transform-origin:left}
+.forge-cine-identity p{color:#b5d0b6;font:500 clamp(12px,1.2vw,16px)/1.5 "Plus Jakarta Sans",sans-serif;
+ letter-spacing:-.01em;margin:13px 0 0;opacity:0}
+.forge-cine-foot{position:absolute;left:5%;right:5%;bottom:clamp(28px,6.5vh,65px);
+ display:flex;align-items:flex-end;justify-content:space-between;gap:20px;
+ padding-top:15px;border-top:1px solid rgba(215,247,206,.19)}
+.forge-cine-foot>div:last-child{text-align:right}
+.forge-cine-footnote{display:block;font:600 9px/1.5 "Plus Jakarta Sans",sans-serif;
+ color:#9dbda1;letter-spacing:.14em}
+.forge-cine-counter{display:block;color:#c8d9c5;margin-top:7px;
+ font:500 clamp(14px,1.55vw,19px)/1.35 "Plus Jakarta Sans",sans-serif}
+.forge-cine-counter b{color:#c9f6a4;font-variant-numeric:tabular-nums}
+.forge-cine-ticks{display:flex;justify-content:flex-end;gap:5px;margin-bottom:9px}
+.forge-cine-ticks i{display:block;width:clamp(10px,2vw,24px);height:5px;
+ border:1px solid #6d9d74;background:transparent;transition:background-color .2s ease}
+.forge-cine-ticks i.is-lit{background:#c9f6a4;border-color:#c9f6a4}
+.forge-intro.forge-intro-ready.forge-cinematic .forge-cine-skip{
+ position:absolute;right:5%;top:clamp(65px,12vh,114px);left:auto;bottom:auto;
+ z-index:5;display:block!important;padding:9px 0 9px 18px;pointer-events:auto;
+ border:0;background:transparent!important;color:#c5e1bd!important;
+ font:600 11px/1.4 "Plus Jakarta Sans",Arial,sans-serif;cursor:pointer;
+ box-shadow:none!important;transition:color .18s ease;
+}
+.forge-intro.forge-cinematic .forge-cine-skip:hover{color:#fff!important}
+.forge-intro.forge-cinematic .forge-cine-skip:focus-visible{
+ outline:2px solid #d0f9b5!important;outline-offset:5px;border-radius:2px}
+.forge-cinematic.forge-cine-playing .forge-cine-piece{
+ animation:forge-cine-piece-in 700ms cubic-bezier(.18,.83,.2,1) var(--delay) both}
+.forge-cinematic.forge-cine-playing .forge-cine-assembly{
+ animation:forge-cine-slide 770ms cubic-bezier(.6,0,.16,1) 1250ms both}
+.forge-cinematic.forge-cine-playing .forge-cine-identity{
+ animation:forge-cine-visible 1ms linear 1500ms both}
+.forge-cinematic.forge-cine-playing .forge-cine-wordmark{
+ animation:forge-cine-title 820ms cubic-bezier(.18,.88,.18,1) 1520ms both}
+.forge-cinematic.forge-cine-playing .forge-cine-rule{
+ animation:forge-cine-rule-in 700ms ease 1880ms both}
+.forge-cinematic.forge-cine-playing .forge-cine-identity p{
+ animation:forge-cine-visible 460ms ease 2090ms both}
+.forge-intro.forge-cinematic.forge-cine-leaving{pointer-events:none}
+.forge-intro.forge-cinematic.forge-cine-leaving::before{opacity:0!important}
+.forge-cinematic.forge-cine-leaving .forge-cine-shell{
+ opacity:0!important;transition:opacity 150ms ease!important}
+.forge-cinematic.forge-cine-leaving .forge-cine-shutter{
+ animation:forge-cine-curtain 850ms cubic-bezier(.76,0,.22,1)
+ calc(var(--order)*34ms) both}
+body.forge-opening.forge-home-arriving.forge-cine-home-reveal #forgeHeroName{
+ visibility:visible!important;opacity:1!important;clip-path:none!important;transform:none!important}
+html.forge-launch-fallback-kola .forge-cine-wordmark{
+ font-family:Arial,Helvetica,sans-serif!important;letter-spacing:-.07em}
+@keyframes forge-cine-piece-in{
+ from{opacity:0;transform:translate3d(var(--dx),var(--dy),0) rotate(var(--rot)) scale(.68)}
+ to{opacity:1;transform:translate3d(0,0,0) rotate(0) scale(1)}
+}
+@keyframes forge-cine-slide{
+ from{transform:translate(-50%,-50%)}
+ to{transform:translate(calc(-50% - var(--travel)),-50%) scale(.88)}
+}
+@keyframes forge-cine-visible{from{opacity:0}to{opacity:1}}
+@keyframes forge-cine-title{
+ from{transform:translate3d(0,115%,0) skewY(4deg)}
+ to{transform:translate3d(0,0,0) skewY(0)}
+}
+@keyframes forge-cine-rule-in{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes forge-cine-curtain{
+ from{transform:translate3d(0,0,0)}to{transform:translate3d(0,-103%,0)}
+}
+@media(max-width:720px){
+ .forge-cine-head{font-size:9px}
+ .forge-cine-edition{display:none}
+ .forge-cine-orbit{width:260px;height:260px;top:44%}
+ .forge-cine-assembly{--tile:clamp(31px,8vw,45px);--travel:clamp(67px,18vw,117px);top:43%}
+ .forge-cine-identity{left:39%;top:43%;max-width:59%}
+ .forge-cine-wordmark{font-size:clamp(46px,10.3vw,72px)}
+ .forge-cine-kicker{font-size:8px;letter-spacing:.08em}
+ .forge-cine-footnote{font-size:8px}
+ .forge-intro.forge-intro-ready.forge-cinematic .forge-cine-skip{top:76px}
+}
+@media(max-width:410px){
+ .forge-cine-assembly{--tile:29px;--step:34px;--travel:68px}
+ .forge-cine-identity{left:38%}
+ .forge-cine-wordmark{font-size:43px}
+ .forge-cine-identity p{font-size:11px}
+ .forge-cine-footnote{letter-spacing:.05em}
+}
+@media(prefers-reduced-motion:reduce){
+ .forge-intro.forge-cinematic{display:none!important}
+ body.forge-opening #forgeHeroName{visibility:visible!important;clip-path:none!important}
+}
 </style>
 <style id="forge-video-route-styles">/* THE FORGE / UNIFIED WORKSPACE ROUTES
    Eight exact tool pairings; cards, controls and media are never re-laid out.
@@ -10462,19 +10612,25 @@ body.light-mode #view-app #section-stills-boards :is(#storyHeaderControls,#films
 </style>
 </head>
 <body class="light-mode">
-<div class="forge-intro" id="forgeIntro" role="region" aria-label="The Forge introduction" hidden>
+<div class="forge-intro forge-cinematic" id="forgeIntro" role="region" aria-label="The Forge introduction" hidden>
  <div class="forge-intro-layout">
-  <div class="forge-intro-stage-mark" aria-hidden="true">THE CREATIVE WORKBENCH · 08 TOOLS</div>
-  <div class="forge-intro-label">CREATIVE TOOL KIT / REIMAGINED</div>
-  <div class="forge-intro-type" id="forgeIntroType" role="img" aria-label="The Forge">
-   <div class="forge-intro-wordmark" id="forgeIntroWordmark" data-full-name="The Forge" aria-hidden="true"><span class="forge-intro-typed"></span><span class="forge-intro-caret" aria-hidden="true"></span></div>
-  </div>
-  <p class="forge-intro-summary">Eight tools for the work between an idea and its final export.</p>
-  <div class="forge-intro-steps" role="text" aria-label="Import, Recreate, Export">
-   <span class="forge-intro-step-part">Import</span><span class="forge-intro-step-part" aria-hidden="true">|</span><span class="forge-intro-step-part">Recreate</span><span class="forge-intro-step-part" aria-hidden="true">|</span><span class="forge-intro-step-part">Export</span>
-  </div>
-  <div class="forge-intro-caption"><span>EIGHT TOOLS / ONE WORKSPACE</span>
-   <button type="button" class="forge-intro-skip" id="forgeIntroSkip" aria-label="Skip introduction">Skip intro ↗</button>
+  <div class="forge-cine-shutters" aria-hidden="true"><span class="forge-cine-shutter" style="--order:0"></span><span class="forge-cine-shutter" style="--order:1"></span><span class="forge-cine-shutter" style="--order:2"></span><span class="forge-cine-shutter" style="--order:3"></span><span class="forge-cine-shutter" style="--order:4"></span><span class="forge-cine-shutter" style="--order:5"></span><span class="forge-cine-shutter" style="--order:6"></span><span class="forge-cine-shutter" style="--order:7"></span></div>
+  <div class="forge-cine-shell">
+   <div class="forge-cine-head"><span class="forge-cine-headline">THE CREATIVE WORKBENCH / 08 TOOLS</span><span class="forge-cine-edition">THE FORGE — 2026</span></div>
+   <div class="forge-cine-orbit" aria-hidden="true"></div>
+   <div class="forge-cine-assembly" aria-hidden="true">
+  <span class="forge-cine-piece" style="--col:0;--row:0;--dx:-180px;--dy:-135px;--rot:-30deg;--delay:160ms" title="Logo Resizer"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="12" height="12" rx="2"/><path d="M9 9h11v11H9"/><path d="m13 7 3-3m-3 0h3v3"/></svg><small>01</small></span>
+  <span class="forge-cine-piece" style="--col:1;--row:0;--dx:28px;--dy:-160px;--rot:18deg;--delay:272ms" title="PDF to Image"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v5h4"/><circle cx="11" cy="12" r="1.3"/><path d="m8 18 3-3 2 2 2-2 2 3"/></svg><small>02</small></span>
+  <span class="forge-cine-piece" style="--col:2;--row:0;--dx:175px;--dy:-100px;--rot:43deg;--delay:384ms" title="Image Splitter"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg><small>03</small></span>
+  <span class="forge-cine-piece" style="--col:0;--row:1;--dx:-210px;--dy:20px;--rot:-20deg;--delay:496ms" title="Video Stills"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 5v14M17 5v14M3 9h4M3 15h4M17 9h4M17 15h4"/><path d="m10 9 5 3-5 3z"/></svg><small>04</small></span>
+  <span class="forge-cine-piece" style="--col:0;--row:2;--dx:-135px;--dy:170px;--rot:35deg;--delay:608ms" title="Storyboard"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M10 9v11M3 15h7M10 15h11"/></svg><small>05</small></span>
+  <span class="forge-cine-piece" style="--col:1;--row:2;--dx:100px;--dy:155px;--rot:54deg;--delay:720ms" title="Link Gen"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.07 0l2.12-2.12a5 5 0 0 0-7.07-7.07L10 5.93"/><path d="M14 11a5 5 0 0 0-7.07 0l-2.12 2.12a5 5 0 0 0 7.07 7.07L14 18.07"/></svg><small>06</small></span>
+  <span class="forge-cine-piece" style="--col:0;--row:3;--dx:-80px;--dy:190px;--rot:-32deg;--delay:832ms" title="Ad Downloader"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13m-5-5 5 5 5-5"/><path d="M4 16v4h16v-4"/><path d="M6 4h3M15 4h3"/></svg><small>07</small></span>
+  <span class="forge-cine-piece" style="--col:0;--row:4;--dx:190px;--dy:120px;--rot:35deg;--delay:944ms" title="Video Compressor"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m10 9 5 3-5 3z"/><path d="M6 22h12M8 2h8"/></svg><small>08</small></span>
+   </div>
+   <div class="forge-cine-identity"><span class="forge-cine-kicker">EIGHT TOOLS. ONE WORKSPACE.</span><div class="forge-cine-wordmark">The Forge</div><div class="forge-cine-rule"></div><p>Ideas become something here.</p></div>
+   <div class="forge-cine-foot"><div><span class="forge-cine-footnote">BUILDING YOUR CREATIVE WORKSPACE</span><span class="forge-cine-counter">Assembling <b id="forgeCineCounter">00</b> of 08</span></div><div><div class="forge-cine-ticks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><span class="forge-cine-footnote">08 PARTS → 01 WORKBENCH</span></div></div>
+   <button type="button" class="forge-cine-skip forge-intro-skip" id="forgeIntroSkip" aria-label="Skip introduction">Skip intro ↗</button>
   </div>
  </div>
 </div>
@@ -19334,29 +19490,20 @@ const CTKDownloadRenamer = (() => {
   if (document.readyState==="loading") document.addEventListener("DOMContentLoaded",boot,{once:true});
   else boot();
 })();</script>
-<script id="forge-brand-intro-js">/* The Forge / stable, genuine typing entrance.
-   The full wordmark reserves its final width; visible characters are added
-   without clipping, shifting the overall layout or waiting for FLIP motion.
-   The completed wordmark crossfades to the prepared home / welcome state. */
+<script id="forge-brand-intro-js">/* The Forge / cinematic assembly. Eight actual tool pictograms form an F,
+   then an eight-panel curtain reveals the already-mounted home in sync. */
 (function(){
   'use strict';
   const intro=document.getElementById('forgeIntro');
-  const mark=document.getElementById('forgeIntroWordmark');
-  const typed=mark?.querySelector('.forge-intro-typed');
   const home=document.getElementById('view-home');
   const app=document.getElementById('view-app');
   const body=document.body;
   const gate=window.__forgePaintGate;
-  const caret=mark?.querySelector('.forge-intro-caret');
-  const stepParts=Array.from(intro?.querySelectorAll?.('.forge-intro-step-part')||[]);
+  const skip=document.getElementById('forgeIntroSkip');
+  const counter=document.getElementById('forgeCineCounter');
+  const ticks=Array.from(intro?.querySelectorAll?.('.forge-cine-ticks i')||[]);
   const timers=new Set();
-  const kineticGlyphs=new Set();
-  let complete=false,observer=null,started=false;
-
-  const notify=()=>{
-    document.documentElement.dataset.forgeIntroFinished='1';
-    document.dispatchEvent(new Event('forge:intro-complete'));
-  };
+  let complete=false,started=false,leaving=false,observer=null;
   function schedule(fn,ms){
     const id=setTimeout(()=>{
       timers.delete(id);
@@ -19364,26 +19511,24 @@ const CTKDownloadRenamer = (() => {
     },ms);
     timers.add(id);
   }
+  function homeActive(){
+    return !!home&&!home.classList.contains('hidden')&&
+      !app?.classList.contains('active')&&document.visibilityState!=='hidden';
+  }
   function finish(){
     if(complete)return;
     complete=true;
     for(const id of timers)clearTimeout(id);
     timers.clear();
-    for(const glyph of kineticGlyphs)glyph.remove?.();
-    kineticGlyphs.clear();
     document.removeEventListener('keydown',onKey);
     document.removeEventListener('visibilitychange',onVisibility);
     observer?.disconnect();
-    // The popup curtain is armed BEFORE the intro disappears, in the
-    // same task, so even a delayed font has no exposed homepage frame.
-    const homeActive=home&&!home.classList.contains('hidden')&&
-      !app?.classList.contains('active')&&document.visibilityState!=='hidden';
-    if(homeActive)gate?.beginWelcome?.();
-    else gate?.endWelcome?.();
-    body.classList.remove('forge-opening','forge-home-arriving','forge-handoff');
+    body.classList.remove('forge-opening','forge-home-arriving','forge-handoff','forge-cine-home-reveal');
     intro?.remove();
+    gate?.endWelcome?.();
     gate?.release?.();
-    notify();
+    document.documentElement.dataset.forgeIntroFinished='1';
+    document.dispatchEvent(new Event('forge:intro-complete'));
   }
   function onKey(event){
     if(event.key==='Escape'){event.preventDefault();finish();}
@@ -19391,147 +19536,67 @@ const CTKDownloadRenamer = (() => {
   function onVisibility(){
     if(document.visibilityState==='hidden')finish();
   }
-
   const reduced=!!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
   let suppressed=false;
   try{suppressed=sessionStorage.getItem('forge_intro_suppress')==='1';}catch(_){}
-  if(!intro||!mark||!typed||!home||reduced||suppressed||gate?.expired||
-     home.classList.contains('hidden')||
-     app?.classList.contains('active')||
-     document.visibilityState==='hidden'){
-    finish();
-    return;
+  if(!intro||!skip||!counter||!home||reduced||suppressed||gate?.expired||!homeActive()){
+    finish();return;
   }
-
-  // The intro starts hidden in HTML and can never block the app if the
-  // presentation script fails. Skip works during font loading and typing.
   body.classList.add('forge-opening');
-  typed.textContent='';
-  // Keep the first-paint shield in place until the actual intro font has
-  // resolved (or the bounded fallback is selected). Showing the wordmark
-  // before this decision caused a late font-metric jump during typing.
-  document.getElementById('forgeIntroSkip')
-    ?.addEventListener('click',finish,{once:true});
+  skip.addEventListener('click',finish,{once:true});
   document.addEventListener('keydown',onKey);
   document.addEventListener('visibilitychange',onVisibility);
   if(typeof MutationObserver==='function'&&app){
     observer=new MutationObserver(()=>{
-      if(app.classList.contains('active')||home.classList.contains('hidden'))
-        finish();
+      if(!homeActive())finish();
     });
     observer.observe(app,{attributes:true,attributeFilter:['class']});
     observer.observe(home,{attributes:true,attributeFilter:['class']});
   }
-  // Absolute fail-safe: even if a font or a browser animation stalls, the
-  // homepage never remains behind the intro indefinitely.
-  schedule(finish,6000);
-
-  function loadFont(spec){
-    try{return Promise.resolve(document.fonts?.load?.(spec)||[]).catch(()=>[]);}
-    catch(_){return Promise.resolve([]);}
-  }
-  const available=[false,false];
-  const fonts=[
-    loadFont('400 130px "Kola"').then(faces=>{available[0]=!!faces?.length;}),
-    loadFont('600 12px "Plus Jakarta Sans"').then(faces=>{available[1]=!!faces?.length;})
-  ];
-  // Adapted from kinetic typography: each new character leaves a tiny,
-  // deterministic 3D ink settle. The actual name remains ONE native text
-  // run, so Kola's kerning and descenders are never split or masked.
-  // The transient glyph echoes are decorative and never alter layout.
-  function kineticArrival(char,index){
-    if(!char.trim()||complete||typeof document.createElement!=='function'||
-       typeof typed.getBoundingClientRect!=='function')return;
-    const glyph=document.createElement('span');
-    glyph.className='forge-intro-kinetic-glyph';
-    glyph.setAttribute('aria-hidden','true');
-    glyph.textContent=char;
-    mark.appendChild(glyph);
-    kineticGlyphs.add(glyph);
-    const nativeWidth=typed.getBoundingClientRect().width;
-    const glyphWidth=glyph.getBoundingClientRect().width;
-    if(!Number.isFinite(nativeWidth)||!Number.isFinite(glyphWidth)){
-      glyph.remove();kineticGlyphs.delete(glyph);return;
-    }
-    glyph.style.left='calc(.075em + '+Math.max(0,nativeWidth-glyphWidth).toFixed(2)+'px)';
-    const release=()=>{glyph.remove();kineticGlyphs.delete(glyph);};
-    const direction=index%2===0?-1:1;
-    if(typeof glyph.animate!=='function'){release();return;}
-    try{
-      const flight=glyph.animate([
-        {offset:0,opacity:.30,
-         transform:'translate3d('+(direction*8)+'px,12px,-15px) rotateX(10deg) rotateY('+(direction*9)+'deg)'},
-        {offset:.55,opacity:.16,
-         transform:'translate3d('+(direction*3)+'px,3px,-3px) rotateX(3deg) rotateY('+(direction*3)+'deg)'},
-        {offset:1,opacity:0,
-         transform:'translate3d(0,0,0) rotateX(0deg) rotateY(0deg)'}
-      ],{duration:245,easing:'cubic-bezier(.2,.72,.26,1)',fill:'forwards'});
-      flight.finished.then(release,release);
-    }catch(_){release();}
-  }
-  // Tuned typing cadence: calm at the beginning, a natural pause at the
-  // word boundary, and a gentle deceleration without artificial holds.
-  const intervals=[112,116,121,150,122,118,124,130,122];
-  const letters=Array.from(mark.dataset.fullName||'The Forge');
-  function beginHandoff(){
-    if(complete)return;
-    // Compose the real destination before the translucent intro fades.
-    if(home&&!home.classList.contains('hidden')&&
-       !app?.classList.contains('active')&&
-       document.visibilityState!=='hidden')gate?.beginWelcome?.();
-    body.classList.add('forge-home-arriving','forge-handoff');
-    intro.classList.add('forge-intro-finishing');
-    schedule(finish,380);
-  }
-  function revealCaption(){
-    if(complete)return;
-    intro.classList.add('forge-intro-typed-complete');
-    // Complete words and separators occupy final positions from the start.
-    // Change only opacity and transform; no letter-by-letter layout changes.
-    stepParts.forEach((part,index)=>{
-      schedule(()=>part.classList.add('is-visible'),130+index*175);
-    });
-    schedule(beginHandoff,1490);
-  }
-  function type(index){
-    if(complete)return;
-    if(index>=letters.length){
-      revealCaption();
-      return;
-    }
-    typed.textContent+=letters[index];
-    kineticArrival(letters[index],index);
-    // Composited cursor glides to the new character boundary; its
-    // transition is CSS-driven, never a reflowing width animation.
-    if(caret&&typeof typed.getBoundingClientRect==='function'){
-      const width=typed.getBoundingClientRect().width;
-      if(Number.isFinite(width))
-        caret.style.transform='translate3d('+width.toFixed(2)+'px,0,0)';
-    }
-    const ms=intervals[index]||118;
-    schedule(()=>type(index+1),ms);
+  // Never strand the real app after a blocked font or interrupted animation.
+  schedule(finish,6200);
+  function handoff(){
+    if(complete||leaving)return;
+    leaving=true;
+    // The destination is revealed under the *same* eight panels,
+    // before the top edge of any panel moves.
+    if(homeActive())
+      body.classList.add('forge-home-arriving','forge-handoff','forge-cine-home-reveal');
+    intro.classList.add('forge-cine-leaving');
+    schedule(finish,1160);
   }
   function start(){
-    if(complete||started)return;
+    if(complete||started||!homeActive())return;
     started=true;
-    if(!available[0])
-      document.documentElement.classList.add('forge-launch-fallback-kola');
-    if(!available[1])
-      intro.classList.add('forge-intro-fallback-ui');
-    // Commit the font family before the first visible intro frame. Never
-    // switch families while the reserved Kola wordmark is on screen.
     intro.hidden=false;
     intro.classList.add('forge-intro-ready');
+    document.documentElement.dataset.forgeIntroAnimated='1';
     gate?.release?.();
-    intro.classList.add('forge-intro-playing');
-    requestAnimationFrame(()=>requestAnimationFrame(()=>type(0)));
+    requestAnimationFrame(()=>{
+      if(complete)return;
+      intro.classList.add('forge-cine-playing');
+    });
+    for(let i=0;i<8;i++){
+      schedule(()=>{
+        counter.textContent=String(i+1).padStart(2,'0');
+        ticks[i]?.classList.add('is-lit');
+      },160+i*112+630);
+    }
+    schedule(handoff,2750);
   }
+  let fontReady=false;
+  const loadFont=spec=>{
+    try{return Promise.resolve(document.fonts?.load?.(spec)||[]).catch(()=>[]);}
+    catch(_){return Promise.resolve([]);}
+  };
   Promise.race([
-    Promise.all(fonts),
-    new Promise(resolve=>schedule(resolve,1350))
-  ]).then(start,start);
-})();
-</script>
+    loadFont('400 130px "Kola"').then(faces=>{fontReady=!!faces?.length}),
+    new Promise(resolve=>schedule(resolve,900))
+  ]).then(()=>{
+    if(!fontReady)document.documentElement.classList.add('forge-launch-fallback-kola');
+    start();
+  },start);
+})();</script>
 <script id="forge-video-route-js">/* THE FORGE / UNIFIED WORKSPACE MOTION
    Native snapshots of unchanged home cards and real workspace headings.
    The existing _openTool/_showHome remain the sole owners of application state.
@@ -20076,7 +20141,13 @@ const CTKDownloadRenamer = (() => {
   // Start preparing presentation fonts while the logo is still typing.
   // This avoids the previous 420ms dead time plus network delay.
   readyTypography();
-  document.addEventListener('forge:intro-complete',queueAutomatic,{once:true});
+  // Let the cinematic panels uncover a usable homepage before onboarding.
+  // A skipped / reduced-motion intro retains the original immediate behavior.
+  document.addEventListener('forge:intro-complete',()=>{
+    if(document.documentElement.dataset.forgeIntroAnimated==='1')
+      setTimeout(queueAutomatic,700);
+    else queueAutomatic();
+  },{once:true});
   if(document.documentElement.dataset.forgeIntroFinished==='1'||
      (!document.body.classList.contains('forge-opening')&&
        document.getElementById('forgeIntro')?.hidden))
