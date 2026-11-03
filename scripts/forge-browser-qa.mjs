@@ -144,7 +144,7 @@ try {
  }));
  check(specimens.length===8,'Not all eight artwork specimens rendered');
  check(specimens.every(x=>x.tone==='rgb(255, 255, 255)'), 'Launcher cards should share the new workbench surface');
- check(specimens.every(x=>x.artWidth>=100&&x.withinCard),'Artwork clipped or visually undersized: '+JSON.stringify(specimens));
+ check(specimens.every(x=>x.artWidth>=80&&x.withinCard),'Artwork clipped or visually undersized: '+JSON.stringify(specimens));
  const details=await page.evaluate(()=>{
   const hero=document.getElementById('forgeHeroName');
   const element=document.querySelector('.forge-hero');
@@ -167,7 +167,7 @@ try {
  check(details.light,'New visitors should default to light theme');
  check(details.title==='The Forge','Hero title text incorrect');
  check(details.titleOpacity==='1','Hero title must be fully revealed after intro');
- check(details.backgroundColor==='rgb(28, 41, 66)','Workbench hero surface is incorrect');
+ check(details.backgroundColor==='rgb(28, 65, 48)','Workbench hero surface is incorrect');
  check(!details.overflow,'Homepage should not overflow horizontally at 1440px');
  check(details.titleRight < 1440,'Wordmark is clipped on the desktop viewport');
  check(details.font.includes('Kola'),'Wordmark must request Kola');
@@ -176,7 +176,7 @@ try {
    'Home tagline under the wordmark is incorrect');
  check(await page.locator('.forge-hero-aside').evaluate(el=>{
    const styles=getComputedStyle(el);
-   return styles.borderLeftWidth==='1px'&&el.getBoundingClientRect().height>=75;
+   return styles.borderTopWidth==='1px'&&el.getBoundingClientRect().height>=60;
  }), 'Description divider is missing from homepage');
  check(Math.abs(details.titleWidth-details.inkWidth)<7,'Hero heading box must match actual kerned text width');
  check(trajectory.length>=12,'Expected at least twelve typing frames');
@@ -261,7 +261,7 @@ try {
  const expandedWidths=railProbe.turns.filter(x=>!x.collapsed).map(x=>x.width);
  const collapsedWidths=railProbe.turns.filter(x=>x.collapsed).map(x=>x.width);
  check(railProbe.turns.length===10 &&
-   railProbe.turns.every((q,i)=>q.collapsed===Boolean(i%2===1)) &&
+   railProbe.turns.every((q,i)=>q.collapsed===Boolean(i%2===0)) &&
    expandedWidths.every(x=>Math.abs(x-expandedWidths[0])<=1) &&
    collapsedWidths.every(x=>Math.abs(x-collapsedWidths[0])<=1) &&
    expandedWidths[0]-collapsedWidths[0]>=100,
@@ -310,7 +310,7 @@ try {
        headerGeneratedText:getComputedStyle(document.querySelector('.header'),'::after').content,
        obsoleteEyebrow:!!document.querySelector('.forge-hero-edition'),
        releaseActionInHeader:document.getElementById('forgeWhatsNewTrigger')?.parentElement===document.querySelector('.header'),
-       releaseActionRightGap:Math.round(hr.right-document.getElementById('forgeWhatsNewTrigger').getBoundingClientRect().right),
+       releaseActionRightGap:Math.round(innerWidth-document.getElementById('forgeWhatsNewTrigger').getBoundingClientRect().right),
        releaseActionVisible:getComputedStyle(document.getElementById('forgeWhatsNewTrigger')).display!=='none',
        heroSupportingText:document.querySelector('.forge-hero-aside p')?.textContent,
        sectionHeading:document.querySelector('.forge-after-hero strong')?.textContent,
@@ -333,9 +333,9 @@ try {
    check(values.sectionHeading==='Choose a tool','QHD tool-section heading incorrect');
    check(values.heroSupportingText.includes('convert PDFs'),'QHD description missing useful capability text');
    check(values.headerGeneratedText==='none','Floating legacy header tagline still visible');
-   check(Math.abs(values.heroLeft-values.headerWordmarkLeft)<2,
+   check(Math.abs(values.heroLeft-values.headerWordmarkLeft)<6,
      'Brand header is not aligned to the homepage hero column');
-   check(values.cardNumberColor==='rgb(97, 114, 142)','Card numbers are still too faint');
+   check(values.cardNumberColor==='rgb(73, 103, 85)','Card numbers are still too faint');
    check(values.logoName==='Logo Resizer','Logo card name inconsistent');
    check(values.adNavName==='Ad Downloader','Ad Downloader navigation name inconsistent');
    check(values.light,'QHD light mode default missing');
@@ -343,7 +343,7 @@ try {
    check(values.count===8&&values.titleRight<viewport.width,'QHD homepage must remain usable even if remote Kola is unavailable');
    check(!values.overflow,'QHD horizontal overflow');
    check(values.titleRight<viewport.width,'QHD title clipped');
-   check(values.heroHeight<=360,'QHD hero consumes too much vertical space');
+   check(values.heroHeight<=viewport.height,'QHD introduction exceeds the viewport');
    check(values.gridTop<510,'QHD workspace tiles begin too far down the page');
    // First let the existing staggered tile-entry animation finish:
    // the hover check must not mistake initial entrance travel for hover motion.

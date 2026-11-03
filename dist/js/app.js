@@ -6859,3 +6859,10 @@ const CTKDownloadRenamer = (() => {
   if(width)width.placeholder='Width';
   if(height)height.placeholder='Height';
 })();
+
+/* Show tool names on wide screens; the existing toggle remains available. */
+(function(){
+  if(window.matchMedia?.('(min-width: 1280px)').matches){
+    document.getElementById('mainSidebar')?.classList.remove('collapsed');
+  }
+})();

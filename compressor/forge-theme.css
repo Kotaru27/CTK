@@ -112,12 +112,3 @@ button:focus-visible,input:focus-visible,.dropzone:focus-visible,a:focus-visible
   .item-actions{grid-column:2}
   .item-note{grid-column:1/-1;margin-left:32px}
 }
-
-/* Match the shared workbench while leaving codec and progress semantics intact. */
-:root{--base:#f2f4f8;--surface:#fff;--ink:#1b2941;--muted:#53647c;--subtle:#687991;--line:#d5dbe6;--accent:#3155c6;--accent-hover:#2543a4;--accent-soft:#e9edfc}
-.dropzone{background:#f5f7fd;border-color:#becbe9}
-.dropzone:hover,.dropzone.drag-over{background:#eaf0ff;border-color:var(--accent)}
-.primary-action,.item-actions a.download-one,.download-all{background:var(--accent);border-color:var(--accent);color:#fff}
-.item-actions a.download-one:hover,.download-all:hover:not(:disabled){background:var(--accent-hover)}
-button:focus-visible,input:focus-visible,.dropzone:focus-visible,a:focus-visible{outline-color:#3155c6}
-.primary-action:disabled{background:#b7c1d1;color:#fff}

@@ -332,3 +332,29 @@ html:has(.forge-whatsnew:not([hidden])){overflow:hidden;scrollbar-gutter:stable;
     background:rgba(20,36,27,.92)!important;
   }
 }
+
+/* The welcome is now a compact introduction above the release notes. */
+.forge-whatsnew-dialog{
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:auto minmax(0,1fr)!important;
+  width:min(850px,100%)!important;
+}
+.forge-whatsnew-opening{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(180px,.65fr)!important;
+  gap:10px 26px!important;
+  padding:24px 30px!important;
+}
+.forge-whatsnew-opening::after{display:none!important;}
+.forge-whatsnew-edition{grid-column:1 / -1;}
+.forge-whatsnew-brand{font-size:32px!important;margin:0 0 8px!important;}
+.forge-whatsnew-opening h2{font-size:28px!important;line-height:1.12!important;}
+.forge-whatsnew-intro{margin:8px 0 0!important;max-width:440px!important;}
+.forge-whatsnew-foot{align-self:end;text-align:right;}
+@media(max-width:600px){
+  .forge-whatsnew-opening{grid-template-columns:1fr!important;padding:20px!important;gap:8px!important;}
+  .forge-whatsnew-edition{grid-column:1;}
+  .forge-whatsnew-foot{display:none;}
+  .forge-whatsnew-brand{font-size:27px!important;}
+  .forge-whatsnew-opening h2{font-size:23px!important;}
+}

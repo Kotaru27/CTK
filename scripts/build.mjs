@@ -22,7 +22,7 @@ if(originals.length!==5)throw Error('Unexpected number of original scripts');
 // Engine changes are permitted only in modular source; shared CSS and presentation scripts remain identical.
 for(let i=1;i<5;i++)if(read(cfg.presentation[i-1])!==originals[i][2])throw Error('Presentation JS differs: '+i);
 let output=baseline.replace(/<style>[\s\S]*?<\/style>/,'<link rel="stylesheet" href="./dist/css/app.css">');
-const scripts=['./dist/js/app.js',...cfg.presentation.map((_,i)=>`./dist/js/${['home-interactions','vector-icons','video-downloads-presentation','pdf-to-image-presentation'][i]}.js`)];
+const scripts=['./dist/js/app.js?v=green-layout-20261103',...cfg.presentation.map((_,i)=>`./dist/js/${['home-interactions','vector-icons','video-downloads-presentation','pdf-to-image-presentation'][i]}.js`)];
 let k=0;output=output.replace(/<script\b([^>]*)>([\s\S]*?)<\/script>/g,(full,attrs)=>attrs.includes('src=')?full:`<script${attrs} src="${scripts[k++]}"></script>`);
 if(k!==5)throw Error('Did not replace all inline scripts');
 const visualCss=read('src/css/experience/ad-downloader-v2.css');
@@ -69,6 +69,7 @@ const forgeIntro=[
   '  <div class="forge-intro-type" id="forgeIntroType" role="img" aria-label="The Forge">',
   '   <div class="forge-intro-wordmark" id="forgeIntroWordmark" data-full-name="The Forge" aria-hidden="true"><span class="forge-intro-typed"></span><span class="forge-intro-caret" aria-hidden="true"></span></div>',
   '  </div>',
+  '  <p class="forge-intro-summary">Eight tools for the work between an idea and its final export.</p>',
   '  <div class="forge-intro-steps" role="text" aria-label="Import, Recreate, Export">',
   '   <span class="forge-intro-step-part">Import</span><span class="forge-intro-step-part" aria-hidden="true">|</span><span class="forge-intro-step-part">Recreate</span><span class="forge-intro-step-part" aria-hidden="true">|</span><span class="forge-intro-step-part">Export</span>',
   '  </div>',
@@ -85,8 +86,8 @@ const forgeWhatsNew=[
   '   <div class="forge-whatsnew-edition">THE FORGE / OCTOBER 2026</div>',
   '   <div>',
   '    <span class="forge-whatsnew-brand" aria-label="The Forge">The Forge</span>',
-  '    <h2 id="forgeWhatsNewTitle">Same purpose.<br><em>A new beginning.</em></h2>',
-  '    <p class="forge-whatsnew-intro" id="forgeWhatsNewDescription">Creative Tool Kit is now The Forge. The tools you know, with a more focused way to get things done.</p>',
+  '    <h2 id="forgeWhatsNewTitle">Make room<br><em>for the work.</em></h2>',
+  '    <p class="forge-whatsnew-intro" id="forgeWhatsNewDescription">Your creative workspace brings the tools you need together in one place.</p>',
   '   </div>',
   '   <p class="forge-whatsnew-foot">CREATE / TRANSFORM / DELIVER</p>',
   '  </div>',
@@ -207,11 +208,11 @@ function forgeBrand(html,standaloneRelease){
   const unifiedStyle=standaloneRelease?'<style id="forge-unified-workspaces-styles">'+forgeUnifiedCss+'</style>\n':
     '<link rel="stylesheet" href="./dist/css/forge-unified-workspaces.css?v=forge-caption-20261019-v12">\n';
   const workflowStyle=standaloneRelease?'<style id="forge-workflow-interactions-styles">'+forgeWorkflowCss+'</style>\n':
-    '<link rel="stylesheet" href="./dist/css/forge-workflow-interactions.css?v=forge-workbench-redesign-20261103-v3">\n';
+    '<link rel="stylesheet" href="./dist/css/forge-workflow-interactions.css?v=forge-green-redesign-20261103-v1">\n';
   const compressorStyle=standaloneRelease?'<style id="forge-compressor-frame-styles">'+forgeCompressorFrameCss+'</style>\n':
     '<link rel="stylesheet" href="./dist/css/forge-compressor-frame.css?v=forge-compressor-20261021">\n';
   const welcomeStyle=standaloneRelease?'<style id="forge-whats-new-styles">'+forgeWhatsNewCss+'</style>\n':
-    '<link rel="stylesheet" href="./dist/css/forge-whats-new.css?v=forge-caption-20261019-v12">\n';
+    '<link rel="stylesheet" href="./dist/css/forge-whats-new.css?v=green-welcome-20261103">\n';
   html=html.replace('</head>',iconLink+fontLink+brandStyle+routeStyle+adaptiveStyle+workspaceFinishStyle+specimenStyle+unifiedStyle+workflowStyle+compressorStyle+welcomeStyle+'</head>');
   // Light-only presentation: do not read an old dark preference on first paint.
   html=html.replace('<body>','<body class="light-mode">\n'+forgeIntro+'\n'+forgeWhatsNew+'\n');

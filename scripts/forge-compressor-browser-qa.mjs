@@ -27,7 +27,7 @@ try {
   assert.equal(await frame.locator('#targetSize').inputValue(),'8');
   assert.equal(await frame.locator('#fileInput').count(),1);
   const accent=await frame.locator('html').evaluate(el=>getComputedStyle(el).getPropertyValue('--accent').trim());
-  assert.equal(accent,'#3155c6','Compressor must match the workbench accent');
+  assert.equal(accent,'#2c694a','Compressor must match the Forge green accent');
   assert.equal(await frame.locator('.site-header').isVisible(),false,'Standalone brand header should be hidden');
 
   assert.equal(await frame.locator('.batch-columns').isVisible(),false,'Empty queue should not show a five-column data header');

@@ -89,6 +89,6 @@ test('sidebar uses immediate geometry, short feedback and no expensive blur',()=
   assert.match(feedback,/prefers-reduced-motion:reduce/);
   assert.match(read('scripts/forge-browser-qa.mjs'),/Sidebar latency guard/);
   assert.equal((index.match(/<button class="home-card /g)||[]).length,8);
-  assert.ok(index.includes('forge-workflow-interactions.css?v=forge-workbench-redesign-20261103-v3'));
+  assert.ok(index.includes('forge-workflow-interactions.css?v=forge-green-redesign-20261103-v1'));
   assert.equal(distIndex,index.replaceAll('./dist/css/','./css/').replaceAll('./dist/js/','./js/'));
 });
