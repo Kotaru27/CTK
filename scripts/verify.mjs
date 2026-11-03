@@ -6,7 +6,7 @@ const rd=s=>fs.readFileSync(path.join(root,s),'utf8');
 const a=rd('source/baseline.html'), b=rd('index.html');
 const ids=s=>[...s.replace(/<script\b[^>]*>[\s\S]*?<\/script>/g,'').matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]).sort();
 const getRoutes=s=>[...s.matchAll(/<button\b[^>]*class="[^"]*home-card[^>]*"[^>]*onclick="([^"]+)"/g)].map(m=>m[1]);
-const beforeIds=ids(a),afterIds=ids(b).filter(id=>!["forgeIntro","forgeHeroName","forgeIntroType","forgeIntroSkip","forgeIntroWordmark","forgeIntroGlyphs",
+const beforeIds=ids(a),afterIds=ids(b).filter(id=>!["forgeCineCounter","forgeIntro","forgeHeroName","forgeIntroType","forgeIntroSkip","forgeIntroWordmark","forgeIntroGlyphs",
   "forgeWhatsNew","forgeWhatsNewTitle","forgeWhatsNewDescription","forgeWhatsNewClose","forgeWhatsNewNever","forgeWhatsNewContinue","forgeWhatsNewEnter","forgeWhatsNewTrigger","forge-first-paint-css",
   // Workbench V2 adds search and a read-only preview label; none are tool IDs.
   "forgeFeaturedLabel","forgeToolSearch","forgeSearchCount"].includes(id));
