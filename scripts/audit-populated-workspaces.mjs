@@ -151,8 +151,10 @@ try{
     canvasSize:[Tools.Story.canvas?.width,Tools.Story.canvas?.height],
     fileEntries:document.querySelector('#storyFileList')?.children.length}));
   assert.ok(storyboard.hasCanvas&&storyboard.assets===6,`${label}: storyboard canvas not populated`);
-  assert.equal(await page.locator('#storyCols').inputValue(),'3',
-    label+': newly imported storyboard with more than two stills must default to three columns');
+  // New boards retain Auto (0). The AdaptiveRenderer independently lays out
+  // six stills in three columns, with changes continuing to reflow on edits.
+  assert.equal(await page.locator('#storyCols').inputValue(),'0',
+    label+': newly imported storyboard must preserve automatic 1–3 column layout');
 
   // Actual Storyboard asset behavior: real names, keyboard controls and
   // first/last move boundaries, not merely a screenshot of synthetic rows.

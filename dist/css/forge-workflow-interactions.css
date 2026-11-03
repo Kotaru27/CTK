@@ -852,3 +852,345 @@ body.light-mode #view-app #storyBoardNavigator .story-board-layout-choice.select
     top:19px!important;right:18px!important;transform:scale(.49)!important;
   }
 }
+
+/* FORGE / NOV 2026 VISUAL COMPOSITION REPAIR
+   The launch screen, homepage and sidebar are one design system.
+   No tool markup, editor layout, processing engine or route is changed. */
+
+/* 01 / A clean, readable small brand lockup. Keep Kola for the LARGE
+   opening/home signature only: its decorative cuts lose clarity at 24px. */
+body.light-mode .header{
+  height:66px!important;
+  min-height:66px!important;
+  background:#fcfdf9!important;
+  border-bottom:1px solid #d1dacf!important;
+}
+body.light-mode .header #brandText{
+  font-family:"Plus Jakarta Sans","Segoe UI",Arial,sans-serif!important;
+  font-size:clamp(22px,1.6vw,26px)!important;
+  font-weight:800!important;
+  line-height:1.12!important;
+  letter-spacing:-.055em!important;
+  color:#183e2c!important;
+  font-variant-ligatures:normal;
+}
+body.light-mode .header #forgeWhatsNewTrigger{
+  color:#27543c!important;
+  font-size:12px!important;
+  font-weight:750!important;
+  text-decoration-thickness:1px;
+}
+body.light-mode .header .brand-title:focus-visible{
+  outline:2px solid #36744e!important;
+  outline-offset:4px!important;
+  border-radius:4px;
+}
+
+/* 02 / Make the home an actual viewport-filling tool directory instead
+   of a narrow 500px-tall island with hundreds of unused pixels below. */
+body.light-mode #view-home .combined-home-layout{
+  box-sizing:border-box!important;
+  width:100%!important;
+  max-width:none!important;
+  padding:clamp(22px,2.8vw,46px) clamp(22px,3.5vw,64px) 34px!important;
+}
+@media(min-width:1001px){
+  body.light-mode #view-home .combined-home-layout{
+    display:grid!important;
+    grid-template-columns:minmax(300px,.31fr) minmax(0,.69fr)!important;
+    grid-template-rows:auto minmax(0,1fr)!important;
+    column-gap:clamp(22px,2.5vw,42px)!important;
+    row-gap:0!important;
+    min-height:calc(100dvh - 66px)!important;
+    align-content:stretch!important;
+  }
+  body.light-mode #view-home .combined-home-layout .forge-hero{
+    grid-column:1!important;
+    grid-row:1 / 3!important;
+    margin:0!important;
+    min-height:0!important;
+    border-radius:16px!important;
+    padding:clamp(28px,3.2vw,56px)!important;
+    display:flex!important;
+    align-items:center!important;
+  }
+  body.light-mode #view-home .forge-hero-middle{
+    width:100%!important;
+    align-items:flex-start!important;
+    justify-content:center!important;
+    gap:clamp(26px,2.8vw,48px)!important;
+  }
+  body.light-mode #view-home .combined-home-layout .forge-hero-name{
+    font-size:clamp(49px,4.15vw,82px)!important;
+    max-width:100%!important;
+  }
+  body.light-mode #view-home .forge-hero-tagline{
+    font-size:clamp(12px,.95vw,15px)!important;
+  }
+  body.light-mode #view-home .forge-hero-aside{
+    padding-top:clamp(22px,2.4vw,38px)!important;
+    border-top:1px solid rgba(215,234,213,.43)!important;
+    border-left:0!important;
+  }
+  body.light-mode #view-home .forge-hero-aside p{
+    font-size:clamp(14px,1.05vw,17px)!important;
+    line-height:1.65!important;
+  }
+  body.light-mode #view-home .forge-after-hero{
+    grid-column:2!important;
+    grid-row:1!important;
+    margin:0 0 clamp(15px,1.6vw,22px)!important;
+    align-self:end!important;
+  }
+  body.light-mode #view-home .forge-after-hero strong{
+    font-size:clamp(25px,2vw,32px)!important;
+  }
+  body.light-mode #view-home .combined-home-grid{
+    grid-column:2!important;
+    grid-row:2!important;
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    grid-template-rows:repeat(4,minmax(0,1fr))!important;
+    align-content:stretch!important;
+    gap:clamp(12px,1.2vw,18px)!important;
+  }
+  body.light-mode #view-home .combined-home-grid > .home-card:nth-child(n){
+    box-sizing:border-box!important;
+    height:auto!important;
+    min-height:clamp(138px,calc((100dvh - 210px)/4),228px)!important;
+    padding:clamp(18px,1.5vw,27px)!important;
+    border-radius:13px!important;
+    box-shadow:0 2px 10px rgba(26,64,39,.045)!important;
+  }
+  body.light-mode #view-home .combined-home-grid > .home-card .home-card-title{
+    font-size:clamp(18px,1.32vw,23px)!important;
+  }
+  body.light-mode #view-home .combined-home-grid > .home-card .home-card-desc{
+    font-size:clamp(12px,.92vw,14px)!important;
+  }
+  body.light-mode #view-home .combined-home-grid > .home-card > .home-card-art{
+    top:clamp(16px,1.5vw,27px)!important;
+    right:clamp(17px,1.5vw,27px)!important;
+    transform:scale(.65)!important;
+    transform-origin:top right!important;
+  }
+}
+@media(min-width:2000px){
+  body.light-mode #view-home .combined-home-layout{
+    max-width:2000px!important;
+    margin-inline:auto!important;
+  }
+}
+@media(max-width:1000px){
+  body.light-mode #view-home .combined-home-layout{
+    min-height:0!important;
+    padding:22px clamp(18px,4vw,36px) 46px!important;
+  }
+  body.light-mode #view-home .combined-home-layout .forge-hero{
+    margin-bottom:clamp(20px,3vw,30px)!important;
+  }
+  body.light-mode #view-home .combined-home-grid{
+    gap:14px!important;
+  }
+  body.light-mode #view-home .combined-home-grid > .home-card:nth-child(n){
+    height:clamp(176px,22vw,218px)!important;
+    min-height:176px!important;
+  }
+}
+@media(max-width:580px){
+  body.light-mode #view-home .combined-home-grid{
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+  body.light-mode #view-home .combined-home-grid > .home-card:nth-child(n){
+    height:172px!important;
+    min-height:172px!important;
+  }
+  body.light-mode #view-home .combined-home-layout .forge-hero-name{
+    font-size:clamp(42px,11vw,62px)!important;
+  }
+  body.light-mode .header #brandText{font-size:22px!important;}
+}
+
+/* 03 / One deliberate intro composition: centered headline, steps and
+   supporting copy in a readable vertical rhythm. Its skip control stays
+   available even on a slow/offline font connection. */
+.forge-intro.forge-intro-ready::before{
+  background:radial-gradient(ellipse 75% 90% at 72% 27%,#27543e 0%,#1c4130 64%,#153828 100%)!important;
+}
+.forge-intro.forge-intro-ready .forge-intro-type{
+  inset:0!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  padding:0 clamp(24px,4vw,70px) 0!important;
+  box-sizing:border-box!important;
+}
+.forge-intro.forge-intro-ready #forgeIntroWordmark{
+  font-size:clamp(70px,9.4vw,150px)!important;
+  max-width:92vw!important;
+  color:#f4f7ee!important;
+  text-align:center;
+}
+.forge-intro.forge-intro-ready .forge-intro-steps{
+  top:calc(50% + clamp(75px,8vw,116px))!important;
+  left:50%!important;
+  transform:translate3d(-50%,0,0)!important;
+  justify-content:center!important;
+  max-width:calc(100vw - 48px)!important;
+}
+.forge-intro.forge-intro-ready .forge-intro-summary{
+  top:calc(50% + clamp(125px,13vw,185px))!important;
+  left:50%!important;
+  right:auto!important;
+  width:min(540px,calc(100vw - 56px))!important;
+  max-width:540px!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  color:#e2eee2!important;
+  text-align:center!important;
+  font:500 clamp(14px,1.12vw,18px)/1.55 "Plus Jakarta Sans","Segoe UI",sans-serif!important;
+  transform:translate3d(-50%,0,0)!important;
+  text-wrap:balance;
+}
+.forge-intro.forge-intro-ready .forge-intro-label{
+  top:clamp(24px,5vh,54px)!important;
+  left:clamp(24px,5vw,74px)!important;
+}
+.forge-intro.forge-intro-ready .forge-intro-caption{
+  left:clamp(24px,5vw,74px)!important;
+  right:clamp(24px,5vw,74px)!important;
+  bottom:clamp(24px,5vh,50px)!important;
+}
+.forge-intro.forge-intro-ready .forge-intro-skip{
+  color:#f1f7ed!important;
+  text-decoration:underline!important;
+  text-underline-offset:5px;
+}
+.forge-intro.forge-intro-ready .forge-intro-skip:hover{color:#fff!important;}
+@media(max-width:750px){
+  .forge-intro.forge-intro-ready #forgeIntroWordmark{
+    font-size:clamp(52px,12vw,88px)!important;
+  }
+  .forge-intro.forge-intro-ready .forge-intro-steps{
+    top:calc(50% + 67px)!important;
+    gap:8px!important;
+    font-size:clamp(12px,2.5vw,15px)!important;
+  }
+  .forge-intro.forge-intro-ready .forge-intro-summary{
+    top:calc(50% + 114px)!important;
+    font-size:14px!important;
+  }
+  .forge-intro.forge-intro-ready .forge-intro-label{
+    font-size:10px!important;
+    letter-spacing:.12em!important;
+  }
+}
+@media(max-height:680px){
+  .forge-intro.forge-intro-ready .forge-intro-type{
+    transform:translate3d(0,-34px,0)!important;
+  }
+  .forge-intro.forge-intro-ready .forge-intro-steps{
+    top:calc(50% + 42px)!important;
+  }
+  .forge-intro.forge-intro-ready .forge-intro-summary{
+    top:calc(50% + 90px)!important;
+  }
+  .forge-intro.forge-intro-ready .forge-intro-caption{
+    bottom:14px!important;
+  }
+}
+
+/* 04 / Sidebar navigation must be readable in both states. The old
+   collapse control inherited an almost-black fill and muted dark text. */
+body.light-mode #mainSidebar.nav-sidebar.visible .nav-toggle{
+  min-height:48px!important;
+  margin:0 0 16px!important;
+  padding:11px 14px!important;
+  border:1px solid #b9cbbd!important;
+  border-radius:10px!important;
+  background:#eff5ed!important;
+  color:#1d4630!important;
+  box-shadow:none!important;
+  text-align:left!important;
+}
+body.light-mode #mainSidebar.nav-sidebar.visible .nav-toggle .nav-item-text,
+body.light-mode #mainSidebar.nav-sidebar.visible .nav-toggle .material-symbols-rounded,
+body.light-mode #mainSidebar.nav-sidebar.visible .nav-toggle svg{
+  color:#1d4630!important;
+  opacity:1;
+}
+body.light-mode #mainSidebar.nav-sidebar.visible .nav-toggle:hover{
+  background:#dceade!important;
+  border-color:#79a186!important;
+  color:#173c29!important;
+}
+body.light-mode #mainSidebar.nav-sidebar.visible .nav-toggle:focus-visible{
+  outline:2px solid #285c40!important;
+  outline-offset:2px!important;
+}
+body.light-mode #mainSidebar.nav-sidebar.visible.collapsed .nav-toggle{
+  justify-content:center!important;
+  padding:11px!important;
+}
+body.light-mode #mainSidebar.nav-sidebar.visible.collapsed .nav-toggle .nav-item-text{
+  opacity:0!important;
+  width:0!important;
+  overflow:hidden!important;
+}
+@media(prefers-reduced-motion:reduce){
+  .forge-intro.forge-intro-ready .forge-intro-type{
+    transform:none!important;
+  }
+}
+
+/* Align the header to the same responsive edges as the widened home.
+   The previous 1536px header limit left 168px insets on large screens. */
+body.light-mode:has(#view-home:not(.hidden)) .header{
+  padding-inline:max(clamp(22px,3.5vw,64px),calc((100vw - 2000px)/2 + 64px))!important;
+}
+@media(max-width:1000px){
+  body.light-mode:has(#view-home:not(.hidden)) .header{
+    padding-inline:clamp(18px,4vw,36px)!important;
+  }
+}
+
+/* Compact screens must GROW to fit their tool list. The inherited
+   viewport-height flex container was shrinking the hero to ~108px and
+   letting later cards overflow their grid rather than scroll naturally. */
+@media(max-width:1000px){
+  body.light-mode #view-home .combined-home-layout{
+    display:flex!important;
+    flex-direction:column!important;
+    height:auto!important;
+    min-height:100%!important;
+    justify-content:flex-start!important;
+    align-items:stretch!important;
+  }
+  body.light-mode #view-home .combined-home-layout .forge-hero{
+    flex:0 0 auto!important;
+    height:auto!important;
+    min-height:clamp(255px,32vw,340px)!important;
+    padding:clamp(25px,3vw,37px)!important;
+    box-sizing:border-box!important;
+  }
+  body.light-mode #view-home .forge-hero-middle{
+    flex-direction:column!important;
+    align-items:flex-start!important;
+    gap:clamp(16px,2.6vw,26px)!important;
+    width:100%!important;
+  }
+  body.light-mode #view-home .forge-hero-aside{
+    width:100%!important;
+    min-height:0!important;
+    padding:18px 0 0!important;
+    border-left:0!important;
+    border-top:1px solid rgba(215,234,213,.43)!important;
+  }
+  body.light-mode #view-home .forge-after-hero,
+  body.light-mode #view-home .combined-home-grid{
+    flex:0 0 auto!important;
+    height:auto!important;
+    min-height:0!important;
+  }
+}

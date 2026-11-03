@@ -19,6 +19,9 @@ try {
   await page.locator('#section-yt-helper.forge-route-running, #section-yt-helper.active').first().waitFor({timeout:15000}).catch(()=>{});
   const section=page.locator('#section-yt-helper');
   await section.waitFor({state:'visible',timeout:15000});
+  // A visible workspace can still be in a native route snapshot. Wait for the
+  // transition overlay to retire before testing iframe pointer interactions.
+  await page.waitForFunction(()=>!document.documentElement.classList.contains('forge-route-running'),null,{timeout:10000});
   assert.equal((await section.locator('.forge-compressor-surface > .tool-header h2').textContent()).trim(),'Video Compressor');
   assert.equal(await section.locator('#ytUrlInput').isVisible(),false,'Legacy download input must stay hidden');
 
@@ -42,6 +45,7 @@ try {
   await frame.locator('#targetSize').fill('6.5');
   assert.equal(await frame.locator('#targetSize').inputValue(),'6.5');
   await frame.locator('.item-actions button').filter({hasText:'Preview'}).click();
+  await frame.locator('#previewDialog[open]').waitFor({state:'visible',timeout:5000});
   assert.equal(await frame.locator('#previewDialog').evaluate(el=>el.open),true,'Preview dialog not opened');
   await frame.locator('#closePreview').click();
   assert.equal(await frame.locator('#previewDialog').evaluate(el=>el.open),false,'Preview did not close');
