@@ -6223,8 +6223,11 @@ body:not(:has(#view-home:not(.hidden))) .header #forgeWhatsNewTrigger{display:no
 .forge-cine-piece svg{display:block;width:55%;height:55%;flex:none}
 .forge-cine-piece small{position:absolute;right:4px;bottom:3px;font:700 8px/1 "JetBrains Mono",monospace;
  opacity:.65}
-.forge-cine-identity{position:absolute;left:40.5%;top:45%;width:max-content;
- max-width:57%;transform:translateY(-50%);opacity:0;pointer-events:none}
+.forge-cine-identity{position:absolute;
+ /* The title is a child of the F assembly so it always follows its final
+    right edge; no independent percent positioning or icon collisions. */
+ left:calc(100% + clamp(20px,2vw,36px));top:50%;width:max-content;
+ max-width:none;transform:translateY(-50%);opacity:0;pointer-events:none}
 .forge-cine-kicker{display:block;color:#c7f4a2;font:600 10px/1.5 "Plus Jakarta Sans",sans-serif;
  letter-spacing:.16em;margin-bottom:7px}
 .forge-cine-wordmark{font:400 clamp(58px,8.1vw,133px)/1.17 "Kola","Plus Jakarta Sans",Arial,sans-serif;
@@ -6260,13 +6263,13 @@ body:not(:has(#view-home:not(.hidden))) .header #forgeWhatsNewTrigger{display:no
 .forge-cinematic.forge-cine-playing .forge-cine-assembly{
  animation:forge-cine-slide 770ms cubic-bezier(.6,0,.16,1) 1250ms both}
 .forge-cinematic.forge-cine-playing .forge-cine-identity{
- animation:forge-cine-visible 1ms linear 1500ms both}
+ animation:forge-cine-visible 1ms linear 2060ms both}
 .forge-cinematic.forge-cine-playing .forge-cine-wordmark{
- animation:forge-cine-title 820ms cubic-bezier(.18,.88,.18,1) 1520ms both}
+ animation:forge-cine-title 710ms cubic-bezier(.18,.88,.18,1) 2090ms both}
 .forge-cinematic.forge-cine-playing .forge-cine-rule{
- animation:forge-cine-rule-in 700ms ease 1880ms both}
+ animation:forge-cine-rule-in 540ms ease 2300ms both}
 .forge-cinematic.forge-cine-playing .forge-cine-identity p{
- animation:forge-cine-visible 460ms ease 2090ms both}
+ animation:forge-cine-visible 350ms ease 2520ms both}
 .forge-intro.forge-cinematic.forge-cine-leaving{pointer-events:none}
 .forge-intro.forge-cinematic.forge-cine-leaving::before{opacity:0!important}
 .forge-cinematic.forge-cine-leaving .forge-cine-shell{
@@ -6300,7 +6303,7 @@ html.forge-launch-fallback-kola .forge-cine-wordmark{
  .forge-cine-edition{display:none}
  .forge-cine-orbit{width:260px;height:260px;top:44%}
  .forge-cine-assembly{--tile:clamp(31px,8vw,45px);--travel:clamp(88px,24vw,180px);top:43%}
- .forge-cine-identity{left:39%;top:43%;max-width:59%}
+ .forge-cine-identity{left:calc(100% + 20px);top:50%;max-width:none}
  .forge-cine-wordmark{font-size:clamp(46px,10.3vw,72px)}
  .forge-cine-kicker{font-size:8px;letter-spacing:.08em}
  .forge-cine-footnote{font-size:8px}
@@ -6308,11 +6311,46 @@ html.forge-launch-fallback-kola .forge-cine-wordmark{
 }
 @media(max-width:410px){
  .forge-cine-assembly{--tile:29px;--step:34px;--travel:94px}
- .forge-cine-identity{left:38%}
+ .forge-cine-identity{left:calc(100% + 20px)}
  .forge-cine-wordmark{font-size:43px}
  .forge-cine-identity p{font-size:11px}
  .forge-cine-footnote{letter-spacing:.05em}
 }
+
+/* Narrow screens stack the brand beneath the eight-icon F instead of
+   squeezing text into the remaining right-hand strip. */
+@media(max-width:520px){
+ .forge-cine-orbit{top:33%;width:min(63vw,260px);height:min(63vw,260px)}
+ .forge-cine-assembly{
+   --tile:clamp(24px,7vw,34px);
+   --step:calc(var(--tile) + 4px);
+   --travel:0px;
+   top:33%;
+ }
+ .forge-cine-identity{
+   left:50%;top:calc(100% + 18px);
+   transform:translateX(-50%);text-align:center;
+   max-width:calc(100vw - 28px);
+ }
+ .forge-cine-kicker{font-size:9px;letter-spacing:.07em;white-space:nowrap}
+ .forge-cine-wordmark{font-size:clamp(45px,12vw,60px);line-height:1.1}
+ .forge-cine-identity p{font-size:12px;margin-top:9px}
+ .forge-cine-foot{bottom:22px}
+}
+@media(max-width:520px) and (max-height:560px){
+ .forge-cine-head{top:14px;padding-bottom:8px}
+ .forge-cine-assembly{--tile:clamp(21px,6vh,28px);--step:calc(var(--tile) + 3px);top:29%}
+ .forge-cine-orbit{top:29%;width:180px;height:180px}
+ .forge-cine-identity{top:calc(100% + 12px)}
+ .forge-cine-kicker{font-size:8px;margin-bottom:3px}
+ .forge-cine-wordmark{font-size:39px;line-height:1.03}
+ .forge-cine-identity p{font-size:10px;margin-top:5px}
+ .forge-cine-foot{bottom:10px;padding-top:8px}
+ .forge-cine-counter{margin-top:3px;font-size:12px}
+ .forge-cine-footnote{font-size:7px}
+ .forge-intro.forge-intro-ready.forge-cinematic .forge-cine-skip{top:53px}
+}
+
 @media(prefers-reduced-motion:reduce){
  .forge-intro.forge-cinematic{display:none!important}
  body.forge-opening #forgeHeroName{visibility:visible!important;clip-path:none!important}
@@ -10627,8 +10665,8 @@ body.light-mode #view-app #section-stills-boards :is(#storyHeaderControls,#films
   <span class="forge-cine-piece" style="--col:1;--row:2;--dx:100px;--dy:155px;--rot:54deg;--delay:720ms" title="Link Gen"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.07 0l2.12-2.12a5 5 0 0 0-7.07-7.07L10 5.93"/><path d="M14 11a5 5 0 0 0-7.07 0l-2.12 2.12a5 5 0 0 0 7.07 7.07L14 18.07"/></svg><small>06</small></span>
   <span class="forge-cine-piece" style="--col:0;--row:3;--dx:-80px;--dy:190px;--rot:-32deg;--delay:832ms" title="Ad Downloader"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13m-5-5 5 5 5-5"/><path d="M4 16v4h16v-4"/><path d="M6 4h3M15 4h3"/></svg><small>07</small></span>
   <span class="forge-cine-piece" style="--col:0;--row:4;--dx:190px;--dy:120px;--rot:35deg;--delay:944ms" title="Video Compressor"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m10 9 5 3-5 3z"/><path d="M6 22h12M8 2h8"/></svg><small>08</small></span>
+    <div class="forge-cine-identity"><span class="forge-cine-kicker">EIGHT TOOLS. ONE WORKSPACE.</span><div class="forge-cine-wordmark">The Forge</div><div class="forge-cine-rule"></div><p>Ideas become something here.</p></div>
    </div>
-   <div class="forge-cine-identity"><span class="forge-cine-kicker">EIGHT TOOLS. ONE WORKSPACE.</span><div class="forge-cine-wordmark">The Forge</div><div class="forge-cine-rule"></div><p>Ideas become something here.</p></div>
    <div class="forge-cine-foot"><div><span class="forge-cine-footnote">BUILDING YOUR CREATIVE WORKSPACE</span><span class="forge-cine-counter">Assembling <b id="forgeCineCounter">00</b> of 08</span></div><div><div class="forge-cine-ticks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><span class="forge-cine-footnote">08 PARTS → 01 WORKBENCH</span></div></div>
    <button type="button" class="forge-cine-skip forge-intro-skip" id="forgeIntroSkip" aria-label="Skip introduction">Skip intro ↗</button>
   </div>
@@ -19582,7 +19620,7 @@ const CTKDownloadRenamer = (() => {
         ticks[i]?.classList.add('is-lit');
       },160+i*112+630);
     }
-    schedule(handoff,2750);
+    schedule(handoff,3100);
   }
   let fontReady=false;
   const loadFont=spec=>{
