@@ -1154,3 +1154,43 @@ body.light-mode:has(#view-home:not(.hidden)) .header{
     padding-inline:clamp(18px,4vw,36px)!important;
   }
 }
+
+/* Compact screens must GROW to fit their tool list. The inherited
+   viewport-height flex container was shrinking the hero to ~108px and
+   letting later cards overflow their grid rather than scroll naturally. */
+@media(max-width:1000px){
+  body.light-mode #view-home .combined-home-layout{
+    display:flex!important;
+    flex-direction:column!important;
+    height:auto!important;
+    min-height:100%!important;
+    justify-content:flex-start!important;
+    align-items:stretch!important;
+  }
+  body.light-mode #view-home .combined-home-layout .forge-hero{
+    flex:0 0 auto!important;
+    height:auto!important;
+    min-height:clamp(255px,32vw,340px)!important;
+    padding:clamp(25px,3vw,37px)!important;
+    box-sizing:border-box!important;
+  }
+  body.light-mode #view-home .forge-hero-middle{
+    flex-direction:column!important;
+    align-items:flex-start!important;
+    gap:clamp(16px,2.6vw,26px)!important;
+    width:100%!important;
+  }
+  body.light-mode #view-home .forge-hero-aside{
+    width:100%!important;
+    min-height:0!important;
+    padding:18px 0 0!important;
+    border-left:0!important;
+    border-top:1px solid rgba(215,234,213,.43)!important;
+  }
+  body.light-mode #view-home .forge-after-hero,
+  body.light-mode #view-home .combined-home-grid{
+    flex:0 0 auto!important;
+    height:auto!important;
+    min-height:0!important;
+  }
+}
