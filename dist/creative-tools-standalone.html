@@ -9098,6 +9098,17 @@ body.light-mode #mainSidebar.nav-sidebar.visible.collapsed .nav-toggle .nav-item
     transform:none!important;
   }
 }
+
+/* Align the header to the same responsive edges as the widened home.
+   The previous 1536px header limit left 168px insets on large screens. */
+body.light-mode:has(#view-home:not(.hidden)) .header{
+  padding-inline:max(clamp(22px,3.5vw,64px),calc((100vw - 2000px)/2 + 64px))!important;
+}
+@media(max-width:1000px){
+  body.light-mode:has(#view-home:not(.hidden)) .header{
+    padding-inline:clamp(18px,4vw,36px)!important;
+  }
+}
 </style>
 <style id="forge-compressor-frame-styles">/* Tool 08: Forge-native compressor route, legacy command UI hidden. */
 #section-yt-helper > :not(.forge-compressor-surface){display:none!important}
