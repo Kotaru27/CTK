@@ -51,22 +51,29 @@ try{
     }
     await page.screenshot({path:'artifacts/forge-browser/home-'+viewport.width+'.png'});
     await page.locator('.home-card.tool-logo').click();
-    await page.locator('#mainSidebar .nav-toggle').waitFor({state:'visible'});
-    const nav=await page.locator('#mainSidebar .nav-toggle').evaluate(el=>{
-      const label=el.querySelector('.nav-item-text'),cs=getComputedStyle(el);
-      return {background:cs.backgroundColor,foreground:getComputedStyle(label).color,
-        sidebarWidth:el.closest('#mainSidebar').getBoundingClientRect().width};
-    });
-    assert.ok(contrast(nav.background,nav.foreground)>=4.5,
-      viewport.width+': collapse control does not meet minimum text contrast: '+JSON.stringify(nav));
-    if(viewport.width>=1280){
-      await page.screenshot({path:'artifacts/forge-browser/sidebar-'+viewport.width+'.png'});
-      await page.locator('#mainSidebar .nav-toggle').click();
-      const after=await page.locator('#mainSidebar').evaluate(el=>el.getBoundingClientRect().width);
-      assert.ok(after<nav.sidebarWidth,viewport.width+': collapse control cannot collapse navigation');
+    await page.locator('#section-logo').waitFor({state:'visible',timeout:12000});
+    // On compact phones the legacy app intentionally suppresses the desktop
+    // nav rail. Only audit the toggle on widths where that control is shown.
+    let nav=null,navContrast=null;
+    if(viewport.width>=761){
+      await page.locator('#mainSidebar .nav-toggle').waitFor({state:'visible',timeout:12000});
+      nav=await page.locator('#mainSidebar .nav-toggle').evaluate(el=>{
+        const label=el.querySelector('.nav-item-text'),cs=getComputedStyle(el);
+        return {background:cs.backgroundColor,foreground:getComputedStyle(label).color,
+          sidebarWidth:el.closest('#mainSidebar').getBoundingClientRect().width};
+      });
+      navContrast=contrast(nav.background,nav.foreground);
+      assert.ok(navContrast>=4.5,
+        viewport.width+': collapse control does not meet minimum text contrast: '+JSON.stringify(nav));
+      if(viewport.width>=1280){
+        await page.screenshot({path:'artifacts/forge-browser/sidebar-'+viewport.width+'.png'});
+        await page.locator('#mainSidebar .nav-toggle').click();
+        const after=await page.locator('#mainSidebar').evaluate(el=>el.getBoundingClientRect().width);
+        assert.ok(after<nav.sidebarWidth,viewport.width+': collapse control cannot collapse navigation');
+      }
     }
     assert.deepEqual(errors,[],viewport.width+': browser runtime errors');
-    samples.push({viewport,metrics,nav,contrast:contrast(nav.background,nav.foreground)});
+    samples.push({viewport,metrics,nav,contrast:navContrast});
     await context.close();
   }
   const context=await browser.newContext({viewport:{width:1440,height:900},reducedMotion:'no-preference'});
