@@ -10,6 +10,9 @@ on:
       - 'src/css/experience/forge-video-route.css'
       - 'src/js/presentation/forge-video-route.js'
       - 'src/js/presentation/forge-brand.js'
+      - 'src/css/experience/forge-workbench-v2.css'
+      - 'src/js/presentation/forge-workbench-v2.js'
+      - 'scripts/forge-workbench-v2-browser-qa.mjs'
       - 'scripts/build.mjs'
       - 'scripts/forge-browser-qa.mjs'
       - 'scripts/forge-compressor-browser-qa.mjs'
@@ -24,6 +27,9 @@ on:
       - 'src/css/experience/forge-workflow-interactions.css'
       - 'scripts/forge-visual-composition-qa.mjs'
       - 'src/js/presentation/forge-brand.js'
+      - 'src/css/experience/forge-workbench-v2.css'
+      - 'src/js/presentation/forge-workbench-v2.js'
+      - 'scripts/forge-workbench-v2-browser-qa.mjs'
       - 'scripts/build.mjs'
       - 'scripts/forge-browser-qa.mjs'
       - 'scripts/forge-compressor-browser-qa.mjs'
@@ -59,6 +65,8 @@ jobs:
         run: node scripts/forge-browser-qa.mjs
       - name: Verify visual composition at mobile and desktop widths
         run: node scripts/forge-visual-composition-qa.mjs
+      - name: Verify original Forge workbench and keyboard search
+        run: node scripts/forge-workbench-v2-browser-qa.mjs
       - name: Verify Video Compressor workspace integration
         run: node scripts/forge-compressor-browser-qa.mjs
       - name: Keep screenshots
