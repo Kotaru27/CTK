@@ -37,13 +37,15 @@ test('Forge source, modular outputs and standalone release stay aligned',()=>{
   assert.equal(distIndex,index.replaceAll('./dist/css/','./css/').replaceAll('./dist/js/','./js/'));
 });
 
-test('Intro handoff has one calibrated, stable exit with a protected welcome backdrop',()=>{
-  assert.match(intro,/schedule\(finish,380\)/);
-  assert.match(brand,/transition:opacity 380ms cubic-bezier\(/);
-  assert.match(intro,/body\.classList\.add\('forge-home-arriving','forge-handoff'\)/);
+test('Intro assembles all eight tiles and uncovers the live home in one synchronized exit',()=>{
+  assert.match(intro,/schedule\(handoff,2750\)/);
+  assert.match(intro,/schedule\(finish,1160\)/);
+  assert.match(brand,/@keyframes forge-cine-curtain/);
+  assert.match(intro,/body\.classList\.add\('forge-home-arriving','forge-handoff','forge-cine-home-reveal'\)/);
+  assert.match(brand,/body\.forge-opening\.forge-home-arriving\.forge-cine-home-reveal #forgeHeroName/);
   assert.match(brand,/html\.forge-welcome-pending body\.forge-opening::after/);
+  assert.match(welcomeJS,/setTimeout\(queueAutomatic,700\)/);
   assert.doesNotMatch(brand,/FORGE \/ TYPEWRITER V5|FORGE \/ INTACT WORD ENTRANCE/);
-  assert.equal((brand.match(/@keyframes forge-typing-caret/g)||[]).length,1);
   assert.match(brand,/prefers-reduced-motion:reduce/);
 });
 
