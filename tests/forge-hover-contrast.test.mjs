@@ -22,6 +22,8 @@ test('Workspace controls, tabs, danger actions and navigation retain appropriate
   assert.match(css,/\.liquid-btn\.active-mode:not\(\.danger-btn\)/);
   assert.match(css,/button\[role="tab"\]\.active-mode:is\(:hover,:focus-visible\)/);
   assert.match(css,/#mainSidebar\.nav-sidebar\.visible \.nav-item\.active/);
+  assert.match(css,/#downloadStoryBtn,#downloadFilmstripJpgBtn,#fitExportPngBtn/);
+  assert.match(css,/Storyboard and Filmstrip export headers/);
   assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
 });
 test('Release stylesheet and standalone CSS are synchronized',()=>{
