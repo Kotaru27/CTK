@@ -9555,10 +9555,676 @@ html:has(.forge-whatsnew:not([hidden])){overflow:hidden;scrollbar-gutter:stable;
   .forge-whatsnew-opening h2{font-size:23px!important;}
 }
 </style>
+<style id="forge-workbench-v2-styles">/* THE FORGE / CREATIVE WORKBENCH V2 · 2026
+   Distinctive editorial tool index + consistent professional workspace shell.
+   Presentation-only: processing engines, canvases, editor sizing, routes, user
+   data and export handlers are deliberately outside this design layer. */
+:root {
+  --fw2-ink:#153427;
+  --fw2-muted:#526b5a;
+  --fw2-green:#285e43;
+  --fw2-green-dark:#153d2c;
+  --fw2-ground:#edf1e9;
+  --fw2-sheet:#fcfdf8;
+  --fw2-line:#d6e0d6;
+  --fw2-soft:#e4ebe1;
+  --fw2-focus:#326e4c;
+  --fw2-shadow:0 12px 34px rgba(31,68,46,.055);
+  --fw2-ease:cubic-bezier(.2,.8,.2,1);
+}
+body.light-mode {background:var(--fw2-ground)!important;}
+
+/* App masthead: typographic product signature, action at a stable edge. */
+body.light-mode .header {
+  background:var(--fw2-sheet)!important;
+  border-bottom:1px solid var(--fw2-line)!important;
+  box-shadow:0 1px 0 rgba(255,255,255,.6)!important;
+}
+body.light-mode .header #brandText {
+  font-size:24px!important;
+  font-weight:800!important;
+  letter-spacing:-.058em!important;
+  color:var(--fw2-ink)!important;
+}
+body.light-mode .header #forgeWhatsNewTrigger {
+  display:inline-flex!important;
+  align-items:center;
+  border:1px solid var(--fw2-line)!important;
+  background:#f1f5ee!important;
+  border-radius:100px!important;
+  padding:9px 16px!important;
+  font-size:12px!important;
+  color:#234e37!important;
+  transition:background-color .16s ease,border-color .16s ease!important;
+}
+body.light-mode .header #forgeWhatsNewTrigger:hover {
+  background:#dfece0!important;
+  border-color:#91b39a!important;
+}
+body.light-mode:not(:has(#view-home:not(.hidden))) .header #forgeWhatsNewTrigger {
+  display:none!important;
+}
+
+/* HOME / INDEX: an authored catalog, not eight identical software tiles. */
+body.light-mode #view-home {background:var(--fw2-ground)!important;}
+body.light-mode #view-home .combined-home-layout {
+  width:100%!important;
+  max-width:1920px!important;
+  margin-inline:auto!important;
+  padding:clamp(25px,2.9vw,48px) clamp(22px,3.5vw,64px) clamp(30px,3vw,50px)!important;
+  box-sizing:border-box!important;
+}
+@media(min-width:1001px) {
+  body.light-mode #view-home .combined-home-layout {
+    display:grid!important;
+    grid-template-columns:minmax(305px,.31fr) minmax(0,.69fr)!important;
+    grid-template-rows:auto minmax(0,1fr)!important;
+    column-gap:clamp(18px,2.15vw,36px)!important;
+    row-gap:0!important;
+    min-height:calc(100dvh - 66px)!important;
+  }
+  body.light-mode #view-home .combined-home-layout .forge-hero {
+    grid-column:1!important;grid-row:1/3!important;
+  }
+  body.light-mode #view-home .forge-after-hero{
+    grid-column:2!important;grid-row:1!important;
+  }
+  body.light-mode #view-home .combined-home-grid{
+    grid-column:2!important;grid-row:2!important;
+  }
+}
+body.light-mode #view-home .combined-home-layout .forge-hero {
+  --forge-hero-fg:var(--fw2-ink);
+  --forge-hero-muted:#456954;
+  background:var(--fw2-sheet)!important;
+  border:1px solid var(--fw2-line)!important;
+  border-radius:18px!important;
+  box-shadow:var(--fw2-shadow)!important;
+  padding:clamp(28px,3.15vw,58px)!important;
+  margin:0!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  justify-content:space-between!important;
+  gap:clamp(24px,3vw,52px)!important;
+  min-height:0!important;
+  position:relative!important;
+  overflow:hidden!important;
+}
+body.light-mode #view-home .combined-home-layout .forge-hero::before {
+  content:"";
+  pointer-events:none;
+  position:absolute;
+  width:350px;height:350px;
+  right:-230px;top:27%;
+  border:1px solid #dce8dd;
+  box-shadow:0 0 0 40px rgba(60,119,78,.018),0 0 0 82px rgba(60,119,78,.015);
+  border-radius:50%;
+}
+#view-home .forge-workbench-head,
+#view-home .forge-workbench-foot {position:relative;z-index:2;}
+#view-home .forge-workbench-head {
+  display:flex;justify-content:space-between;align-items:center;gap:12px;
+  font:700 10px/1.4 "Plus Jakarta Sans",sans-serif;
+  letter-spacing:.14em;text-transform:uppercase;
+  color:#416b52;
+}
+#view-home .forge-workbench-led {
+  display:inline-flex;align-items:center;gap:8px;
+  white-space:nowrap;
+}
+#view-home .forge-workbench-led::before {
+  content:"";width:7px;height:7px;border-radius:50%;
+  background:#3c9260;box-shadow:0 0 0 4px rgba(60,146,96,.10);
+}
+body.light-mode #view-home .forge-hero-middle{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:flex-start!important;
+  justify-content:center!important;
+  gap:clamp(20px,2.5vw,38px)!important;
+  padding:0!important;
+  width:100%!important;
+  min-height:0!important;
+  flex:1 1 auto!important;
+  position:relative;z-index:2;
+}
+#view-home .forge-hero-identity {width:100%;min-width:0;}
+body.light-mode #view-home .combined-home-layout .forge-hero-name {
+  font-size:clamp(52px,4.45vw,88px)!important;
+  line-height:1.04!important;
+  color:var(--fw2-ink)!important;
+  max-width:100%!important;
+  white-space:nowrap!important;
+}
+body.light-mode #view-home .forge-hero-tagline {
+  font-family:"Plus Jakarta Sans",sans-serif!important;
+  font-size:clamp(12px,.94vw,14px)!important;
+  font-weight:650!important;
+  letter-spacing:.018em!important;
+  color:var(--fw2-green)!important;
+}
+body.light-mode #view-home .forge-hero-aside {
+  display:block!important;
+  flex:0 0 auto!important;
+  width:100%!important;
+  min-height:0!important;
+  padding:clamp(20px,2.25vw,32px) 0 0!important;
+  margin:0!important;
+  border-left:0!important;
+  border-top:1px solid var(--fw2-line)!important;
+}
+body.light-mode #view-home .forge-hero-aside p {
+  color:#476754!important;
+  font-size:clamp(14px,1.03vw,17px)!important;
+  line-height:1.75!important;
+  max-width:420px!important;
+}
+#view-home .forge-workbench-foot {
+  padding-top:20px;
+  border-top:1px solid var(--fw2-line);
+  display:flex;
+  align-items:end;
+  justify-content:space-between;
+  gap:16px;
+}
+#view-home .forge-workbench-foot small {
+  display:block;color:#6b806f;
+  font:700 10px/1.6 "Plus Jakarta Sans",sans-serif;
+  text-transform:uppercase;letter-spacing:.13em;
+}
+#view-home #forgeFeaturedLabel {
+  display:block;margin-top:7px;
+  color:#23513b;
+  font:700 clamp(14px,1.05vw,18px)/1.3 "Plus Jakarta Sans",sans-serif;
+  letter-spacing:-.035em;
+}
+#view-home .forge-workbench-signature {
+  font:400 clamp(38px,4.5vw,78px)/1 "Kola","Plus Jakarta Sans",sans-serif;
+  color:#b4c9b8;letter-spacing:-.07em;
+  user-select:none;
+}
+
+/* Tool directory title + fast keyboard search. */
+body.light-mode #view-home .forge-after-hero{
+  width:100%;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:14px!important;
+  margin:0 0 clamp(14px,1.5vw,22px)!important;
+  min-height:48px;
+}
+#view-home .forge-after-hero strong{
+  flex:0 0 auto;
+  color:var(--fw2-ink)!important;
+  font-size:clamp(23px,2vw,32px)!important;
+  letter-spacing:-.065em!important;
+}
+#view-home .forge-search-wrap {
+  display:flex;align-items:center;gap:9px;min-width:0;
+}
+#view-home .forge-search {
+  display:flex;align-items:center;gap:8px;
+  background:var(--fw2-sheet);
+  border:1px solid var(--fw2-line);
+  border-radius:10px;
+  min-height:42px;
+  padding:0 12px;
+  width:clamp(180px,17vw,260px);
+  box-shadow:0 2px 7px rgba(31,68,46,.03);
+  transition:border-color .14s ease,box-shadow .14s ease;
+}
+#view-home .forge-search:focus-within{
+  border-color:#377956;
+  box-shadow:0 0 0 3px rgba(55,121,86,.12);
+}
+#view-home .forge-search svg{
+  width:16px;height:16px;flex:0 0 16px;
+  fill:none;stroke:#5a7b65;stroke-width:1.8;
+}
+#view-home #forgeToolSearch {
+  appearance:none;border:0!important;outline:0!important;
+  box-shadow:none!important;background:transparent!important;
+  min-width:0;width:100%;padding:9px 0!important;
+  font:500 12px/1.4 "Plus Jakarta Sans",sans-serif;
+  color:#254a37!important;
+}
+#view-home #forgeToolSearch::placeholder{color:#718779;opacity:1;}
+#view-home #forgeSearchCount{
+  font:650 11px/1.4 "JetBrains Mono",monospace;
+  color:#54715e;white-space:nowrap;
+}
+
+/* Two large feature canvases + six compact action entries.
+   Every card stays the exact original button with its original handler. */
+body.light-mode #view-home .combined-home-grid {
+  display:grid!important;
+  grid-template-columns:repeat(6,minmax(0,1fr))!important;
+  grid-template-rows:minmax(242px,1.32fr) repeat(2,minmax(160px,1fr))!important;
+  gap:clamp(10px,1vw,17px)!important;
+  align-content:stretch!important;
+  background:none!important;
+  border:0!important;
+  min-width:0!important;
+  min-height:0!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card:nth-child(n) {
+  box-sizing:border-box!important;
+  grid-column:span 2!important;
+  height:auto!important;
+  min-height:0!important;
+  border:1px solid var(--fw2-line)!important;
+  border-radius:13px!important;
+  background:var(--fw2-sheet)!important;
+  color:var(--fw2-ink)!important;
+  padding:clamp(19px,1.65vw,27px)!important;
+  box-shadow:0 4px 17px rgba(31,68,46,.035)!important;
+  display:flex!important;flex-direction:column!important;
+  align-items:flex-start!important;justify-content:flex-end!important;
+  position:relative!important;
+  overflow:hidden!important;
+  transition:border-color .17s ease,background-color .17s ease,box-shadow .17s ease!important;
+  transform:none!important;translate:none!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card:nth-child(-n+2) {
+  grid-column:span 3!important;
+  min-height:230px!important;
+  padding:clamp(22px,2vw,35px)!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card:nth-child(1){
+  background:#204c35!important;
+  color:#f4f9ed!important;
+  border-color:#204c35!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card:nth-child(2){
+  background:#dbe9dc!important;
+  border-color:#b8d3c1!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card:nth-child(n+3) {
+  min-height:155px!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card:hover {
+  border-color:#87b49a!important;
+  box-shadow:0 14px 30px rgba(26,67,42,.10)!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card:focus-visible {
+  outline:3px solid var(--fw2-focus)!important;
+  outline-offset:3px!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card:nth-child(1):focus-visible{
+  outline-color:#63b688!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card .home-card-top{
+  position:absolute!important;
+  top:clamp(14px,1.2vw,21px)!important;
+  left:clamp(19px,1.65vw,27px)!important;
+  right:clamp(19px,1.65vw,27px)!important;
+  width:auto!important;
+  margin:0!important;
+  z-index:3!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card:nth-child(-n+2) .home-card-top{
+  left:clamp(22px,2vw,35px)!important;
+  right:clamp(22px,2vw,35px)!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card .home-card-num {
+  color:#52715d!important;
+  font:700 10px/1.4 "JetBrains Mono",monospace!important;
+  letter-spacing:.09em!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card:nth-child(1) .home-card-num,
+body.light-mode #view-home .combined-home-grid > .home-card:nth-child(1) .home-card-go {
+  color:#c5ddc8!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card .home-card-go {
+  color:#2b6145!important;
+  font-size:24px!important;
+  width:30px!important;height:30px!important;
+  border-radius:50%!important;
+  background:rgba(47,104,69,.07)!important;
+  transition:background-color .15s ease,transform .18s var(--fw2-ease)!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card:nth-child(1) .home-card-go {
+  background:rgba(232,249,232,.11)!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card:hover .home-card-go {
+  background:rgba(47,104,69,.13)!important;
+  transform:translate3d(2px,-2px,0)!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card .home-card-title {
+  font:750 clamp(17px,1.27vw,22px)/1.2 "Plus Jakarta Sans",sans-serif!important;
+  letter-spacing:-.048em!important;
+  white-space:normal!important;
+  color:var(--fw2-ink)!important;
+  margin-bottom:7px!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card:nth-child(-n+2) .home-card-title {
+  font-size:clamp(23px,1.7vw,30px)!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card:nth-child(1) .home-card-title {
+  color:#f4f9ed!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card .home-card-desc{
+  font:500 clamp(11px,.79vw,13px)/1.5 "Plus Jakarta Sans",sans-serif!important;
+  color:#567360!important;
+  white-space:normal!important;
+  max-width:95%!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card:nth-child(1) .home-card-desc{
+  color:#c0d9c7!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card > .home-card-art{
+  position:absolute!important;
+  display:block!important;
+  top:18%!important;left:auto!important;right:14%!important;
+  opacity:.66!important;
+  pointer-events:none!important;
+  transform:scale(.83)!important;
+  transform-origin:top right!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card:nth-child(1) > .home-card-art {
+  opacity:.7!important;
+  filter:grayscale(.5) brightness(1.55)!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card:nth-child(n+3) > .home-card-art{
+  display:none!important;
+}
+body.light-mode #view-home .combined-home-grid > .home-card:nth-child(n+3)::before{
+  content:"";width:32px;height:2px;position:absolute;
+  top:54px;left:clamp(19px,1.65vw,27px);
+  background:#b8d4c1;
+}
+body.light-mode #view-home .combined-home-grid > .home-card.forge-filtered-out {
+  display:none!important;
+}
+#view-home #forgeNoResults {
+  grid-column:1 / -1;
+  background:#fbfcf8;
+  border:1px dashed #9fbaa7;
+  color:#355842;
+  border-radius:14px;
+  padding:40px;
+  display:grid;place-content:center;text-align:center;
+}
+#view-home #forgeNoResults[hidden]{display:none!important;}
+
+/* Chrome: functional collapsed tool rail, clear selected workspace.
+   Section labels appear only when the rail is expanded. */
+body.light-mode #mainSidebar.nav-sidebar.visible{
+  background:#163b2c!important;
+  border-right:1px solid #284d39!important;
+  box-shadow:6px 0 20px rgba(11,46,28,.055)!important;
+}
+body.light-mode #mainSidebar.nav-sidebar.visible:not(.collapsed){
+  width:224px!important;min-width:224px!important;
+  padding:15px 12px!important;gap:5px!important;
+}
+body.light-mode #mainSidebar.nav-sidebar.visible.collapsed {
+  width:74px!important;min-width:74px!important;
+  padding:14px 11px!important;
+}
+body.light-mode #mainSidebar.nav-sidebar.visible .nav-item:not(.nav-toggle){
+  min-height:46px!important;
+  border:1px solid transparent!important;
+  border-radius:9px!important;
+  color:#c2d6c7!important;
+  background:transparent!important;
+  padding:11px 12px!important;
+  font-size:12.5px!important;
+  font-weight:600!important;
+}
+body.light-mode #mainSidebar.nav-sidebar.visible .nav-item:not(.nav-toggle):hover{
+  background:#28533c!important;
+  color:#f7fcf4!important;
+}
+body.light-mode #mainSidebar.nav-sidebar.visible .nav-item.active:not(.nav-toggle){
+  background:#dcebdd!important;
+  border-color:#dcebdd!important;
+  color:#153a28!important;
+  box-shadow:inset 3px 0 0 #63a274!important;
+}
+body.light-mode #mainSidebar.nav-sidebar.visible .nav-item.active :is(.nav-item-text,.material-symbols-rounded,svg){
+  color:#153a28!important;
+}
+body.light-mode #mainSidebar.nav-sidebar.visible .nav-toggle {
+  background:#e9f3e7!important;
+  color:#1c4732!important;
+  border-color:#a6c4ac!important;
+  border-radius:10px!important;
+  font-size:12px!important;
+}
+body.light-mode #mainSidebar.nav-sidebar.visible .nav-toggle :is(.nav-item-text,.material-symbols-rounded,svg){
+  color:#1c4732!important;
+}
+#mainSidebar .forge-rail-group {
+  margin:20px 10px 5px;
+  color:#8ab99a;
+  font:700 10px/1.2 "Plus Jakarta Sans",sans-serif;
+  letter-spacing:.15em;text-transform:uppercase;
+  pointer-events:none;white-space:nowrap;
+}
+#mainSidebar.collapsed .forge-rail-group {display:none!important;}
+#mainSidebar .nav-item:focus-visible{
+  outline:2px solid #97d1a3!important;
+  outline-offset:-2px!important;
+}
+body.light-mode #mainSidebar.nav-sidebar.visible.collapsed .nav-item:not(.nav-toggle){
+  justify-content:center!important;padding:10px!important;
+}
+
+/* Shared professional tool shell. Actual content rendering, processing,
+   upload and drag targets keep their own layout and event handlers. */
+body.light-mode #view-app {
+  background:#e9eee7!important;
+}
+body.light-mode #view-app .tool-section.active {
+  background:#e9eee7!important;
+}
+body.light-mode #view-app .tool-section .tool-header{
+  background:#fbfdf9!important;
+  border-bottom:1px solid #d7e0d7!important;
+  min-height:78px!important;
+  padding:clamp(14px,1.4vw,22px) clamp(20px,2vw,36px)!important;
+  border-radius:0!important;
+  box-shadow:0 1px 0 rgba(255,255,255,.7)!important;
+}
+body.light-mode #view-app .tool-section .tool-header > h2 {
+  font-family:"Plus Jakarta Sans",sans-serif!important;
+  font-size:clamp(21px,1.75vw,29px)!important;
+  font-weight:800!important;
+  letter-spacing:-.06em!important;
+  color:#173c2b!important;
+}
+body.light-mode #view-app .tool-section .tool-header > .tool-icon {
+  width:44px!important;height:44px!important;
+  border-radius:12px!important;
+  background:#e2eee1!important;
+  color:#275b3b!important;
+  border:1px solid #cbded0!important;
+}
+body.light-mode #view-app .tool-section .editor-layout {
+  background:#e9eee7!important;
+}
+body.light-mode #view-app .tool-section :is(.sidebar-panel,.pdf-setup-panel,.adgen-studio-input){
+  background:#fdfef9!important;
+  border-right-color:#d4e1d5!important;
+}
+body.light-mode #view-app #section-stills-boards #stillsTabContentStory .story-center-panel{
+  background:#e6ede5!important;
+}
+body.light-mode #view-app #section-adlinks #adlinksTabContentGen .adgen-studio-results{
+  background:#e6ede5!important;
+}
+body.light-mode #view-app .tool-section :is(.sidebar-panel,.pdf-setup-panel,.adgen-studio-input) > .glass-panel{
+  border-color:#dce5dc!important;
+}
+body.light-mode #view-app .tool-section :is(.sidebar-panel,.pdf-setup-panel,.adgen-studio-input)
+  :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),textarea,select):focus-visible{
+  outline:2px solid #43815c!important;outline-offset:1px!important;
+}
+body.light-mode #view-app .tool-section :is(.editor-layout,.pdf-studio-workspace,.split-studio-canvas,.vs-collection-body)
+  :is(.drop-zone,.empty-state):not(:hover){
+  border-color:#c8dbce!important;
+}
+body.light-mode #view-app #section-logo #logoGrid .logo-card-item,
+body.light-mode #view-app #section-pdf .pdf-stack-wrapper,
+body.light-mode #view-app #section-stills-boards .pdf-stack-wrapper {
+  border-radius:10px!important;
+  box-shadow:0 8px 26px rgba(24,63,40,.055)!important;
+}
+body.light-mode #view-app #section-adlinks #adlinksTabContentGen .adgen-output-card {
+  background:#fcfefb!important;
+  border-radius:12px!important;
+  box-shadow:0 9px 28px rgba(24,63,40,.055)!important;
+}
+body.light-mode #view-app #section-stills-boards #storyBoardPreviewArea{
+  border-radius:12px!important;
+  box-shadow:0 12px 34px rgba(24,63,40,.06)!important;
+}
+body.light-mode #view-app #section-adlinks #adlinksTabContentDownloader #adDlTableContainer{
+  border-radius:12px;
+}
+body.light-mode #view-app #section-yt-helper .forge-compressor-frame{
+  border:1px solid #d5e0d5!important;
+  border-radius:13px!important;
+  background:#fcfdf9!important;
+}
+body.light-mode #view-app .tool-section :is(button,[role="button"],[role="tab"],summary):focus-visible{
+  outline:2px solid #32714e!important;
+  outline-offset:2px!important;
+}
+
+/* The intro shares the workbench visual language, without animation noise.
+   The existing typed wordmark, skip handling and reduced-motion remain. */
+.forge-intro.forge-intro-ready::before{
+  background:
+    radial-gradient(circle at 81% 22%,rgba(109,165,124,.15),transparent 28%),
+    linear-gradient(137deg,#163c2b 5%,#224d38 65%,#163c2b 100%)!important;
+}
+.forge-intro.forge-intro-ready::after {
+  display:block!important;content:""!important;
+  position:absolute;inset:clamp(20px,4vw,58px)!important;
+  border:1px solid rgba(232,247,224,.19);
+  border-radius:12px;
+  pointer-events:none;
+}
+.forge-intro .forge-intro-stage-mark{
+  position:absolute;top:clamp(100px,16vh,190px);left:50%;
+  transform:translateX(-50%);
+  color:#a6c9ae;
+  font:700 10px/1.5 "Plus Jakarta Sans",sans-serif;
+  text-transform:uppercase;letter-spacing:.22em;
+  pointer-events:none;white-space:nowrap;
+}
+.forge-intro.forge-intro-ready .forge-intro-label{
+  color:#c9e1ca!important;
+}
+.forge-intro.forge-intro-ready .forge-intro-caption{
+  z-index:2;
+}
+.forge-intro.forge-intro-ready #forgeIntroWordmark{
+  color:#f7fcf3!important;
+}
+.forge-intro.forge-intro-ready .forge-intro-steps{
+  color:#d6ead7!important;
+}
+
+/* Tablet and phone: same system, no clipped catalog or compressed hero. */
+@media(max-width:1000px){
+  body.light-mode #view-home .combined-home-layout{
+    display:flex!important;flex-direction:column!important;
+    min-height:0!important;height:auto!important;
+    padding:24px clamp(17px,4vw,37px) 42px!important;
+    gap:0!important;
+  }
+  body.light-mode #view-home .combined-home-layout .forge-hero{
+    flex:0 0 auto!important;
+    min-height:290px!important;
+    margin-bottom:25px!important;
+    padding:clamp(24px,3.5vw,36px)!important;
+  }
+  body.light-mode #view-home .forge-hero-middle{
+    flex:1 1 auto!important;gap:18px!important;
+  }
+  body.light-mode #view-home .combined-home-layout .forge-hero-name{
+    font-size:clamp(56px,8vw,82px)!important;
+  }
+  body.light-mode #view-home .forge-workbench-foot{padding-top:14px;}
+  body.light-mode #view-home .combined-home-grid{
+    flex:0 0 auto!important;
+    grid-template-columns:repeat(6,minmax(0,1fr))!important;
+    grid-template-rows:auto!important;
+    grid-auto-rows:minmax(160px,auto)!important;
+    height:auto!important;
+    gap:12px!important;
+  }
+  body.light-mode #view-home .combined-home-grid > .home-card:nth-child(n){
+    grid-column:span 3!important;
+    height:180px!important;min-height:180px!important;
+  }
+  body.light-mode #view-home .combined-home-grid > .home-card:nth-child(-n+2){
+    height:235px!important;min-height:235px!important;
+  }
+  body.light-mode #view-home .forge-after-hero{
+    flex:0 0 auto!important;min-height:54px;
+  }
+}
+@media(max-width:680px){
+  body.light-mode #view-home .forge-after-hero{
+    flex-wrap:wrap!important;gap:12px!important;
+  }
+  #view-home .forge-search-wrap{
+    width:100%!important;
+    justify-content:space-between!important;
+  }
+  #view-home .forge-search{width:min(100%,calc(100% - 78px))!important;}
+  body.light-mode #view-home .combined-home-grid{
+    grid-template-columns:1fr!important;grid-auto-rows:auto!important;
+  }
+  body.light-mode #view-home .combined-home-grid > .home-card:nth-child(n){
+    grid-column:1!important;
+    height:150px!important;min-height:150px!important;
+    padding:21px!important;
+  }
+  body.light-mode #view-home .combined-home-grid > .home-card:nth-child(-n+2){
+    height:222px!important;min-height:222px!important;
+    padding:23px!important;
+  }
+  body.light-mode #view-home .combined-home-layout .forge-hero{
+    min-height:290px!important;
+  }
+  body.light-mode #view-home .combined-home-layout .forge-hero-name{
+    font-size:clamp(46px,10.5vw,68px)!important;
+  }
+  #view-home .forge-workbench-head{font-size:9px!important;}
+  #view-home .forge-workbench-foot{gap:10px;}
+  #view-home .forge-workbench-signature{font-size:46px;}
+  #mainSidebar .forge-rail-group{display:none!important;}
+  .forge-intro .forge-intro-stage-mark{top:19vh;font-size:9px;}
+}
+@media(max-width:760px){
+  body.light-mode #mainSidebar.nav-sidebar.visible,
+  body.light-mode #mainSidebar.nav-sidebar.visible.collapsed{
+    width:100%!important;min-width:0!important;
+    box-shadow:none!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  #view-home .combined-home-grid > .home-card,
+  #view-home .combined-home-grid .home-card-go,
+  #view-home .forge-search,
+  #mainSidebar .nav-item,
+  .header #forgeWhatsNewTrigger{
+    transition:none!important;animation:none!important;
+  }
+}
+</style>
 </head>
 <body class="light-mode">
 <div class="forge-intro" id="forgeIntro" role="region" aria-label="The Forge introduction" hidden>
  <div class="forge-intro-layout">
+  <div class="forge-intro-stage-mark" aria-hidden="true">THE CREATIVE WORKBENCH · 08 TOOLS</div>
   <div class="forge-intro-label">CREATIVE TOOL KIT / REIMAGINED</div>
   <div class="forge-intro-type" id="forgeIntroType" role="img" aria-label="The Forge">
    <div class="forge-intro-wordmark" id="forgeIntroWordmark" data-full-name="The Forge" aria-hidden="true"><span class="forge-intro-typed"></span><span class="forge-intro-caret" aria-hidden="true"></span></div>
@@ -9665,6 +10331,7 @@ html:has(.forge-whatsnew:not([hidden])){overflow:hidden;scrollbar-gutter:stable;
 <div id="view-home">
 <div class="home-layout combined-home-layout">
 <section class="forge-hero" aria-labelledby="forgeHeroName">
+ <div class="forge-workbench-head"><span>WORKSPACE / THE FORGE</span><span class="forge-workbench-led">READY TO CREATE</span></div>
  <div class="forge-hero-middle">
   <div class="forge-hero-identity">
    <h1 class="forge-hero-name" id="forgeHeroName">The Forge</h1>
@@ -9674,8 +10341,9 @@ html:has(.forge-whatsnew:not([hidden])){overflow:hidden;scrollbar-gutter:stable;
    <p>Resize images, convert PDFs, capture stills and build storyboards. One focused workspace from start to finish.</p>
   </div>
  </div>
+ <div class="forge-workbench-foot"><div><small>YOUR NEXT STEP</small><span id="forgeFeaturedLabel">Select a workspace</span></div><span class="forge-workbench-signature" aria-hidden="true">08</span></div>
 </section>
-<div class="forge-after-hero"><strong>Choose a tool</strong></div>
+<div class="forge-after-hero"><strong>Choose a tool</strong><div class="forge-search-wrap"><label class="forge-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.7"/><path d="m16 16 5 5"/></svg><input id="forgeToolSearch" type="search" aria-label="Find a Forge tool" placeholder="Find a tool · /" autocomplete="off"></label><span id="forgeSearchCount" aria-live="polite">08 / 08</span></div></div>
 <div class="home-grid combined-home-grid" id="homeContent">
 <button class="home-card home-item tool-logo" onclick="UI.openTool('section-logo')" aria-label="Open Logo Resizer">
 <div class="home-card-top"><span class="home-card-num">01</span><span class="home-card-go" aria-hidden="true">↗</span></div>
@@ -19173,6 +19841,128 @@ const CTKDownloadRenamer = (() => {
      (!document.body.classList.contains('forge-opening')&&
        document.getElementById('forgeIntro')?.hidden))
     queueAutomatic();
+})();
+</script>
+<script id="forge-workbench-v2-js">/* THE FORGE / WORKBENCH V2
+   Progressive enhancement only. All eight original home-card onclick handlers,
+   tool route logic, imports, processing, exports and keyboard flows are untouched. */
+(function () {
+  'use strict';
+
+  function setup() {
+    const home = document.getElementById('view-home');
+    const grid = document.getElementById('homeContent');
+    const search = document.getElementById('forgeToolSearch');
+    const status = document.getElementById('forgeSearchCount');
+    const featured = document.getElementById('forgeFeaturedLabel');
+    const sidebar = document.getElementById('mainSidebar');
+    if (!home || !grid || !search || !status || !featured || !sidebar) return;
+    if (grid.dataset.forgeWorkbenchReady === '1') return;
+    grid.dataset.forgeWorkbenchReady = '1';
+
+    const cards = Array.from(grid.querySelectorAll(':scope > button.home-card'));
+    if (cards.length !== 8) return;
+    const normalize = value => String(value || '').normalize('NFKD')
+      .replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase().trim();
+    const names = cards.map(card => (
+      card.querySelector('.home-card-title')?.textContent || ''
+    ).trim());
+    const descriptions = cards.map(card => (
+      card.querySelector('.home-card-desc')?.textContent || ''
+    ).trim());
+    const empty = document.createElement('div');
+    empty.id = 'forgeNoResults';
+    empty.hidden = true;
+    empty.setAttribute('role','status');
+    const head = document.createElement('strong');
+    head.textContent = 'No matching tools';
+    const help = document.createElement('p');
+    help.textContent = 'Try a different search, or press Escape to see all eight.';
+    empty.append(head,help);
+    grid.append(empty);
+
+    function updateFilter() {
+      const query = normalize(search.value);
+      let visible = 0;
+      let first = null;
+      cards.forEach((card,index)=>{
+        const matched = !query || normalize(names[index]+' '+descriptions[index]).includes(query);
+        card.classList.toggle('forge-filtered-out',!matched);
+        if(matched) {
+          visible++;
+          if(!first) first=card;
+        }
+      });
+      status.textContent = String(visible).padStart(2,'0')+' / 08';
+      status.setAttribute('aria-label',visible+' of 8 tools shown');
+      empty.hidden = visible!==0;
+      grid.classList.toggle('forge-search-active',query.length>0);
+      return first;
+    }
+
+    search.addEventListener('input',updateFilter);
+    search.addEventListener('keydown',event=>{
+      if(event.key === 'Escape') {
+        if(search.value) {search.value='';updateFilter();}
+        search.blur();
+        event.preventDefault();
+      } else if(event.key === 'Enter') {
+        const first=cards.find(card=>!card.classList.contains('forge-filtered-out'));
+        if(first) {
+          event.preventDefault();
+          first.click();
+        }
+      }
+    });
+
+    function homeAvailable() {
+      if(home.classList.contains('hidden')) return false;
+      if(document.body.classList.contains('forge-opening')) return false;
+      const intro=document.getElementById('forgeIntro');
+      const welcome=document.getElementById('forgeWhatsNew');
+      if(intro && !intro.hidden && intro.classList.contains('forge-intro-ready')) return false;
+      if(welcome && !welcome.hidden) return false;
+      return true;
+    }
+    document.addEventListener('keydown',event=>{
+      if(event.key!=='/'||event.ctrlKey||event.metaKey||event.altKey||event.repeat) return;
+      const target=event.target;
+      if(target?.closest?.('input,textarea,select,[contenteditable="true"]'))return;
+      if(!homeAvailable())return;
+      event.preventDefault();
+      search.focus();
+    });
+
+    cards.forEach((card,index)=>{
+      const select=()=>{featured.textContent=names[index];};
+      const reset=()=>{if(!cards.some(c=>c.matches(':hover,:focus-visible')))featured.textContent='Select a workspace';};
+      card.addEventListener('pointerenter',select);
+      card.addEventListener('focus',select);
+      card.addEventListener('pointerleave',reset);
+      card.addEventListener('blur',reset);
+    });
+
+    // Group the original tool buttons in the expanded rail without reparenting
+    // them or changing their IDs, click handlers, active states or order.
+    for(const [before,label] of [
+      ['nav-logo','CREATE'],
+      ['nav-stills-video','FRAME & COMPOSE'],
+      ['nav-adlinks-gen','DELIVER']
+    ]) {
+      const target=document.getElementById(before);
+      if(!target || target.parentElement!==sidebar)continue;
+      const marker=document.createElement('div');
+      marker.className='forge-rail-group';
+      marker.textContent=label;
+      marker.setAttribute('aria-hidden','true');
+      sidebar.insertBefore(marker,target);
+    }
+    search.setAttribute('aria-keyshortcuts','/');
+    updateFilter();
+  }
+
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup,{once:true});
+  else setup();
 })();
 </script>
 </body>
