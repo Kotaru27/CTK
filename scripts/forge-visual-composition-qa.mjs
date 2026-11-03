@@ -49,6 +49,11 @@ try{
       assert.ok(metrics.grid.width>metrics.hero.width,viewport.width+': tool directory is too narrow');
       assert.ok(metrics.cards.every(x=>x.width>=190),viewport.width+': card collapsed');
     }
+    if(viewport.width<=1000){
+      assert.ok(metrics.hero.height>=230,viewport.width+': responsive hero was flex-shrunk');
+      assert.ok(metrics.grid.bottom>=metrics.cards.at(-1).bottom-8,
+        viewport.width+': tool cards escaped their scroll container');
+    }
     await page.screenshot({path:'artifacts/forge-browser/home-'+viewport.width+'.png'});
     await page.locator('.home-card.tool-logo').click();
     await page.locator('#section-logo').waitFor({state:'visible',timeout:12000});
