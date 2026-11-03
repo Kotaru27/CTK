@@ -12,7 +12,7 @@ const routes=[
  {key:'story',card:'tool-story',nav:'nav-stills-story',header:'Storyboard'},
  {key:'links',card:'tool-links',nav:'nav-adlinks-gen',header:'Link Gen'},
  {key:'ads',card:'tool-ads',nav:'nav-adlinks-dl',header:'Ad Downloader'},
- {key:'video',card:'tool-video',nav:'nav-yt-helper',header:'Video Downloads'}
+ {key:'video',card:'tool-video',nav:'nav-yt-helper',header:'Video Compressor'}
 ];
 const base='http://127.0.0.1:4173/';
 async function setup(viewport,motion='no-preference'){
