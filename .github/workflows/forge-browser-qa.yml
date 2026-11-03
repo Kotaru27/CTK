@@ -13,6 +13,7 @@ on:
       - 'src/css/experience/forge-workbench-v2.css'
       - 'src/js/presentation/forge-workbench-v2.js'
       - 'scripts/forge-workbench-v2-browser-qa.mjs'
+      - 'scripts/forge-hover-contrast-qa.mjs'
       - 'scripts/build.mjs'
       - 'scripts/forge-browser-qa.mjs'
       - 'scripts/forge-compressor-browser-qa.mjs'
@@ -30,6 +31,7 @@ on:
       - 'src/css/experience/forge-workbench-v2.css'
       - 'src/js/presentation/forge-workbench-v2.js'
       - 'scripts/forge-workbench-v2-browser-qa.mjs'
+      - 'scripts/forge-hover-contrast-qa.mjs'
       - 'scripts/build.mjs'
       - 'scripts/forge-browser-qa.mjs'
       - 'scripts/forge-compressor-browser-qa.mjs'
@@ -67,6 +69,8 @@ jobs:
         run: node scripts/forge-visual-composition-qa.mjs
       - name: Verify original Forge workbench and keyboard search
         run: node scripts/forge-workbench-v2-browser-qa.mjs
+      - name: Verify hover and focus across all eight tools
+        run: node scripts/forge-hover-contrast-qa.mjs
       - name: Verify Video Compressor workspace integration
         run: node scripts/forge-compressor-browser-qa.mjs
       - name: Keep screenshots
