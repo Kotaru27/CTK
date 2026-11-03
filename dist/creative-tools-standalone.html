@@ -6426,6 +6426,40 @@ html.forge-route-running[data-forge-route-travel="tool"]::view-transition-old(fo
 html.forge-route-running[data-forge-route-travel="tool"]::view-transition-new(forge-workspace-art){
   animation:none!important;
 }
+
+
+/* QHD ROUTE FIX / Native View Transition snapshots must stay scoped.
+   A full-root snapshot rasterizes every hidden editor, canvas and sidebar
+   at once when leaving or returning to the launcher. That caused 850ms+
+   main-thread stalls in the isolated Full HD/QHD motion audit.
+   Keep the existing shared-title/art transitions, but render the newly
+   selected workspace as live DOM rather than one giant captured bitmap. */
+html.forge-route-running[data-forge-route-travel="home"],
+html.forge-route-running[data-forge-route-travel="return"]{
+  view-transition-name:none!important;
+}
+/* Lightweight live entrances replace the root-snapshot animations.
+   They do not touch individual editors, media canvases or tool handlers. */
+html.forge-route-running[data-forge-route-travel="home"] #view-app.active .tool-section.active{
+  animation:forge-live-workspace-arrive 320ms cubic-bezier(.2,.78,.24,1) both!important;
+}
+html.forge-route-running[data-forge-route-travel="return"] #view-home:not(.hidden) .combined-home-layout{
+  animation:forge-live-home-arrive 310ms cubic-bezier(.2,.78,.24,1) both!important;
+}
+@keyframes forge-live-workspace-arrive{
+  from{opacity:.79;transform:translate3d(0,5px,0)}
+  to{opacity:1;transform:translate3d(0,0,0)}
+}
+@keyframes forge-live-home-arrive{
+  from{opacity:.83;transform:translate3d(0,-4px,0)}
+  to{opacity:1;transform:translate3d(0,0,0)}
+}
+@media(prefers-reduced-motion:reduce){
+  html.forge-route-running[data-forge-route-travel="home"] #view-app.active .tool-section.active,
+  html.forge-route-running[data-forge-route-travel="return"] #view-home:not(.hidden) .combined-home-layout{
+    animation:none!important;
+  }
+}
 </style>
 <style id="forge-adaptive-styles">/* THE FORGE / ADAPTIVE DESKTOP — 1366 / Full HD / QHD
    Sized by usable viewport, not a QHD-specific zoom or global font scale.
