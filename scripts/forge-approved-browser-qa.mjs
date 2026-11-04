@@ -53,6 +53,26 @@ try{
   if(viewport.width>700)assert.ok(composition.title.right<=composition.mark.left+2,
    'Centered brand and F must be side-by-side without overlap');
   await page.screenshot({path:screenshots+'/approved-intro-'+viewport.width+'.png'});
+  // Check the final assembled F, not just tile layout before animation.
+  await page.waitForFunction(()=>{
+    const intro=document.getElementById('forgeIntro');
+    const pieces=[...document.querySelectorAll('#forgeIntro .forge-cine-piece')];
+    return intro&&!intro.classList.contains('forge-swap-releasing')&&pieces.length===8&&
+      pieces.every(p=>Number(getComputedStyle(p).opacity)>.97);
+  },null,{timeout:4500});
+  const assembled=await page.evaluate(()=>{
+    const assembly=document.querySelector('#forgeIntro .forge-cine-assembly').getBoundingClientRect();
+    return [...document.querySelectorAll('#forgeIntro .forge-cine-piece')].map(p=>{
+      const rect=p.getBoundingClientRect();
+      return {x:Math.round(rect.left-assembly.left),y:Math.round(rect.top-assembly.top),
+        width:rect.width,height:rect.height,opacity:getComputedStyle(p).opacity};
+    });
+  });
+  assert.ok(assembled.every(p=>p.width>=23&&p.height>=23),
+    'Visible F formation still has collapsed tiles: '+JSON.stringify(assembled));
+  console.log('APPROVED_FORMED_F '+JSON.stringify({viewport,assembled}));
+  await page.screenshot({path:screenshots+'/approved-formed-F-'+viewport.width+'.png'});
+
   await page.locator('#forgeIntro').waitFor({state:'detached',timeout:7000});
   const actual=await page.evaluate(()=>{
    const nodes=[...document.querySelectorAll('#homeContent > button.home-card')];
