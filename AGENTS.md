@@ -8,6 +8,9 @@ There are eight tools and existing routes, exports, editors, and keyboard intera
 For UI research, design proposals, visual critique, and frontend polish, consult the project-local skills:
 - `.agents/skills/design-taste-frontend/SKILL.md` (Taste Skill v2, including `references/app-screens.md` for actual product interfaces)
 - `.agents/skills/impeccable/SKILL.md` (Impeccable, especially `critique`, `distill`, `quieter`, `polish`, and `adapt`)
+- `.agents/skills/ponytail/SKILL.md` (smallest complete, safe code change; prefer existing project patterns and verify affected callers)
+- `.agents/skills/web-design-guidelines/SKILL.md` (review markup, accessibility, responsive behavior, and interaction conventions)
+- `.agents/skills/webapp-testing/SKILL.md` (Playwright-based functional and responsive browser checks)
 
 The existing cinematic eight-tool intro is approved. Preserve its branding, behavior, keyboard skip, reduced-motion fallback, and synchronized home handoff unless explicitly asked to change them.
 
