@@ -10863,6 +10863,299 @@ body.forge-swap-active #view-home .forge-approved-home #homeContent .home-card{v
  #view-home .forge-approved-home #homeContent .forge-home-icon svg{width:31px;height:31px}
 }
 </style>
+<style id="forge-logo-compact-styles">/* Approved Logo Resizer compact desktop layout.
+   Presentation only: retain all original control nodes, handlers, extractors and export pixels. */
+body.tool-active:has(#section-logo.active) > .header {display:none!important}
+body.tool-active:has(#section-logo.active) > .main-layout{min-height:0!important}
+
+/* One workbench toolbar, with real upload, ZIP, clear and links actions. */
+#section-logo .tool-header{
+  height:68px!important;min-height:68px!important;flex:0 0 68px!important;
+  padding:0 22px!important;gap:11px!important;flex-wrap:nowrap!important;
+  background:#fff!important;border-bottom:1px solid #dce3db!important;
+}
+#section-logo .tool-header>.tool-icon{
+  width:37px!important;height:37px!important;min-width:37px!important;
+  border-radius:6px!important;background:#e8f1e7!important;font-size:20px!important;
+}
+#section-logo .tool-header>h2{font-size:22px!important;letter-spacing:-.04em!important;line-height:1.1!important}
+#section-logo .tool-header>h2::before{
+  content:"The Forge"!important;font:750 10px/1.3 "Plus Jakarta Sans",sans-serif!important;
+  letter-spacing:0!important;text-transform:none!important;color:#4d745c!important;margin:0 0 3px!important;
+}
+#section-logo .tool-header .drop-zone{height:36px!important;min-height:36px!important;gap:8px!important}
+#section-logo .tool-header .drop-zone .meta{
+  display:block!important;max-width:none!important;font-size:9px!important;white-space:nowrap!important;
+}
+#section-logo .tool-header .liquid-btn,#section-logo .tool-header label.liquid-btn{
+  min-height:36px!important;height:36px!important;padding:0 11px!important;border-radius:5px!important;
+  font-size:11px!important;gap:7px!important;transform:none!important;
+}
+#section-logo .tool-header .liquid-btn.icon-only,#section-logo #clearLogoBtn{
+  height:36px!important;min-height:36px!important;width:36px!important;padding:0!important;
+}
+#section-logo .tool-header .liquid-btn:hover:not(:disabled){transform:none!important}
+
+/* Settings are one row, not a sidebar. Existing source order is Text, Layout, Export;
+   CSS grid places them Export / Text / Layout without moving bound DOM nodes. */
+#section-logo .editor-layout,
+#section-logo .editor-layout:has(#logoDetailOverlay.active){
+  position:relative!important;display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:106px minmax(0,1fr)!important;
+  height:auto!important;min-height:0!important;flex:1 1 auto!important;
+  width:100%!important;gap:0!important;overflow:hidden!important;
+  align-items:stretch!important;background:#eef1eb!important;
+}
+#section-logo .editor-layout:has(#logoDetailOverlay.active){
+  grid-template-columns:minmax(0,1fr) 355px!important;
+}
+#section-logo .editor-layout>.sidebar-panel,
+#section-logo .editor-layout:has(#logoDetailOverlay.active)>.sidebar-panel{
+  grid-column:1/-1!important;grid-row:1!important;
+  flex:none!important;width:100%!important;min-width:0!important;max-width:none!important;
+  height:106px!important;min-height:0!important;max-height:106px!important;
+  display:block!important;position:relative!important;
+  padding:0!important;margin:0!important;overflow-x:auto!important;overflow-y:hidden!important;
+  border:0!important;border-bottom:1px solid #dce3db!important;
+  background:#fff!important;box-shadow:none!important;
+}
+#section-logo #logoControls{
+  box-sizing:border-box!important;display:grid!important;flex-direction:initial!important;
+  grid-template-columns:minmax(280px,1.05fr) minmax(420px,1.65fr) minmax(260px,.9fr)!important;
+  grid-template-rows:1fr!important;gap:0!important;
+  width:100%!important;height:105px!important;min-width:1000px!important;
+  padding:10px 17px!important;margin:0!important;align-items:stretch!important;
+}
+#section-logo #logoControls::before{display:none!important;content:none!important}
+#section-logo #logoControls>.glass-panel{
+  min-width:0!important;min-height:0!important;height:85px!important;
+  margin:0!important;padding:9px 15px!important;box-sizing:border-box!important;
+  border:0!important;border-right:1px solid #e0e6dc!important;border-radius:0!important;
+  background:transparent!important;box-shadow:none!important;
+  align-content:center!important;align-items:center!important;gap:6px 8px!important;
+}
+#section-logo #logoControls>.glass-panel>.label-header{
+  display:block!important;grid-column:1/-1!important;margin:0!important;padding:0!important;
+  font:750 12px/1.25 "Plus Jakarta Sans",sans-serif!important;
+  letter-spacing:0!important;text-transform:none!important;color:#1b3327!important;
+}
+#section-logo #logoControls>.glass-panel>.label-header::before{display:none!important;content:none!important}
+#section-logo #logoControls :is(.liquid-input,select,input[type=number]){
+  height:34px!important;min-height:34px!important;border-radius:5px!important;
+  font-size:12px!important;padding:0 9px!important;background:#f9fbf7!important;
+}
+#section-logo #logoControls>.glass-panel:nth-child(3){
+  grid-column:1!important;grid-row:1!important;
+  display:grid!important;grid-template-columns:minmax(122px,1.5fr) minmax(100px,.95fr)!important;
+  grid-template-rows:16px 34px!important;padding-left:6px!important;
+}
+#section-logo #logoControls>.glass-panel:nth-child(3)>.tiny-row{
+  grid-column:1!important;grid-row:2!important;display:flex!important;gap:6px!important;min-width:0!important;
+}
+#section-logo #logoControls>.glass-panel:nth-child(3)>div[data-guide]{
+  grid-column:2!important;grid-row:2!important;margin:0!important;min-width:0!important;
+}
+#section-logo #logoControls>.glass-panel:nth-child(3) #exportFormat{margin:0!important;width:100%!important}
+#section-logo #logoControls>.glass-panel:nth-child(1){
+  grid-column:2!important;grid-row:1!important;
+  display:grid!important;grid-template-columns:minmax(140px,1.35fr) minmax(125px,1fr) minmax(102px,.7fr)!important;
+  grid-template-rows:16px 34px!important;
+}
+#section-logo #logoControls>.glass-panel:nth-child(1)>div:nth-child(2){
+  grid-column:1!important;grid-row:2!important;min-width:0!important;
+}
+#section-logo #logoControls>.glass-panel:nth-child(1)>div:nth-child(2) select{margin:0!important}
+#section-logo #logoControls>.glass-panel:nth-child(1)>div:nth-child(3){
+  grid-column:2!important;grid-row:2!important;display:flex!important;gap:5px!important;min-width:0!important;
+}
+#section-logo #logoControls>.glass-panel:nth-child(1)>div:nth-child(3)>div:first-child{min-width:0!important}
+#section-logo #logoControls>.glass-panel:nth-child(1) #fontSizeInput{
+  width:100%!important;height:34px!important;
+}
+#section-logo #logoControls [data-guide*="Picks the color"]{
+  width:35px!important;height:34px!important;flex:0 0 35px!important;border-radius:5px!important;
+}
+#section-logo #logoControls #fontColorPicker{
+  width:29px!important;height:28px!important;border-radius:4px!important;
+}
+#section-logo #logoControls>.glass-panel:nth-child(1)>div:nth-child(4){
+  grid-column:3!important;grid-row:2!important;display:flex!important;flex-direction:column!important;
+  gap:3px!important;align-items:flex-start!important;justify-content:center!important;
+  margin:0!important;padding:0!important;min-width:0!important;
+}
+#section-logo #logoControls>.glass-panel:nth-child(1)>div:nth-child(4) label{
+  font-size:10px!important;line-height:1.2!important;gap:6px!important;
+}
+#section-logo #logoControls>.glass-panel:nth-child(2){
+  grid-column:3!important;grid-row:1!important;
+  display:grid!important;grid-template-columns:1fr 1fr!important;
+  grid-template-rows:16px 34px!important;border-right:0!important;padding-right:6px!important;
+}
+#section-logo #logoControls>.glass-panel:nth-child(2)>div{
+  min-width:0!important;margin:0!important;gap:2px!important;
+}
+#section-logo #logoControls>.glass-panel:nth-child(2) .label-header{
+  display:block!important;margin:0!important;font-size:10px!important;
+  line-height:1.3!important;letter-spacing:0!important;white-space:nowrap!important;
+}
+#section-logo #logoControls input[type=range]{height:19px!important;margin:0!important;min-width:0!important}
+#section-logo #logoProgress{
+  position:absolute!important;z-index:5!important;top:0!important;right:0!important;
+  margin:0!important;max-width:320px!important;
+  border:1px solid var(--lr-line)!important;
+}
+
+/* The canvas gets the full remaining height, with honest output aspect ratios.
+   Visual scale is computed from the actual canvas backing dimensions by the
+   presentation script; export data is never resampled by layout CSS. */
+#section-logo .editor-layout>#logoGrid,
+#section-logo .editor-layout:has(#logoDetailOverlay.active)>#logoGrid{
+  grid-column:1!important;grid-row:2!important;
+  display:flex!important;flex:initial!important;flex-wrap:wrap!important;
+  gap:13px!important;align-content:flex-start!important;align-items:flex-start!important;
+  justify-content:flex-start!important;box-sizing:border-box!important;
+  width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;
+  margin:0!important;overflow:auto!important;padding:60px 27px 40px!important;
+  background:#eef1eb!important;
+  background-image:linear-gradient(rgba(28,64,41,.028) 1px,transparent 1px),linear-gradient(90deg,rgba(28,64,41,.028) 1px,transparent 1px)!important;
+  background-size:36px 36px!important;
+}
+#section-logo #logoGrid::before{
+  content:"OUTPUT BOARD"!important;left:28px!important;top:22px!important;
+  font:650 10px/1.4 "Plus Jakarta Sans",sans-serif!important;letter-spacing:.07em!important;color:#56705e!important;
+}
+#section-logo #logoGrid::after{top:24px!important;right:27px!important;letter-spacing:0!important}
+#section-logo .editor-layout>#logoGrid>.logo-card-item{
+  box-sizing:border-box!important;
+  flex:0 0 var(--lr-card-width,230px)!important;
+  width:var(--lr-card-width,230px)!important;
+  min-width:0!important;max-width:100%!important;
+  border-radius:6px!important;border:1px solid #dce4d9!important;
+  box-shadow:none!important;transform:none!important;
+  transition:border-color .16s ease,box-shadow .16s ease!important;
+}
+#section-logo #logoGrid>.logo-card-item:hover{
+  transform:none!important;border-color:#8caf98!important;box-shadow:0 3px 14px rgba(30,58,37,.08)!important;
+}
+#section-logo .logo-card-item>div:first-child{
+  height:36px!important;min-height:36px!important;box-sizing:border-box!important;
+  padding:4px 9px!important;gap:4px!important;
+}
+#section-logo .logo-card-item .card-fname-lbl{
+  height:27px!important;font-size:11px!important;line-height:1.3!important;
+  padding:4px!important;
+}
+#section-logo .logo-card-item .card-rm{
+  width:27px!important;height:27px!important;min-width:27px!important;
+  padding:0!important;
+}
+#section-logo .logo-card-item .card-preview-area{
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  width:100%!important;box-sizing:border-box!important;
+  height:var(--lr-stage-height,220px)!important;min-height:0!important;max-height:none!important;
+  padding:9px!important;overflow:hidden!important;
+  background:#eef2eb!important;
+  background-image:radial-gradient(#d5e0d4 .7px,transparent 1px)!important;
+  background-size:17px 17px!important;background-position:0 0!important;
+  border-bottom:1px solid #dce4d9!important;
+}
+#section-logo .logo-card-item .card-preview-area canvas{
+  box-sizing:border-box!important;flex:0 0 auto!important;
+  width:var(--lr-canvas-width,200px)!important;height:var(--lr-canvas-height,200px)!important;
+  max-width:none!important;max-height:none!important;object-fit:fill!important;
+  border:1px solid #e1e8df!important;border-radius:0!important;
+  box-shadow:0 1px 8px rgba(31,57,33,.08)!important;background:#fff!important;
+}
+#section-logo .logo-card-item>.card-preview-area:focus-visible{outline:3px solid #285d3d!important;outline-offset:-3px!important}
+#section-logo .logo-card-item>div:last-child{
+  padding:10px!important;gap:8px!important;background:#fff!important;
+}
+#section-logo .logo-card-item>div:last-child span{font-size:10px!important;line-height:1.3!important}
+#section-logo .logo-card-item .card-text{
+  height:31px!important;min-height:31px!important;font-size:11px!important;padding:6px 9px!important;
+}
+#section-logo .logo-card-item .card-local-font-inp{
+  width:75px!important;height:28px!important;font-size:10px!important;
+}
+#section-logo .logo-card-item .card-dl{
+  width:29px!important;height:29px!important;min-width:29px!important;
+  border-radius:5px!important;
+}
+
+/* Focus inspector occupies the lower right; the settings row stays intact. */
+#section-logo .editor-layout:has(#logoDetailOverlay.active) #logoDetailOverlay.active{
+  grid-column:2!important;grid-row:2!important;
+  display:flex!important;position:relative!important;inset:auto!important;
+  height:100%!important;width:355px!important;max-width:355px!important;min-width:0!important;
+  flex:none!important;overflow:hidden!important;z-index:4!important;
+  border:0!important;border-left:1px solid #dce3db!important;
+  border-radius:0!important;background:#f8faf5!important;box-shadow:none!important;
+}
+#section-logo #logoDetailOverlay>div:first-child{
+  min-height:68px!important;padding:18px 13px 10px!important;
+}
+#section-logo #logoDetailOverlay [data-guide*="pixel-accurate preview"]{
+  min-height:210px!important;height:210px!important;flex:0 0 210px!important;padding:22px 16px!important;
+}
+#section-logo #logoDetailOverlay #logoDetailCanvas{max-height:180px!important;box-shadow:0 1px 8px #203e301b!important}
+#section-logo #logoDetailOverlay .lr-detail-footer{padding:11px 13px!important}
+
+/* Empty state keeps the original import control and real supported-file copy,
+   without occupying the workspace like a marketing page. */
+#section-logo #logoGrid:has(#logoEmpty:not([style*="display: none"])){align-items:flex-start!important}
+#section-logo #logoGrid #logoEmpty:not([style*="display: none"]){
+  flex:0 1 640px!important;min-height:260px!important;max-height:320px!important;
+  max-width:640px!important;width:100%!important;
+  box-shadow:none!important;border-radius:7px!important;overflow:hidden!important;
+}
+#section-logo #logoGrid #logoEmpty .logo-empty-layout{
+  display:grid!important;grid-template-columns:1fr!important;min-height:260px!important;
+}
+#section-logo #logoGrid #logoEmpty .logo-empty-copy{
+  padding:24px 30px!important;gap:0!important;align-items:flex-start!important;
+}
+#section-logo #logoGrid #logoEmpty .logo-empty-headline{
+  font-size:28px!important;letter-spacing:-.035em!important;line-height:1.12!important;margin:0 0 10px!important;
+}
+#section-logo #logoGrid #logoEmpty .logo-empty-eyebrow{margin:0 0 8px!important;letter-spacing:.04em!important}
+#section-logo #logoGrid #logoEmpty .logo-empty-description{
+  max-width:440px!important;margin:0 0 13px!important;font-size:12px!important;line-height:1.5!important;
+}
+#section-logo #logoGrid #logoEmpty .logo-empty-art{display:none!important}
+#section-logo #logoGrid #logoEmpty .logo-empty-note{margin-top:9px!important;font-size:10px!important}
+
+/* At narrow widths scroll settings within their own strip; never overlap cards,
+   hide working fields, or introduce page-wide horizontal overflow. */
+@media(max-width:1150px){
+  #section-logo #logoControls{
+    width:1040px!important;min-width:1040px!important;
+    grid-template-columns:280px 460px 300px!important;
+  }
+  #section-logo .editor-layout:has(#logoDetailOverlay.active){grid-template-columns:minmax(0,1fr)!important}
+  #section-logo .editor-layout:has(#logoDetailOverlay.active) #logoDetailOverlay.active{
+    position:absolute!important;inset:106px 0 0 auto!important;
+    width:min(355px,70%)!important;max-width:355px!important;height:calc(100% - 106px)!important;
+    box-shadow:-8px 0 22px #1c30201a!important;
+  }
+  #section-logo .tool-header{padding:0 12px!important}
+  #section-logo .tool-header .drop-zone .meta{display:none!important}
+}
+@media(max-width:560px){
+  #section-logo .tool-header>h2{font-size:16px!important}
+  #section-logo .tool-header>.tool-icon{display:none!important}
+  #section-logo .tool-header .liquid-btn,#section-logo .tool-header label.liquid-btn{
+    font-size:10px!important;padding:0 6px!important;
+  }
+  #section-logo .tool-header{gap:4px!important}
+  #section-logo .editor-layout>#logoGrid{padding:50px 13px 26px!important}
+  #section-logo #logoGrid::before{left:14px!important}
+  #section-logo #logoGrid::after{display:none!important}
+}
+@media(prefers-reduced-motion:reduce){
+  #section-logo .logo-card-item,#section-logo .tool-header .liquid-btn{transition:none!important;animation:none!important}
+}
+</style>
 </head>
 <body class="light-mode">
 <div class="forge-intro forge-cinematic" id="forgeIntro" role="region" aria-label="The Forge introduction" hidden>
@@ -20024,6 +20317,48 @@ const CTKDownloadRenamer = (() => {
   // Give the original workbench handler one DOMContentLoaded turn to bind direct cards.
   if(d.readyState==='loading')d.addEventListener('DOMContentLoaded',()=>setTimeout(setupHome,0),{once:true});
   else setTimeout(setupHome,0);
+})();
+</script>
+<script id="forge-logo-compact-js">/* Presentation-only logo geometry: no image processing or export modifications. */
+(() => {
+  const grid = document.getElementById('logoGrid');
+  const widthInput = document.getElementById('exportWidth');
+  const heightInput = document.getElementById('exportHeight');
+  if (!grid || !widthInput || !heightInput) return;
+
+  let queued = false;
+  const valid = n => Number.isFinite(n) && n > 0 && n <= 32768;
+  function fitCard(card) {
+    const canvas = card.querySelector('.card-preview-area canvas');
+    if (!canvas) return;
+    // The original renderer sets backing dimensions on this very canvas.
+    const w = valid(canvas.width) ? canvas.width : Number(widthInput.value);
+    const h = valid(canvas.height) ? canvas.height : Number(heightInput.value);
+    if (!valid(w) || !valid(h)) return;
+    const longest = Math.max(w,h);
+    const edge = Math.max(200,Math.min(292,200+(longest-200)*.115));
+    const scale = edge / longest;
+    const cw = Math.max(12,Math.round(w*scale));
+    const ch = Math.max(12,Math.round(h*scale));
+    card.style.setProperty('--lr-card-width', Math.max(230,cw+22)+'px');
+    card.style.setProperty('--lr-canvas-width',cw+'px');
+    card.style.setProperty('--lr-canvas-height',ch+'px');
+    card.style.setProperty('--lr-stage-height',Math.max(79,ch+20)+'px');
+  }
+  function schedule() {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(() => {
+      queued = false;
+      grid.querySelectorAll(':scope > .logo-card-item').forEach(fitCard);
+    });
+  }
+  // Import, extraction, per-file edits and global dimension changes all reuse
+  // the actual original canvas, including native per-file aspect ratios.
+  const observer = new MutationObserver(schedule);
+  observer.observe(grid,{subtree:true,childList:true,attributes:true,attributeFilter:['width','height']});
+  for (const input of [widthInput,heightInput]) input.addEventListener('input',schedule);
+  schedule();
 })();
 </script>
 <script id="forge-brand-intro-js">/* The Forge / cinematic assembly. Eight actual tool pictograms form an F,
