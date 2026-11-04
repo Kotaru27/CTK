@@ -40,6 +40,8 @@ try{
         pageOverflow:document.documentElement.scrollWidth>innerWidth+3
       };
     });
+    const dimensionInputs=await page.evaluate(()=>['exportWidth','exportHeight'].map(id=>{const el=document.getElementById(id),s=getComputedStyle(el),r=el.getBoundingClientRect(),p=el.parentElement.getBoundingClientRect();return{id,value:el.value,display:s.display,visibility:s.visibility,opacity:s.opacity,width:r.width,height:r.height,left:r.left,top:r.top,parentWidth:p.width,parentHeight:p.height};}));
+    console.log('LOGO_DIMENSION_INPUT_GEOMETRY '+JSON.stringify({viewport,dimensionInputs}));
     assert.equal(baseline.oldHeader,'none','Old header still wastes vertical space at '+viewport.width);
     assert.equal(baseline.grid,'grid','Logo tool not laid out as a two-row workspace');
     assert.ok(baseline.top.height>=64&&baseline.top.height<=75,'Compact header wrong: '+JSON.stringify(baseline));

@@ -319,3 +319,6 @@ body.tool-active:has(#section-logo.active) > .main-layout{min-height:0!important
 }
 #section-logo .tool-header>h2>.forge-logo-home:hover{color:#205337!important;text-decoration:underline;text-underline-offset:3px}
 #section-logo .tool-header>h2>.forge-logo-home:focus-visible{outline:2px solid #205337!important;outline-offset:3px!important}
+
+/* Match the light-theme shell rule so the approved compact header is 68px. */
+body.light-mode #view-app #section-logo.tool-section .tool-header{box-sizing:border-box!important;height:68px!important;min-height:68px!important;padding:0 20px!important;background:#fff!important}
