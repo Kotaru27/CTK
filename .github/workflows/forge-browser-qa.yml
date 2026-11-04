@@ -27,6 +27,10 @@ on:
   pull_request:
     branches: [main]
     paths:
+      - 'src/css/experience/forge-approved-swap.css'
+      - 'src/html/forge-approved-home.html'
+      - 'src/js/presentation/forge-approved-swap.js'
+      - 'scripts/forge-approved-browser-qa.mjs'
       - 'src/css/experience/forge-brand.css'
       - 'src/css/experience/forge-workflow-interactions.css'
       - 'scripts/forge-visual-composition-qa.mjs'
