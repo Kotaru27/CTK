@@ -1,0 +1,162 @@
+/* The Forge / approved centered handoff. Operate layout; no tool processing styles. */
+#view-home .forge-approved-home{display:none;min-height:100vh;color:#1b3828;background:#f0eee4;font-family:"Plus Jakarta Sans",Arial,sans-serif}
+body.forge-swap-ready #view-home .forge-approved-home{display:block}
+body.forge-swap-ready #view-home>.home-layout{display:none!important}
+body.forge-swap-ready #view-home{padding:0!important;max-width:none!important;background:#f0eee4;overflow:visible}
+#view-home .forge-approved-home *{box-sizing:border-box}
+#view-home .forge-approved-home .home-top{background:#112e22;color:#eff4e6;min-height:223px;padding:21px clamp(22px,4.5vw,72px) 27px;overflow:hidden}
+#view-home .forge-approved-home .home-nav{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:0 0 14px;border-bottom:1px solid #81978270;color:#bdcbbb;font-size:11px;font-weight:650}
+#view-home .forge-approved-home .home-nav-left,#view-home .forge-approved-home .home-nav-right{display:flex;align-items:center;gap:13px}
+#view-home .forge-approved-home .home-nav-left{font-size:10px;letter-spacing:.045em}
+#view-home .forge-approved-home .home-brandmark{width:26px;height:26px;display:grid;place-items:center;color:#193e29;background:#c9f6a4;font-family:Georgia,serif;font-size:18px;font-weight:700;font-style:italic}
+#view-home .forge-approved-home .status{font-size:11px;color:#b5c7b8}
+#view-home .forge-approved-home .status:before{content:"";display:inline-block;width:5px;height:5px;background:#a5da85;border-radius:50%;margin-right:8px;vertical-align:middle}
+#view-home .forge-approved-home .replay{background:none;border:0;border-bottom:1px solid #a6c5a2;color:#e7eeda;font:700 12px/1.3 "Plus Jakarta Sans",sans-serif;padding:7px 0;cursor:pointer;white-space:nowrap}
+#view-home .forge-approved-home .replay:hover{color:#c9f6a4}
+#view-home .forge-approved-home .replay:focus-visible{outline:3px solid #c9f6a4;outline-offset:4px}
+#view-home .forge-approved-home .home-hero{display:flex;align-items:center;justify-content:space-between;gap:38px;padding-top:24px}
+#view-home .forge-approved-home #forgeHeroName{display:block!important;font:400 clamp(60px,6.25vw,96px)/1.08 "Kola","Plus Jakarta Sans",sans-serif!important;letter-spacing:-.032em!important;color:#f0f2e7!important;white-space:nowrap!important;transform:none!important;clip-path:none!important;opacity:1!important;margin:-3px 0 -4px!important;padding:0!important;text-shadow:none!important}
+body.forge-swap-active #view-home .forge-approved-home #forgeHeroName{visibility:hidden!important}
+#view-home .forge-approved-home .home-manifesto{display:flex;gap:19px;align-items:center;max-width:410px;margin:4px 0 0}
+#view-home .forge-approved-home .home-manifesto>span{display:block;width:2px;height:47px;flex:none;background:#add88c}
+#view-home .forge-approved-home .home-manifesto p{font-size:13px;line-height:1.63;max-width:380px;margin:0;color:#c4d4c6}
+#view-home .forge-approved-home .home-main{max-width:1640px;margin:0 auto;display:grid;grid-template-columns:238px minmax(0,1fr);gap:clamp(25px,3.5vw,60px);padding:31px clamp(22px,4.5vw,72px) 26px}
+#view-home .forge-approved-home .work-intro{min-width:0;display:flex;flex-direction:column;min-height:598px;padding-right:8px}
+#view-home .forge-approved-home .rail-heading{margin:4px 0 29px}
+#view-home .forge-approved-home .rail-heading h2{font:750 clamp(25px,2.3vw,35px)/1.1 "Plus Jakarta Sans",sans-serif;letter-spacing:-.055em;color:#173b29;margin:0 0 12px}
+#view-home .forge-approved-home .rail-heading p{font-size:13px;line-height:1.65;color:#526958;margin:0;max-width:220px}
+#view-home .forge-approved-home .find{display:flex;align-items:center;gap:10px;margin-right:5px;border-bottom:1.5px solid #576b58;padding:10px 0 13px}
+#view-home .forge-approved-home .find:focus-within{border-bottom-color:#23583c}
+#view-home .forge-approved-home .find>svg{width:16px;height:16px;flex:none;fill:none;stroke:#4e6b53;stroke-width:2}
+#view-home .forge-approved-home .find #forgeApprovedSearchMount{flex:1;min-width:0}
+#view-home .forge-approved-home .find input{display:block;width:100%;min-width:0;background:transparent!important;color:#1f4230!important;border:0!important;outline:0!important;box-shadow:none!important;font-size:13px!important;padding:0!important;height:30px!important}
+#view-home .forge-approved-home .find input::placeholder{color:#58705d;opacity:1}
+#view-home .forge-approved-home .work-bottom{margin-top:auto;padding:20px 15px 19px 0;border-top:1px solid #c2c8bc}
+#view-home .forge-approved-home .work-bottom .counter{font-size:11px;font-weight:750;color:#607861;font-variant-numeric:tabular-nums}
+#view-home .forge-approved-home .work-bottom h3{font-size:19px;line-height:1.2;letter-spacing:-.04em;color:#213d2d;margin:11px 0 9px}
+#view-home .forge-approved-home .work-bottom p{font-size:12px;line-height:1.65;color:#566958;margin:0;max-width:224px}
+#view-home .forge-approved-home .collection{min-width:0}
+#view-home .forge-approved-home #homeContent.card-grid{display:grid!important;grid-template-columns:repeat(12,minmax(0,1fr))!important;grid-template-areas:"a a a a a b b b b c c c" "d d d e e e e e f f f f" "g g g g g h h h h h h h"!important;grid-template-rows:188px 188px 198px!important;gap:11px!important;min-height:598px!important;padding:0!important;margin:0!important;border:0!important;background:transparent!important;max-width:none!important}
+#view-home .forge-approved-home #homeContent .card-slot{min-width:0;min-height:0;position:relative;display:block}
+#view-home .forge-approved-home #homeContent > .home-card{display:block!important;position:relative!important;inset:auto!important;float:none!important;min-width:0!important;width:100%!important;max-width:none!important;height:100%!important;min-height:0!important;padding:0!important;margin:0!important;border:0!important;border-radius:1px!important;overflow:hidden!important;background:var(--forge-card-bg)!important;color:var(--forge-card-fg)!important;text-align:left;box-shadow:none!important;filter:none!important;opacity:1;transform:none!important;scale:1!important;transition:filter .18s ease!important;cursor:pointer}
+#view-home .forge-approved-home #homeContent > .home-card.tool-logo{--forge-card-bg:#163a2c;--forge-card-fg:#f1f4de}
+#view-home .forge-approved-home #homeContent > .home-card.tool-pdf{--forge-card-bg:#e0e0d4;--forge-card-fg:#19392b}
+#view-home .forge-approved-home #homeContent > .home-card.tool-split{--forge-card-bg:#cfe0b4;--forge-card-fg:#19392b}
+#view-home .forge-approved-home #homeContent > .home-card.tool-stills{--forge-card-bg:#c5d5c8;--forge-card-fg:#19392b}
+#view-home .forge-approved-home #homeContent > .home-card.tool-story{--forge-card-bg:#e5ddd0;--forge-card-fg:#19392b}
+#view-home .forge-approved-home #homeContent > .home-card.tool-links{--forge-card-bg:#204634;--forge-card-fg:#f2f3e6}
+#view-home .forge-approved-home #homeContent > .home-card.tool-ads{--forge-card-bg:#b9cba9;--forge-card-fg:#173b29}
+#view-home .forge-approved-home #homeContent > .home-card.tool-video{--forge-card-bg:#d4d0bd;--forge-card-fg:#173b29}
+#view-home .forge-approved-home #homeContent > .home-card:hover{filter:brightness(1.075)!important}
+#view-home .forge-approved-home #homeContent > .home-card:focus-visible{outline:3px solid #86be70!important;outline-offset:-4px!important}
+#view-home .forge-approved-home #homeContent .home-card.forge-filtered-out{opacity:.19!important;pointer-events:none}
+#view-home .forge-approved-home #homeContent > .home-card.forge-filtered-out{opacity:.6}
+#view-home .forge-approved-home #homeContent .home-card-top{position:absolute!important;inset:19px 17px auto auto!important;display:flex!important;justify-content:flex-end!important;z-index:3!important;border:0!important;padding:0!important;margin:0!important;background:none!important}
+#view-home .forge-approved-home #homeContent .home-card-num{display:none!important}
+#view-home .forge-approved-home #homeContent .home-card-go{font-size:19px!important;line-height:1!important;color:inherit!important;opacity:.7}
+#view-home .forge-approved-home #homeContent .forge-home-icon{position:absolute;left:17px;top:15px;width:36px;height:36px;display:grid;place-items:center;color:inherit;z-index:4;pointer-events:none}
+#view-home .forge-approved-home #homeContent .forge-home-icon svg{width:29px;height:29px;stroke-width:1.7;display:block}
+#view-home .forge-approved-home #homeContent .home-card-title{position:absolute!important;left:22px!important;right:18px!important;bottom:40px!important;top:auto!important;z-index:2!important;margin:0!important;color:inherit!important;font:750 clamp(19px,1.72vw,27px)/1.05 "Plus Jakarta Sans",sans-serif!important;letter-spacing:-.04em!important;white-space:normal!important;text-shadow:none!important}
+#view-home .forge-approved-home #homeContent .home-card-desc{position:absolute!important;left:22px!important;right:18px!important;bottom:18px!important;top:auto!important;margin:0!important;z-index:2!important;font:500 11px/1.3 "Plus Jakarta Sans",sans-serif!important;color:inherit!important;opacity:.77!important;white-space:normal!important}
+#view-home .forge-approved-home #homeContent .home-card-art{position:absolute!important;z-index:1!important;right:3%!important;top:24px!important;width:53%!important;height:130px!important;max-width:none!important;max-height:none!important;margin:0!important;opacity:.78!important;pointer-events:none;transform:none!important}
+#view-home .forge-approved-home #homeContent .tool-stills .home-card-art{right:-11%!important;top:42px!important;width:105%!important;height:103px!important;opacity:.56!important}
+#view-home .forge-approved-home #homeContent .tool-pdf .home-card-art,#view-home .forge-approved-home #homeContent .tool-split .home-card-art{top:34px!important;height:111px!important}
+#view-home .forge-approved-home #homeContent .tool-logo .home-card-title{font-size:29px!important}
+#view-home .forge-approved-home #homeContent .tool-ads .home-card-art,#view-home .forge-approved-home #homeContent .tool-video .home-card-art{width:47%!important;height:148px!important}
+#view-home .forge-approved-home #homeContent .tool-links .home-card-art{right:0!important;width:61%!important}
+#view-home .forge-approved-home .home-foot{max-width:1640px;margin:auto;display:flex;justify-content:space-between;gap:20px;padding:9px clamp(22px,4.5vw,72px) 26px;color:#607366;font-size:10px}
+#view-home .forge-approved-home .replay:active{opacity:.75}
+body.forge-swap-active #view-home .forge-approved-home #homeContent .home-card{visibility:hidden!important}
+#view-home .forge-approved-home .forge-empty-home{display:none}
+#view-home .forge-approved-home #forgeNoResults{grid-column:1/-1;grid-row:auto;align-self:center;background:#e6eadd;padding:22px;color:#234e36}
+#view-home .forge-approved-home #forgeNoResults[hidden]{display:none}
+/* One centered composition, no moving parent: eight directions settle into a stationary F. */
+#forgeIntro.forge-swap-prepared{display:block;background:#102c20;isolation:isolate;opacity:1;overflow:hidden}
+#forgeIntro.forge-swap-prepared[hidden]{display:none!important}
+#forgeIntro .forge-cine-composition{--tile:clamp(38px,4.15vw,60px);--step:calc(var(--tile) + 5px);position:absolute;left:50%;top:47%;width:max-content;max-width:calc(100vw - 48px);transform:translate(-50%,-50%);display:flex;flex-direction:row-reverse;align-items:center;justify-content:center;gap:clamp(30px,3.8vw,76px);z-index:3;pointer-events:none}
+#forgeIntro .forge-cine-emblem{width:calc(3 * var(--step));height:calc(5 * var(--step));position:relative;flex:0 0 auto;display:grid;place-items:center}
+#forgeIntro .forge-cine-emblem .forge-cine-orbit{position:absolute;top:50%!important;left:50%!important;width:clamp(220px,18vw,340px)!important;height:clamp(220px,18vw,340px)!important;transform:translate(-50%,-50%)!important}
+#forgeIntro .forge-cine-emblem .forge-cine-assembly{--tile:var(--tile);--step:var(--step);position:relative!important;left:auto!important;top:auto!important;width:calc(3 * var(--step))!important;height:calc(5 * var(--step))!important;transform:none!important;animation:none!important}
+#forgeIntro .forge-cine-assembly .forge-cine-piece{position:absolute;left:calc(var(--col)*var(--step));top:calc(var(--row)*var(--step));width:var(--tile);height:var(--tile);opacity:0;transform:none;animation:none!important;will-change:transform,opacity}
+#forgeIntro .forge-cine-composition>.forge-cine-identity{position:relative!important;top:auto!important;left:auto!important;transform:none!important;animation:none!important;opacity:1!important;display:block!important;flex:0 1 auto;width:max-content;max-width:calc(100vw - 380px);text-align:left}
+#forgeIntro .forge-cine-composition .forge-cine-wordmark{font-size:clamp(58px,7.2vw,118px)!important;transform:none!important;animation:none!important;opacity:1!important;white-space:nowrap}
+#forgeIntro .forge-cine-composition .forge-cine-rule{transform:scaleX(1)!important;animation:none!important}
+#forgeIntro .forge-cine-composition .forge-cine-identity p{opacity:1!important;animation:none!important}
+#forgeIntro.forge-swap-prepared .forge-cine-skip{display:block;pointer-events:auto}
+#forgeIntro.forge-swap-releasing{opacity:0!important;pointer-events:none!important;transition:opacity 490ms cubic-bezier(.22,.8,.26,1)!important}
+#forgeIntro.forge-swap-releasing .forge-cine-identity{visibility:hidden}
+#forgeSwapFlightLayer{position:fixed;inset:0;z-index:2147482500;pointer-events:none;overflow:hidden;contain:layout style}
+#forgeSwapFlightLayer .forge-flight-card{position:fixed;overflow:hidden;border-radius:1px;background:#c9f6a4;color:#163c25;transform-origin:top left;will-change:transform;box-shadow:none;pointer-events:none}
+#forgeSwapFlightLayer .forge-flight-card .forge-flight-art{position:absolute;right:3%;top:13px;width:56%;height:68%;opacity:.68;transform:scale(.94);pointer-events:none}
+#forgeSwapFlightLayer .forge-flight-card .forge-flight-art>.home-card-art{display:block;position:relative;width:100%;height:100%}
+#forgeSwapFlightLayer .forge-flight-card .forge-flight-copy{position:absolute;left:20px;right:18px;bottom:17px;display:flex;flex-direction:column;gap:5px;font:700 24px/1.05 "Plus Jakarta Sans",sans-serif;letter-spacing:-.035em}
+#forgeSwapFlightLayer .forge-flight-card .forge-flight-copy small{font:500 11px/1.3 "Plus Jakarta Sans",sans-serif;letter-spacing:0;opacity:.75}
+#forgeSwapFlightLayer .forge-flight-symbol{position:fixed;display:grid;place-items:center;pointer-events:none;color:#163c25;transform-origin:top left;will-change:transform}
+#forgeSwapFlightLayer .forge-flight-symbol svg{width:55%;height:55%;display:block}
+#forgeSwapFlightLayer .forge-flight-wordmark{position:fixed;color:#eaf4e5;font-family:"Kola","Plus Jakarta Sans",sans-serif;font-weight:400;letter-spacing:-.032em;line-height:1.17;white-space:nowrap;transform-origin:top left;will-change:transform}
+@media(max-width:1000px){
+ #view-home .forge-approved-home .home-main{display:block;padding-top:25px}
+ #view-home .forge-approved-home .work-intro{min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:16px 24px;padding:0 0 22px;align-items:center}
+ #view-home .forge-approved-home .rail-heading{margin:0}
+ #view-home .forge-approved-home .work-bottom{margin:0;align-self:stretch}
+ #view-home .forge-approved-home #homeContent.card-grid{grid-template-rows:repeat(3,180px)!important;min-height:0!important}
+ #view-home .forge-approved-home .home-manifesto{max-width:330px}
+}
+@media(max-width:700px){
+ #view-home .forge-approved-home .home-top{padding:18px 20px 25px;min-height:260px}
+ #view-home .forge-approved-home .home-nav .status{display:none}
+ #view-home .forge-approved-home .home-hero{display:block}
+ #view-home .forge-approved-home #forgeHeroName{font-size:clamp(52px,11vw,74px)!important;margin:0 0 11px!important}
+ #view-home .forge-approved-home .home-manifesto{max-width:450px}
+ #view-home .forge-approved-home .home-manifesto>span{height:35px}
+ #view-home .forge-approved-home .home-manifesto p{font-size:12px}
+ #view-home .forge-approved-home .home-main{padding:25px 20px 15px}
+ #view-home .forge-approved-home .work-intro{grid-template-columns:1fr 1fr;gap:15px}
+ #view-home .forge-approved-home .rail-heading h2{font-size:26px}
+ #view-home .forge-approved-home #homeContent.card-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-areas:"a b" "c d" "e f" "g h"!important;grid-template-rows:repeat(4,184px)!important;gap:10px!important}
+ #view-home .forge-approved-home #homeContent .home-card-title{font-size:18px!important;left:13px!important;bottom:37px!important;right:12px!important}
+ #view-home .forge-approved-home #homeContent .home-card-desc{font-size:11px!important;left:13px!important;bottom:15px!important;right:12px!important}
+ #view-home .forge-approved-home #homeContent .home-card-art{top:41px!important;height:88px!important;width:77%!important;right:0!important;opacity:.52!important}
+ #view-home .forge-approved-home #homeContent .home-card-top{top:14px!important}
+ #view-home .forge-approved-home #homeContent .forge-home-icon{top:9px;left:10px}
+ #view-home .forge-approved-home .home-foot{padding:12px 20px 25px}
+ #forgeIntro .forge-cine-composition{--tile:clamp(27px,5.7vw,43px);--step:calc(var(--tile) + 4px);gap:clamp(15px,3vw,30px)}
+ #forgeIntro .forge-cine-composition>.forge-cine-identity{max-width:calc(100vw - 225px)}
+ #forgeIntro .forge-cine-composition .forge-cine-wordmark{font-size:clamp(42px,6.7vw,69px)!important}
+}
+@media(max-width:560px){
+ #forgeIntro .forge-cine-composition{--tile:clamp(27px,8.5vw,36px);--step:calc(var(--tile) + 4px);left:50%;top:47%;max-width:calc(100vw - 32px);width:calc(100vw - 32px);flex-direction:column-reverse;gap:19px}
+ #forgeIntro .forge-cine-composition>.forge-cine-identity{width:100%;max-width:100%;text-align:center;flex:0 0 auto}
+ #forgeIntro .forge-cine-composition .forge-cine-wordmark{font-size:clamp(48px,12vw,68px)!important;margin:auto}
+ #forgeIntro .forge-cine-composition .forge-cine-rule{width:70%;margin:auto}
+ #forgeIntro .forge-cine-emblem .forge-cine-orbit{width:240px!important;height:240px!important}
+}
+@media(max-width:420px){
+ #view-home .forge-approved-home .work-intro{grid-template-columns:1fr}
+ #view-home .forge-approved-home .work-intro .rail-heading p{display:none}
+ #view-home .forge-approved-home #homeContent.card-grid{grid-template-rows:repeat(4,163px)!important;gap:8px!important}
+ #view-home .forge-approved-home #homeContent .home-card-title{font-size:16px!important}
+ #view-home .forge-approved-home #homeContent .home-card-desc{font-size:10px!important}
+ #view-home .forge-approved-home .home-nav-left{font-size:10px}
+ #view-home .forge-approved-home #forgeHeroName{font-size:48px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ #forgeIntro.forge-swap-prepared{display:none!important}
+ #view-home .forge-approved-home .home-card{transition:none!important}
+ #view-home .forge-approved-home *{scroll-behavior:auto}
+}
+
+/* Keep the original eight buttons as direct #homeContent children for all existing handlers. */
+#view-home .forge-approved-home #homeContent > .home-card:nth-child(1){grid-area:a!important}
+#view-home .forge-approved-home #homeContent > .home-card:nth-child(2){grid-area:b!important}
+#view-home .forge-approved-home #homeContent > .home-card:nth-child(3){grid-area:c!important}
+#view-home .forge-approved-home #homeContent > .home-card:nth-child(4){grid-area:d!important}
+#view-home .forge-approved-home #homeContent > .home-card:nth-child(5){grid-area:e!important}
+#view-home .forge-approved-home #homeContent > .home-card:nth-child(6){grid-area:f!important}
+#view-home .forge-approved-home #homeContent > .home-card:nth-child(7){grid-area:g!important}
+#view-home .forge-approved-home #homeContent > .home-card:nth-child(8){grid-area:h!important}
+
+/* Short phones keep the centred composition clear of the intro header. */
+@media(max-width:560px) and (max-height:440px){
+ #forgeIntro .forge-cine-composition{top:calc(50% + 8px)}
+}

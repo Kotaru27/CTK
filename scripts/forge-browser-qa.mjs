@@ -11,6 +11,7 @@ function check(value,message) {
 }
 try {
  const context=await browser.newContext({viewport:{width:1440,height:900},reducedMotion:'no-preference'});
+ await context.addInitScript(()=>{ window.__forgeDisableSharedHandoff=true; });
  const page=await context.newPage();
  const pageErrors=[];
  page.on('pageerror',error=>pageErrors.push(String(error)));
@@ -187,6 +188,7 @@ try {
  // Permanent opt-out is a separate deliberate action. A new context
  // proves the saved choice persists beyond a simple page reload.
  const dismissContext=await browser.newContext({viewport:{width:1366,height:768},reducedMotion:'reduce'});
+ await dismissContext.addInitScript(()=>{window.__forgeDisableSharedHandoff=true;});
  const welcomePage=await dismissContext.newPage();
  await welcomePage.goto(base,{waitUntil:'domcontentloaded',timeout:60000});
  await welcomePage.locator('#forgeWhatsNew').waitFor({state:'visible',timeout:2500});
@@ -205,6 +207,7 @@ try {
  await dismissContext.close();
 
  const motion=await browser.newContext({viewport:{width:1440,height:900},reducedMotion:'reduce'});
+ await motion.addInitScript(()=>{window.__forgeDisableSharedHandoff=true;});
  const reducedPage=await motion.newPage();
  await reducedPage.goto(base,{waitUntil:'domcontentloaded',timeout:60000});
  await reducedPage.waitForTimeout(120);
@@ -269,6 +272,7 @@ try {
  for(const viewport of [{width:2560,height:1440},{width:2048,height:1152}]) {
    const wide=await browser.newContext({viewport,deviceScaleFactor:1,reducedMotion:'no-preference'});
    await wide.addInitScript(()=>{
+     window.__forgeDisableSharedHandoff=true;
      sessionStorage.setItem('forge_intro_suppress','1');
      sessionStorage.setItem('forge_whatsnew_suppress','1');
    });

@@ -32,6 +32,9 @@ const typeMotionCss=read('src/css/experience/typography-motion-v3.css');
 /* The brand shell is overlaid on the unchanged baseline; never rewrite tool cards. */
 const forgeBrandCss=read('src/css/experience/forge-brand.css');
 const forgeBrandJs=read('src/js/presentation/forge-brand.js');
+const forgeApprovedHome=read('src/html/forge-approved-home.html');
+const forgeApprovedCss=read('src/css/experience/forge-approved-swap.css');
+const forgeApprovedJs=read('src/js/presentation/forge-approved-swap.js');
 const forgePaintCss=read('src/css/experience/forge-first-paint.css');
 const forgePaintJs=read('src/js/presentation/forge-first-paint.js');
 const forgeVideoRouteCss=read('src/css/experience/forge-video-route.css');
@@ -146,6 +149,11 @@ function forgeBrand(html,standaloneRelease){
   const end=html.indexOf('<div class="home-grid combined-home-grid" id="homeContent">',start);
   if(start<0||end<0)throw Error('Forge home injection anchors not found: refusing to modify tool cards');
   html=html.slice(0,start)+forgeHero+'\n'+html.slice(end);
+  // Rehome the same live buttons inside the approved composition after handlers bind.
+  if(!html.includes('<div id="view-home">'))throw Error('Approved home anchor missing');
+  const approvedMountEnd='</div>\n</div>\n</div>\n<div id="view-app">';
+  if(!html.includes(approvedMountEnd))throw Error('Approved home end anchor missing');
+  html=html.replace(approvedMountEnd,'</div>\n</div>\n'+forgeApprovedHome+'</div>\n<div id="view-app">');
   // Correct the visible numbered workflow without changing control order
   // or changing the processing code (destination comes before input).
   for(const [before,after] of [
@@ -226,7 +234,9 @@ function forgeBrand(html,standaloneRelease){
     '<link rel="stylesheet" href="./dist/css/forge-whats-new.css?v=green-welcome-20261103">\n';
   const workbenchStyle=standaloneRelease?'<style id="forge-workbench-v2-styles">'+forgeWorkbenchCss+'</style>\n':
     '<link rel="stylesheet" href="./dist/css/forge-workbench-v2.css?v=forge-original-workbench-v2-hover-20261103">\n';
-  html=html.replace('</head>',iconLink+fontLink+brandStyle+routeStyle+adaptiveStyle+workspaceFinishStyle+specimenStyle+unifiedStyle+workflowStyle+compressorStyle+welcomeStyle+workbenchStyle+'</head>');
+  const approvedStyle=standaloneRelease?'<style id="forge-approved-swap-styles">'+forgeApprovedCss+'</style>\n':
+    '<link rel="stylesheet" href="./dist/css/forge-approved-swap.css?v=forge-centered-20261104">\n';
+  html=html.replace('</head>',iconLink+fontLink+brandStyle+routeStyle+adaptiveStyle+workspaceFinishStyle+specimenStyle+unifiedStyle+workflowStyle+compressorStyle+welcomeStyle+workbenchStyle+approvedStyle+'</head>');
   // Light-only presentation: do not read an old dark preference on first paint.
   html=html.replace('<body>','<body class="light-mode">\n'+forgeIntro+'\n'+forgeWhatsNew+'\n');
   const brandScript=standaloneRelease?'<script id="forge-brand-intro-js">'+forgeBrandJs+'</script>':
@@ -239,7 +249,9 @@ function forgeBrand(html,standaloneRelease){
     '<script id="forge-whats-new-js" src="./dist/js/forge-whats-new.js?v=forge-caption-20261019-v12"></script>';
   const workbenchScript=standaloneRelease?'<script id="forge-workbench-v2-js">'+forgeWorkbenchJs+'</script>':
     '<script id="forge-workbench-v2-js" src="./dist/js/forge-workbench-v2.js?v=forge-original-workbench-v2-hover-20261103"></script>';
-  html=html.replace('</body>',brandScript+'\n'+routeScript+'\n'+compressorFitScript+'\n'+welcomeScript+'\n'+workbenchScript+'\n</body>');
+  const approvedScript=standaloneRelease?'<script id="forge-approved-swap-js">'+forgeApprovedJs+'</script>':
+    '<script id="forge-approved-swap-js" src="./dist/js/forge-approved-swap.js?v=forge-centered-20261104"></script>';
+  html=html.replace('</body>',approvedScript+'\n'+brandScript+'\n'+routeScript+'\n'+compressorFitScript+'\n'+welcomeScript+'\n'+workbenchScript+'\n</body>');
   return html;
 }
 
@@ -254,6 +266,8 @@ save('dist/manifest.json',forgeManifest);
 save('dist/css/typography-motion-v3.css',typeMotionCss);
 save('dist/css/forge-brand.css',forgeBrandCss);
 save('dist/js/forge-brand.js',forgeBrandJs);
+save('dist/css/forge-approved-swap.css',forgeApprovedCss);
+save('dist/js/forge-approved-swap.js',forgeApprovedJs);
 save('dist/css/forge-video-route.css',forgeVideoRouteCss);
 save('dist/css/forge-compressor-frame.css',forgeCompressorFrameCss);
 save('dist/js/forge-compressor-fit.js',forgeCompressorFitJs);
