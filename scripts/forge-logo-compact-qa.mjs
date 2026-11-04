@@ -44,6 +44,8 @@ try{
     assert.equal(baseline.grid,'grid','Logo tool not laid out as a two-row workspace');
     assert.ok(baseline.top.height>=64&&baseline.top.height<=75,'Compact header wrong: '+JSON.stringify(baseline));
     assert.ok(baseline.settings.height>=99&&baseline.settings.height<=111,'Settings strip wrong: '+JSON.stringify(baseline));
+    assert.ok(Math.abs(baseline.settings.width-baseline.board.width)<5,
+      'Settings bar is clipped to the legacy sidebar width: '+JSON.stringify(baseline));
     assert.ok(Math.max(...baseline.groups)-Math.min(...baseline.groups)<12,'Three setting groups are not on one line');
     assert.ok(baseline.firstGroup.left<baseline.secondGroup.left&&baseline.secondGroup.left<baseline.thirdGroup.left,
       'Settings are not Export, Text, Layout');
