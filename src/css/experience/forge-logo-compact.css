@@ -360,3 +360,12 @@ body.light-mode #view-app #section-logo.tool-section .tool-header{box-sizing:bor
 #section-logo #logoControls>.glass-panel:nth-child(2)>div{
   grid-template-columns:minmax(184px,1fr) minmax(60px,80px)!important;
 }
+
+/* Keep the untouched Bold / Sync Filename labels inside Text Settings.
+   Rebalance the existing three sections without increasing toolbar height. */
+#section-logo #logoControls{
+  grid-template-columns:minmax(280px,.85fr) minmax(445px,1.6fr) minmax(315px,.95fr)!important;
+}
+#section-logo #logoControls>.glass-panel:nth-child(1){
+  grid-template-columns:minmax(145px,1.15fr) minmax(115px,.9fr) minmax(140px,1fr)!important;
+}

@@ -54,6 +54,8 @@ try{
     assert.ok(baseline.board.top>=baseline.settings.bottom-3,'Board overlaps settings');
     const layoutLabels=await page.locator('#logoControls > .glass-panel:nth-child(2) > div > .label-header').evaluateAll(nodes=>nodes.map(el=>({text:el.textContent.trim(),visible:el.getBoundingClientRect().width>0,clipped:el.scrollWidth>el.clientWidth+1})));
     assert.equal(layoutLabels.length,2,'Both original Layout Adjust labels must exist');
+    const syncLabel=await page.locator('#syncFilenameToggle').evaluate(el=>{const label=el.closest('label'),group=el.closest('.glass-panel'),r=label.getBoundingClientRect(),g=group.getBoundingClientRect();return{text:label.textContent.trim(),right:r.right,groupRight:g.right,clipped:r.right>g.right-3||label.scrollWidth>label.clientWidth+1};});
+    assert.ok(!syncLabel.clipped,'Sync Filename is clipped in Text Settings: '+JSON.stringify({viewport,syncLabel}));
     assert.ok(layoutLabels.every(el=>el.visible&&!el.clipped),'Layout Adjust labels clipped: '+JSON.stringify({viewport,layoutLabels}));
     assert.equal(baseline.pageOverflow,false,'Unexpected horizontal overflow');
     assert.equal((await page.locator('#section-logo .tool-header > h2').textContent()).trim(),
