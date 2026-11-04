@@ -17,6 +17,7 @@ test('all five original sections share a header without replacing headings or ac
   assert.doesNotMatch(js,/replaceChildren|innerHTML\s*=|UI\.openTool/);
   assert.match(css,/body\.tool-active > \.header\{display:none!important\}/);
   assert.match(css,/font:400 24px\/1\.15 "Kola"/);
+  assert.match(css,/Storyboard\/Filmstrip\/Fit contain a project-name field/,'Complex Storyboard actions need their own row');
   assert.match(css,/font:750 clamp\(20px,1\.72vw,27px\)\/1\.05 "Plus Jakarta Sans"/);
   assert.equal((html.match(/id="stillsToolTitle"/g)||[]).length,1);
   for(const control of ['logoInput','exportAllBtn','pdfTabConvert','pdfTabSplit','stillsInput',
@@ -30,6 +31,6 @@ test('shared header is present in modular and standalone builds',()=>{
   assert.match(build,/const forgeSharedHeaderJs=read/);
   assert.match(build,/save\('dist\/css\/forge-shared-headers\.css'/);
   assert.match(build,/save\('dist\/js\/forge-shared-headers\.js'/);
-  assert.match(html,/forge-shared-headers\.css\?v=forge-eight-header-20261104-v3/);
-  assert.match(html,/forge-shared-headers\.js\?v=forge-eight-header-20261104-v3/);
+  assert.match(html,/forge-shared-headers\.css\?v=forge-eight-header-20261104-v4/);
+  assert.match(html,/forge-shared-headers\.js\?v=forge-eight-header-20261104-v4/);
 });

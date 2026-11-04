@@ -80,7 +80,9 @@ try{
         route.key+': tool title not vertically centered '+JSON.stringify(data));
       assert.ok(data.icon.right+5<=data.brand.left,route.key+': brand collides with icon');
       assert.ok(data.brand.right+12<=data.title.left,route.key+': brand collides with centered title');
-      assert.ok(data.actions.every(action=>action.left>=data.title.right+8),
+      assert.ok(data.actions.every(action=>
+        action.left>=data.title.right+8 || action.right+8<=data.title.left ||
+        action.top>=data.title.bottom+5 || action.bottom+5<=data.title.top),
         route.key+': original actions collide with centered title '+JSON.stringify(data));
       assert.ok(data.actions.every(action=>action.right<=data.header.right+4),
         route.key+': original actions clipped off right side '+JSON.stringify(data));
@@ -90,6 +92,11 @@ try{
         route.key+': tool title must use the homepage card font');
       assert.equal(data.headingWeight,data.homeTitleWeight,
         route.key+': tool title must use homepage card weight');
+      if(route.key==='story'){
+        assert.ok(data.actions.length>=2,'Storyboard must retain name/mode/export actions');
+        assert.ok(data.actions.every(action=>action.top>=data.header.bottom+2),
+          'Storyboard contextual actions must sit below centered header: '+JSON.stringify(data));
+      }
       assert.equal(data.pageOverflow,false,route.key+': horizontal page overflow');
       if(viewport.width===1440||viewport.width===1920)
         await page.screenshot({path:dir+'/shared-header-'+route.key+'-'+viewport.width+'.png'});
