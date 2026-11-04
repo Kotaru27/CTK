@@ -369,3 +369,37 @@ body.light-mode #view-app #section-logo.tool-section .tool-header{box-sizing:bor
 #section-logo #logoControls>.glass-panel:nth-child(1){
   grid-template-columns:minmax(145px,1.15fr) minmax(115px,.9fr) minmax(140px,1fr)!important;
 }
+
+/* Header composition: keep The Forge and the existing icon on the left,
+   center the original tool heading independently, and keep all actions right.
+   No controls or event handlers are moved or duplicated. */
+#section-logo .tool-header{position:relative!important;align-items:center!important}
+body.light-mode #view-app #section-logo.tool-section .tool-header>.forge-logo-home{
+  position:static!important;inset:auto!important;flex:0 0 auto!important;
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  align-self:center!important;margin:0!important;padding:0!important;
+  white-space:nowrap!important;
+  font:750 12px/1.2 "Plus Jakarta Sans",sans-serif!important;
+  letter-spacing:-.025em!important;color:#325b42!important;
+}
+body.light-mode #view-app #section-logo.tool-section .tool-header>h2{
+  position:absolute!important;left:50%!important;top:50%!important;
+  transform:translate(-50%,-50%)!important;flex:none!important;
+  width:max-content!important;max-width:30%!important;
+  margin:0!important;padding:0!important;
+  color:#173b2a!important;
+  font:750 27px/1.05 "Plus Jakarta Sans",sans-serif!important;
+  letter-spacing:-.04em!important;text-align:center!important;white-space:nowrap!important;
+}
+#section-logo .tool-header>.drop-zone{margin-left:auto!important}
+/* Fit exceptionally narrow desktop work areas without overlaying actions. */
+@media(max-width:1200px){
+  body.light-mode #view-app #section-logo.tool-section .tool-header>h2{
+    font-size:clamp(17px,2vw,24px)!important;
+    max-width:25%!important;
+    left:47%!important;
+  }
+  body.light-mode #view-app #section-logo.tool-section .tool-header>.forge-logo-home{
+    font-size:11px!important;
+  }
+}

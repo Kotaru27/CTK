@@ -60,6 +60,32 @@ try{
     assert.equal(baseline.pageOverflow,false,'Unexpected horizontal overflow');
     assert.equal((await page.locator('#section-logo .tool-header > h2').textContent()).trim(),
       'Logo Resizer','Breadcrumb must not change the original tool heading');
+    const headerAlignment=await page.evaluate(()=>{
+      const header=document.querySelector('#section-logo .tool-header');
+      const heading=header.querySelector(':scope > h2');
+      const brand=header.querySelector(':scope > .forge-logo-home');
+      const icon=header.querySelector(':scope > .tool-icon');
+      const actions=header.querySelector(':scope > .drop-zone');
+      const rect=el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,centerX:r.left+r.width/2,centerY:r.top+r.height/2,width:r.width};};
+      return {header:rect(header),heading:rect(heading),brand:rect(brand),icon:rect(icon),
+        actions:rect(actions),headingFont:getComputedStyle(heading).fontFamily,
+        headingWeight:getComputedStyle(heading).fontWeight,
+        homeFont:getComputedStyle(document.querySelector('#homeContent .tool-logo .home-card-title')).fontFamily};
+    });
+    assert.ok(Math.abs(headerAlignment.heading.centerX-headerAlignment.header.centerX)<
+      (viewport.width>=1200?3:35),'Logo title not centered: '+JSON.stringify(headerAlignment));
+    assert.ok(Math.abs(headerAlignment.heading.centerY-headerAlignment.header.centerY)<3,
+      'Logo title not vertically centered: '+JSON.stringify(headerAlignment));
+    assert.ok(headerAlignment.brand.right+12<headerAlignment.heading.left,
+      'The Forge overlaps Logo Resizer: '+JSON.stringify(headerAlignment));
+    assert.ok(headerAlignment.heading.right+12<headerAlignment.actions.left,
+      'Logo Resizer overlaps the upload actions: '+JSON.stringify(headerAlignment));
+    assert.ok(headerAlignment.icon.right<headerAlignment.brand.left,
+      'Brand control overlaps icon: '+JSON.stringify(headerAlignment));
+    assert.equal(headerAlignment.headingFont,headerAlignment.homeFont,
+      'Logo heading must use the same font as homepage tool titles');
+    assert.equal(headerAlignment.headingWeight,'750',
+      'Logo heading must match homepage tool-title weight');
     assert.ok(await page.locator('#section-logo .tool-header > .forge-logo-home').isVisible(),
       'Existing Home action must remain available in the compact title');
     await page.screenshot({path:dir+'/logo-compact-empty-'+viewport.width+'.png'});
