@@ -107,7 +107,13 @@ try{
             sourceInputIsOriginal:input===document.getElementById('storyNameInput'),
             matchesHomepageIcon:!!headerSvg&&!!homeSvg&&headerSvg.innerHTML===homeSvg.innerHTML&&
               headerSvg.getAttribute('viewBox')===homeSvg.getAttribute('viewBox'),
-            logoVisible:svgVisible,hasScreenshotImage:image.includes('data:image/png;base64,')};
+            logoVisible:svgVisible,hasScreenshotImage:image.includes('data:image/png;base64,'),
+            headerSvgFound:!!headerSvg,homeSvgFound:!!homeSvg,
+            headerSvgMarkup:headerSvg?.outerHTML?.slice(0,380),
+            homeSvgMarkup:homeSvg?.outerHTML?.slice(0,380),
+            iconMarkup:icon?.outerHTML?.slice(0,550),
+            introPresent:!!document.getElementById('forgeIntro'),
+            homeIconPresent:!!document.querySelector('#homeContent > .home-card.tool-story .forge-home-icon svg')};
         });
         assert.ok(boardName.visible && boardName.width>=160,
           'Existing board name field is missing: '+JSON.stringify(boardName));
@@ -116,7 +122,7 @@ try{
         assert.ok(boardName.right+6<=boardName.modeLeft,
           'Board name collides with mode choices: '+JSON.stringify(boardName));
         assert.ok(boardName.matchesHomepageIcon&&boardName.logoVisible,
-          'Header must display the exact SVG already used on the Storyboard homepage card');
+          'Header must display the exact SVG already used on the Storyboard homepage card: '+JSON.stringify(boardName));
         assert.equal(boardName.hasScreenshotImage,false,'Screenshot-derived PNG must not be used');
 
         assert.ok(data.actions.length>=2,'Storyboard must retain name/mode/export actions');
