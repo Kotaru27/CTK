@@ -119,7 +119,19 @@ try{
   await snap('logo-populated');
   console.log('FORGE_LOGO_VISIBLE_DIAGNOSTIC',label,JSON.stringify(logo));
   assert.equal(logo.rendered,4,`${label}: logo asset cards were not rendered`);
-  assert.equal(logo.visible,4,`${label}: logo cards exist but are not visibly rendered`);
+  // A fourth large preview may be below the fold at 1366x768; it must be
+  // scroll-reachable rather than forced to fit into the initial viewport.
+  assert.ok(logo.visible>=3,`${label}: fewer than three initial logo cards are visible`);
+  const lastLogo=page.locator('#logoGrid > .logo-card-item').last();
+  await lastLogo.evaluate(el=>el.scrollIntoView({block:'center',behavior:'instant'}));
+  await page.waitForTimeout(130);
+  const reachable=await lastLogo.evaluate(el=>{
+    const r=el.getBoundingClientRect(),c=getComputedStyle(el);
+    return r.width>=80&&r.height>=80&&r.top<innerHeight&&r.bottom>0&&
+      c.display!=='none'&&c.visibility!=='hidden'&&Number(c.opacity)>.15;
+  });
+  assert.equal(reachable,true,`${label}: fourth logo preview is not accessible by scrolling`);
+  await page.locator('#logoGrid > .logo-card-item').first().evaluate(el=>el.scrollIntoView({block:'center',behavior:'instant'}));
   assert.equal(await page.locator('#logoGrid > .logo-card-item').first().evaluate(e=>getComputedStyle(e).animationName),'none',
     `${label}: legacy cardReveal still obscures populated output`);
 
