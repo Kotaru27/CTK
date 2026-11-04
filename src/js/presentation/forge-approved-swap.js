@@ -38,9 +38,27 @@
       sessionStorage.getItem('forge_intro_seen_centered')==='1'}catch(_){return false}
   }
   function markSeen(){try{sessionStorage.setItem('forge_intro_seen_centered','1')}catch(_){}}
+  function prepareWordmark(){
+    if(!wordmark)return;
+    // Each mask animates independently; its accessible heading is announced just once.
+    wordmark.replaceChildren();
+    wordmark.setAttribute('role','heading');
+    wordmark.setAttribute('aria-level','1');
+    wordmark.setAttribute('aria-label','The Forge');
+    [...'The Forge'].forEach((character,i)=>{
+      const mask=d.createElement('span');mask.className='forge-swap-glyph-mask';
+      mask.setAttribute('aria-hidden','true');
+      const glyph=d.createElement('span');glyph.className='forge-swap-glyph';
+      glyph.textContent=character===' '?'\u00a0':character;
+      glyph.style.setProperty('--glyph-delay',(170+i*69)+'ms');
+      mask.append(glyph);wordmark.append(mask);
+    });
+  }
   function attachTitle(){
     if(!wordmark)return;
     wordmark.removeAttribute('style');wordmark.className='';
+    wordmark.removeAttribute('role');wordmark.removeAttribute('aria-level');
+    wordmark.removeAttribute('aria-label');wordmark.textContent='The Forge';
     hero.replaceChildren(wordmark);
   }
   function finish(record=true){
@@ -68,6 +86,7 @@
     if(ready)return;
     try{
       if(!hero||!identity||!assembly||!orbit||!shell||!foot||!skip||!counter||
+        !d.getElementById('forgeWhatsNewTrigger')||!d.getElementById('forgeApprovedUpdatesMount')||
         !d.getElementById('forgeToolSearch')||!d.getElementById('forgeSearchCount')||
         !d.getElementById('forgeFeaturedLabel'))throw Error('Missing Forge workbench anchor');
       // The original workbench search/keyboard handlers are bound before reparenting.
@@ -77,6 +96,8 @@
       d.getElementById('forgeApprovedCountMount').append(d.getElementById('forgeSearchCount'));
       d.getElementById('forgeApprovedFeaturedMount').append(d.getElementById('forgeFeaturedLabel'));
       d.getElementById('forgeApprovedGridMount').replaceWith(grid);
+      // Reparent, do not clone: the existing What's new dialog handler stays bound.
+      d.getElementById('forgeApprovedUpdatesMount').append(d.getElementById('forgeWhatsNewTrigger'));
       grid.classList.add('card-grid');
       cards.forEach((card,i)=>{
         const icon=d.createElement('span');icon.className='forge-home-icon';icon.setAttribute('aria-hidden','true');
@@ -112,6 +133,9 @@
       body.classList.remove('forge-swap-ready','forge-swap-active','forge-opening');
       oldLayout.inert=false;oldLayout.removeAttribute('aria-hidden');approved.style.display='none';
       if(hero&&!oldLayout.contains(hero))oldLayout.querySelector('.forge-hero-identity')?.append(hero);
+      const updates=d.getElementById('forgeWhatsNewTrigger');
+      if(updates&&!d.querySelector('.header')?.contains(updates))
+        d.querySelector('.header .brand-title')?.after(updates);
       if(!oldLayout.contains(grid))oldLayout.append(grid);
       intro.remove();gate?.endWelcome?.();gate?.release?.();
       d.dispatchEvent(new Event('forge:intro-complete'));
@@ -121,9 +145,10 @@
     if(!intro.isConnected)body.insertBefore(intro,body.firstChild);
     if(wordmark?.parentNode!==identity)identity.insertBefore(wordmark,identity.querySelector('.forge-cine-rule'));
     wordmark?.removeAttribute('style');wordmark.className='forge-cine-wordmark';
+    prepareWordmark();
     hero.textContent='The Forge';
     intro.hidden=false;
-    intro.classList.remove('forge-swap-releasing','forge-cine-leaving','forge-cine-playing');
+    intro.classList.remove('forge-swap-releasing','forge-cine-leaving','forge-cine-playing','forge-swap-title-playing');
     pieces.forEach(piece=>{piece.style.opacity='0';piece.style.transform='none'});
     ticks.forEach(x=>x.classList.remove('is-lit'));
     counter.textContent='00';
@@ -135,7 +160,7 @@
     seq++;clearMotion();phase='assembly';
     if(!replay&&!foundHome()){finish(false);return}
     replayPreparation();
-    intro.classList.add('forge-intro-ready');
+    intro.classList.add('forge-intro-ready','forge-swap-title-playing');
     d.documentElement.dataset.forgeIntroAnimated='1';
     gate?.release?.();
     const run=seq;
