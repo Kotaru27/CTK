@@ -26,4 +26,42 @@
       home.classList.add('forge-tool-home');
     }
   });
+
+  // Keep the ORIGINAL Storyboard name control visible in Grid Board mode.
+  // The Storyboard controller owns the input, its oninput handler, and board
+  // persistence. This repair never clones or replaces that input.
+  const storySection = document.getElementById('section-stills-boards');
+  const storyHeader = storySection?.querySelector(':scope > .forge-unified-tool-header');
+  const storyPanel = document.getElementById('stillsTabContentStory');
+  const storyTitle = document.getElementById('stillsToolTitle');
+  const storyNameInput = document.getElementById('storyNameInput');
+  if (storyHeader && storyPanel && storyTitle && storyNameInput) {
+    const restoreName = () => {
+      let label = document.getElementById('storyHeaderName');
+      if (!label) {
+        label = document.createElement('label');
+        label.id = 'storyHeaderName';
+        label.className = 'story-header-name';
+        label.htmlFor = 'storyNameInput';
+        const caption = document.createElement('span');
+        caption.textContent = 'BOARD NAME';
+        label.append(caption, storyNameInput);
+        storyTitle.insertAdjacentElement('afterend', label);
+      }
+      const inGrid = storySection.classList.contains('active') &&
+        storyPanel.style.display !== 'none' &&
+        document.getElementById('subModeBtnBoard')?.classList.contains('active-mode');
+      if (label.hidden === inGrid) label.hidden = !inGrid;
+      return label;
+    };
+    const nameLabel = restoreName();
+    if (typeof MutationObserver !== 'undefined') {
+      const observer = new MutationObserver(restoreName);
+      observer.observe(storySection,{attributes:true,attributeFilter:['class']});
+      observer.observe(storyPanel,{attributes:true,attributeFilter:['style']});
+      observer.observe(nameLabel,{attributes:true,attributeFilter:['hidden']});
+      const boardMode = document.getElementById('subModeBtnBoard');
+      if (boardMode) observer.observe(boardMode,{attributes:true,attributeFilter:['class']});
+    }
+  }
 })();

@@ -93,6 +93,23 @@ try{
       assert.equal(data.headingWeight,data.homeTitleWeight,
         route.key+': tool title must use homepage card weight');
       if(route.key==='story'){
+        const boardName=await page.locator('#storyHeaderName').evaluate(el=>{
+          const input=el.querySelector('#storyNameInput'),r=el.getBoundingClientRect();
+          const mode=document.getElementById('storySubModeToggle').getBoundingClientRect();
+          const image=getComputedStyle(document.getElementById('stillsToolIcon')).backgroundImage;
+          return {visible:!el.hidden&&getComputedStyle(el).display!=='none',
+            width:r.width,top:r.top,right:r.right,modeLeft:mode.left,
+            sourceInputIsOriginal:input===document.getElementById('storyNameInput'),
+            logoIsSuppliedPNG:image.includes('data:image/png;base64,')};
+        });
+        assert.ok(boardName.visible && boardName.width>=160,
+          'Existing board name field is missing: '+JSON.stringify(boardName));
+        assert.ok(boardName.sourceInputIsOriginal,
+          'Board rename must retain the ORIGINAL storyNameInput and its handler');
+        assert.ok(boardName.right+6<=boardName.modeLeft,
+          'Board name collides with mode choices: '+JSON.stringify(boardName));
+        assert.ok(boardName.logoIsSuppliedPNG,'Supplied storyboard icon is missing');
+
         assert.ok(data.actions.length>=2,'Storyboard must retain name/mode/export actions');
         assert.ok(data.actions.every(action=>action.top>=data.header.bottom+2),
           'Storyboard contextual actions must sit below centered header: '+JSON.stringify(data));
@@ -101,6 +118,23 @@ try{
       if(viewport.width===1440||viewport.width===1920)
         await page.screenshot({path:dir+'/shared-header-'+route.key+'-'+viewport.width+'.png'});
       // Verify navigation from each route through the existing Home handler.
+      if(route.key==='story' && viewport.width===1440){
+        const input=page.locator('#storyNameInput');
+        const before=await input.inputValue();
+        await input.fill('Storyboard Header Check');
+        assert.equal(await input.inputValue(),'Storyboard Header Check');
+        assert.ok(await page.locator('#storyHeaderName').isVisible(),
+          'Editing a board name must not hide its original field');
+        await input.fill(before);
+        await page.evaluate(()=>UI.switchStorySubMode('filmstrip'));
+        await page.waitForTimeout(80);
+        assert.ok(!(await page.locator('#storyHeaderName').isVisible()),
+          'Board name must not overlay Filmstrip mode');
+        await page.evaluate(()=>UI.switchStorySubMode('story'));
+        await page.waitForTimeout(80);
+        assert.ok(await page.locator('#storyHeaderName').isVisible(),
+          'Board name must reappear when Grid Board is restored');
+      }
       if(viewport.width===1440){
         await page.locator('#view-app .tool-section.active .forge-tool-home').click();
         await page.waitForFunction(()=>!document.body.classList.contains('tool-active')&&
