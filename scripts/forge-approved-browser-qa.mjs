@@ -11,7 +11,7 @@ const urls=['section-logo','section-pdf','section-pdf','section-stills-boards',
 const screenshots='artifacts/forge-browser';
 fs.mkdirSync(screenshots,{recursive:true});
 try{
- for(const viewport of [{width:1440,height:900},{width:390,height:844}]){
+ for(const viewport of [{width:2048,height:1013},{width:1440,height:900},{width:390,height:844}]){
   const ctx=await browser.newContext({viewport,reducedMotion:'no-preference'});
   await ctx.addInitScript(()=>{sessionStorage.setItem('forge_whatsnew_suppress','1')});
   const page=await ctx.newPage(),errors=[];
@@ -20,6 +20,26 @@ try{
   await page.waitForFunction(()=>document.body.classList.contains('forge-swap-ready'),null,{timeout:9000});
   await page.locator('#forgeIntro.forge-swap-prepared').waitFor({state:'visible'});
   assert.equal(await page.locator('#forgeIntro .forge-cine-piece').count(),8);
+  // Catch the production regression where self-referential --tile/--step
+  // collapsed all 8 F icons into virtually invisible dots.
+  const tileGeometry=await page.evaluate(()=>{
+    const pieces=[...document.querySelectorAll('#forgeIntro .forge-cine-piece')];
+    const assembly=document.querySelector('#forgeIntro .forge-cine-assembly');
+    const rect=assembly.getBoundingClientRect();
+    return {
+      widths:pieces.map(p=>p.offsetWidth),
+      heights:pieces.map(p=>p.offsetHeight),
+      assemblyWidth:rect.width,
+      assemblyHeight:rect.height,
+      iconWidths:pieces.map(p=>p.querySelector('svg')?.getBoundingClientRect().width||0)
+    };
+  });
+  assert.ok(tileGeometry.widths.every(n=>n>=23) &&
+    tileGeometry.heights.every(n=>n>=23) &&
+    tileGeometry.iconWidths.every(n=>n>=12) &&
+    tileGeometry.assemblyWidth>=95 && tileGeometry.assemblyHeight>=145,
+    'F tiles collapsed or are missing: '+JSON.stringify(tileGeometry));
+  console.log('APPROVED_INTRO_TILE_GEOMETRY '+JSON.stringify({viewport,tileGeometry}));
   const composition=await page.evaluate(()=>{
    const r=sel=>{const b=document.querySelector(sel).getBoundingClientRect();
     return {left:b.left,right:b.right,top:b.top,bottom:b.bottom,width:b.width,height:b.height}};
@@ -48,7 +68,12 @@ try{
     width:innerWidth,
     css:getComputedStyle(document.querySelector('.forge-approved-home')).display,
     visible:nodes.every(n=>n.getBoundingClientRect().width>90),
-    completed:document.documentElement.dataset.forgeIntroFinished
+    completed:document.documentElement.dataset.forgeIntroFinished,
+    homeBounds:(()=>{const x=document.querySelector('#view-home').getBoundingClientRect();return{left:x.left,width:x.width}})(),
+    approvedBounds:(()=>{const x=document.querySelector('.forge-approved-home').getBoundingClientRect();return{left:x.left,width:x.width}})(),
+    gridWidth:document.querySelector('#homeContent').getBoundingClientRect().width,
+    featuredLabel:document.getElementById('forgeApprovedFeaturedMount')?.textContent.trim(),
+    cardsBounds:nodes.map(n=>({width:n.getBoundingClientRect().width, title:n.querySelector('.home-card-title')?.getBoundingClientRect().width}))
    };
   });
   assert.equal(actual.nodes,8,'Must preserve eight real tool buttons');
@@ -60,6 +85,23 @@ try{
   assert.ok(actual.css!=='none'&&actual.visible,'Approved home not visible');
   assert.ok(actual.scrollWidth<=actual.width+2,'Unexpected horizontal scroll');
   assert.equal(actual.completed,'1');
+  // A full-width workbench is essential; the previous release rendered a
+  // roughly 670px-wide site in a 2048px desktop screenshot.
+  assert.ok(actual.approvedBounds.width>=viewport.width*.92 &&
+    actual.homeBounds.width>=viewport.width*.92 &&
+    actual.approvedBounds.left>=-2 &&
+    actual.approvedBounds.left<viewport.width*.05,
+    'Home is trapped in a narrow centered column: '+JSON.stringify(actual));
+  const requiredGridWidth=viewport.width>1000?viewport.width*.43:viewport.width*.72;
+  assert.ok(actual.gridWidth>=requiredGridWidth,
+    'Eight tools are compressed into an unusable grid: '+JSON.stringify(actual));
+  assert.ok(actual.cardsBounds.every(n=>n.width>=100&&n.title>=65),
+    'Tool labels are compressed: '+JSON.stringify(actual.cardsBounds));
+  assert.equal(actual.featuredLabel,'Select a workspace',
+    'Featured tool label contains duplicate placeholder text');
+  console.log('APPROVED_HOME_GEOMETRY '+JSON.stringify({viewport,
+    home:actual.homeBounds,approved:actual.approvedBounds,
+    gridWidth:actual.gridWidth,cards:actual.cardsBounds}));
   await page.screenshot({path:screenshots+'/approved-home-'+viewport.width+'.png',fullPage:true});
   const search=page.locator('#forgeToolSearch');
   await search.fill('storyboard');
