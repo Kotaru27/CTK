@@ -93,6 +93,8 @@ try{
     {width:390,height:390}
   ]){
     const ctx=await browser.newContext({viewport,reducedMotion:'no-preference'});
+    // The welcome dialog is independently tested; do not let it obscure intro controls.
+    await ctx.addInitScript(()=>sessionStorage.setItem('forge_whatsnew_suppress','1'));
     const page=await ctx.newPage();
     await page.goto('http://127.0.0.1:4173/',{waitUntil:'domcontentloaded'});
     await page.locator('#forgeIntro').waitFor({state:'visible',timeout:8000});
