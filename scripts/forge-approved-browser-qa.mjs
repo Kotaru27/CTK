@@ -58,7 +58,7 @@ try{
     const intro=document.getElementById('forgeIntro');
     const pieces=[...document.querySelectorAll('#forgeIntro .forge-cine-piece')];
     return intro&&!intro.classList.contains('forge-swap-releasing')&&pieces.length===8&&
-      pieces.every(p=>Number(getComputedStyle(p).opacity)>.97);
+      pieces.every(p=>p.getAnimations().some(a=>a.playState==='finished'));
   },null,{timeout:4500});
   const assembled=await page.evaluate(()=>{
     const assembly=document.querySelector('#forgeIntro .forge-cine-assembly').getBoundingClientRect();
