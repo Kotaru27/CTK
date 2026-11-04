@@ -15,7 +15,7 @@ test('all five original sections share a header without replacing headings or ac
   assert.match(js,/homeAction\.click\(\)/);
   assert.match(js,/home\.classList\.add\('forge-tool-home'\)/);
   assert.doesNotMatch(js,/replaceChildren|innerHTML\s*=|UI\.openTool/);
-  assert.match(css,/body\.forge-swap-ready\.tool-active > \.header\{display:none!important\}/);
+  assert.match(css,/body\.tool-active > \.header\{display:none!important\}/);
   assert.match(css,/font:400 24px\/1\.15 "Kola"/);
   assert.match(css,/font:750 clamp\(20px,1\.72vw,27px\)\/1\.05 "Plus Jakarta Sans"/);
   assert.equal((html.match(/id="stillsToolTitle"/g)||[]).length,1);
@@ -30,6 +30,6 @@ test('shared header is present in modular and standalone builds',()=>{
   assert.match(build,/const forgeSharedHeaderJs=read/);
   assert.match(build,/save\('dist\/css\/forge-shared-headers\.css'/);
   assert.match(build,/save\('dist\/js\/forge-shared-headers\.js'/);
-  assert.match(html,/forge-shared-headers\.css\?v=forge-eight-header-20261104-v1/);
-  assert.match(html,/forge-shared-headers\.js\?v=forge-eight-header-20261104-v1/);
+  assert.match(html,/forge-shared-headers\.css\?v=forge-eight-header-20261104-v2/);
+  assert.match(html,/forge-shared-headers\.js\?v=forge-eight-header-20261104-v2/);
 });
