@@ -10652,9 +10652,15 @@ body.light-mode #view-app #section-stills-boards :is(#storyHeaderControls,#films
 #view-home .forge-approved-home{display:none;width:100%;max-width:100%;min-width:0;flex:0 0 100%;margin:0;min-height:100vh;color:#1b3828;background:#f0eee4;font-family:"Plus Jakarta Sans",Arial,sans-serif}
 body.forge-swap-ready #view-home .forge-approved-home{display:block!important;width:100%!important;max-width:none!important;min-width:0!important;margin:0!important;flex:0 0 100%!important}
 body.forge-swap-ready #view-home>.home-layout{display:none!important}
-/* Hide the legacy white bar only while the approved green home is active. Keep it on tool routes. */
-body.forge-swap-ready:has(#view-home:not(.hidden)) > .header{display:none!important}
-body.forge-swap-ready #view-home{display:block!important;width:100%!important;min-width:0!important;max-width:none!important;padding:0!important;margin:0!important;background:#f0eee4;overflow:visible}
+/* Home and tool routes must never render together. The previous unconditional
+   display:block!important overrode #view-home.hidden and pushed tools below
+   the green home. Keep existing tool navigation intact on active tool routes. */
+body.forge-swap-ready:not(.tool-active) > .header{display:none!important}
+body.forge-swap-ready:not(.tool-active) #mainSidebar{display:none!important}
+body.forge-swap-ready:not(.tool-active) #view-app{display:none!important}
+body.forge-swap-ready:not(.tool-active) #view-home:not(.hidden){display:block!important;width:100%!important;min-width:0!important;max-width:none!important;padding:0!important;margin:0!important;background:#f0eee4;overflow:visible}
+body.forge-swap-ready #view-home.hidden,
+body.forge-swap-ready.tool-active #view-home{display:none!important}
 #view-home .forge-approved-home *{box-sizing:border-box}
 #view-home .forge-approved-home .home-top{background:#112e22;color:#eff4e6;min-height:223px;padding:21px clamp(22px,4.5vw,72px) 27px;overflow:hidden}
 #view-home .forge-approved-home .home-nav{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:0 0 14px;border-bottom:1px solid #81978270;color:#bdcbbb;font-size:11px;font-weight:650}

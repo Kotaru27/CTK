@@ -12,7 +12,7 @@ test('approved home uses one green header and the existing Whats new dialog trig
   assert.match(markup, /id="forgeApprovedUpdatesMount"/);
   assert.match(markup, /class="home-nav-right"[\s\S]*?id="forgeApprovedUpdatesMount"[\s\S]*?id="replay"/);
   assert.match(js, /forgeApprovedUpdatesMount'\)\.append\(d\.getElementById\('forgeWhatsNewTrigger'\)\)/);
-  assert.match(css, /body\.forge-swap-ready:has\(#view-home:not\(\.hidden\)\) > \.header\{display:none!important\}/);
+  assert.match(css, /body\.forge-swap-ready:not\(\.tool-active\) > \.header\{display:none!important\}/);
   assert.doesNotMatch(css, /body\.forge-swap-ready > \.header\{display:none/);
   // The HTML keeps one trigger, and the approved shell only supplies its mount.
   assert.equal((index.match(/id="forgeWhatsNewTrigger"/g) || []).length, 1);
@@ -28,4 +28,13 @@ test('shared intro reveals the full-size title with staggered character masks an
   assert.match(css, /forge-swap-glyph-reveal 590ms[\s\S]*?var\(--glyph-delay\)/);
   assert.match(css, /forge-cine-wordmark\{font-size:clamp\(58px,7\.2vw,118px\)!important/);
   assert.match(css, /prefers-reduced-motion:reduce/);
+});
+
+test('home and tool workspaces cannot render together after navigation', () => {
+  assert.match(css, /body\.forge-swap-ready:not\(\.tool-active\) #view-home:not\(\.hidden\)\{display:block!important/);
+  assert.match(css, /body\.forge-swap-ready #view-home\.hidden,[\s\S]*?body\.forge-swap-ready\.tool-active #view-home\{display:none!important\}/);
+  assert.match(css, /body\.forge-swap-ready:not\(\.tool-active\) #view-app\{display:none!important\}/);
+  assert.match(css, /body\.forge-swap-ready:not\(\.tool-active\) #mainSidebar\{display:none!important\}/);
+  assert.doesNotMatch(css, /body\.forge-swap-ready #view-home\{display:block!important/);
+  assert.match(read('src/js/core/prelude.js'), /_openTool\(id, mode\)[\s\S]*?this\.els\.viewHome\.classList\.add\("hidden"\)/);
 });

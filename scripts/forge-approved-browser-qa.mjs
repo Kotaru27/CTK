@@ -144,6 +144,65 @@ try{
   await page.locator('#forgeIntroSkip').click();
   await page.locator('#forgeIntro').waitFor({state:'detached'});
   assert.ok(await page.locator('#homeContent >.home-card.tool-logo').isVisible());
+  // Regression: the legacy #view-home display:block!important used to override
+  // .hidden, leaving the entire homepage stacked over the open tool.
+  async function routeVisibility(){
+    return page.evaluate(()=>{
+      const shown=selector=>{
+        const node=document.querySelector(selector);
+        if(!node)return false;
+        const style=getComputedStyle(node),box=node.getBoundingClientRect();
+        return style.display!=='none'&&style.visibility!=='hidden'&&box.width>0&&box.height>0;
+      };
+      return{
+        home:shown('#view-home'),tool:shown('#view-app'),
+        whiteHeader:shown('body > .header'),sidebar:shown('#mainSidebar'),
+        greenHeader:shown('#view-home .forge-approved-home .home-top'),
+        whatsNew:shown('#forgeWhatsNewTrigger'),
+        activeTool:document.querySelector('#view-app .tool-section.active')?.id||null
+      };
+    });
+  }
+  const initialRoute=await routeVisibility();
+  assert.equal(initialRoute.home,true,'Green workbench homepage is missing');
+  assert.equal(initialRoute.tool,false,'Tool workspace is visible under the homepage');
+  assert.equal(initialRoute.whiteHeader,false,'White legacy header is still visible on home');
+  assert.equal(initialRoute.sidebar,false,'Tool sidebar should be hidden on home');
+  assert.equal(initialRoute.greenHeader,true,'Green homepage header missing');
+  assert.equal(initialRoute.whatsNew,true,'What’s new missing from green header');
+
+  // Exercise the actual navigation in both directions, not just static hrefs.
+  // On desktop try all eight card actions, including shared-section modes.
+  const cardIndexes=viewport.width===1440?Array.from({length:8},(_,i)=>i):[0];
+  for(const cardIndex of cardIndexes){
+    await page.locator('#homeContent > button.home-card').nth(cardIndex).click();
+    await page.waitForFunction(()=>{
+      const home=document.getElementById('view-home'),app=document.getElementById('view-app');
+      return document.body.classList.contains('tool-active')&&
+        home.classList.contains('hidden')&&app.classList.contains('active');
+    },null,{timeout:10000});
+    const inTool=await routeVisibility();
+    assert.equal(inTool.home,false,'Home leaks over tool '+cardIndex+': '+JSON.stringify(inTool));
+    assert.equal(inTool.tool,true,'Tool '+cardIndex+' not visible: '+JSON.stringify(inTool));
+    assert.equal(inTool.greenHeader,false,'Green header is stacked over active tool');
+    assert.equal(inTool.whiteHeader,true,'Tool header is missing');
+    assert.equal(inTool.sidebar,true,'Tool navigation is missing');
+    assert.equal(inTool.activeTool,urls[cardIndex],'Wrong tool opened from card '+cardIndex);
+    if(cardIndex===0&&viewport.width===1440)
+      await page.screenshot({path:screenshots+'/approved-tool-route-isolated.png'});
+    await page.locator('body > .header .brand-title').click();
+    await page.waitForFunction(()=>{
+      const home=document.getElementById('view-home'),app=document.getElementById('view-app');
+      return !document.body.classList.contains('tool-active')&&
+        !home.classList.contains('hidden')&&!app.classList.contains('active');
+    },null,{timeout:10000});
+    const backHome=await routeVisibility();
+    assert.equal(backHome.home,true,'Homepage not restored after tool '+cardIndex);
+    assert.equal(backHome.tool,false,'Tool continues below homepage after returning');
+    assert.equal(backHome.whiteHeader,false,'White header still visible on returned homepage');
+    assert.equal(backHome.sidebar,false,'Sidebar still visible on returned homepage');
+    assert.equal(backHome.whatsNew,true,'What’s new disappeared after returning home');
+  }
   assert.deepEqual(errors,[],'Runtime errors: '+errors.join('; '));
   await ctx.close();
  }

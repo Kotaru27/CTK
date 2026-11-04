@@ -235,7 +235,7 @@ function forgeBrand(html,standaloneRelease){
   const workbenchStyle=standaloneRelease?'<style id="forge-workbench-v2-styles">'+forgeWorkbenchCss+'</style>\n':
     '<link rel="stylesheet" href="./dist/css/forge-workbench-v2.css?v=forge-original-workbench-v2-hover-20261103">\n';
   const approvedStyle=standaloneRelease?'<style id="forge-approved-swap-styles">'+forgeApprovedCss+'</style>\n':
-    '<link rel="stylesheet" href="./dist/css/forge-approved-swap.css?v=forge-header-title-20261104-v2">\n';
+    '<link rel="stylesheet" href="./dist/css/forge-approved-swap.css?v=forge-route-isolation-20261104-v3">\n';
   html=html.replace('</head>',iconLink+fontLink+brandStyle+routeStyle+adaptiveStyle+workspaceFinishStyle+specimenStyle+unifiedStyle+workflowStyle+compressorStyle+welcomeStyle+workbenchStyle+approvedStyle+'</head>');
   // Light-only presentation: do not read an old dark preference on first paint.
   html=html.replace('<body>','<body class="light-mode">\n'+forgeIntro+'\n'+forgeWhatsNew+'\n');
@@ -250,7 +250,7 @@ function forgeBrand(html,standaloneRelease){
   const workbenchScript=standaloneRelease?'<script id="forge-workbench-v2-js">'+forgeWorkbenchJs+'</script>':
     '<script id="forge-workbench-v2-js" src="./dist/js/forge-workbench-v2.js?v=forge-original-workbench-v2-hover-20261103"></script>';
   const approvedScript=standaloneRelease?'<script id="forge-approved-swap-js">'+forgeApprovedJs+'</script>':
-    '<script id="forge-approved-swap-js" src="./dist/js/forge-approved-swap.js?v=forge-header-title-20261104-v2"></script>';
+    '<script id="forge-approved-swap-js" src="./dist/js/forge-approved-swap.js?v=forge-route-isolation-20261104-v3"></script>';
   html=html.replace('</body>',approvedScript+'\n'+brandScript+'\n'+routeScript+'\n'+compressorFitScript+'\n'+welcomeScript+'\n'+workbenchScript+'\n</body>');
   return html;
 }
