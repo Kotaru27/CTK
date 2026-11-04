@@ -185,3 +185,10 @@ body.forge-swap-active #view-home .forge-approved-home #homeContent .home-card{v
    opacity:.44!important
  }
 }
+
+/* On narrow cards the original detailed illustrations obscure names.
+   Retain each tool's actual SVG pictogram instead of drawing artwork over copy. */
+@media(max-width:560px){
+ #view-home .forge-approved-home #homeContent .home-card-art{display:none!important}
+ #view-home .forge-approved-home #homeContent .forge-home-icon svg{width:31px;height:31px}
+}
