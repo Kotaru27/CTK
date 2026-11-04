@@ -30,6 +30,6 @@ test('shared header is present in modular and standalone builds',()=>{
   assert.match(build,/const forgeSharedHeaderJs=read/);
   assert.match(build,/save\('dist\/css\/forge-shared-headers\.css'/);
   assert.match(build,/save\('dist\/js\/forge-shared-headers\.js'/);
-  assert.match(html,/forge-shared-headers\.css\?v=forge-eight-header-20261104-v2/);
-  assert.match(html,/forge-shared-headers\.js\?v=forge-eight-header-20261104-v2/);
+  assert.match(html,/forge-shared-headers\.css\?v=forge-eight-header-20261104-v3/);
+  assert.match(html,/forge-shared-headers\.js\?v=forge-eight-header-20261104-v3/);
 });

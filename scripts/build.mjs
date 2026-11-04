@@ -243,7 +243,7 @@ function forgeBrand(html,standaloneRelease){
   const logoCompactStyle=standaloneRelease?'<style id="forge-logo-compact-styles">'+forgeLogoCompactCss+'</style>\n':
     '<link rel="stylesheet" href="./dist/css/forge-logo-compact.css?v=forge-logo-compact-20261104-v6">\n';
   const sharedHeaderStyle=standaloneRelease?'<style id="forge-shared-headers-styles">'+forgeSharedHeaderCss+'</style>\n':
-    '<link rel="stylesheet" href="./dist/css/forge-shared-headers.css?v=forge-eight-header-20261104-v2">\n';
+    '<link rel="stylesheet" href="./dist/css/forge-shared-headers.css?v=forge-eight-header-20261104-v3">\n';
   html=html.replace('</head>',iconLink+fontLink+brandStyle+routeStyle+adaptiveStyle+workspaceFinishStyle+specimenStyle+unifiedStyle+workflowStyle+compressorStyle+welcomeStyle+workbenchStyle+approvedStyle+logoCompactStyle+sharedHeaderStyle+'</head>');
   // Light-only presentation: do not read an old dark preference on first paint.
   html=html.replace('<body>','<body class="light-mode">\n'+forgeIntro+'\n'+forgeWhatsNew+'\n');
@@ -262,7 +262,7 @@ function forgeBrand(html,standaloneRelease){
   const logoCompactScript=standaloneRelease?'<script id="forge-logo-compact-js">'+forgeLogoCompactJs+'</script>':
     '<script id="forge-logo-compact-js" src="./dist/js/forge-logo-compact.js?v=forge-logo-compact-20261104-v6"></script>';
   const sharedHeaderScript=standaloneRelease?'<script id="forge-shared-headers-js">'+forgeSharedHeaderJs+'</script>':
-    '<script id="forge-shared-headers-js" src="./dist/js/forge-shared-headers.js?v=forge-eight-header-20261104-v2"></script>';
+    '<script id="forge-shared-headers-js" src="./dist/js/forge-shared-headers.js?v=forge-eight-header-20261104-v3"></script>';
   html=html.replace('</body>',approvedScript+'\n'+logoCompactScript+'\n'+sharedHeaderScript+'\n'+brandScript+'\n'+routeScript+'\n'+compressorFitScript+'\n'+welcomeScript+'\n'+workbenchScript+'\n</body>');
   return html;
 }

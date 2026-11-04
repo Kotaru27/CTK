@@ -69,6 +69,7 @@ try{
           pageOverflow:document.documentElement.scrollWidth>innerWidth+4
         };
       });
+      console.log('FORGE_HEADER_GEOMETRY '+JSON.stringify({viewport:viewport.width,tool:route.key,title:data.title,brand:data.brand,brandFont:data.brandFont,actions:data.actions}));
       assert.equal(data.activeSections,1,route.key+': multiple active workspaces');
       assert.equal(data.oldHeader,'none',route.key+': duplicate global white header visible');
       assert.equal(data.headingText,route.title,route.key+': title changed');
