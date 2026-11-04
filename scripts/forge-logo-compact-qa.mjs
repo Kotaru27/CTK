@@ -52,6 +52,9 @@ try{
     assert.ok(baseline.firstGroup.left<baseline.secondGroup.left&&baseline.secondGroup.left<baseline.thirdGroup.left,
       'Settings are not Export, Text, Layout');
     assert.ok(baseline.board.top>=baseline.settings.bottom-3,'Board overlaps settings');
+    const layoutLabels=await page.locator('#logoControls > .glass-panel:nth-child(2) > div > .label-header').evaluateAll(nodes=>nodes.map(el=>({text:el.textContent.trim(),visible:el.getBoundingClientRect().width>0,clipped:el.scrollWidth>el.clientWidth+1})));
+    assert.equal(layoutLabels.length,2,'Both original Layout Adjust labels must exist');
+    assert.ok(layoutLabels.every(el=>el.visible&&!el.clipped),'Layout Adjust labels clipped: '+JSON.stringify({viewport,layoutLabels}));
     assert.equal(baseline.pageOverflow,false,'Unexpected horizontal overflow');
     assert.equal((await page.locator('#section-logo .tool-header > h2').textContent()).trim(),
       'Logo Resizer','Breadcrumb must not change the original tool heading');

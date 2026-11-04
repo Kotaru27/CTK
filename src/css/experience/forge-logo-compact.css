@@ -328,3 +328,26 @@ body.light-mode #view-app #section-logo.tool-section .tool-header{box-sizing:bor
 #section-logo .tool-header{position:relative!important}
 #section-logo .tool-header>h2{padding-top:14px!important}
 @media(max-width:560px){#section-logo .tool-header>.forge-logo-home{left:12px!important}}
+
+/* Keep both existing Layout Adjust labels fully readable without stretching
+   the settings strip. Each label and its slider share one compact sub-row. */
+#section-logo #logoControls>.glass-panel:nth-child(2){
+  display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:16px 23px 23px!important;gap:2px!important;
+}
+#section-logo #logoControls>.glass-panel:nth-child(2)>div{
+  display:grid!important;grid-template-columns:minmax(145px,1.65fr) minmax(58px,1fr)!important;
+  gap:7px!important;align-items:center!important;min-width:0!important;
+  margin:0!important;padding:0!important;
+}
+#section-logo #logoControls>.glass-panel:nth-child(2)>div>.label-header{
+  display:block!important;white-space:nowrap!important;min-width:0!important;
+  font:600 10px/1.25 "Plus Jakarta Sans",sans-serif!important;
+  letter-spacing:0!important;margin:0!important;
+}
+#section-logo #logoControls>.glass-panel:nth-child(2)>div>div[data-guide]{
+  display:flex!important;align-items:center!important;min-width:0!important;
+}
+#section-logo #logoControls>.glass-panel:nth-child(2)>div>div[data-guide] input[type=range]{
+  margin:0!important;width:100%!important;
+}

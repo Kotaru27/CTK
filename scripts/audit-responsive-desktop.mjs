@@ -61,7 +61,11 @@ try{
       assert.equal(result.active,1,`${label} ${name}: unexpected active sections`);
       assert.ok(result.header?.w>180&&result.header.h>=45,`${label} ${name}: header missing`);
       assert.ok(result.header.x>=-3&&result.header.x+result.header.w<=width+4,`${label} ${name}: header clipped horizontally`);
-      if(result.rail && ['logo-resizer','pdf-to-image','link-gen'].includes(name)){
+      if(name==='logo-resizer'){
+        assert.ok(result.rail&&result.work&&Math.abs(result.rail.w-result.work.w)<=4,
+          `${label}: Logo settings strip must span the full output board`);
+        assert.ok(result.rail.h>=99&&result.rail.h<=111,`${label}: Logo settings strip not compact`);
+      }else if(result.rail && ['pdf-to-image','link-gen'].includes(name)){
         assert.ok(result.rail.w>=245&&result.rail.w<=415,`${label} ${name}: rail width ${result.rail.w} out of bounds`);
       }
       if(name==='logo-resizer')assert.ok(Math.abs(result.logoLayoutHeight-result.emptyHeight)<=3,
@@ -76,10 +80,11 @@ try{
   }
   const logo=records.filter(x=>x.name==='logo-resizer');
   const byLabel=label=>logo.find(x=>x.viewport===label);
-  assert.ok(byLabel('qhd-2560').emptyHeight>byLabel('fullhd-1920').emptyHeight,
-    'QHD empty-state height must expand beyond Full HD');
-  assert.ok(byLabel('fullhd-1920').emptyHeight>byLabel('laptop-1366').emptyHeight,
-    'Full HD empty-state should expand beyond compact laptop');
+  for(const [label] of sizes){
+    const emptyHeight=byLabel(label).emptyHeight;
+    assert.ok(emptyHeight>=260&&emptyHeight<=321,
+      `${label}: approved compact Logo Resizer empty state must not fill the screen: ${emptyHeight}`);
+  }
   console.log('FORGE_DESKTOP_RESPONSIVE_OK',JSON.stringify({
     screens:sizes.length,toolStates:records.length,logoHeight:logo.map(x=>[x.viewport,x.emptyHeight]),
     railWidths:records.filter(x=>x.rail).map(x=>[x.viewport,x.name,x.rail.w]),
