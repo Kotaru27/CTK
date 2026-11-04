@@ -11269,6 +11269,98 @@ body.light-mode #view-app #section-logo.tool-section .tool-header>h2{
   }
 }
 </style>
+<style id="forge-shared-headers-styles">/* Shared compact tool header — eight routes, five original tool sections.
+   Presentation only; preserves all controls and tool processing unchanged. */
+body.forge-swap-ready.tool-active > .header{display:none!important}
+body.forge-swap-ready.tool-active > .main-layout{min-height:0!important}
+#view-app .tool-section.active > .forge-unified-tool-header,
+#view-app #section-yt-helper.active > .forge-compressor-surface > .forge-unified-tool-header{
+  box-sizing:border-box!important;position:relative!important;
+  display:flex!important;align-items:center!important;flex-wrap:nowrap!important;
+  height:68px!important;min-height:68px!important;max-height:68px!important;
+  flex:0 0 68px!important;gap:12px!important;padding:0 20px!important;
+  margin:0!important;background:#fff!important;color:#173b2a!important;
+  border:0!important;border-bottom:1px solid #dce3db!important;
+  border-radius:0!important;box-shadow:none!important;
+}
+body.light-mode #view-app .tool-section.active > .forge-unified-tool-header,
+body.light-mode #view-app #section-yt-helper.active > .forge-compressor-surface > .forge-unified-tool-header{
+  min-height:68px!important;padding:0 20px!important;background:#fff!important;
+}
+#view-app .tool-section.active > .forge-unified-tool-header > .tool-icon,
+#view-app #section-yt-helper.active > .forge-compressor-surface > .forge-unified-tool-header > .tool-icon{
+  box-sizing:border-box!important;display:grid!important;place-items:center!important;
+  width:37px!important;height:37px!important;min-width:37px!important;
+  flex:0 0 37px!important;margin:0!important;padding:0!important;
+  border:1px solid #cbded0!important;border-radius:8px!important;
+  background:#e8f1e7!important;color:#275b3b!important;font-size:20px!important;
+}
+body.light-mode #view-app .tool-section.active > .forge-unified-tool-header > .forge-tool-home,
+body.light-mode #view-app #section-yt-helper.active > .forge-compressor-surface > .forge-unified-tool-header > .forge-tool-home{
+  box-sizing:border-box!important;position:static!important;inset:auto!important;
+  display:inline-flex!important;align-self:center!important;align-items:center!important;
+  flex:0 0 auto!important;width:auto!important;min-height:34px!important;
+  margin:0!important;padding:0 3px!important;border:0!important;
+  background:transparent!important;box-shadow:none!important;
+  color:#173b2a!important;white-space:nowrap!important;cursor:pointer!important;
+  font:400 24px/1.15 "Kola","Plus Jakarta Sans",sans-serif!important;
+  letter-spacing:-.02em!important;text-align:left!important;text-transform:none!important;
+}
+#view-app .tool-section.active .forge-tool-home:hover{color:#2c7249!important}
+#view-app .tool-section.active .forge-tool-home:focus-visible{
+  outline:2px solid #2c7249!important;outline-offset:3px!important;
+}
+body.light-mode #view-app .tool-section.active > .forge-unified-tool-header > h2,
+body.light-mode #view-app #section-logo.tool-section.active > .forge-unified-tool-header > h2,
+body.light-mode #view-app #section-yt-helper.active > .forge-compressor-surface > .forge-unified-tool-header > h2{
+  box-sizing:border-box!important;position:absolute!important;
+  left:50%!important;top:50%!important;transform:translate(-50%,-50%)!important;
+  display:block!important;flex:0 0 auto!important;
+  width:max-content!important;max-width:35%!important;height:auto!important;
+  margin:0!important;padding:0!important;white-space:nowrap!important;
+  color:#173b2a!important;text-align:center!important;
+  font:750 clamp(20px,1.72vw,27px)/1.05 "Plus Jakarta Sans",sans-serif!important;
+  letter-spacing:-.04em!important;
+}
+#view-app .tool-section.active > .forge-unified-tool-header > .drop-zone,
+#view-app .tool-section.active > .forge-unified-tool-header > #convertHeaderControls,
+#view-app .tool-section.active > .forge-unified-tool-header > #videoHeaderControls,
+#view-app .tool-section.active > .forge-unified-tool-header > #storySubModeToggle{
+  margin-left:auto!important;
+}
+/* Original shared-mode tabs and upload/export buttons keep their own behavior.
+   On narrow desktop, reduce only header text and gaps (never hide actions). */
+@media(max-width:1420px){
+  #view-app .tool-section.active > .forge-unified-tool-header,
+  #view-app #section-yt-helper.active > .forge-compressor-surface > .forge-unified-tool-header{
+    gap:8px!important;padding-left:14px!important;padding-right:14px!important;
+  }
+  body.light-mode #view-app .tool-section.active > .forge-unified-tool-header > .forge-tool-home,
+  body.light-mode #view-app #section-yt-helper.active > .forge-compressor-surface > .forge-unified-tool-header > .forge-tool-home{
+    font-size:21px!important;
+  }
+  body.light-mode #view-app .tool-section.active > .forge-unified-tool-header > h2,
+  body.light-mode #view-app #section-logo.tool-section.active > .forge-unified-tool-header > h2,
+  body.light-mode #view-app #section-yt-helper.active > .forge-compressor-surface > .forge-unified-tool-header > h2{
+    font-size:clamp(19px,1.7vw,24px)!important;
+  }
+}
+@media(max-width:1020px){
+  body.light-mode #view-app .tool-section.active > .forge-unified-tool-header > h2,
+  body.light-mode #view-app #section-logo.tool-section.active > .forge-unified-tool-header > h2,
+  body.light-mode #view-app #section-yt-helper.active > .forge-compressor-surface > .forge-unified-tool-header > h2{
+    font-size:18px!important;
+  }
+  body.light-mode #view-app .tool-section.active > .forge-unified-tool-header > .forge-tool-home,
+  body.light-mode #view-app #section-yt-helper.active > .forge-compressor-surface > .forge-unified-tool-header > .forge-tool-home{
+    font-size:18px!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  #view-app .tool-section.active > .forge-unified-tool-header,
+  #view-app #section-yt-helper.active > .forge-compressor-surface > .forge-unified-tool-header{animation:none!important}
+}
+</style>
 </head>
 <body class="light-mode">
 <div class="forge-intro forge-cinematic" id="forgeIntro" role="region" aria-label="The Forge introduction" hidden>
@@ -20486,6 +20578,36 @@ const CTKDownloadRenamer = (() => {
   observer.observe(grid,{subtree:true,childList:true,attributes:true,attributeFilter:['width','height']});
   for (const input of [widthInput,heightInput]) input.addEventListener('input',schedule);
   schedule();
+})();
+</script>
+<script id="forge-shared-headers-js">/* Shared eight-tool header composition. No tool DOM nodes are replaced.
+   The original hidden header remains the sole owner of the Home action. */
+(() => {
+  const homeAction = document.querySelector('body > .header .brand-title');
+  if (!homeAction) return;
+  const sections = [...document.querySelectorAll('#view-app > .tool-section')];
+  sections.forEach(section => {
+    const header = section.id === 'section-yt-helper'
+      ? section.querySelector(':scope > .forge-compressor-surface > .tool-header')
+      : section.querySelector(':scope > .tool-header');
+    const title = header?.querySelector(':scope > h2');
+    const icon = header?.querySelector(':scope > .tool-icon');
+    if (!header || !title || !icon) return;
+    header.classList.add('forge-unified-tool-header');
+    let home = header.querySelector(':scope > .forge-logo-home, :scope > .forge-tool-home');
+    if (!home) {
+      home = document.createElement('button');
+      home.type = 'button';
+      home.className = 'forge-tool-home';
+      home.textContent = 'The Forge';
+      home.setAttribute('aria-label','Return to The Forge home');
+      home.addEventListener('click', () => homeAction.click());
+      title.before(home);
+    } else {
+      // Logo Resizer already owns this exact control and its original listener.
+      home.classList.add('forge-tool-home');
+    }
+  });
 })();
 </script>
 <script id="forge-brand-intro-js">/* The Forge / cinematic assembly. Eight actual tool pictograms form an F,
