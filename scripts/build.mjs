@@ -35,6 +35,7 @@ const forgeBrandJs=read('src/js/presentation/forge-brand.js');
 const forgeApprovedHome=read('src/html/forge-approved-home.html');
 const forgeApprovedCss=read('src/css/experience/forge-approved-swap.css');
 const forgeApprovedJs=read('src/js/presentation/forge-approved-swap.js');
+const forgeExactDemo=read('src/html/forge-centered-exact-demo.html');
 const forgePaintCss=read('src/css/experience/forge-first-paint.css');
 const forgePaintJs=read('src/js/presentation/forge-first-paint.js');
 const forgeVideoRouteCss=read('src/css/experience/forge-video-route.css');
@@ -249,9 +250,13 @@ function forgeBrand(html,standaloneRelease){
     '<script id="forge-whats-new-js" src="./dist/js/forge-whats-new.js?v=forge-caption-20261019-v12"></script>';
   const workbenchScript=standaloneRelease?'<script id="forge-workbench-v2-js">'+forgeWorkbenchJs+'</script>':
     '<script id="forge-workbench-v2-js" src="./dist/js/forge-workbench-v2.js?v=forge-original-workbench-v2-hover-20261103"></script>';
+  // In standalone builds the approved demo is embedded as escaped JSON; on
+  // Pages it is served verbatim in its own full-viewport iframe document.
+  const forgeExactSource=standaloneRelease?
+    '<script type="application/json" id="forgeExactDemoSource">'+JSON.stringify(forgeExactDemo).replaceAll('<','\\u003c')+'</script>\n':'';
   const approvedScript=standaloneRelease?'<script id="forge-approved-swap-js">'+forgeApprovedJs+'</script>':
-    '<script id="forge-approved-swap-js" src="./dist/js/forge-approved-swap.js?v=forge-centered-20261104"></script>';
-  html=html.replace('</body>',approvedScript+'\n'+brandScript+'\n'+routeScript+'\n'+compressorFitScript+'\n'+welcomeScript+'\n'+workbenchScript+'\n</body>');
+    '<script id="forge-approved-swap-js" src="./dist/js/forge-approved-swap.js?v=forge-exact-demo-20261104-v1"></script>';
+  html=html.replace('</body>',forgeExactSource+approvedScript+'\n'+brandScript+'\n'+routeScript+'\n'+compressorFitScript+'\n'+welcomeScript+'\n'+workbenchScript+'\n</body>');
   return html;
 }
 
@@ -268,6 +273,7 @@ save('dist/css/forge-brand.css',forgeBrandCss);
 save('dist/js/forge-brand.js',forgeBrandJs);
 save('dist/css/forge-approved-swap.css',forgeApprovedCss);
 save('dist/js/forge-approved-swap.js',forgeApprovedJs);
+save('dist/forge-centered-exact-demo.html',forgeExactDemo);
 save('dist/css/forge-video-route.css',forgeVideoRouteCss);
 save('dist/css/forge-compressor-frame.css',forgeCompressorFrameCss);
 save('dist/js/forge-compressor-fit.js',forgeCompressorFitJs);
