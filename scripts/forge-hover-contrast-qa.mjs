@@ -36,6 +36,7 @@ try{
   for(const viewport of [{width:1440,height:900},{width:390,height:844}]){
     const context=await browser.newContext({viewport,reducedMotion:'no-preference'});
     await context.addInitScript(()=>{
+      window.__forgeDisableSharedHandoff=true;
       sessionStorage.setItem('forge_intro_suppress','1');
       sessionStorage.setItem('forge_whatsnew_suppress','1');
     });
