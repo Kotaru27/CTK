@@ -4,6 +4,7 @@ import {fileURLToPath} from 'node:url';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const rd=s=>fs.readFileSync(path.join(root,s),'utf8');
 const a=rd('source/baseline.html'), b=rd('index.html');
+const ids=s=>[...s.replace(/<script\b[^>]*>[\s\S]*?<\/script>/g,'').matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]).sort();
 const standalone=rd('dist/creative-tools-standalone.html');
 const approvedHome=rd('src/html/forge-approved-home.html');
 const approvedCss=rd('src/css/experience/forge-approved-swap.css');
@@ -19,7 +20,6 @@ if(!b.includes('./dist/css/forge-approved-swap.css') ||
    !standalone.includes('<script id="forge-approved-swap-js">'+approvedJs+'</script>'))
   throw Error('Approved Forge source/build parity mismatch');
 
-const ids=s=>[...s.replace(/<script\b[^>]*>[\s\S]*?<\/script>/g,'').matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]).sort();
 const getRoutes=s=>[...s.matchAll(/<button\b[^>]*class="[^"]*home-card[^>]*"[^>]*onclick="([^"]+)"/g)].map(m=>m[1]);
 const beforeIds=ids(a),afterIds=ids(b).filter(id=>!approvedIds.includes(id)&&!["forgeCineCounter","forgeIntro","forgeHeroName","forgeIntroType","forgeIntroSkip","forgeIntroWordmark","forgeIntroGlyphs",
   "forgeWhatsNew","forgeWhatsNewTitle","forgeWhatsNewDescription","forgeWhatsNewClose","forgeWhatsNewNever","forgeWhatsNewContinue","forgeWhatsNewEnter","forgeWhatsNewTrigger","forge-first-paint-css",
