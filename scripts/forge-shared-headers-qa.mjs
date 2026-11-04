@@ -98,7 +98,8 @@ try{
           const mode=document.getElementById('storySubModeToggle').getBoundingClientRect();
           const icon=document.getElementById('stillsToolIcon');
           const headerSvg=icon.querySelector('.forge-storyboard-header-svg');
-          const homeSvg=document.querySelector('#homeContent > .home-card.tool-story .forge-home-icon svg');
+          const homeSvg=document.querySelector('#homeContent > .home-card.tool-story .forge-home-icon svg') ||
+            document.querySelector('#forgeIntro .forge-cine-piece[title="Storyboard"] svg');
           const svgVisible=headerSvg && getComputedStyle(headerSvg).display!=='none';
           const image=getComputedStyle(icon).backgroundImage;
           return {visible:!el.hidden&&getComputedStyle(el).display!=='none',
