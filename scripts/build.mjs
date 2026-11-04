@@ -37,6 +37,8 @@ const forgeApprovedCss=read('src/css/experience/forge-approved-swap.css');
 const forgeApprovedJs=read('src/js/presentation/forge-approved-swap.js');
 const forgeLogoCompactCss=read('src/css/experience/forge-logo-compact.css');
 const forgeLogoCompactJs=read('src/js/presentation/forge-logo-compact.js');
+const forgeSharedHeaderCss=read('src/css/experience/forge-shared-headers.css');
+const forgeSharedHeaderJs=read('src/js/presentation/forge-shared-headers.js');
 const forgePaintCss=read('src/css/experience/forge-first-paint.css');
 const forgePaintJs=read('src/js/presentation/forge-first-paint.js');
 const forgeVideoRouteCss=read('src/css/experience/forge-video-route.css');
@@ -240,7 +242,9 @@ function forgeBrand(html,standaloneRelease){
     '<link rel="stylesheet" href="./dist/css/forge-approved-swap.css?v=forge-route-isolation-20261104-v3">\n';
   const logoCompactStyle=standaloneRelease?'<style id="forge-logo-compact-styles">'+forgeLogoCompactCss+'</style>\n':
     '<link rel="stylesheet" href="./dist/css/forge-logo-compact.css?v=forge-logo-compact-20261104-v6">\n';
-  html=html.replace('</head>',iconLink+fontLink+brandStyle+routeStyle+adaptiveStyle+workspaceFinishStyle+specimenStyle+unifiedStyle+workflowStyle+compressorStyle+welcomeStyle+workbenchStyle+approvedStyle+logoCompactStyle+'</head>');
+  const sharedHeaderStyle=standaloneRelease?'<style id="forge-shared-headers-styles">'+forgeSharedHeaderCss+'</style>\n':
+    '<link rel="stylesheet" href="./dist/css/forge-shared-headers.css?v=forge-eight-header-20261104-v1">\n';
+  html=html.replace('</head>',iconLink+fontLink+brandStyle+routeStyle+adaptiveStyle+workspaceFinishStyle+specimenStyle+unifiedStyle+workflowStyle+compressorStyle+welcomeStyle+workbenchStyle+approvedStyle+logoCompactStyle+sharedHeaderStyle+'</head>');
   // Light-only presentation: do not read an old dark preference on first paint.
   html=html.replace('<body>','<body class="light-mode">\n'+forgeIntro+'\n'+forgeWhatsNew+'\n');
   const brandScript=standaloneRelease?'<script id="forge-brand-intro-js">'+forgeBrandJs+'</script>':
@@ -257,7 +261,9 @@ function forgeBrand(html,standaloneRelease){
     '<script id="forge-approved-swap-js" src="./dist/js/forge-approved-swap.js?v=forge-route-isolation-20261104-v3"></script>';
   const logoCompactScript=standaloneRelease?'<script id="forge-logo-compact-js">'+forgeLogoCompactJs+'</script>':
     '<script id="forge-logo-compact-js" src="./dist/js/forge-logo-compact.js?v=forge-logo-compact-20261104-v6"></script>';
-  html=html.replace('</body>',approvedScript+'\n'+logoCompactScript+'\n'+brandScript+'\n'+routeScript+'\n'+compressorFitScript+'\n'+welcomeScript+'\n'+workbenchScript+'\n</body>');
+  const sharedHeaderScript=standaloneRelease?'<script id="forge-shared-headers-js">'+forgeSharedHeaderJs+'</script>':
+    '<script id="forge-shared-headers-js" src="./dist/js/forge-shared-headers.js?v=forge-eight-header-20261104-v1"></script>';
+  html=html.replace('</body>',approvedScript+'\n'+logoCompactScript+'\n'+sharedHeaderScript+'\n'+brandScript+'\n'+routeScript+'\n'+compressorFitScript+'\n'+welcomeScript+'\n'+workbenchScript+'\n</body>');
   return html;
 }
 
@@ -275,6 +281,8 @@ save('dist/js/forge-brand.js',forgeBrandJs);
 save('dist/css/forge-approved-swap.css',forgeApprovedCss);
  save('dist/css/forge-logo-compact.css',forgeLogoCompactCss);
  save('dist/js/forge-logo-compact.js',forgeLogoCompactJs);
+ save('dist/css/forge-shared-headers.css',forgeSharedHeaderCss);
+ save('dist/js/forge-shared-headers.js',forgeSharedHeaderJs);
 save('dist/js/forge-approved-swap.js',forgeApprovedJs);
 save('dist/css/forge-video-route.css',forgeVideoRouteCss);
 save('dist/css/forge-compressor-frame.css',forgeCompressorFrameCss);

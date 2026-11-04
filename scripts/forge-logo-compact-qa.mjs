@@ -159,11 +159,13 @@ try{
     const download=await downloadPromise;
     assert.match(download.suggestedFilename(),/\.zip$/i,'Original batch ZIP export is broken');
 
-    // The global header is only hidden on Logo Resizer; other tool routes remain unchanged.
+    // All eight tools use the same unified header while retaining their original actions.
     await page.locator('#mainSidebar [id="nav-pdf-image"]').click();
     await page.locator('#section-pdf').waitFor({state:'visible',timeout:10000});
     const otherHeader=await page.locator('body > .header').evaluate(el=>getComputedStyle(el).display);
-    assert.notEqual(otherHeader,'none','The global header was hidden in other tools');
+    assert.equal(otherHeader,'none','The global header must be hidden on every active tool route');
+    assert.ok(await page.locator('#section-pdf .forge-tool-home').isVisible(),
+      'PDF tool must expose the shared Home link');
 
     assert.deepEqual(errors,[],'Runtime error in Logo Resizer UI: '+errors.join('; '));
     await context.close();

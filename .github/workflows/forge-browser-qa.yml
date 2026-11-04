@@ -20,6 +20,9 @@ on:
       - 'src/css/experience/forge-logo-compact.css'
       - 'src/js/presentation/forge-logo-compact.js'
       - 'scripts/forge-logo-compact-qa.mjs'
+      - 'src/css/experience/forge-shared-headers.css'
+      - 'src/js/presentation/forge-shared-headers.js'
+      - 'scripts/forge-shared-headers-qa.mjs'
       - 'scripts/build.mjs'
       - 'scripts/forge-browser-qa.mjs'
       - 'scripts/forge-compressor-browser-qa.mjs'
@@ -45,6 +48,9 @@ on:
       - 'src/css/experience/forge-logo-compact.css'
       - 'src/js/presentation/forge-logo-compact.js'
       - 'scripts/forge-logo-compact-qa.mjs'
+      - 'src/css/experience/forge-shared-headers.css'
+      - 'src/js/presentation/forge-shared-headers.js'
+      - 'scripts/forge-shared-headers-qa.mjs'
       - 'scripts/build.mjs'
       - 'scripts/forge-browser-qa.mjs'
       - 'scripts/forge-compressor-browser-qa.mjs'
@@ -82,6 +88,8 @@ jobs:
         run: node scripts/forge-approved-browser-qa.mjs
       - name: Verify original Logo Resizer controls and compact dimension-aware layout
         run: node scripts/forge-logo-compact-qa.mjs
+      - name: Verify all eight unified tool headers at desktop widths
+        run: node scripts/forge-shared-headers-qa.mjs
       - name: Verify visual composition at mobile and desktop widths
         run: node scripts/forge-visual-composition-qa.mjs
       - name: Verify original Forge workbench and keyboard search

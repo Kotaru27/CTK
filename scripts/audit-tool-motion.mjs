@@ -102,7 +102,7 @@ try {
       window.__auditEvents=[];
       window.__routeStart=performance.now();
     });
-    await page.locator(t.key==='logo-resizer'?'#section-logo .forge-logo-home':'.header .brand-title').click();
+    await page.locator('#view-app .tool-section.active .forge-tool-home').click();
     await page.waitForFunction(()=>!document.getElementById('view-home').classList.contains('hidden'),{timeout:7500});
     await page.waitForTimeout(430);
     const back=await page.evaluate(()=>({

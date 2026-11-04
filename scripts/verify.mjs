@@ -11,6 +11,8 @@ const approvedCss=rd('src/css/experience/forge-approved-swap.css');
 const approvedJs=rd('src/js/presentation/forge-approved-swap.js');
 const logoCompactCss=rd('src/css/experience/forge-logo-compact.css');
 const logoCompactJs=rd('src/js/presentation/forge-logo-compact.js');
+const sharedHeaderCss=rd('src/css/experience/forge-shared-headers.css');
+const sharedHeaderJs=rd('src/js/presentation/forge-shared-headers.js');
 const approvedIds=ids(approvedHome);
 if(approvedIds.length!==new Set(approvedIds).size)throw Error('Approved layout contains duplicate IDs');
 if(!b.includes(approvedHome))throw Error('Approved home markup missing or altered');
@@ -28,6 +30,13 @@ if(!b.includes('./dist/css/forge-logo-compact.css') ||
    !standalone.includes('<style id="forge-logo-compact-styles">'+logoCompactCss+'</style>') ||
    !standalone.includes('<script id="forge-logo-compact-js">'+logoCompactJs+'</script>'))
   throw Error('Approved Logo Resizer presentation source/build parity mismatch');
+if(!b.includes('./dist/css/forge-shared-headers.css') ||
+   !b.includes('./dist/js/forge-shared-headers.js') ||
+   rd('dist/css/forge-shared-headers.css')!==sharedHeaderCss ||
+   rd('dist/js/forge-shared-headers.js')!==sharedHeaderJs ||
+   !standalone.includes('<style id="forge-shared-headers-styles">'+sharedHeaderCss+'</style>') ||
+   !standalone.includes('<script id="forge-shared-headers-js">'+sharedHeaderJs+'</script>'))
+  throw Error('Shared eight-tool header source/build parity mismatch');
 
 const getRoutes=s=>[...s.matchAll(/<button\b[^>]*class="[^"]*home-card[^>]*"[^>]*onclick="([^"]+)"/g)].map(m=>m[1]);
 const beforeIds=ids(a),afterIds=ids(b).filter(id=>!approvedIds.includes(id)&&!["forgeCineCounter","forgeIntro","forgeHeroName","forgeIntroType","forgeIntroSkip","forgeIntroWordmark","forgeIntroGlyphs",
@@ -82,6 +91,8 @@ if(rd('dist/css/forge-video-route.css')!==videoRouteCss ||
    rd('dist/js/forge-video-route.js')!==videoRouteJs)
   throw Error('Modular Video Stills route layer differs from its source');
 const withoutVisual=standalone
+  .replace('<style id="forge-shared-headers-styles">'+sharedHeaderCss+'</style>\n','')
+  .replace('<script id="forge-shared-headers-js">'+sharedHeaderJs+'</script>\n','')
   .replace('<style id="forge-logo-compact-styles">'+logoCompactCss+'</style>\n','')
   .replace('<script id="forge-logo-compact-js">'+logoCompactJs+'</script>\n','')
   .replace('<style id="forge-approved-swap-styles">'+approvedCss+'</style>\n','')

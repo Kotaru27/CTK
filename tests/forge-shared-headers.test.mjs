@@ -1,0 +1,35 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const read=path=>fs.readFileSync(new URL('../'+path,import.meta.url),'utf8');
+const css=read('src/css/experience/forge-shared-headers.css');
+const js=read('src/js/presentation/forge-shared-headers.js');
+const build=read('scripts/build.mjs');
+const html=read('index.html');
+
+test('all five original sections share a header without replacing headings or action nodes',()=>{
+  assert.match(js,/querySelectorAll\('#view-app > \.tool-section'\)/);
+  assert.match(js,/section\.id === 'section-yt-helper'/);
+  assert.match(js,/header\.classList\.add\('forge-unified-tool-header'\)/);
+  assert.match(js,/title\.before\(home\)/);
+  assert.match(js,/homeAction\.click\(\)/);
+  assert.match(js,/home\.classList\.add\('forge-tool-home'\)/);
+  assert.doesNotMatch(js,/replaceChildren|innerHTML\s*=|UI\.openTool/);
+  assert.match(css,/body\.forge-swap-ready\.tool-active > \.header\{display:none!important\}/);
+  assert.match(css,/font:400 24px\/1\.15 "Kola"/);
+  assert.match(css,/font:750 clamp\(20px,1\.72vw,27px\)\/1\.05 "Plus Jakarta Sans"/);
+  assert.equal((html.match(/id="stillsToolTitle"/g)||[]).length,1);
+  for(const control of ['logoInput','exportAllBtn','pdfTabConvert','pdfTabSplit','stillsInput',
+    'storySubModeToggle','stillsTabStory','adlinksTabGen','adlinksTabDownloader']){
+    assert.equal((html.match(new RegExp('id="'+control+'"','g'))||[]).length,1,
+      'Original toolbar control preserved once: '+control);
+  }
+});
+test('shared header is present in modular and standalone builds',()=>{
+  assert.match(build,/const forgeSharedHeaderCss=read/);
+  assert.match(build,/const forgeSharedHeaderJs=read/);
+  assert.match(build,/save\('dist\/css\/forge-shared-headers\.css'/);
+  assert.match(build,/save\('dist\/js\/forge-shared-headers\.js'/);
+  assert.match(html,/forge-shared-headers\.css\?v=forge-eight-header-20261104-v1/);
+  assert.match(html,/forge-shared-headers\.js\?v=forge-eight-header-20261104-v1/);
+});
