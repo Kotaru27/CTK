@@ -27,6 +27,21 @@
     }
   });
 
+  // Reuse the EXACT Storyboard SVG already rendered on its homepage card.
+  // Do not substitute a screenshot-derived raster image or new artwork.
+  const homepageStoryboardSvg = document.querySelector(
+    '#homeContent > .home-card.tool-story .forge-home-icon svg'
+  );
+  const storyHeaderIcon = document.getElementById('stillsToolIcon');
+  if (homepageStoryboardSvg && storyHeaderIcon &&
+      !storyHeaderIcon.querySelector('.forge-storyboard-header-svg')) {
+    const sharedSvg = homepageStoryboardSvg.cloneNode(true);
+    sharedSvg.classList.add('forge-storyboard-header-svg');
+    sharedSvg.setAttribute('aria-hidden','true');
+    sharedSvg.setAttribute('focusable','false');
+    storyHeaderIcon.append(sharedSvg);
+  }
+
   // Keep the ORIGINAL Storyboard name control visible in Grid Board mode.
   // The Storyboard controller owns the input, its oninput handler, and board
   // persistence. This repair never clones or replaces that input.

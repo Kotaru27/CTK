@@ -201,13 +201,24 @@ body.light-mode #view-app #section-stills-boards.tool-section.active >
     left:188px!important;
   }
 }
-/* User-supplied storyboard grid logo (original PNG, embedded unchanged).
-   Other tools and the Video Stills/Filmstrip/Fit icons are unaffected. */
+/* Storyboard Grid Board uses the identical SVG as its homepage card.
+   Only this mode reveals the cloned homepage SVG; other shared modes keep
+   their original Material Symbols icon and all controls remain untouched. */
+#view-app #section-stills-boards #stillsToolIcon > .forge-storyboard-header-svg{
+  display:none!important;
+}
 body.light-mode #view-app #section-stills-boards.tool-section.active:has(#subModeBtnBoard.active-mode) >
 .forge-unified-tool-header > #stillsToolIcon{
-  background-color:#f8f0e3!important;
-  background-image:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD4AAAAzCAYAAADPX7uaAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAJSSURBVGhD7dg/aFNRFAbwL0b6UkubxAZLsZgiDXZoRV3EDjo42EFdBBN0EhVri6CEtiKIVB0UCQXF2CK6FEErbhXq4KBIXUVdJEUSCbSTlpc/zc1gHCRQjyc2Cc+XNuf+4C3nPF74cu99PI4j+z1egEAbaEEKHVwax2pn/GsyiWWVo+WKNRoubO/ooOWaKRn88/w8rk08wMdYjLaqtjMQwNjAefR0ddGW7UoGPzhwDt8WFtDc1ARvSwttV+yHaSKVyWBbezteT0zStu3Y4LNzc7hw+xZ2+P14cScCw2igt1RMqTyODYfxJZHAvdHL6O/ro7fYin25LaVMAEDA32lJaAAwjAYE/J3AiufXEhtcAnarP301i6vRKPb17sJQ8DhtV+3+s2m8//QBNwYHETrUT9u2YoNffziJqZmXtGyZU0eP4Mrps7RsK3arb3I10pKlXIZBS7ZjV7y41Q/vP4DxcJi2AQC7QyGkl7N49+gx2nw+2mZdikQw8/bNmtjq7IpLoINLIzY4+3IbfzKF6PRzWrbMUDCIiydO0rKt2BU3U2laspSZ+b/PLwe74uV8uZ25OYZcTuHu8Ag2uz20zVpLX27sihe1et3Y29vDXhsdTgDAnu7uv3qlrlavm/5EzfwzeD1jg3uafw8eYok4lMrTdlWUyiOWiAMrnl9L7BlHGROY5OIifhYK2LqlDU4n+//9YV1MYCB55lZUasqazmaRyyv4PF7aYq2bKWu9W/1w1ikdXBodXBodXBodXBodXBodXBodXBodXJpf63fj2Nv58XEAAAAASUVORK5CYII=")!important;
-  background-repeat:no-repeat!important;background-position:center!important;
-  background-size:36px auto!important;color:transparent!important;
+  background-color:#e8f1e7!important;
+  background-image:none!important;
+  color:transparent!important;
   font-size:0!important;
+}
+body.light-mode #view-app #section-stills-boards.tool-section.active:has(#subModeBtnBoard.active-mode) >
+.forge-unified-tool-header > #stillsToolIcon > .forge-storyboard-header-svg{
+  display:block!important;
+  width:23px!important;height:23px!important;
+  flex:0 0 23px!important;
+  stroke:#275b3b!important;color:#275b3b!important;
+  fill:none!important;
 }
