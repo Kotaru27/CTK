@@ -11,6 +11,7 @@ function check(value,message) {
 }
 try {
  const context=await browser.newContext({viewport:{width:1440,height:900},reducedMotion:'no-preference'});
+ await context.addInitScript(()=>{ window.__forgeDisableSharedHandoff=true; });
  const page=await context.newPage();
  const pageErrors=[];
  page.on('pageerror',error=>pageErrors.push(String(error)));
