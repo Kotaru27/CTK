@@ -37,6 +37,6 @@ test('preview changes only CSS sizing, not original canvas export data',()=>{
   assert.match(build,/const forgeLogoCompactJs=read/);
   assert.match(build,/save\('dist\/css\/forge-logo-compact\.css'/);
   assert.match(build,/save\('dist\/js\/forge-logo-compact\.js'/);
-  assert.match(page,/forge-logo-compact\.css\?v=forge-logo-compact-20261104-v3/);
-  assert.match(page,/forge-logo-compact\.js\?v=forge-logo-compact-20261104-v3/);
+  assert.match(page,/forge-logo-compact\.css\?v=forge-logo-compact-20261104-v4/);
+  assert.match(page,/forge-logo-compact\.js\?v=forge-logo-compact-20261104-v4/);
 });
