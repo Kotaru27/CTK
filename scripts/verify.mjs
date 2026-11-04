@@ -9,6 +9,9 @@ const standalone=rd('dist/creative-tools-standalone.html');
 const approvedHome=rd('src/html/forge-approved-home.html');
 const approvedCss=rd('src/css/experience/forge-approved-swap.css');
 const approvedJs=rd('src/js/presentation/forge-approved-swap.js');
+const exactDemo=rd('src/html/forge-centered-exact-demo.html');
+const escapedDemo=JSON.stringify(exactDemo).replaceAll('<','\u003c');
+const exactSource='<script type="application/json" id="forgeExactDemoSource">'+escapedDemo+'</script>';
 const approvedIds=ids(approvedHome);
 if(approvedIds.length!==new Set(approvedIds).size)throw Error('Approved layout contains duplicate IDs');
 if(!b.includes(approvedHome))throw Error('Approved home markup missing or altered');
@@ -16,6 +19,8 @@ if(!b.includes('./dist/css/forge-approved-swap.css') ||
    !b.includes('./dist/js/forge-approved-swap.js') ||
    rd('dist/css/forge-approved-swap.css')!==approvedCss ||
    rd('dist/js/forge-approved-swap.js')!==approvedJs ||
+   rd('dist/forge-centered-exact-demo.html')!==exactDemo ||
+   !standalone.includes(exactSource) ||
    !standalone.includes('<style id="forge-approved-swap-styles">'+approvedCss+'</style>') ||
    !standalone.includes('<script id="forge-approved-swap-js">'+approvedJs+'</script>'))
   throw Error('Approved Forge source/build parity mismatch');
@@ -73,6 +78,7 @@ if(rd('dist/css/forge-video-route.css')!==videoRouteCss ||
    rd('dist/js/forge-video-route.js')!==videoRouteJs)
   throw Error('Modular Video Stills route layer differs from its source');
 const withoutVisual=standalone
+  .replace(exactSource+'\n','')
   .replace('<style id="forge-approved-swap-styles">'+approvedCss+'</style>\n','')
   .replace('<script id="forge-approved-swap-js">'+approvedJs+'</script>\n','')
   .replace('\n'+approvedHome,'\n')
