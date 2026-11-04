@@ -290,3 +290,21 @@ body.tool-active:has(#section-logo.active) > .main-layout{min-height:0!important
 @media(prefers-reduced-motion:reduce){
   #section-logo .logo-card-item,#section-logo .tool-header .liquid-btn{transition:none!important;animation:none!important}
 }
+
+/* The legacy adaptive rule has a more specific :not(:has()) selector.
+   Override that exact state so the single-row strip spans the entire workspace. */
+@media(min-width:1021px){
+  #section-logo .editor-layout:not(:has(#logoDetailOverlay.active)) > .sidebar-panel{
+    flex:none!important;width:100%!important;min-width:0!important;max-width:none!important;
+    grid-column:1/-1!important;grid-row:1!important;
+  }
+}
+/* The old empty-state min-height is more specific than the new compact card. */
+#section-logo #logoGrid:has(#logoEmpty:not([style*="display: none"])) #logoEmpty{
+  min-height:260px!important;max-height:320px!important;height:auto!important;
+  width:min(100%,640px)!important;flex:0 1 640px!important;
+}
+#section-logo #logoGrid:has(#logoEmpty:not([style*="display: none"])) #logoEmpty > .logo-empty-layout{
+  min-height:260px!important;
+}
+#section-logo .tool-header{box-sizing:border-box!important}
