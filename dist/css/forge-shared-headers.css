@@ -214,6 +214,12 @@ body.light-mode #view-app #section-stills-boards.tool-section.active:has(#subMod
   color:transparent!important;
   font-size:0!important;
 }
+/* Hide the original Material Symbols SVG only while the shared Storyboard
+   artwork is shown, avoiding doubled symbols in the same icon box. */
+body.light-mode #view-app #section-stills-boards.tool-section.active:has(#subModeBtnBoard.active-mode) >
+.forge-unified-tool-header > #stillsToolIcon > svg:not(.forge-storyboard-header-svg){
+  display:none!important;
+}
 body.light-mode #view-app #section-stills-boards.tool-section.active:has(#subModeBtnBoard.active-mode) >
 .forge-unified-tool-header > #stillsToolIcon > .forge-storyboard-header-svg{
   display:block!important;

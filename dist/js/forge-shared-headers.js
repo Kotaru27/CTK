@@ -34,14 +34,56 @@
   ) || document.querySelector(
     '#forgeIntro .forge-cine-piece[title="Storyboard"] svg'
   );
+  // When the intro is skipped, its temporary DOM is removed. Recreate the
+  // exact SVG markup authored in the original Storyboard intro/home card as a
+  // final fallback, not an image or a replacement design.
+  const createStoryboardSourceSvg = () => {
+    const ns='http://www.w3.org/2000/svg';
+    const svg=document.createElementNS(ns,'svg');
+    for (const [key,value] of Object.entries({
+      viewBox:'0 0 24 24','aria-hidden':'true',focusable:'false',
+      fill:'none',stroke:'currentColor','stroke-width':'1.65',
+      'stroke-linecap':'round','stroke-linejoin':'round'
+    })) svg.setAttribute(key,value);
+    const rect=document.createElementNS(ns,'rect');
+    for (const [key,value] of Object.entries({x:'3',y:'4',width:'18',height:'16',rx:'2'}))
+      rect.setAttribute(key,value);
+    const path=document.createElementNS(ns,'path');
+    path.setAttribute('d','M3 9h18M10 9v11M3 15h7M10 15h11');
+    svg.append(rect,path);
+    return svg;
+  };
   const storyHeaderIcon = document.getElementById('stillsToolIcon');
-  if (homepageStoryboardSvg && storyHeaderIcon &&
-      !storyHeaderIcon.querySelector('.forge-storyboard-header-svg')) {
-    const sharedSvg = homepageStoryboardSvg.cloneNode(true);
+  if (storyHeaderIcon && !storyHeaderIcon.querySelector('.forge-storyboard-header-svg')) {
+    const sharedSvg=(homepageStoryboardSvg || createStoryboardSourceSvg()).cloneNode(true);
     sharedSvg.classList.add('forge-storyboard-header-svg');
     sharedSvg.setAttribute('aria-hidden','true');
     sharedSvg.setAttribute('focusable','false');
     storyHeaderIcon.append(sharedSvg);
+  }
+  // Storyboard's existing mode switch assigns toolIcon.textContent, and the
+  // Material Symbols renderer then replaces its SVG. Reattach only our cloned
+  // homepage artwork after those handlers finish; do not alter the mode logic.
+  if (storyHeaderIcon && typeof MutationObserver !== 'undefined') {
+    let scheduled=false;
+    const restoreSharedStoryboardIcon=()=>{
+      scheduled=false;
+      if (storyHeaderIcon.querySelector('.forge-storyboard-header-svg')) return;
+      const source=document.querySelector('#homeContent > .home-card.tool-story .forge-home-icon svg') ||
+        document.querySelector('#forgeIntro .forge-cine-piece[title="Storyboard"] svg') ||
+        createStoryboardSourceSvg();
+      const svg=source.cloneNode(true);
+      svg.classList.add('forge-storyboard-header-svg');
+      svg.setAttribute('aria-hidden','true');
+      svg.setAttribute('focusable','false');
+      storyHeaderIcon.append(svg);
+    };
+    const iconObserver=new MutationObserver(()=>{
+      if (scheduled || storyHeaderIcon.querySelector('.forge-storyboard-header-svg')) return;
+      scheduled=true;
+      requestAnimationFrame(restoreSharedStoryboardIcon);
+    });
+    iconObserver.observe(storyHeaderIcon,{childList:true});
   }
 
   // Keep the ORIGINAL Storyboard name control visible in Grid Board mode.
