@@ -92,6 +92,11 @@ try{
     homeBounds:(()=>{const x=document.querySelector('#view-home').getBoundingClientRect();return{left:x.left,width:x.width}})(),
     approvedBounds:(()=>{const x=document.querySelector('.forge-approved-home').getBoundingClientRect();return{left:x.left,width:x.width}})(),
     gridWidth:document.querySelector('#homeContent').getBoundingClientRect().width,
+    gridTop:document.querySelector('#homeContent').getBoundingClientRect().top,
+    artTextOverlaps:nodes.map(card=>{const art=card.querySelector('.home-card-art'),label=card.querySelector('.home-card-title');
+      if(!art||!label)return false;const a=art.getBoundingClientRect(),t=label.getBoundingClientRect();
+      return a.bottom>t.top+2&&a.top<t.bottom-2&&a.right>t.left+2&&a.left<t.right-2;
+    }),
     featuredLabel:document.getElementById('forgeApprovedFeaturedMount')?.textContent.trim(),
     cardsBounds:nodes.map(n=>({width:n.getBoundingClientRect().width, title:n.querySelector('.home-card-title')?.getBoundingClientRect().width}))
    };
@@ -117,6 +122,11 @@ try{
     'Eight tools are compressed into an unusable grid: '+JSON.stringify(actual));
   assert.ok(actual.cardsBounds.every(n=>n.width>=100&&n.title>=65),
     'Tool labels are compressed: '+JSON.stringify(actual.cardsBounds));
+  if(viewport.width<=560){
+    assert.ok(actual.gridTop<535, 'Mobile cards start too far below the fold: '+JSON.stringify(actual));
+    assert.ok(actual.artTextOverlaps.every(x=>!x),
+      'Mobile artwork still covers tool names: '+JSON.stringify(actual.artTextOverlaps));
+  }
   assert.equal(actual.featuredLabel,'Select a workspace',
     'Featured tool label contains duplicate placeholder text');
   console.log('APPROVED_HOME_GEOMETRY '+JSON.stringify({viewport,
