@@ -6,6 +6,7 @@ const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 try {
   const context=await browser.newContext({viewport:{width:1920,height:1080}});
   await context.addInitScript(()=>{
+      window.__forgeDisableSharedHandoff=true;
     try {
       sessionStorage.setItem('forge_intro_suppress','1');
       sessionStorage.setItem('forge_whatsnew_suppress','1');
