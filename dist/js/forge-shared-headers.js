@@ -31,6 +31,8 @@
   // Do not substitute a screenshot-derived raster image or new artwork.
   const homepageStoryboardSvg = document.querySelector(
     '#homeContent > .home-card.tool-story .forge-home-icon svg'
+  ) || document.querySelector(
+    '#forgeIntro .forge-cine-piece[title="Storyboard"] svg'
   );
   const storyHeaderIcon = document.getElementById('stillsToolIcon');
   if (homepageStoryboardSvg && storyHeaderIcon &&
