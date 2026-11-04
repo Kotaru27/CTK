@@ -17,7 +17,8 @@ test('all five original sections share a header without replacing headings or ac
   assert.match(js,/observer\.observe\(nameLabel/);
   assert.doesNotMatch(css,/data:image\/png;base64,/);
   assert.match(js,/\.home-card\.tool-story \.forge-home-icon svg/);
-  assert.match(js,/homepageStoryboardSvg\.cloneNode\(true\)/);
+  assert.match(js,/\(homepageStoryboardSvg \|\| createStoryboardSourceSvg\(\)\)\.cloneNode\(true\)/,
+    'Storyboard header must clone the homepage source or its identical fallback');
   assert.match(js,/\.forge-cine-piece\[title="Storyboard"\] svg/,
     'Header must use the same source SVG as the homepage when the intro is present');
   assert.match(js,/createStoryboardSourceSvg/);
