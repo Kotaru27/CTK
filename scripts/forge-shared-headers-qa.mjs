@@ -122,7 +122,8 @@ try{
         const input=page.locator('#storyNameInput');
         const before=await input.inputValue();
         await input.fill('Storyboard Header Check');
-        assert.equal(await input.inputValue(),'Storyboard Header Check');
+        assert.equal(await input.inputValue(),'Storyboard_Header_Check',
+          'Existing Storyboard filename sanitizer must remain unchanged');
         assert.ok(await page.locator('#storyHeaderName').isVisible(),
           'Editing a board name must not hide its original field');
         await input.fill(before);
