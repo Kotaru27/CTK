@@ -156,6 +156,16 @@ try{
         await page.waitForTimeout(80);
         assert.ok(await page.locator('#storyHeaderName').isVisible(),
           'Board name must reappear when Grid Board is restored');
+        await page.waitForFunction(()=>{
+          const icon=document.querySelector('#stillsToolIcon .forge-storyboard-header-svg');
+          return icon && getComputedStyle(icon).display!=='none';
+        },null,{timeout:3000});
+        const iconState=await page.locator('#stillsToolIcon').evaluate(el=>
+          [...el.querySelectorAll(':scope > svg')]
+            .filter(svg=>getComputedStyle(svg).display!=='none')
+            .map(svg=>svg.classList.contains('forge-storyboard-header-svg')));
+        assert.deepEqual(iconState,[true],
+          'Grid Board must show exactly the homepage SVG after returning from Filmstrip');
       }
       if(viewport.width===1440){
         await page.locator('#view-app .tool-section.active .forge-tool-home').click();

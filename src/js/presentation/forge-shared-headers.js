@@ -61,6 +61,30 @@
     sharedSvg.setAttribute('focusable','false');
     storyHeaderIcon.append(sharedSvg);
   }
+  // Storyboard's existing mode switch assigns toolIcon.textContent, and the
+  // Material Symbols renderer then replaces its SVG. Reattach only our cloned
+  // homepage artwork after those handlers finish; do not alter the mode logic.
+  if (storyHeaderIcon && typeof MutationObserver !== 'undefined') {
+    let scheduled=false;
+    const restoreSharedStoryboardIcon=()=>{
+      scheduled=false;
+      if (storyHeaderIcon.querySelector('.forge-storyboard-header-svg')) return;
+      const source=document.querySelector('#homeContent > .home-card.tool-story .forge-home-icon svg') ||
+        document.querySelector('#forgeIntro .forge-cine-piece[title="Storyboard"] svg') ||
+        createStoryboardSourceSvg();
+      const svg=source.cloneNode(true);
+      svg.classList.add('forge-storyboard-header-svg');
+      svg.setAttribute('aria-hidden','true');
+      svg.setAttribute('focusable','false');
+      storyHeaderIcon.append(svg);
+    };
+    const iconObserver=new MutationObserver(()=>{
+      if (scheduled || storyHeaderIcon.querySelector('.forge-storyboard-header-svg')) return;
+      scheduled=true;
+      requestAnimationFrame(restoreSharedStoryboardIcon);
+    });
+    iconObserver.observe(storyHeaderIcon,{childList:true});
+  }
 
   // Keep the ORIGINAL Storyboard name control visible in Grid Board mode.
   // The Storyboard controller owns the input, its oninput handler, and board
