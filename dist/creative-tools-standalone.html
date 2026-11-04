@@ -11216,6 +11216,15 @@ body.light-mode #view-app #section-logo.tool-section .tool-header{box-sizing:bor
 #section-logo #logoControls>.glass-panel:nth-child(2)>div>div[data-guide] input[type=range]{
   margin:0!important;width:100%!important;
 }
+
+/* Preserve a readable full label for Vertical Offset even at 1366px. Give
+   Layout Adjust space once, instead of shrinking its label to microtype. */
+#section-logo #logoControls{
+  grid-template-columns:minmax(280px,1fr) minmax(430px,1.45fr) minmax(315px,1.07fr)!important;
+}
+#section-logo #logoControls>.glass-panel:nth-child(2)>div{
+  grid-template-columns:minmax(184px,1fr) minmax(60px,80px)!important;
+}
 </style>
 </head>
 <body class="light-mode">
