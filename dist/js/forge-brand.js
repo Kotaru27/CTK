@@ -2,6 +2,7 @@
    then an eight-panel curtain reveals the already-mounted home in sync. */
 (function(){
   'use strict';
+  if(window.__forgeSharedHandoffActive)return;
   const intro=document.getElementById('forgeIntro');
   const home=document.getElementById('view-home');
   const app=document.getElementById('view-app');
