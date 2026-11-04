@@ -58,7 +58,7 @@
     const composition=d.createElement('div');composition.className='forge-cine-composition';
     const emblem=d.createElement('div');emblem.className='forge-cine-emblem';
     emblem.append(orbit,assembly);
-    composition.append(identity,emblem);
+    composition.append(emblem,identity);
     shell.insertBefore(composition,foot);
     intro.classList.add('forge-swap-prepared');
   }
@@ -221,12 +221,13 @@
       jobs.push(ghostAnim.finished.catch(()=>{}));
     });
     const st=getComputedStyle(wordmark);
+    const type={fontSize:st.fontSize,fontFamily:st.fontFamily,lineHeight:st.lineHeight,color:st.color};
     wordmark.className='forge-flight-wordmark';
     Object.assign(wordmark.style,{
       position:'fixed',left:fromTitle.left+'px',top:fromTitle.top+'px',
       width:fromTitle.width+'px',height:fromTitle.height+'px',
-      fontSize:st.fontSize,fontFamily:st.fontFamily,lineHeight:st.lineHeight,
-      margin:'0',padding:'0',color:st.color,transformOrigin:'top left'
+      fontSize:type.fontSize,fontFamily:type.fontFamily,lineHeight:type.lineHeight,
+      margin:'0',padding:'0',color:type.color,transformOrigin:'top left'
     });
     layer.append(wordmark);
     const tx=toTitle.left-fromTitle.left,ty=toTitle.top-fromTitle.top;
