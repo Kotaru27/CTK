@@ -71,6 +71,10 @@ try{
       {name:'arc.png',mimeType:'image/png',buffer:Buffer.from(image,'base64')},
       {name:'field.png',mimeType:'image/png',buffer:Buffer.from(image,'base64')}
     ]);
+    await page.locator('#logoDimensionOverlay').waitFor({state:'visible',timeout:7000});
+    await page.locator('#logoDimWidth').fill('200');
+    await page.locator('#logoDimHeight').fill('200');
+    await page.locator('#logoDimOkBtn').click();
     await page.waitForFunction(()=>[...document.querySelectorAll('#logoGrid > .logo-card-item')].length===2 &&
       [...document.querySelectorAll('#logoGrid > .logo-card-item canvas')].every(c=>c.width===200&&c.height===200),
     null,{timeout:12000});
