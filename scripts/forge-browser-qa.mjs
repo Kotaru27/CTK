@@ -272,6 +272,7 @@ try {
  for(const viewport of [{width:2560,height:1440},{width:2048,height:1152}]) {
    const wide=await browser.newContext({viewport,deviceScaleFactor:1,reducedMotion:'no-preference'});
    await wide.addInitScript(()=>{
+     window.__forgeDisableSharedHandoff=true;
      sessionStorage.setItem('forge_intro_suppress','1');
      sessionStorage.setItem('forge_whatsnew_suppress','1');
    });
