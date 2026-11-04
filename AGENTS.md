@@ -11,6 +11,7 @@ For UI research, design proposals, visual critique, and frontend polish, consult
 - `.agents/skills/ponytail/SKILL.md` (smallest complete, safe code change; prefer existing project patterns and verify affected callers)
 - `.agents/skills/web-design-guidelines/SKILL.md` (review markup, accessibility, responsive behavior, and interaction conventions)
 - `.agents/skills/webapp-testing/SKILL.md` (Playwright-based functional and responsive browser checks)
+- `.agents/skills/hallmark/SKILL.md` (Hallmark design audits and full layout redesigns; the complete upstream skill is pinned as a Git submodule and must be initialized before use)
 
 The existing cinematic eight-tool intro is approved. Preserve its branding, behavior, keyboard skip, reduced-motion fallback, and synchronized home handoff unless explicitly asked to change them.
 
