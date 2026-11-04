@@ -10814,6 +10814,27 @@ body.forge-swap-active #view-home .forge-approved-home #homeContent .home-card{v
 /* The featured workspace is a single live label, never a nested duplicate. */
 #view-home .forge-approved-home #forgeApprovedFeaturedMount{font-size:19px;line-height:1.2;letter-spacing:-.04em;color:#213d2d;margin:11px 0 9px;font-weight:740}
 #view-home .forge-approved-home #forgeApprovedFeaturedMount #forgeFeaturedLabel{display:block!important;visibility:visible!important;opacity:1!important;position:static!important;max-width:100%;white-space:normal!important;font:inherit!important;color:inherit!important;transform:none!important}
+
+
+/* Small touchscreens: put real tools above redundant preview copy, keep artwork
+   in the upper visual zone so it never crosses a tool's name. */
+@media (max-width:560px){
+ #view-home .forge-approved-home .home-top{min-height:220px!important}
+ #view-home .forge-approved-home .work-bottom{display:none!important}
+ #view-home .forge-approved-home .work-intro{padding-bottom:15px!important;gap:13px!important}
+ #view-home .forge-approved-home .rail-heading{margin-bottom:0!important}
+ #view-home .forge-approved-home .home-main{padding-top:21px!important}
+ #view-home .forge-approved-home #homeContent .home-card-art,
+ #view-home .forge-approved-home #homeContent .tool-stills .home-card-art,
+ #view-home .forge-approved-home #homeContent .tool-pdf .home-card-art,
+ #view-home .forge-approved-home #homeContent .tool-split .home-card-art,
+ #view-home .forge-approved-home #homeContent .tool-ads .home-card-art,
+ #view-home .forge-approved-home #homeContent .tool-video .home-card-art,
+ #view-home .forge-approved-home #homeContent .tool-links .home-card-art{
+   top:24px!important;right:3%!important;width:55%!important;height:50px!important;
+   opacity:.44!important
+ }
+}
 </style>
 </head>
 <body class="light-mode">
