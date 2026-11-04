@@ -53,6 +53,10 @@ try{
       'Settings are not Export, Text, Layout');
     assert.ok(baseline.board.top>=baseline.settings.bottom-3,'Board overlaps settings');
     assert.equal(baseline.pageOverflow,false,'Unexpected horizontal overflow');
+    assert.equal((await page.locator('#section-logo .tool-header > h2').textContent()).trim(),
+      'Logo Resizer','Breadcrumb must not change the original tool heading');
+    assert.ok(await page.locator('#section-logo .tool-header > .forge-logo-home').isVisible(),
+      'Existing Home action must remain available in the compact title');
     await page.screenshot({path:dir+'/logo-compact-empty-'+viewport.width+'.png'});
     if(viewport.width!==1440){await context.close();continue;}
 

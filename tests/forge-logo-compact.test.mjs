@@ -27,6 +27,8 @@ test('preview changes only CSS sizing, not original canvas export data',()=>{
   assert.match(js,/canvas\.width/);
   assert.match(js,/canvas\.height/);
   assert.match(js,/MutationObserver/);
+  assert.match(js,/title\.before\(back\)/,'Breadcrumb must be a sibling of the heading');
+  assert.doesNotMatch(js,/title\.prepend\(back\)/);
   assert.match(js,/attributeFilter:\['width','height'\]/);
   assert.match(js,/--lr-card-width/);
   assert.match(js,/--lr-canvas-height/);
@@ -35,6 +37,6 @@ test('preview changes only CSS sizing, not original canvas export data',()=>{
   assert.match(build,/const forgeLogoCompactJs=read/);
   assert.match(build,/save\('dist\/css\/forge-logo-compact\.css'/);
   assert.match(build,/save\('dist\/js\/forge-logo-compact\.js'/);
-  assert.match(page,/forge-logo-compact\.css\?v=forge-logo-compact-20261104-v1/);
-  assert.match(page,/forge-logo-compact\.js\?v=forge-logo-compact-20261104-v1/);
+  assert.match(page,/forge-logo-compact\.css\?v=forge-logo-compact-20261104-v2/);
+  assert.match(page,/forge-logo-compact\.js\?v=forge-logo-compact-20261104-v2/);
 });

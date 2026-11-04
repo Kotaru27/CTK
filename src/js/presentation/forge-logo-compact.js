@@ -9,14 +9,14 @@
   // no navigation route or tool behavior; the compact title exposes it again.
   const title = document.querySelector('#section-logo .tool-header > h2');
   const homeControl = document.querySelector('body > .header .brand-title');
-  if (title && homeControl && !title.querySelector('.forge-logo-home')) {
+  if (title && homeControl && !title.parentElement.querySelector('.forge-logo-home')) {
     const back = document.createElement('button');
     back.type = 'button';
     back.className = 'forge-logo-home';
     back.textContent = 'The Forge';
     back.setAttribute('aria-label','Return to The Forge home');
     back.addEventListener('click',()=>homeControl.click());
-    title.prepend(back);
+    title.before(back);
   }
 
   let queued = false;
