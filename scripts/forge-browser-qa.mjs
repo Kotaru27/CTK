@@ -188,6 +188,7 @@ try {
  // Permanent opt-out is a separate deliberate action. A new context
  // proves the saved choice persists beyond a simple page reload.
  const dismissContext=await browser.newContext({viewport:{width:1366,height:768},reducedMotion:'reduce'});
+ await dismissContext.addInitScript(()=>{window.__forgeDisableSharedHandoff=true;});
  const welcomePage=await dismissContext.newPage();
  await welcomePage.goto(base,{waitUntil:'domcontentloaded',timeout:60000});
  await welcomePage.locator('#forgeWhatsNew').waitFor({state:'visible',timeout:2500});
@@ -206,6 +207,7 @@ try {
  await dismissContext.close();
 
  const motion=await browser.newContext({viewport:{width:1440,height:900},reducedMotion:'reduce'});
+ await motion.addInitScript(()=>{window.__forgeDisableSharedHandoff=true;});
  const reducedPage=await motion.newPage();
  await reducedPage.goto(base,{waitUntil:'domcontentloaded',timeout:60000});
  await reducedPage.waitForTimeout(120);
