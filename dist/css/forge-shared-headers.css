@@ -89,3 +89,20 @@ body.light-mode #view-app #section-yt-helper.active > .forge-compressor-surface 
   #view-app .tool-section.active > .forge-unified-tool-header,
   #view-app #section-yt-helper.active > .forge-compressor-surface > .forge-unified-tool-header{animation:none!important}
 }
+
+/* Logo Resizer's older route-specific home link selector has an extra ID.
+   Match that specificity so Kola genuinely renders there as in every tool. */
+body.light-mode #view-app #section-logo.tool-section.active > .forge-unified-tool-header > .forge-logo-home.forge-tool-home{
+  font:400 24px/1.15 "Kola","Plus Jakarta Sans",sans-serif!important;
+  letter-spacing:-.02em!important;color:#173b2a!important;
+}
+@media(max-width:1420px){
+ body.light-mode #view-app #section-logo.tool-section.active > .forge-unified-tool-header > .forge-logo-home.forge-tool-home{
+   font-size:21px!important;
+ }
+}
+@media(max-width:1020px){
+ body.light-mode #view-app #section-logo.tool-section.active > .forge-unified-tool-header > .forge-logo-home.forge-tool-home{
+   font-size:18px!important;
+ }
+}
