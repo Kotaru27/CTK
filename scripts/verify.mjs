@@ -75,7 +75,7 @@ if(rd('dist/css/forge-video-route.css')!==videoRouteCss ||
 const withoutVisual=standalone
   .replace('<style id="forge-approved-swap-styles">'+approvedCss+'</style>\n','')
   .replace('<script id="forge-approved-swap-js">'+approvedJs+'</script>\n','')
-  .replace('\n'+approvedHome,'')
+  .replace('\n'+approvedHome,'\n')
   .replace('<style id="ctk-type-motion-v3">'+typeMotionCss+'</style>\n','')
   .replace('<style id="ctk-ad-downloader-v2">'+visualCss+'</style>\n','')
   .replace('<script id="ctk-ad-downloader-v2">'+visualJs+'</script>\n','')
