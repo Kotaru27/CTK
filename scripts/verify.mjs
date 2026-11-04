@@ -4,9 +4,24 @@ import {fileURLToPath} from 'node:url';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const rd=s=>fs.readFileSync(path.join(root,s),'utf8');
 const a=rd('source/baseline.html'), b=rd('index.html');
+const standalone=rd('dist/creative-tools-standalone.html');
+const approvedHome=rd('src/html/forge-approved-home.html');
+const approvedCss=rd('src/css/experience/forge-approved-swap.css');
+const approvedJs=rd('src/js/presentation/forge-approved-swap.js');
+const approvedIds=ids(approvedHome);
+if(approvedIds.length!==new Set(approvedIds).size)throw Error('Approved layout contains duplicate IDs');
+if(!b.includes(approvedHome))throw Error('Approved home markup missing or altered');
+if(!b.includes('./dist/css/forge-approved-swap.css') ||
+   !b.includes('./dist/js/forge-approved-swap.js') ||
+   rd('dist/css/forge-approved-swap.css')!==approvedCss ||
+   rd('dist/js/forge-approved-swap.js')!==approvedJs ||
+   !standalone.includes('<style id="forge-approved-swap-styles">'+approvedCss+'</style>') ||
+   !standalone.includes('<script id="forge-approved-swap-js">'+approvedJs+'</script>'))
+  throw Error('Approved Forge source/build parity mismatch');
+
 const ids=s=>[...s.replace(/<script\b[^>]*>[\s\S]*?<\/script>/g,'').matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]).sort();
 const getRoutes=s=>[...s.matchAll(/<button\b[^>]*class="[^"]*home-card[^>]*"[^>]*onclick="([^"]+)"/g)].map(m=>m[1]);
-const beforeIds=ids(a),afterIds=ids(b).filter(id=>!["forgeCineCounter","forgeIntro","forgeHeroName","forgeIntroType","forgeIntroSkip","forgeIntroWordmark","forgeIntroGlyphs",
+const beforeIds=ids(a),afterIds=ids(b).filter(id=>!approvedIds.includes(id)&&!["forgeCineCounter","forgeIntro","forgeHeroName","forgeIntroType","forgeIntroSkip","forgeIntroWordmark","forgeIntroGlyphs",
   "forgeWhatsNew","forgeWhatsNewTitle","forgeWhatsNewDescription","forgeWhatsNewClose","forgeWhatsNewNever","forgeWhatsNewContinue","forgeWhatsNewEnter","forgeWhatsNewTrigger","forge-first-paint-css",
   // Workbench V2 adds search and a read-only preview label; none are tool IDs.
   "forgeFeaturedLabel","forgeToolSearch","forgeSearchCount"].includes(id));
@@ -17,7 +32,7 @@ if(!b.includes('./dist/css/app.css')||!b.includes('./dist/js/app.js'))throw Erro
 const scripts=s=>[...s.matchAll(/<script\b[^>]*src="([^"]+)"/g)].map(m=>m[1]);
 const ext=scripts(a),ext2=scripts(b).filter(x=>!x.startsWith('./dist/'));
 if(JSON.stringify(ext)!==JSON.stringify(ext2))throw Error('External script dependency order changed');
-const standalone=rd('dist/creative-tools-standalone.html');
+
 const originalMain=[...a.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g)].find(m=>!m[1].includes('src='))[2];
 const newMain=rd('dist/js/app.js');
 const visualCss=rd('src/css/experience/ad-downloader-v2.css');
@@ -58,6 +73,9 @@ if(rd('dist/css/forge-video-route.css')!==videoRouteCss ||
    rd('dist/js/forge-video-route.js')!==videoRouteJs)
   throw Error('Modular Video Stills route layer differs from its source');
 const withoutVisual=standalone
+  .replace('<style id="forge-approved-swap-styles">'+approvedCss+'</style>\n','')
+  .replace('<script id="forge-approved-swap-js">'+approvedJs+'</script>\n','')
+  .replace('\n'+approvedHome,'')
   .replace('<style id="ctk-type-motion-v3">'+typeMotionCss+'</style>\n','')
   .replace('<style id="ctk-ad-downloader-v2">'+visualCss+'</style>\n','')
   .replace('<script id="ctk-ad-downloader-v2">'+visualJs+'</script>\n','')
