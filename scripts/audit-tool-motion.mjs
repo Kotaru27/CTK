@@ -102,7 +102,7 @@ try {
       window.__auditEvents=[];
       window.__routeStart=performance.now();
     });
-    await page.locator('.header .brand-title').click();
+    await page.locator(t.key==='logo-resizer'?'#mainSidebar #nav-home':'.header .brand-title').click();
     await page.waitForFunction(()=>!document.getElementById('view-home').classList.contains('hidden'),{timeout:7500});
     await page.waitForTimeout(430);
     const back=await page.evaluate(()=>({

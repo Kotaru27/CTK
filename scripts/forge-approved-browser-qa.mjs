@@ -191,7 +191,7 @@ try{
     assert.equal(inTool.activeTool,urls[cardIndex],'Wrong tool opened from card '+cardIndex);
     if(cardIndex===0&&viewport.width===1440)
       await page.screenshot({path:screenshots+'/approved-tool-route-isolated.png'});
-    await page.locator('body > .header .brand-title').click();
+    await page.locator(cardIndex===0?'#mainSidebar #nav-home':'body > .header .brand-title').click();
     await page.waitForFunction(()=>{
       const home=document.getElementById('view-home'),app=document.getElementById('view-app');
       return !document.body.classList.contains('tool-active')&&
