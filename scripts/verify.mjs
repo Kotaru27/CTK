@@ -10,7 +10,7 @@ const approvedHome=rd('src/html/forge-approved-home.html');
 const approvedCss=rd('src/css/experience/forge-approved-swap.css');
 const approvedJs=rd('src/js/presentation/forge-approved-swap.js');
 const exactDemo=rd('src/html/forge-centered-exact-demo.html');
-const escapedDemo=JSON.stringify(exactDemo).replaceAll('<','\u003c');
+const escapedDemo=JSON.stringify(exactDemo).replaceAll('<','\\u003c');
 const exactSource='<script type="application/json" id="forgeExactDemoSource">'+escapedDemo+'</script>';
 const approvedIds=ids(approvedHome);
 if(approvedIds.length!==new Set(approvedIds).size)throw Error('Approved layout contains duplicate IDs');
