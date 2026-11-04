@@ -96,11 +96,17 @@ try{
         const boardName=await page.locator('#storyHeaderName').evaluate(el=>{
           const input=el.querySelector('#storyNameInput'),r=el.getBoundingClientRect();
           const mode=document.getElementById('storySubModeToggle').getBoundingClientRect();
-          const image=getComputedStyle(document.getElementById('stillsToolIcon')).backgroundImage;
+          const icon=document.getElementById('stillsToolIcon');
+          const headerSvg=icon.querySelector('.forge-storyboard-header-svg');
+          const homeSvg=document.querySelector('#homeContent > .home-card.tool-story .forge-home-icon svg');
+          const svgVisible=headerSvg && getComputedStyle(headerSvg).display!=='none';
+          const image=getComputedStyle(icon).backgroundImage;
           return {visible:!el.hidden&&getComputedStyle(el).display!=='none',
             width:r.width,top:r.top,right:r.right,modeLeft:mode.left,
             sourceInputIsOriginal:input===document.getElementById('storyNameInput'),
-            logoIsSuppliedPNG:image.includes('data:image/png;base64,')};
+            matchesHomepageIcon:!!headerSvg&&!!homeSvg&&headerSvg.innerHTML===homeSvg.innerHTML&&
+              headerSvg.getAttribute('viewBox')===homeSvg.getAttribute('viewBox'),
+            logoVisible:svgVisible,hasScreenshotImage:image.includes('data:image/png;base64,')};
         });
         assert.ok(boardName.visible && boardName.width>=160,
           'Existing board name field is missing: '+JSON.stringify(boardName));
@@ -108,7 +114,9 @@ try{
           'Board rename must retain the ORIGINAL storyNameInput and its handler');
         assert.ok(boardName.right+6<=boardName.modeLeft,
           'Board name collides with mode choices: '+JSON.stringify(boardName));
-        assert.ok(boardName.logoIsSuppliedPNG,'Supplied storyboard icon is missing');
+        assert.ok(boardName.matchesHomepageIcon&&boardName.logoVisible,
+          'Header must display the exact SVG already used on the Storyboard homepage card');
+        assert.equal(boardName.hasScreenshotImage,false,'Screenshot-derived PNG must not be used');
 
         assert.ok(data.actions.length>=2,'Storyboard must retain name/mode/export actions');
         assert.ok(data.actions.every(action=>action.top>=data.header.bottom+2),

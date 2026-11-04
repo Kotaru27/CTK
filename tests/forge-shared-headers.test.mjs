@@ -15,7 +15,10 @@ test('all five original sections share a header without replacing headings or ac
   assert.match(js,/homeAction\.click\(\)/);
   assert.match(js,/storyNameInput/);
   assert.match(js,/observer\.observe\(nameLabel/);
-  assert.match(css,/data:image\/png;base64,/);
+  assert.doesNotMatch(css,/data:image\/png;base64,/);
+  assert.match(js,/\.home-card\.tool-story \.forge-home-icon svg/);
+  assert.match(js,/homepageStoryboardSvg\.cloneNode\(true\)/);
+  assert.match(css,/forge-storyboard-header-svg/);
   assert.match(css,/#storyHeaderName:not\(\[hidden\]\)/);
   assert.match(js,/home\.classList\.add\('forge-tool-home'\)/);
   assert.doesNotMatch(js,/replaceChildren|innerHTML\s*=|UI\.openTool/);
@@ -35,6 +38,6 @@ test('shared header is present in modular and standalone builds',()=>{
   assert.match(build,/const forgeSharedHeaderJs=read/);
   assert.match(build,/save\('dist\/css\/forge-shared-headers\.css'/);
   assert.match(build,/save\('dist\/js\/forge-shared-headers\.js'/);
-  assert.match(html,/forge-shared-headers\.css\?v=forge-eight-header-20261104-v5/);
-  assert.match(html,/forge-shared-headers\.js\?v=forge-eight-header-20261104-v5/);
+  assert.match(html,/forge-shared-headers\.css\?v=forge-eight-header-20261104-v6/);
+  assert.match(html,/forge-shared-headers\.js\?v=forge-eight-header-20261104-v6/);
 });
