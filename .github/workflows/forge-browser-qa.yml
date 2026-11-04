@@ -17,6 +17,9 @@ on:
       - 'src/js/presentation/forge-workbench-v2.js'
       - 'scripts/forge-workbench-v2-browser-qa.mjs'
       - 'scripts/forge-hover-contrast-qa.mjs'
+      - 'src/css/experience/forge-logo-compact.css'
+      - 'src/js/presentation/forge-logo-compact.js'
+      - 'scripts/forge-logo-compact-qa.mjs'
       - 'scripts/build.mjs'
       - 'scripts/forge-browser-qa.mjs'
       - 'scripts/forge-compressor-browser-qa.mjs'
@@ -39,6 +42,9 @@ on:
       - 'src/js/presentation/forge-workbench-v2.js'
       - 'scripts/forge-workbench-v2-browser-qa.mjs'
       - 'scripts/forge-hover-contrast-qa.mjs'
+      - 'src/css/experience/forge-logo-compact.css'
+      - 'src/js/presentation/forge-logo-compact.js'
+      - 'scripts/forge-logo-compact-qa.mjs'
       - 'scripts/build.mjs'
       - 'scripts/forge-browser-qa.mjs'
       - 'scripts/forge-compressor-browser-qa.mjs'
@@ -74,6 +80,8 @@ jobs:
         run: node scripts/forge-browser-qa.mjs
       - name: Verify approved centered intro and synchronized tool-card handoff
         run: node scripts/forge-approved-browser-qa.mjs
+      - name: Verify original Logo Resizer controls and compact dimension-aware layout
+        run: node scripts/forge-logo-compact-qa.mjs
       - name: Verify visual composition at mobile and desktop widths
         run: node scripts/forge-visual-composition-qa.mjs
       - name: Verify original Forge workbench and keyboard search
