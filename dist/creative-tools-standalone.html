@@ -19703,6 +19703,8 @@ const CTKDownloadRenamer = (() => {
   const cards=[...grid?.querySelectorAll(':scope > button.home-card')||[]];
   if(!intro||!home||!approved||!oldLayout||!grid||pieces.length!==8||cards.length!==8||
      !window.Element?.prototype?.animate||!d.getElementById('forgeApprovedGridMount'))return;
+  // Browser QA can exercise the original curtain fallback separately.
+  if(w.__forgeDisableSharedHandoff)return;
   // The previous engine remains the fallback for browsers without Web Animations.
   w.__forgeSharedHandoffActive=true;
   const gate=w.__forgePaintGate,skip=d.getElementById('forgeIntroSkip');
