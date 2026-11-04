@@ -10652,6 +10652,8 @@ body.light-mode #view-app #section-stills-boards :is(#storyHeaderControls,#films
 #view-home .forge-approved-home{display:none;width:100%;max-width:100%;min-width:0;flex:0 0 100%;margin:0;min-height:100vh;color:#1b3828;background:#f0eee4;font-family:"Plus Jakarta Sans",Arial,sans-serif}
 body.forge-swap-ready #view-home .forge-approved-home{display:block!important;width:100%!important;max-width:none!important;min-width:0!important;margin:0!important;flex:0 0 100%!important}
 body.forge-swap-ready #view-home>.home-layout{display:none!important}
+/* Hide the legacy white bar only while the approved green home is active. Keep it on tool routes. */
+body.forge-swap-ready:has(#view-home:not(.hidden)) > .header{display:none!important}
 body.forge-swap-ready #view-home{display:block!important;width:100%!important;min-width:0!important;max-width:none!important;padding:0!important;margin:0!important;background:#f0eee4;overflow:visible}
 #view-home .forge-approved-home *{box-sizing:border-box}
 #view-home .forge-approved-home .home-top{background:#112e22;color:#eff4e6;min-height:223px;padding:21px clamp(22px,4.5vw,72px) 27px;overflow:hidden}
@@ -10659,6 +10661,11 @@ body.forge-swap-ready #view-home{display:block!important;width:100%!important;mi
 #view-home .forge-approved-home .home-nav-left,#view-home .forge-approved-home .home-nav-right{display:flex;align-items:center;gap:13px}
 #view-home .forge-approved-home .home-nav-left{font-size:10px;letter-spacing:.045em}
 #view-home .forge-approved-home .home-brandmark{width:26px;height:26px;display:grid;place-items:center;color:#193e29;background:#c9f6a4;font-family:Georgia,serif;font-size:18px;font-weight:700;font-style:italic}
+/* The original What's new trigger is moved here, preserving its dialog listener and ID. */
+#view-home .forge-approved-home #forgeApprovedUpdatesMount{display:flex;align-items:center;min-width:0}
+#view-home .forge-approved-home #forgeWhatsNewTrigger{margin:0;padding:7px 0;flex:0 0 auto;border:0!important;border-bottom:1px solid #a6c5a2!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;color:#e7eeda!important;font:700 12px/1.3 "Plus Jakarta Sans",sans-serif!important;text-decoration:none!important;white-space:nowrap;cursor:pointer}
+#view-home .forge-approved-home #forgeWhatsNewTrigger:hover{color:#c9f6a4!important}
+#view-home .forge-approved-home #forgeWhatsNewTrigger:focus-visible{outline:3px solid #c9f6a4!important;outline-offset:4px;text-decoration:none!important}
 #view-home .forge-approved-home .status{font-size:11px;color:#b5c7b8}
 #view-home .forge-approved-home .status:before{content:"";display:inline-block;width:5px;height:5px;background:#a5da85;border-radius:50%;margin-right:8px;vertical-align:middle}
 #view-home .forge-approved-home .replay{background:none;border:0;border-bottom:1px solid #a6c5a2;color:#e7eeda;font:700 12px/1.3 "Plus Jakarta Sans",sans-serif;padding:7px 0;cursor:pointer;white-space:nowrap}
@@ -10730,6 +10737,12 @@ body.forge-swap-active #view-home .forge-approved-home #homeContent .home-card{v
 #forgeIntro .forge-cine-assembly .forge-cine-piece{position:absolute;left:calc(var(--col)*var(--step));top:calc(var(--row)*var(--step));width:var(--tile);height:var(--tile);opacity:0;transform:none;animation:none!important;will-change:transform,opacity}
 #forgeIntro .forge-cine-composition>.forge-cine-identity{position:relative!important;top:auto!important;left:auto!important;transform:none!important;animation:none!important;opacity:1!important;display:block!important;flex:0 1 auto;width:max-content;max-width:calc(100vw - 380px);text-align:left}
 #forgeIntro .forge-cine-composition .forge-cine-wordmark{font-size:clamp(58px,7.2vw,118px)!important;transform:none!important;animation:none!important;opacity:1!important;white-space:nowrap}
+/* Reveal actual glyphs without moving or resizing the approved desktop title. */
+.forge-swap-glyph-mask{display:inline-block;vertical-align:baseline;overflow:hidden}
+.forge-swap-glyph{display:block}
+#forgeIntro .forge-cine-composition .forge-swap-glyph{opacity:0;transform:translate3d(0,110%,0)}
+#forgeIntro.forge-swap-title-playing .forge-cine-composition .forge-swap-glyph{animation:forge-swap-glyph-reveal 590ms cubic-bezier(.18,.85,.2,1) var(--glyph-delay) both}
+@keyframes forge-swap-glyph-reveal{from{opacity:0;transform:translate3d(0,110%,0)}to{opacity:1;transform:translate3d(0,0,0)}}
 #forgeIntro .forge-cine-composition .forge-cine-rule{transform:scaleX(1)!important;animation:none!important}
 #forgeIntro .forge-cine-composition .forge-cine-identity p{opacity:1!important;animation:none!important}
 #forgeIntro.forge-swap-prepared .forge-cine-skip{display:block;pointer-events:auto}
@@ -10792,6 +10805,7 @@ body.forge-swap-active #view-home .forge-approved-home #homeContent .home-card{v
 }
 @media(prefers-reduced-motion:reduce){
  #forgeIntro.forge-swap-prepared{display:none!important}
+ #forgeIntro.forge-swap-title-playing .forge-swap-glyph{animation:none!important;opacity:1!important;transform:none!important}
  #view-home .forge-approved-home .home-card{transition:none!important}
  #view-home .forge-approved-home *{scroll-behavior:auto}
 }
@@ -11032,7 +11046,7 @@ body.forge-swap-active #view-home .forge-approved-home #homeContent .home-card{v
 </div>
 </div>
 <!-- Centered Forge workbench: the original eight functional cards are mounted here by forge-swap.js. -->
-<main class="forge-approved-home" id="forgeApprovedHome"><header class="home-top"><div class="home-nav"><div class="home-nav-left"><span class="home-brandmark" aria-hidden="true">F</span><span>Creative workbench</span></div><div class="home-nav-right"><span class="status">Eight tools, one workbench</span><button id="replay" class="replay" type="button">Replay animation <span aria-hidden="true">↗</span></button></div></div><div class="home-hero"><div id="forgeApprovedTitleMount"></div><div class="home-manifesto"><span aria-hidden="true"></span><p>Resize, convert, capture, arrange, and deliver. Start with the tool your work needs.</p></div></div></header><section class="home-main"><aside class="work-intro" aria-label="Find a creative tool">
+<main class="forge-approved-home" id="forgeApprovedHome"><header class="home-top"><div class="home-nav"><div class="home-nav-left"><span class="home-brandmark" aria-hidden="true">F</span><span>Creative workbench</span></div><div class="home-nav-right"><span class="status">Eight tools, one workbench</span><span id="forgeApprovedUpdatesMount"></span><button id="replay" class="replay" type="button">Replay animation <span aria-hidden="true">↗</span></button></div></div><div class="home-hero"><div id="forgeApprovedTitleMount"></div><div class="home-manifesto"><span aria-hidden="true"></span><p>Resize, convert, capture, arrange, and deliver. Start with the tool your work needs.</p></div></div></header><section class="home-main"><aside class="work-intro" aria-label="Find a creative tool">
     <div class="rail-heading"><h2>Choose a tool</h2><p>Find what you need. Get to work.</p></div>
     <label class="find"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.8"/><path d="m15.5 15.5 5 5"/></svg><span id="forgeApprovedSearchMount"></span></label>
     <div class="work-bottom" aria-live="polite"><span class="counter" id="forgeApprovedCountMount"></span><div id="forgeApprovedFeaturedMount"></div><p id="selectionDescription">Select a tool to see what it does.</p></div>
@@ -19769,9 +19783,27 @@ const CTKDownloadRenamer = (() => {
       sessionStorage.getItem('forge_intro_seen_centered')==='1'}catch(_){return false}
   }
   function markSeen(){try{sessionStorage.setItem('forge_intro_seen_centered','1')}catch(_){}}
+  function prepareWordmark(){
+    if(!wordmark)return;
+    // Each mask animates independently; its accessible heading is announced just once.
+    wordmark.replaceChildren();
+    wordmark.setAttribute('role','heading');
+    wordmark.setAttribute('aria-level','1');
+    wordmark.setAttribute('aria-label','The Forge');
+    [...'The Forge'].forEach((character,i)=>{
+      const mask=d.createElement('span');mask.className='forge-swap-glyph-mask';
+      mask.setAttribute('aria-hidden','true');
+      const glyph=d.createElement('span');glyph.className='forge-swap-glyph';
+      glyph.textContent=character===' '?'\u00a0':character;
+      glyph.style.setProperty('--glyph-delay',(170+i*69)+'ms');
+      mask.append(glyph);wordmark.append(mask);
+    });
+  }
   function attachTitle(){
     if(!wordmark)return;
     wordmark.removeAttribute('style');wordmark.className='';
+    wordmark.removeAttribute('role');wordmark.removeAttribute('aria-level');
+    wordmark.removeAttribute('aria-label');wordmark.textContent='The Forge';
     hero.replaceChildren(wordmark);
   }
   function finish(record=true){
@@ -19799,6 +19831,7 @@ const CTKDownloadRenamer = (() => {
     if(ready)return;
     try{
       if(!hero||!identity||!assembly||!orbit||!shell||!foot||!skip||!counter||
+        !d.getElementById('forgeWhatsNewTrigger')||!d.getElementById('forgeApprovedUpdatesMount')||
         !d.getElementById('forgeToolSearch')||!d.getElementById('forgeSearchCount')||
         !d.getElementById('forgeFeaturedLabel'))throw Error('Missing Forge workbench anchor');
       // The original workbench search/keyboard handlers are bound before reparenting.
@@ -19808,6 +19841,8 @@ const CTKDownloadRenamer = (() => {
       d.getElementById('forgeApprovedCountMount').append(d.getElementById('forgeSearchCount'));
       d.getElementById('forgeApprovedFeaturedMount').append(d.getElementById('forgeFeaturedLabel'));
       d.getElementById('forgeApprovedGridMount').replaceWith(grid);
+      // Reparent, do not clone: the existing What's new dialog handler stays bound.
+      d.getElementById('forgeApprovedUpdatesMount').append(d.getElementById('forgeWhatsNewTrigger'));
       grid.classList.add('card-grid');
       cards.forEach((card,i)=>{
         const icon=d.createElement('span');icon.className='forge-home-icon';icon.setAttribute('aria-hidden','true');
@@ -19843,6 +19878,9 @@ const CTKDownloadRenamer = (() => {
       body.classList.remove('forge-swap-ready','forge-swap-active','forge-opening');
       oldLayout.inert=false;oldLayout.removeAttribute('aria-hidden');approved.style.display='none';
       if(hero&&!oldLayout.contains(hero))oldLayout.querySelector('.forge-hero-identity')?.append(hero);
+      const updates=d.getElementById('forgeWhatsNewTrigger');
+      if(updates&&!d.querySelector('.header')?.contains(updates))
+        d.querySelector('.header .brand-title')?.after(updates);
       if(!oldLayout.contains(grid))oldLayout.append(grid);
       intro.remove();gate?.endWelcome?.();gate?.release?.();
       d.dispatchEvent(new Event('forge:intro-complete'));
@@ -19852,9 +19890,10 @@ const CTKDownloadRenamer = (() => {
     if(!intro.isConnected)body.insertBefore(intro,body.firstChild);
     if(wordmark?.parentNode!==identity)identity.insertBefore(wordmark,identity.querySelector('.forge-cine-rule'));
     wordmark?.removeAttribute('style');wordmark.className='forge-cine-wordmark';
+    prepareWordmark();
     hero.textContent='The Forge';
     intro.hidden=false;
-    intro.classList.remove('forge-swap-releasing','forge-cine-leaving','forge-cine-playing');
+    intro.classList.remove('forge-swap-releasing','forge-cine-leaving','forge-cine-playing','forge-swap-title-playing');
     pieces.forEach(piece=>{piece.style.opacity='0';piece.style.transform='none'});
     ticks.forEach(x=>x.classList.remove('is-lit'));
     counter.textContent='00';
@@ -19866,7 +19905,7 @@ const CTKDownloadRenamer = (() => {
     seq++;clearMotion();phase='assembly';
     if(!replay&&!foundHome()){finish(false);return}
     replayPreparation();
-    intro.classList.add('forge-intro-ready');
+    intro.classList.add('forge-intro-ready','forge-swap-title-playing');
     d.documentElement.dataset.forgeIntroAnimated='1';
     gate?.release?.();
     const run=seq;
