@@ -151,7 +151,9 @@ function forgeBrand(html,standaloneRelease){
   html=html.slice(0,start)+forgeHero+'\n'+html.slice(end);
   // Rehome the same live buttons inside the approved composition after handlers bind.
   if(!html.includes('<div id="view-home">'))throw Error('Approved home anchor missing');
-  html=html.replace('<div id="view-home">','<div id="view-home">\n'+forgeApprovedHome);
+  const approvedMountEnd='</div>\n</div>\n</div>\n<div id="view-app">';
+  if(!html.includes(approvedMountEnd))throw Error('Approved home end anchor missing');
+  html=html.replace(approvedMountEnd,'</div>\n</div>\n'+forgeApprovedHome+'</div>\n<div id="view-app">');
   // Correct the visible numbered workflow without changing control order
   // or changing the processing code (destination comes before input).
   for(const [before,after] of [
