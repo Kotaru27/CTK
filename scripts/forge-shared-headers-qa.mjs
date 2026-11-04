@@ -105,8 +105,14 @@ try{
           return {visible:!el.hidden&&getComputedStyle(el).display!=='none',
             width:r.width,top:r.top,right:r.right,modeLeft:mode.left,
             sourceInputIsOriginal:input===document.getElementById('storyNameInput'),
-            matchesHomepageIcon:!!headerSvg&&!!homeSvg&&headerSvg.innerHTML===homeSvg.innerHTML&&
-              headerSvg.getAttribute('viewBox')===homeSvg.getAttribute('viewBox'),
+            matchesHomepageIcon:!!headerSvg&&
+              (homeSvg
+                ? headerSvg.innerHTML===homeSvg.innerHTML&&
+                    headerSvg.getAttribute('viewBox')===homeSvg.getAttribute('viewBox')
+                : headerSvg.getAttribute('viewBox')==='0 0 24 24' &&
+                  headerSvg.querySelector('rect')?.getAttribute('width')==='18' &&
+                  headerSvg.querySelector('rect')?.getAttribute('height')==='16' &&
+                  headerSvg.querySelector('path')?.getAttribute('d')==='M3 9h18M10 9v11M3 15h7M10 15h11'),
             logoVisible:svgVisible,hasScreenshotImage:image.includes('data:image/png;base64,'),
             headerSvgFound:!!headerSvg,homeSvgFound:!!homeSvg,
             headerSvgMarkup:headerSvg?.outerHTML?.slice(0,380),

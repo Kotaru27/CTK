@@ -19,7 +19,10 @@ test('all five original sections share a header without replacing headings or ac
   assert.match(js,/\.home-card\.tool-story \.forge-home-icon svg/);
   assert.match(js,/homepageStoryboardSvg\.cloneNode\(true\)/);
   assert.match(js,/\.forge-cine-piece\[title="Storyboard"\] svg/,
-    'Header must use the same source SVG as the homepage even when the intro is disabled');
+    'Header must use the same source SVG as the homepage when the intro is present');
+  assert.match(js,/createStoryboardSourceSvg/);
+  assert.match(js,/M3 9h18M10 9v11M3 15h7M10 15h11/,
+    'Fallback must match the homepage vector path exactly');
   assert.match(css,/forge-storyboard-header-svg/);
   assert.match(css,/#storyHeaderName:not\(\[hidden\]\)/);
   assert.match(js,/home\.classList\.add\('forge-tool-home'\)/);
@@ -40,6 +43,6 @@ test('shared header is present in modular and standalone builds',()=>{
   assert.match(build,/const forgeSharedHeaderJs=read/);
   assert.match(build,/save\('dist\/css\/forge-shared-headers\.css'/);
   assert.match(build,/save\('dist\/js\/forge-shared-headers\.js'/);
-  assert.match(html,/forge-shared-headers\.css\?v=forge-eight-header-20261104-v7/);
-  assert.match(html,/forge-shared-headers\.js\?v=forge-eight-header-20261104-v7/);
+  assert.match(html,/forge-shared-headers\.css\?v=forge-eight-header-20261104-v8/);
+  assert.match(html,/forge-shared-headers\.js\?v=forge-eight-header-20261104-v8/);
 });
