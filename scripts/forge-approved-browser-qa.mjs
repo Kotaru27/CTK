@@ -185,7 +185,8 @@ try{
     assert.equal(inTool.home,false,'Home leaks over tool '+cardIndex+': '+JSON.stringify(inTool));
     assert.equal(inTool.tool,true,'Tool '+cardIndex+' not visible: '+JSON.stringify(inTool));
     assert.equal(inTool.greenHeader,false,'Green header is stacked over active tool');
-    assert.equal(inTool.whiteHeader,true,'Tool header is missing');
+    assert.equal(inTool.whiteHeader,cardIndex!==0,
+      'Only Logo Resizer merges its old header; other tool headers remain: '+cardIndex);
     assert.equal(inTool.sidebar,true,'Tool navigation is missing');
     assert.equal(inTool.activeTool,urls[cardIndex],'Wrong tool opened from card '+cardIndex);
     if(cardIndex===0&&viewport.width===1440)
