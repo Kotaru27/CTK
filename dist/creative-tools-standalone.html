@@ -11377,6 +11377,65 @@ body.light-mode #view-app #section-logo.tool-section.active > .forge-unified-too
    font-size:18px!important;
  }
 }
+
+/* Storyboard/Filmstrip/Fit contain a project-name field, mode switcher and
+   export actions. They cannot share the title's line at desktop widths.
+   The same 68px brand/title header remains; the original contextual controls
+   form a separate 54px row below it, never covering the centered heading. */
+body.light-mode #view-app #section-stills-boards.tool-section.active > .forge-unified-tool-header:has(#storySubModeToggle[style*="flex"]){
+  box-sizing:border-box!important;display:flex!important;flex-wrap:nowrap!important;
+  height:68px!important;min-height:68px!important;max-height:68px!important;
+  flex:0 0 68px!important;padding:0 14px!important;gap:10px!important;
+  margin:0 0 55px!important;overflow:visible!important;
+}
+body.light-mode #view-app #section-stills-boards.tool-section.active > .forge-unified-tool-header:has(#storySubModeToggle[style*="flex"])::after{
+  content:"";position:absolute;top:68px;left:0;right:0;height:54px;
+  z-index:0;pointer-events:none;background:#f6f7f2;
+  border-bottom:1px solid #dce3db;
+}
+body.light-mode #view-app #section-stills-boards.tool-section.active > .forge-unified-tool-header:has(#storySubModeToggle[style*="flex"]) > h2{
+  top:50%!important;left:50%!important;transform:translate(-50%,-50%)!important;
+  flex:none!important;width:max-content!important;min-width:0!important;
+  margin:0!important;padding:0!important;
+  font:750 clamp(20px,1.72vw,27px)/1.05 "Plus Jakarta Sans",sans-serif!important;
+  letter-spacing:-.04em!important;
+}
+body.light-mode #view-app #section-stills-boards.tool-section.active > .forge-unified-tool-header > h2::before{
+  content:none!important;display:none!important;
+}
+body.light-mode #view-app #section-stills-boards.tool-section.active > .forge-unified-tool-header:has(#storySubModeToggle[style*="flex"]) > .story-header-name{
+  position:absolute!important;top:74px!important;left:14px!important;z-index:1!important;
+  flex:0 0 190px!important;width:190px!important;max-width:190px!important;
+  margin:0!important;min-width:0!important;
+}
+body.light-mode #view-app #section-stills-boards.tool-section.active > .forge-unified-tool-header:has(#storySubModeToggle[style*="flex"]) > #storySubModeToggle{
+  position:absolute!important;top:74px!important;left:14px!important;right:auto!important;
+  z-index:1!important;align-self:auto!important;margin:0!important;
+  width:max-content!important;max-width:41%!important;
+  height:41px!important;min-height:0!important;padding:0 5px!important;
+}
+body.light-mode #view-app #section-stills-boards.tool-section.active > .forge-unified-tool-header:has(> .story-header-name:not([hidden])) > #storySubModeToggle{
+  left:218px!important;
+}
+body.light-mode #view-app #section-stills-boards.tool-section.active > .forge-unified-tool-header:has(#storySubModeToggle[style*="flex"]) > :is(#storyHeaderControls,#filmstripHeaderControls,#fitHeaderControls){
+  position:absolute!important;top:74px!important;right:14px!important;
+  left:auto!important;z-index:1!important;align-self:auto!important;
+  flex:none!important;margin:0!important;min-width:0!important;
+  max-width:calc(100% - 545px)!important;height:42px!important;
+  overflow-x:auto!important;overflow-y:hidden!important;
+  flex-wrap:nowrap!important;
+}
+@media(max-width:1120px){
+  body.light-mode #view-app #section-stills-boards.tool-section.active > .forge-unified-tool-header:has(#storySubModeToggle[style*="flex"]) > .story-header-name{
+    width:140px!important;max-width:140px!important;
+  }
+  body.light-mode #view-app #section-stills-boards.tool-section.active > .forge-unified-tool-header:has(> .story-header-name:not([hidden])) > #storySubModeToggle{
+    left:159px!important;
+  }
+  body.light-mode #view-app #section-stills-boards.tool-section.active > .forge-unified-tool-header:has(#storySubModeToggle[style*="flex"]) > :is(#storyHeaderControls,#filmstripHeaderControls,#fitHeaderControls){
+    max-width:calc(100% - 480px)!important;
+  }
+}
 </style>
 </head>
 <body class="light-mode">
