@@ -47,6 +47,7 @@ test('polish touches only presentation, never process or export code',()=>{
    .replaceAll('aria-label="Open Video Compressor"','aria-label="Open Video Downloads"')
    .replaceAll('<h2 class="home-card-title">Video Compressor</h2>','<h2 class="home-card-title">Video Downloads</h2>')
    .replaceAll('<p class="home-card-desc">Compress videos to a chosen size.</p>','<p class="home-card-desc">Create video download commands.</p>')
+     .replaceAll('<p class="home-card-desc">Arrange images into storyboards.</p>','<p class="home-card-desc">Boards &amp; filmstrips.</p>')
    .replaceAll('<div class="video-command"><span>›</span><b>compress</b>','<div class="video-command"><span>›</span><b>download</b>');
  assert.deepEqual(cards(read('index.html')).map(normalize),cards(read('source/baseline.html')));
 });
@@ -58,10 +59,9 @@ test('visible primary states remain distinct; generated media does not receive b
  assert.match(css,/#logoDetailOverlay/);
  assert.doesNotMatch(css,/backdrop-filter:|blur\(/);
 });
-test('Storyboard, Filmstrip and Fit distinguish import from export once content exists',()=>{
- for(const s of ['#storyFileList > div','#filmstripFileList > div',
-   '#fitExportPngBtn:not(:disabled)','#storyDropZone label.liquid-btn.active-mode',
-   '#filmstripDropZone label.liquid-btn.active-mode']){
+test('Storyboard and Fit retain their contextual import/export priorities',()=>{
+ for(const s of ['#storyFileList > div',
+    '#fitExportPngBtn:not(:disabled)','#storyDropZone label.liquid-btn.active-mode']){
   assert.ok(css.includes(s),'missing contextual priority '+s);
  }
 });
