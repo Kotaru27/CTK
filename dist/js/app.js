@@ -710,138 +710,6 @@ const CTKDownloadRenamer = (() => {
             }
             return compCanvas;
           },
-          renderFilmstrip(images, options = {}) {
-            const width = options.width || 1920;
-            const numRows = options.rows ? Math.max(1, parseInt(options.rows, 10)) : 3;
-            const height = options.height || Math.round(width * (numRows === 1 ? 0.35 : numRows === 2 ? 0.55 : 0.74));
-
-            const canvas = document.createElement("canvas");
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext("2d");
-            ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = "high";
-
-            const bgColor = options.bgColor || "#FFFFFF";
-            const filmColor = options.filmColor || "#CBCBCB";
-            const holeColor = bgColor;
-
-            ctx.fillStyle = bgColor;
-            ctx.fillRect(0, 0, width, height);
-
-            const marginV = Math.round(height * 0.025);
-            const marginH = Math.round(width * 0.02);
-            const gapBetweenStrips = options.rowGap !== undefined && !isNaN(parseInt(options.rowGap, 10))
-              ? Math.max(0, parseInt(options.rowGap, 10))
-              : 19;
-            const availableH = height - (2 * marginV) - ((numRows - 1) * gapBetweenStrips);
-            const stripH = Math.floor(availableH / numRows);
-            const stripW = width - (2 * marginH);
-
-            const rowImages = [];
-            const totalImgs = images ? images.length : 0;
-            const fpr = options.framesPerRow ? parseInt(options.framesPerRow, 10) : 0;
-            if (fpr > 0) {
-              for (let r = 0; r < numRows; r++) {
-                rowImages.push(images ? images.slice(r * fpr, (r + 1) * fpr) : []);
-              }
-            } else {
-              const baseCount = Math.floor(totalImgs / numRows);
-              const remainder = totalImgs % numRows;
-              let currIdx = 0;
-              for (let r = 0; r < numRows; r++) {
-                const take = baseCount + (r < remainder ? 1 : 0);
-                rowImages.push(images ? images.slice(currIdx, currIdx + take) : []);
-                currIdx += take;
-              }
-            }
-
-            const drawRoundRect = (x, y, w, h, r) => {
-              ctx.beginPath();
-              if (ctx.roundRect) {
-                ctx.roundRect(x, y, w, h, r);
-              } else {
-                ctx.moveTo(x + r, y);
-                ctx.lineTo(x + w - r, y);
-                ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-                ctx.lineTo(x + w, y + h - r);
-                ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-                ctx.lineTo(x + r, y + h);
-                ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-                ctx.lineTo(x, y + r);
-                ctx.quadraticCurveTo(x, y, x + r, y);
-              }
-              ctx.fill();
-            };
-
-            for (let r = 0; r < numRows; r++) {
-              const stripY = marginV + r * (stripH + gapBetweenStrips);
-              const stripX = marginH;
-
-              const trackH = Math.max(16, Math.round(stripH * 0.082));
-              const frameAreaH = stripH - (2 * trackH);
-              const frameAreaY = stripY + trackH;
-              const notchIndent = Math.round(stripW * 0.016);
-
-              ctx.fillStyle = filmColor;
-              ctx.fillRect(stripX, stripY, stripW, trackH);
-              ctx.fillRect(stripX, stripY + stripH - trackH, stripW, trackH);
-              ctx.fillRect(stripX + notchIndent, frameAreaY, stripW - (2 * notchIndent), frameAreaH);
-
-              const holeW = Math.max(8, Math.round(trackH * 0.44));
-              const holeH = Math.max(12, Math.round(trackH * 0.64));
-              const holeR = Math.max(2, Math.round(holeW * 0.3));
-              const holePitch = Math.round(holeW * 1.95);
-              const topHoleY = stripY + (trackH - holeH) / 2;
-              const botHoleY = stripY + stripH - trackH + (trackH - holeH) / 2;
-
-              ctx.fillStyle = holeColor;
-              const startX = stripX + Math.round(holePitch * 0.75);
-              const endX = stripX + stripW - Math.round(holePitch * 0.75);
-
-              for (let hx = startX; hx + holeW <= endX; hx += holePitch) {
-                drawRoundRect(hx, topHoleY, holeW, holeH, holeR);
-                drawRoundRect(hx, botHoleY, holeW, holeH, holeR);
-              }
-
-              const stills = rowImages[r] || [];
-              const k = stills.length;
-              if (k > 0) {
-                const frameAreaX = stripX + notchIndent;
-                const frameAreaW = stripW - (2 * notchIndent);
-                const padY = Math.round(frameAreaH * 0.035);
-                const padX = Math.round(frameAreaW * 0.012);
-                const innerW = frameAreaW - (2 * padX);
-                const innerH = frameAreaH - (2 * padY);
-                const innerY = frameAreaY + padY;
-
-                const gap = options.frameGap !== undefined && !isNaN(parseInt(options.frameGap, 10))
-                  ? parseInt(options.frameGap, 10)
-                  : 9;
-                const cellW = (innerW - ((k - 1) * gap)) / k;
-
-                for (let j = 0; j < k; j++) {
-                  const item = stills[j];
-                  const img = item.img || item;
-                  const cellX = frameAreaX + padX + j * (cellW + gap);
-
-                  const fitMode = options.fitMode || "cover";
-                  const resampled = this.getResampledImage(img, Math.round(cellW), Math.round(innerH), fitMode);
-                  ctx.drawImage(resampled, Math.round(cellX), Math.round(innerY));
-
-                  if (options.showNumbers) {
-                    ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
-                    ctx.font = `bold ${Math.max(10, Math.round(trackH * 0.42))}px monospace`;
-                    ctx.textAlign = "left";
-                    const numStr = String((r * (fpr || k)) + j + 1).padStart(2, "0") + "A";
-                    ctx.fillText(numStr, Math.round(cellX + 4), Math.round(frameAreaY - 4));
-                  }
-                }
-              }
-            }
-
-            return canvas;
-          },
         },
         BlobRegistry: {
           // Keep the public urls array for legacy beforeunload handling.
@@ -1113,13 +981,13 @@ const CTKDownloadRenamer = (() => {
           };
           const singleMode = {
             "section-pdf": (m) => (m === "split" ? "split" : "convert"),
-            "section-stills-boards": (m) => (["story", "filmstrip", "fit"].includes(m) ? m : "video"),
+            "section-stills-boards": (m) => (m === "filmstrip" ? "story" : ["story", "fit"].includes(m) ? m : "video"),
             "section-adlinks": (m) =>
               m === "downloader" ? "downloader" : "gen",
           };
           const navByMode = {
             "section-pdf": { convert: "nav-pdf-image", split: "nav-pdf-split" },
-            "section-stills-boards": { video: "nav-stills-video", story: "nav-stills-story", filmstrip: "nav-stills-story", fit: "nav-stills-story" },
+            "section-stills-boards": { video: "nav-stills-video", story: "nav-stills-story", fit: "nav-stills-story" },
             "section-adlinks": { gen: "nav-adlinks-gen", downloader: "nav-adlinks-dl" },
           };
           const tabRows = {
@@ -1129,7 +997,7 @@ const CTKDownloadRenamer = (() => {
           };
           const headerByMode = {
             "section-pdf": { convert: "PDF to Image", split: "Image Splitter" },
-            "section-stills-boards": { video: "Video Stills", story: "Storyboard", filmstrip: "Storyboard", fit: "Storyboard" },
+            "section-stills-boards": { video: "Video Stills", story: "Storyboard", fit: "Storyboard" },
             "section-adlinks": { gen: "Link Gen", downloader: "Ad Downloader" },
           };
           let navId = navMap[id];
@@ -1163,7 +1031,7 @@ const CTKDownloadRenamer = (() => {
           // named root View Transition around that same DOM element can
           // deadlock the browser snapshot lifecycle. The owned WAAPI
           // panel spring handles these in place with no blank frame.
-          // Board/Filmstrip/Fit remain the same internal mode workflow.
+          // Grid Board and Fit remain the same internal mode workflow.
           if(sameRoute||sharedSection){
             motion?.cancel();
             this._openTool(id,mode);
@@ -1214,23 +1082,19 @@ const CTKDownloadRenamer = (() => {
         switchStillsTab(tabId) {
           const storyTab = document.getElementById("stillsTabStory");
           const videoTab = document.getElementById("stillsTabVideo");
-          const filmstripTab = document.getElementById("stillsTabFilmstrip");
           const storyContent = document.getElementById("stillsTabContentStory");
           const videoContent = document.getElementById("stillsTabContentVideo");
-          const filmstripContent = document.getElementById("stillsTabContentFilmstrip");
           const fitContent = document.getElementById("stillsTabContentFit");
           const videoHeader = document.getElementById("videoHeaderControls");
           const storyHeader = document.getElementById("storyHeaderControls");
-          const filmstripHeader = document.getElementById("filmstripHeaderControls");
           const fitHeader = document.getElementById("fitHeaderControls");
           const subModeToggle = document.getElementById("storySubModeToggle");
           const subModeBtnBoard = document.getElementById("subModeBtnBoard");
-          const subModeBtnFilmstrip = document.getElementById("subModeBtnFilmstrip");
           const subModeBtnFit = document.getElementById("subModeBtnFit");
           const toolIcon = document.getElementById("stillsToolIcon");
           const toolTitle = document.getElementById("stillsToolTitle");
 
-          [storyTab, videoTab, filmstripTab].forEach((t) => {
+          [storyTab, videoTab].forEach((t) => {
             if (t) {
               t.classList.remove("active-mode");
               t.style.background = "transparent";
@@ -1239,14 +1103,14 @@ const CTKDownloadRenamer = (() => {
               t.setAttribute("tabindex", "-1");
             }
           });
-          [storyContent, videoContent, filmstripContent, fitContent].forEach((c) => {
+          [storyContent, videoContent, fitContent].forEach((c) => {
             if (c) c.style.display = "none";
           });
-          [videoHeader, storyHeader, filmstripHeader, fitHeader].forEach((h) => {
+          [videoHeader, storyHeader, fitHeader].forEach((h) => {
             if (h) h.style.display = "none";
           });
 
-          [subModeBtnBoard, subModeBtnFilmstrip, subModeBtnFit].forEach((b) => {
+          [subModeBtnBoard, subModeBtnFit].forEach((b) => {
             if (b) { b.classList.remove("active-mode"); b.style.background = "transparent"; }
           });
           if (tabId === "story") {
@@ -1264,45 +1128,9 @@ const CTKDownloadRenamer = (() => {
               subModeBtnBoard.classList.add("active-mode");
               subModeBtnBoard.style.background = "";
             }
-            if (subModeBtnFilmstrip) {
-              subModeBtnFilmstrip.classList.remove("active-mode");
-              subModeBtnFilmstrip.style.background = "transparent";
-            }
             if (toolIcon) toolIcon.textContent = "view_timeline";
             if (toolTitle) toolTitle.textContent = "Storyboard";
             this.updateNav("nav-stills-story");
-          } else if (tabId === "filmstrip") {
-            if (storyTab) {
-              storyTab.classList.add("active-mode");
-              storyTab.style.background = "";
-              storyTab.style.border = "";
-              storyTab.setAttribute("aria-selected", "true");
-              storyTab.removeAttribute("tabindex");
-            }
-            if (filmstripTab) {
-              filmstripTab.classList.add("active-mode");
-              filmstripTab.style.background = "";
-              filmstripTab.style.border = "";
-              filmstripTab.setAttribute("aria-selected", "true");
-              filmstripTab.removeAttribute("tabindex");
-            }
-            if (filmstripContent) filmstripContent.style.display = "block";
-            if (filmstripHeader) filmstripHeader.style.display = "flex";
-            if (subModeToggle) subModeToggle.style.display = "flex";
-            if (subModeBtnFilmstrip) {
-              subModeBtnFilmstrip.classList.add("active-mode");
-              subModeBtnFilmstrip.style.background = "";
-            }
-            if (subModeBtnBoard) {
-              subModeBtnBoard.classList.remove("active-mode");
-              subModeBtnBoard.style.background = "transparent";
-            }
-            if (toolIcon) toolIcon.textContent = "theaters";
-            if (toolTitle) toolTitle.textContent = "Storyboard";
-            this.updateNav("nav-stills-story");
-            if (Tools.Filmstrip && Tools.Filmstrip.draw) {
-              Tools.Filmstrip.draw();
-            }
           } else if (tabId === "fit") {
             if (storyTab) {
               storyTab.classList.add("active-mode");
@@ -1337,41 +1165,7 @@ const CTKDownloadRenamer = (() => {
           }
         },
         switchStorySubMode(mode) {
-          this.switchStillsTab(mode);
-        },
-        sendStoryToFilmstrip() {
-          if (!Tools.Story.active || !Tools.Story.active.images || !Tools.Story.active.images.length) {
-            UI.toast("No images in current board to send to Filmstrip");
-            return;
-          }
-          const imgs = Tools.Story.active.images.map((item, idx) => ({
-            id: `fs-${Date.now()}-${idx}-${Math.random()}`,
-            name: item.file ? item.file.name : `Frame_${idx + 1}`,
-            img: item.img,
-          }));
-          Tools.Filmstrip.images.push(...imgs);
-          if (Tools.Filmstrip.sortImagesAscending) Tools.Filmstrip.sortImagesAscending();
-          Tools.Filmstrip.updateList();
-          Tools.Filmstrip.draw();
-          this.switchStorySubMode("filmstrip");
-          UI.toast(`Sent ${imgs.length} frame(s) to Filmstrip`);
-        },
-        sendFilmstripToStory() {
-          if (!Tools.Filmstrip.images || !Tools.Filmstrip.images.length) {
-            UI.toast("No stills in Filmstrip to send to Board");
-            return;
-          }
-          if (!Tools.Story.active) Tools.Story.addNewProject();
-          Tools.Filmstrip.images.forEach((item) => {
-            Tools.Story.active.images.push({
-              file: { name: item.name },
-              img: item.img,
-            });
-          });
-          Tools.Story.updateList();
-          Tools.Story.draw();
-          this.switchStorySubMode("story");
-          UI.toast(`Sent ${Tools.Filmstrip.images.length} frame(s) to Storyboard`);
+          this.switchStillsTab(mode === "fit" ? "fit" : "story");
         },
         switchAdlinksTab(tabId) {
           const genTab = document.getElementById("adlinksTabGen");
@@ -4366,18 +4160,9 @@ const CTKDownloadRenamer = (() => {
             };
             this.els.dlSel.onclick = () => this.downloadSelected();
             this.els.dlBtn.onclick = () => this.downloadAll();
-            // Keep the existing Filmstrip hand-off, but remove the per-video
-            // Send to Board menu. Boards are now transferred only in bulk.
-            if(this.els.toBoardBtn) {
-              this.els.toBoardBtn.textContent="Send to Filmstrip";
-              this.els.toBoardBtn.onclick=()=>{
-                if(!this.currentId)return;
-                const selected=this.collection[this.currentId]?.frames.filter(f=>f.checked&&f.type!=="storyboard")||[];
-                if(!selected.length){UI.showError("Select at least one still.");return;}
-                this.closeDetail();
-                Tools.Filmstrip.addFromStills(selected);
-                UI.switchStillsTab("filmstrip");
-              };
+            if (this.els.toBoardBtn) {
+              this.els.toBoardBtn.textContent = "Send to Board";
+              this.els.toBoardBtn.onclick = () => this.toggleBoardMenu();
             }
             document.addEventListener("click", () => this.closeBoardMenu());
             document.addEventListener("keydown", (e) => {
@@ -4893,20 +4678,6 @@ const CTKDownloadRenamer = (() => {
             rowHover(newRow);
             menu.appendChild(newRow);
 
-            const filmstripRow = document.createElement("div");
-            filmstripRow.style.cssText = rowStyle;
-            filmstripRow.innerHTML =
-              '<span class="material-symbols-rounded" style="flex-shrink:0; color:var(--text-main); font-size: 14px;">theaters</span><span>Send to Filmstrip</span>';
-            filmstripRow.onclick = () => {
-              this.closeBoardMenu();
-              if (sel.length === 0) return;
-              this.closeDetail();
-              Tools.Filmstrip.addFromStills(sel);
-              UI.switchStillsTab("filmstrip");
-            };
-            rowHover(filmstripRow);
-            menu.appendChild(filmstripRow);
-
             const divider = document.createElement("div");
             divider.style.cssText =
               "height:1px; background:var(--border); margin:6px 8px;";
@@ -5068,328 +4839,6 @@ const CTKDownloadRenamer = (() => {
             a.download = "video_extras.zip";
             a.click();
             this.els.dlBtn.innerText = "Download All";
-          },
-        },
-        Filmstrip: {
-          images: [],
-          canvas: null,
-          els: {},
-          init() {
-            this.els = {
-              title: document.getElementById("filmstripTitleInput"),
-              drop: document.getElementById("filmstripDropZone"),
-              input: document.getElementById("filmstripInput"),
-              list: document.getElementById("filmstripFileList"),
-              emptyMsg: document.getElementById("filmstripEmptyMsg"),
-              countBadge: document.getElementById("filmstripCountBadge"),
-              container: document.getElementById("filmstripCanvasContainer"),
-              rows: document.getElementById("filmstripRowsSelect"),
-              framesPerRow: document.getElementById("filmstripFramesPerRowSelect"),
-              fitMode: document.getElementById("filmstripFitModeSelect"),
-              gap: document.getElementById("filmstripGapInput"),
-              rowGap: document.getElementById("filmstripRowGapInput"),
-              filmColor: document.getElementById("filmstripFilmColorInput"),
-              bgColor: document.getElementById("filmstripBgColorInput"),
-              numbers: document.getElementById("filmstripNumbersCheckbox"),
-              renderBtn: document.getElementById("renderFilmstripBtn"),
-              dlJpgBtn: document.getElementById("downloadFilmstripJpgBtn"),
-              dlPngBtn: document.getElementById("downloadFilmstripPngBtn"),
-              clearBtn: document.getElementById("clearFilmstripBtn"),
-              clearListBtn: document.getElementById("filmstripClearListBtn"),
-            };
-
-            if (this.els.drop) {
-              Core.Utils.createDropZone(this.els.drop, (f) => this.handleFiles(f));
-            }
-            if (this.els.input) {
-              this.els.input.onchange = (e) => {
-                this.handleFiles([...e.target.files]);
-                this.els.input.value = "";
-              };
-            }
-            if (this.els.renderBtn) {
-              this.els.renderBtn.onclick = () => this.draw();
-            }
-            if (this.els.dlJpgBtn) {
-              this.els.dlJpgBtn.onclick = () => this.download("jpeg");
-            }
-            if (this.els.dlPngBtn) {
-              this.els.dlPngBtn.onclick = () => this.download("png");
-            }
-            if (this.els.clearBtn) {
-              this.els.clearBtn.onclick = () => {
-                UI.confirm({
-                  title: "Clear filmstrip?",
-                  message: "This removes all stills from the current filmstrip. This action cannot be undone.",
-                  okLabel: "Clear",
-                  cancelLabel: "Cancel",
-                }).then((ok) => {
-                  if (ok) this.destroy();
-                });
-              };
-            }
-            if (this.els.clearListBtn) {
-              this.els.clearListBtn.onclick = () => this.destroy();
-            }
-
-            [
-              this.els.rows,
-              this.els.framesPerRow,
-              this.els.fitMode,
-              this.els.gap,
-              this.els.rowGap,
-              this.els.filmColor,
-              this.els.bgColor,
-              this.els.numbers,
-            ].forEach((el) => {
-              if (el) {
-                el.addEventListener("change", () => this.draw());
-                el.addEventListener("input", () => this.draw());
-              }
-            });
-
-            if (this.els.filmColor) {
-              const lbl = document.getElementById("filmstripFilmColorLabel");
-              this.els.filmColor.addEventListener("input", (e) => {
-                if (lbl) lbl.textContent = e.target.value.toUpperCase();
-              });
-            }
-            if (this.els.bgColor) {
-              const lbl = document.getElementById("filmstripBgColorLabel");
-              this.els.bgColor.addEventListener("input", (e) => {
-                if (lbl) lbl.textContent = e.target.value.toUpperCase();
-              });
-            }
-
-            this.draw();
-          },
-          sortImagesAscending() {
-            this.images.sort((a, b) => {
-              const nameA = String(a.name || "");
-              const nameB = String(b.name || "");
-              return nameA.localeCompare(nameB, undefined, {
-                numeric: true,
-                sensitivity: "base",
-              });
-            });
-          },
-          sortAscendingAndRefresh() {
-            if (!this.images || !this.images.length) return;
-            this.sortImagesAscending();
-            this.updateList();
-            this.draw();
-            UI.toast("Stills sorted in ascending order");
-          },
-          validImage(img) {
-            return img && (img.naturalWidth || img.width)>0 && (img.naturalHeight || img.height)>0;
-          },
-          async loadSource(file) {
-            if (!file || file.size > 100*1024*1024) throw Error("File too large or invalid");
-            if(file.type.startsWith("image/")) {
-              const url=Core.BlobRegistry.create(file,"filmstrip");
-              const img=new Image();
-              try {
-                await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=()=>reject(Error("Image could not be decoded"));img.src=url;});
-                if(!this.validImage(img))throw Error("Image dimensions unavailable");
-                return {img,owned:true};
-              }catch(error){Core.BlobRegistry.release(url);throw error;}
-            }
-            if(file.type.startsWith("video/")) {
-              const img=await new Promise((resolve,reject)=> {
-                const video=document.createElement("video");
-                const url=URL.createObjectURL(file);
-                let done=false;const timer=setTimeout(()=>finish(null),15000);
-                const finish=(image)=>{
-                  if(done)return;done=true;clearTimeout(timer);
-                  video.pause();video.removeAttribute("src");video.load();URL.revokeObjectURL(url);
-                  image?resolve(image):reject(Error("Video frame could not be extracted"));
-                };
-                video.muted=true;
-                video.onerror=()=>finish(null);
-                video.onloadedmetadata=()=>{
-                  if(!video.videoWidth || !video.videoHeight || !Number.isFinite(video.duration))return finish(null);
-                  try{video.currentTime=Math.min(1,video.duration/2);}catch{finish(null);}
-                };
-                video.onseeked=()=> {
-                  try{
-                    const c=document.createElement("canvas");c.width=video.videoWidth;c.height=video.videoHeight;
-                    c.getContext("2d").drawImage(video,0,0);
-                    const image=new Image();image.onload=()=>finish(image);image.onerror=()=>finish(null);
-                    image.src=c.toDataURL("image/jpeg",0.95);
-                  }catch{finish(null);}
-                };
-                video.src=url;
-              });
-              if(!this.validImage(img)) throw Error("Video frame dimensions unavailable");
-              return {img,owned:false};
-            }
-            throw Error("Unsupported format");
-          },
-          async handleFiles(files) {
-            const valid=files.filter(f=>f.type.startsWith("image/") || f.type.startsWith("video/"));
-            valid.sort((a,b)=>String(a.name).localeCompare(String(b.name),undefined,{numeric:true,sensitivity:"base"}));
-            let failed=0;
-            const results=await Promise.allSettled(valid.map(file=>this.loadSource(file)));
-            results.forEach((result,i)=>{
-              if(result.status==="fulfilled") {
-                this.images.push({id:`fs-${Date.now()}-${Math.random()}`,name:valid[i].name,...result.value});
-              }else {failed++;console.warn("Filmstrip rejected:",valid[i].name,result.reason);}
-            });
-            if(failed)UI.showError(`${failed} invalid or unreadable filmstrip assets skipped.`);
-            this.sortImagesAscending();this.updateList();this.draw();
-          },
-          async addFromStills(stills) {
-            if(!stills?.length)return;
-            let failed=0;
-            const results=await Promise.allSettled(stills.map((still,idx)=>new Promise((resolve,reject)=>{
-              const img=new Image();
-              img.onload=()=>this.validImage(img)?resolve({
-                id:`fs-${Date.now()}-${Math.random()}`,
-                name:still.name||`Still_${still.num??idx+1}`,img,owned:false
-              }):reject(Error("Bad frame"));
-              img.onerror=()=>reject(Error("Frame URL unavailable"));
-              img.src=still.url;
-            })));
-            results.forEach(r=>{if(r.status==="fulfilled")this.images.push(r.value);else failed++;});
-            if(failed)UI.showError(`${failed} video still(s) could not be loaded.`);
-            this.sortImagesAscending();this.updateList();this.draw();
-          },
-          removeImage(index) {
-            if (index >= 0 && index < this.images.length) {
-              const item=this.images.splice(index,1)[0];
-              if (item.owned) Core.BlobRegistry.release(item.img.src);
-              this.updateList();
-              this.draw();
-            }
-          },
-          moveImage(index, dir) {
-            const target = index + dir;
-            if (target >= 0 && target < this.images.length) {
-              const item = this.images.splice(index, 1)[0];
-              this.images.splice(target, 0, item);
-              this.updateList();
-              this.draw();
-            }
-          },
-          updateList() {
-            const list = this.els.list;
-            const countBadge = this.els.countBadge;
-            if (countBadge) countBadge.innerText = this.images.length;
-            if (!list) return;
-            list.replaceChildren();
-            if (!this.images.length) {
-              if (this.els.emptyMsg) list.appendChild(this.els.emptyMsg);
-              return;
-            }
-            this.images.forEach((item, index) => {
-              const row = document.createElement("div");
-              row.className = "story-asset-row";
-              const identity = document.createElement("div");
-              identity.className = "story-asset-identity";
-              const thumbnail = document.createElement("img");
-              thumbnail.className = "story-asset-thumb";
-              thumbnail.src = item.img.src;
-              thumbnail.alt = "";
-              const details = document.createElement("div");
-              details.className = "story-asset-details";
-              const number = document.createElement("span");
-              number.className = "story-asset-number";
-              number.textContent = String(index + 1).padStart(2, "0");
-              const name = document.createElement("span");
-              name.className = "story-asset-filename";
-              const filename = item.name || "Still " + (index + 1);
-              name.textContent = filename;
-              name.title = filename;
-              details.append(number, name);
-              identity.append(thumbnail, details);
-              const actions = document.createElement("div");
-              actions.className = "story-asset-actions";
-              for (const action of [
-                {name:"Move up",glyph:"\u2191",direction:-1},
-                {name:"Move down",glyph:"\u2193",direction:1},
-                {name:"Remove",glyph:"\u00d7",direction:0}
-              ]) {
-                const button = document.createElement("button");
-                button.type = "button";
-                button.className = "liquid-btn story-asset-action" +
-                  (action.direction === 0 ? " danger-btn" : "");
-                button.textContent = action.glyph;
-                button.title = action.name + " " + filename;
-                button.setAttribute("aria-label", action.name + " " + filename);
-                if (action.direction !== 0) {
-                  button.disabled = index + action.direction < 0 ||
-                    index + action.direction >= this.images.length;
-                  button.onclick = () => this.moveImage(index, action.direction);
-                } else {
-                  button.onclick = () => this.removeImage(index);
-                }
-                actions.appendChild(button);
-              }
-              row.append(identity, actions);
-              list.appendChild(row);
-            });
-          },
-          draw() {
-            if (!this.els.rows) return;
-            if (this.images.some(item=>!this.validImage(item.img))) {
-              UI.showError("One filmstrip source has no valid dimensions.");return;
-            }
-            const s = {
-              rows: parseInt(this.els.rows.value, 10) || 3,
-              framesPerRow: parseInt(this.els.framesPerRow.value, 10) || 0,
-              fitMode: (this.els.fitMode && this.els.fitMode.value) || "cover",
-              frameGap: this.els.gap && !isNaN(parseInt(this.els.gap.value, 10)) ? parseInt(this.els.gap.value, 10) : 9,
-              rowGap: this.els.rowGap && !isNaN(parseInt(this.els.rowGap.value, 10)) ? parseInt(this.els.rowGap.value, 10) : 19,
-              filmColor: (this.els.filmColor && this.els.filmColor.value) || "#CBCBCB",
-              bgColor: (this.els.bgColor && this.els.bgColor.value) || "#FFFFFF",
-              showNumbers: this.els.numbers ? this.els.numbers.checked : false,
-              width: 1920,
-            };
-
-            if (s.rows < 1 || s.rows > 12 || s.framesPerRow < 0 || s.framesPerRow > 20 ||
-                s.frameGap < 0 || s.rowGap < 0 || s.rowGap > 200 || s.frameGap > 200) {
-              UI.showError("Invalid filmstrip layout. Reduce rows or spacing.");return;
-            }
-            let canvas;
-            try {canvas = Core.AdaptiveRenderer.renderFilmstrip(this.images, s);}
-            catch(error){UI.showError(`Filmstrip render failed: ${error.message}`);return;}
-            if (!canvas || !canvas.width || !canvas.height) return;
-
-            this.canvas = canvas;
-            if (this.els.container) {
-              this.els.container.innerHTML = "";
-              canvas.style.maxWidth = "100%";
-              canvas.style.height = "auto";
-              canvas.style.boxShadow = "0 8px 30px rgba(0,0,0,0.25)";
-              canvas.style.border = "1px solid var(--border)";
-              canvas.onclick = () => UI.openLightbox(canvas.toDataURL("image/jpeg", 0.95));
-              this.els.container.appendChild(canvas);
-            }
-
-            if (this.els.dlJpgBtn) this.els.dlJpgBtn.disabled = false;
-            if (this.els.dlPngBtn) this.els.dlPngBtn.disabled = false;
-          },
-          async download(format = "jpeg") {
-            if (!this.canvas?.width || !this.canvas?.height || !this.images.length) return;
-            const ext=format==="png"?"png":"jpg";
-            const mime=format==="png"?"image/png":"image/jpeg";
-            const title=((this.els.title?.value.trim()||"Filmstrip").replace(/[^a-zA-Z0-9_-]/g,"_").slice(0,100))||"Filmstrip";
-            try {
-              const blob=await new Promise((resolve,reject)=>{
-                try{this.canvas.toBlob(resolve,mime,0.95);}catch(e){reject(e);}
-              });
-              if(!blob?.size)throw Error("The canvas could not be encoded");
-              const url=URL.createObjectURL(blob);
-              const a=document.createElement("a");a.href=url;a.download=`${title}.${ext}`;
-              document.body.appendChild(a);a.click();a.remove();
-              setTimeout(()=>URL.revokeObjectURL(url),60000);
-            }catch(error){UI.showError(`Filmstrip export failed: ${error.message}`);}
-          },
-          destroy() {
-            this.images.forEach(item=>{if(item.owned)Core.BlobRegistry.release(item.img.src);});
-            this.images = [];
-            this.updateList();
-            this.draw();
           },
         },
         AdLinkGen: {

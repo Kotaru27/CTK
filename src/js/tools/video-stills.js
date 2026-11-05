@@ -74,18 +74,9 @@ export default {
             };
             this.els.dlSel.onclick = () => this.downloadSelected();
             this.els.dlBtn.onclick = () => this.downloadAll();
-            // Keep the existing Filmstrip hand-off, but remove the per-video
-            // Send to Board menu. Boards are now transferred only in bulk.
-            if(this.els.toBoardBtn) {
-              this.els.toBoardBtn.textContent="Send to Filmstrip";
-              this.els.toBoardBtn.onclick=()=>{
-                if(!this.currentId)return;
-                const selected=this.collection[this.currentId]?.frames.filter(f=>f.checked&&f.type!=="storyboard")||[];
-                if(!selected.length){UI.showError("Select at least one still.");return;}
-                this.closeDetail();
-                Tools.Filmstrip.addFromStills(selected);
-                UI.switchStillsTab("filmstrip");
-              };
+            if (this.els.toBoardBtn) {
+              this.els.toBoardBtn.textContent = "Send to Board";
+              this.els.toBoardBtn.onclick = () => this.toggleBoardMenu();
             }
             document.addEventListener("click", () => this.closeBoardMenu());
             document.addEventListener("keydown", (e) => {
@@ -600,20 +591,6 @@ export default {
             newRow.onclick = () => this.sendToBoard("__new__");
             rowHover(newRow);
             menu.appendChild(newRow);
-
-            const filmstripRow = document.createElement("div");
-            filmstripRow.style.cssText = rowStyle;
-            filmstripRow.innerHTML =
-              '<span class="material-symbols-rounded" style="flex-shrink:0; color:var(--text-main); font-size: 14px;">theaters</span><span>Send to Filmstrip</span>';
-            filmstripRow.onclick = () => {
-              this.closeBoardMenu();
-              if (sel.length === 0) return;
-              this.closeDetail();
-              Tools.Filmstrip.addFromStills(sel);
-              UI.switchStillsTab("filmstrip");
-            };
-            rowHover(filmstripRow);
-            menu.appendChild(filmstripRow);
 
             const divider = document.createElement("div");
             divider.style.cssText =

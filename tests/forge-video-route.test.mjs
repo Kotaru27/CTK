@@ -26,6 +26,7 @@ test('all eight card routes keep their existing HTML and click handlers',()=>{
    .map(m=>m[0]
      .replaceAll('Video Compressor','Video Downloads')
      .replaceAll('Compress videos to a chosen size.','Create video download commands.')
+     .replaceAll('Arrange images into storyboards.','Boards &amp; filmstrips.')
      .replaceAll('<b>compress</b>','<b>download</b>'));
  assert.equal(original.length,8);
  assert.deepEqual(latest,original);
@@ -84,7 +85,7 @@ test('internal route and mode changes animate only presentation, never core logi
  for(const id of [
   'section-logo','section-pdf','section-stills-boards','section-adlinks','section-yt-helper',
   'pdfTabContentConvert','pdfTabContentSplit','stillsTabContentStory',
-  'stillsTabContentVideo','stillsTabContentFilmstrip','stillsTabContentFit',
+  'stillsTabContentVideo','stillsTabContentFit',
   'adlinksTabContentGen','adlinksTabContentDownloader'
  ]) assert.ok(js.includes("'"+id+"'"),'missing motion observer for '+id);
  assert.match(js,/return !\(preference&&preference\.matches\)/);

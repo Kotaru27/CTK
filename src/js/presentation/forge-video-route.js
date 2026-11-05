@@ -29,7 +29,7 @@
     if(routes[id])return routes[id];
     if(id==='section-pdf')return mode==='split'?'split':'pdf';
     if(id==='section-stills-boards')
-      return ['story','filmstrip','fit'].includes(mode)?'story':'stills';
+      return ['story','fit','filmstrip'].includes(mode)?'story':'stills';
     if(id==='section-adlinks')return mode==='downloader'?'ads':'links';
     return null;
   }
@@ -98,7 +98,7 @@
   const panelIds=[
     'pdfTabContentConvert','pdfTabContentSplit',
     'stillsTabContentStory','stillsTabContentVideo',
-    'stillsTabContentFilmstrip','stillsTabContentFit',
+    'stillsTabContentFit',
     'adlinksTabContentGen','adlinksTabContentDownloader'
   ];
   function attachWorkspaceObserver(){
@@ -178,7 +178,7 @@
   }
   attachWorkspaceObserver();
 
-  // Storyboard's Board / Filmstrip / Fit buttons share one active indicator.
+  // Storyboard's Grid Board and Fit buttons share one active indicator.
   // This is a visual overlay only; existing button handlers still own state,
   // focus, export and panel visibility. Positions are measured from the real
   // buttons so no tool geometry, breakpoints or order are hardcoded.
@@ -187,10 +187,9 @@
     if(!host || typeof MutationObserver!=='function')return;
     const buttons=[
       document.getElementById('subModeBtnBoard'),
-      document.getElementById('subModeBtnFilmstrip'),
       document.getElementById('subModeBtnFit')
     ].filter(Boolean);
-    if(buttons.length!==3 || document.getElementById('forgeStoryModeIndicator'))return;
+    if(buttons.length!==2 || document.getElementById('forgeStoryModeIndicator'))return;
     const indicator=document.createElement('span');
     indicator.id='forgeStoryModeIndicator';
     indicator.className='forge-story-mode-indicator';
@@ -280,7 +279,6 @@
       ['splitGrid','.logo-card-item'],
       ['stillsStacksContainer','.pdf-stack-wrapper'],
       ['storyFileList','.story-asset-row'],
-      ['filmstripFileList','.story-asset-row'],
       ['adDlTableBody','tr'],
       ['adDlRequestedBody','tr'],
       ['adDlDownloadedBody','tr']
