@@ -63,4 +63,5 @@ test('retired Filmstrip mode is absent while Storyboard and Fit remain',()=>{
   assert.ok(!bundle.includes('Filmstrip: {'));
   assert.ok(!bundle.includes('renderFilmstrip(images'));
   assert.ok(!bundle.includes('sendStoryToFilmstrip()'));
+  assert.match(read('src/js/tools/video-stills.js'),/this\.els\.toBoardBtn\.onclick = \(event\) => \{\s*event\.stopPropagation\(\);\s*this\.toggleBoardMenu\(\);/);
 });

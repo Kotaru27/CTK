@@ -76,7 +76,10 @@ export default {
             this.els.dlBtn.onclick = () => this.downloadAll();
             if (this.els.toBoardBtn) {
               this.els.toBoardBtn.textContent = "Send to Board";
-              this.els.toBoardBtn.onclick = () => this.toggleBoardMenu();
+              this.els.toBoardBtn.onclick = (event) => {
+                event.stopPropagation();
+                this.toggleBoardMenu();
+              };
             }
             document.addEventListener("click", () => this.closeBoardMenu());
             document.addEventListener("keydown", (e) => {
