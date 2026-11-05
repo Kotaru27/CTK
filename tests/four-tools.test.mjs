@@ -7,8 +7,7 @@ const {default:ad}=await import('../src/js/tools/ad-downloader.js');
 const {default:links}=await import('../src/js/tools/link-gen.js');
 const {default:stills}=await import('../src/js/tools/video-stills.js');
 const {default:story}=await import('../src/js/tools/storyboard.js');
-const {default:film}=await import('../src/js/tools/storyboard-filmstrip.js');
-const AD=ad.AdDownloader, LINK=links.AdLinkGen, VIDEO=stills.Stills, STORY=story.Story, FILM=film.Filmstrip;
+const AD=ad.AdDownloader, LINK=links.AdLinkGen, VIDEO=stills.Stills, STORY=story.Story;
 
 test('ad downloader: header detection, URL restrictions and safe names',()=>{
   const rows=[[{v:'Media URI'},{v:'Batch'},{v:'FormatName'}],[]];
@@ -93,6 +92,4 @@ test('Storyboard validates broken images and refuses empty canvas exports',async
   assert.equal(STORY.safeExportName('../Bad:Name'),'___Bad_Name');
   await assert.rejects(STORY.encodeBoard({width:0,height:100}),/No rendered/);
   await assert.rejects(STORY.encodeBoard({width:100,height:100,toBlob(cb){cb(null)}}),/no image data/i);
-  assert.equal(FILM.validImage({naturalWidth:20,naturalHeight:11}),true);
-  assert.equal(FILM.validImage({naturalWidth:0,naturalHeight:11}),false);
 });

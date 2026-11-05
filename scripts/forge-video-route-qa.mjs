@@ -63,7 +63,7 @@ try{
      if(route.key==='stills'){
        await page.screenshot({path:'artifacts/forge-video-route/stills-'+viewport.width+'.png',animations:'disabled'});
      }
-     await page.locator('.header .brand-title').click();
+     await page.locator('#view-app .tool-section.active .forge-tool-home').click();
      await page.locator('#view-home').waitFor({state:'visible',timeout:7000});
      await completed(page);
      const back=await page.evaluate(()=>({
@@ -86,7 +86,7 @@ try{
      title:document.querySelector('#stillsToolTitle')?.textContent.trim()
    }));
    assert.deepEqual(changed,{nav:'nav-stills-story',title:'Storyboard'});
-   await page.locator('.header .brand-title').click();
+   await page.locator('#view-app .tool-section.active .forge-tool-home').click();
    await completed(page);
    // Interruption: last requested tool must win.
    await page.evaluate(()=>{
@@ -115,7 +115,7 @@ try{
    await page.locator('button.home-card.'+key).click();
    await page.locator('#view-app.active').waitFor({state:'visible'});
    assert.equal(await page.evaluate(()=>window.__routeSnapshots.length),0,'Reduced-motion must not start snapshots');
-   await page.locator('.header .brand-title').click();
+   await page.locator('#view-app .tool-section.active .forge-tool-home').click();
    await page.locator('#view-home').waitFor({state:'visible'});
  }
  assert.deepEqual(errors,[],'Reduced-motion console errors');

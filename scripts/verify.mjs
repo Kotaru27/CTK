@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import {stripFilmstripUI} from './strip-filmstrip.mjs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
@@ -39,7 +40,8 @@ if(!b.includes('./dist/css/forge-shared-headers.css') ||
   throw Error('Shared eight-tool header source/build parity mismatch');
 
 const getRoutes=s=>[...s.matchAll(/<button\b[^>]*class="[^"]*home-card[^>]*"[^>]*onclick="([^"]+)"/g)].map(m=>m[1]);
-const beforeIds=ids(a),afterIds=ids(b).filter(id=>!approvedIds.includes(id)&&!["forgeCineCounter","forgeIntro","forgeHeroName","forgeIntroType","forgeIntroSkip","forgeIntroWordmark","forgeIntroGlyphs",
+const expectedWithoutFilmstrip=stripFilmstripUI(a);
+const beforeIds=ids(expectedWithoutFilmstrip),afterIds=ids(b).filter(id=>!approvedIds.includes(id)&&!["forgeCineCounter","forgeIntro","forgeHeroName","forgeIntroType","forgeIntroSkip","forgeIntroWordmark","forgeIntroGlyphs",
   "forgeWhatsNew","forgeWhatsNewTitle","forgeWhatsNewDescription","forgeWhatsNewClose","forgeWhatsNewNever","forgeWhatsNewContinue","forgeWhatsNewEnter","forgeWhatsNewTrigger","forge-first-paint-css",
   // Workbench V2 adds search and a read-only preview label; none are tool IDs.
   "forgeFeaturedLabel","forgeToolSearch","forgeSearchCount"].includes(id));
@@ -162,7 +164,7 @@ const restoredNames=restored
            '<div class="edition-rule-label">02 / DESTINATION</div>')
   .replace('<div class="edition-rule-label">02 / INPUT</div>',
            '<div class="edition-rule-label">01 / INPUT</div>');
-if(restoredNames!==a)throw Error('Standalone changes source HTML/CSS or scripts outside the intentional presentation/naming layer');
+if(restoredNames!==expectedWithoutFilmstrip)throw Error('Standalone changes HTML/CSS or scripts outside the approved Filmstrip removal and presentation layer');
 if(!standalone.includes(`<script>${newMain}</script>`))throw Error('Standalone does not contain current engine');
 // Native video is optional at runtime, but the pinned bundle must be
 // present and byte-identical on GitHub Pages or the codec fallback would
@@ -189,4 +191,4 @@ if(!b.includes('./dist/css/forge-compressor-frame.css')||rd('dist/css/forge-comp
 if(!b.includes('./dist/css/forge-video-route.css')||!b.includes('./dist/js/forge-video-route.js'))
   throw Error('Video Stills shared transition assets missing');
 if(!standalone.includes('<style id="forge-brand-styles">')||!standalone.includes('<script id="forge-brand-intro-js">'))throw Error('Forge standalone assets missing');
-console.log(`Verified: ${beforeIds.length} IDs, ${beforeRoutes.length} homepage links, ${ext.length} external dependencies, untouched tool functionality and additive Ad Downloader visual layer.`);
+console.log(`Verified: ${beforeIds.length} retained IDs, ${beforeRoutes.length} homepage links, ${ext.length} external dependencies and the scoped Filmstrip removal.`);

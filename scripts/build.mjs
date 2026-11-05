@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import {stripFilmstripUI} from './strip-filmstrip.mjs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import {fileURLToPath} from 'node:url';
@@ -264,7 +265,7 @@ function forgeBrand(html,standaloneRelease){
   const sharedHeaderScript=standaloneRelease?'<script id="forge-shared-headers-js">'+forgeSharedHeaderJs+'</script>':
     '<script id="forge-shared-headers-js" src="./dist/js/forge-shared-headers.js?v=forge-eight-header-20261104-v9"></script>';
   html=html.replace('</body>',approvedScript+'\n'+logoCompactScript+'\n'+sharedHeaderScript+'\n'+brandScript+'\n'+routeScript+'\n'+compressorFitScript+'\n'+welcomeScript+'\n'+workbenchScript+'\n</body>');
-  return html;
+  return stripFilmstripUI(html);
 }
 
 output=output.replace('<link rel="stylesheet" href="./dist/css/app.css">','<link rel="stylesheet" href="./dist/css/app.css">\n<link rel="stylesheet" href="./dist/css/ad-downloader-v2.css">');

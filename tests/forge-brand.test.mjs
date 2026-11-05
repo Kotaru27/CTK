@@ -23,6 +23,7 @@ test('all eight cards preserve exact structure and routes except two intentional
     .replaceAll('aria-label="Open Video Compressor"','aria-label="Open Video Downloads"')
     .replaceAll('<h2 class="home-card-title">Video Compressor</h2>','<h2 class="home-card-title">Video Downloads</h2>')
     .replaceAll('<p class="home-card-desc">Compress videos to a chosen size.</p>','<p class="home-card-desc">Create video download commands.</p>')
+     .replaceAll('<p class="home-card-desc">Arrange images into storyboards.</p>','<p class="home-card-desc">Boards &amp; filmstrips.</p>')
     .replaceAll('<div class="video-command"><span>›</span><b>compress</b>','<div class="video-command"><span>›</span><b>download</b>');
   assert.deepEqual(cards(index).map(normalize),cards(baseline));
   assert.deepEqual(cards(standalone).map(normalize),cards(baseline));

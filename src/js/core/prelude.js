@@ -365,138 +365,6 @@
             }
             return compCanvas;
           },
-          renderFilmstrip(images, options = {}) {
-            const width = options.width || 1920;
-            const numRows = options.rows ? Math.max(1, parseInt(options.rows, 10)) : 3;
-            const height = options.height || Math.round(width * (numRows === 1 ? 0.35 : numRows === 2 ? 0.55 : 0.74));
-
-            const canvas = document.createElement("canvas");
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext("2d");
-            ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = "high";
-
-            const bgColor = options.bgColor || "#FFFFFF";
-            const filmColor = options.filmColor || "#CBCBCB";
-            const holeColor = bgColor;
-
-            ctx.fillStyle = bgColor;
-            ctx.fillRect(0, 0, width, height);
-
-            const marginV = Math.round(height * 0.025);
-            const marginH = Math.round(width * 0.02);
-            const gapBetweenStrips = options.rowGap !== undefined && !isNaN(parseInt(options.rowGap, 10))
-              ? Math.max(0, parseInt(options.rowGap, 10))
-              : 19;
-            const availableH = height - (2 * marginV) - ((numRows - 1) * gapBetweenStrips);
-            const stripH = Math.floor(availableH / numRows);
-            const stripW = width - (2 * marginH);
-
-            const rowImages = [];
-            const totalImgs = images ? images.length : 0;
-            const fpr = options.framesPerRow ? parseInt(options.framesPerRow, 10) : 0;
-            if (fpr > 0) {
-              for (let r = 0; r < numRows; r++) {
-                rowImages.push(images ? images.slice(r * fpr, (r + 1) * fpr) : []);
-              }
-            } else {
-              const baseCount = Math.floor(totalImgs / numRows);
-              const remainder = totalImgs % numRows;
-              let currIdx = 0;
-              for (let r = 0; r < numRows; r++) {
-                const take = baseCount + (r < remainder ? 1 : 0);
-                rowImages.push(images ? images.slice(currIdx, currIdx + take) : []);
-                currIdx += take;
-              }
-            }
-
-            const drawRoundRect = (x, y, w, h, r) => {
-              ctx.beginPath();
-              if (ctx.roundRect) {
-                ctx.roundRect(x, y, w, h, r);
-              } else {
-                ctx.moveTo(x + r, y);
-                ctx.lineTo(x + w - r, y);
-                ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-                ctx.lineTo(x + w, y + h - r);
-                ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-                ctx.lineTo(x + r, y + h);
-                ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-                ctx.lineTo(x, y + r);
-                ctx.quadraticCurveTo(x, y, x + r, y);
-              }
-              ctx.fill();
-            };
-
-            for (let r = 0; r < numRows; r++) {
-              const stripY = marginV + r * (stripH + gapBetweenStrips);
-              const stripX = marginH;
-
-              const trackH = Math.max(16, Math.round(stripH * 0.082));
-              const frameAreaH = stripH - (2 * trackH);
-              const frameAreaY = stripY + trackH;
-              const notchIndent = Math.round(stripW * 0.016);
-
-              ctx.fillStyle = filmColor;
-              ctx.fillRect(stripX, stripY, stripW, trackH);
-              ctx.fillRect(stripX, stripY + stripH - trackH, stripW, trackH);
-              ctx.fillRect(stripX + notchIndent, frameAreaY, stripW - (2 * notchIndent), frameAreaH);
-
-              const holeW = Math.max(8, Math.round(trackH * 0.44));
-              const holeH = Math.max(12, Math.round(trackH * 0.64));
-              const holeR = Math.max(2, Math.round(holeW * 0.3));
-              const holePitch = Math.round(holeW * 1.95);
-              const topHoleY = stripY + (trackH - holeH) / 2;
-              const botHoleY = stripY + stripH - trackH + (trackH - holeH) / 2;
-
-              ctx.fillStyle = holeColor;
-              const startX = stripX + Math.round(holePitch * 0.75);
-              const endX = stripX + stripW - Math.round(holePitch * 0.75);
-
-              for (let hx = startX; hx + holeW <= endX; hx += holePitch) {
-                drawRoundRect(hx, topHoleY, holeW, holeH, holeR);
-                drawRoundRect(hx, botHoleY, holeW, holeH, holeR);
-              }
-
-              const stills = rowImages[r] || [];
-              const k = stills.length;
-              if (k > 0) {
-                const frameAreaX = stripX + notchIndent;
-                const frameAreaW = stripW - (2 * notchIndent);
-                const padY = Math.round(frameAreaH * 0.035);
-                const padX = Math.round(frameAreaW * 0.012);
-                const innerW = frameAreaW - (2 * padX);
-                const innerH = frameAreaH - (2 * padY);
-                const innerY = frameAreaY + padY;
-
-                const gap = options.frameGap !== undefined && !isNaN(parseInt(options.frameGap, 10))
-                  ? parseInt(options.frameGap, 10)
-                  : 9;
-                const cellW = (innerW - ((k - 1) * gap)) / k;
-
-                for (let j = 0; j < k; j++) {
-                  const item = stills[j];
-                  const img = item.img || item;
-                  const cellX = frameAreaX + padX + j * (cellW + gap);
-
-                  const fitMode = options.fitMode || "cover";
-                  const resampled = this.getResampledImage(img, Math.round(cellW), Math.round(innerH), fitMode);
-                  ctx.drawImage(resampled, Math.round(cellX), Math.round(innerY));
-
-                  if (options.showNumbers) {
-                    ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
-                    ctx.font = `bold ${Math.max(10, Math.round(trackH * 0.42))}px monospace`;
-                    ctx.textAlign = "left";
-                    const numStr = String((r * (fpr || k)) + j + 1).padStart(2, "0") + "A";
-                    ctx.fillText(numStr, Math.round(cellX + 4), Math.round(frameAreaY - 4));
-                  }
-                }
-              }
-            }
-
-            return canvas;
-          },
         },
         BlobRegistry: {
           // Keep the public urls array for legacy beforeunload handling.
@@ -768,13 +636,13 @@
           };
           const singleMode = {
             "section-pdf": (m) => (m === "split" ? "split" : "convert"),
-            "section-stills-boards": (m) => (["story", "filmstrip", "fit"].includes(m) ? m : "video"),
+            "section-stills-boards": (m) => (m === "filmstrip" ? "story" : ["story", "fit"].includes(m) ? m : "video"),
             "section-adlinks": (m) =>
               m === "downloader" ? "downloader" : "gen",
           };
           const navByMode = {
             "section-pdf": { convert: "nav-pdf-image", split: "nav-pdf-split" },
-            "section-stills-boards": { video: "nav-stills-video", story: "nav-stills-story", filmstrip: "nav-stills-story", fit: "nav-stills-story" },
+            "section-stills-boards": { video: "nav-stills-video", story: "nav-stills-story", fit: "nav-stills-story" },
             "section-adlinks": { gen: "nav-adlinks-gen", downloader: "nav-adlinks-dl" },
           };
           const tabRows = {
@@ -784,7 +652,7 @@
           };
           const headerByMode = {
             "section-pdf": { convert: "PDF to Image", split: "Image Splitter" },
-            "section-stills-boards": { video: "Video Stills", story: "Storyboard", filmstrip: "Storyboard", fit: "Storyboard" },
+            "section-stills-boards": { video: "Video Stills", story: "Storyboard", fit: "Storyboard" },
             "section-adlinks": { gen: "Link Gen", downloader: "Ad Downloader" },
           };
           let navId = navMap[id];
@@ -818,7 +686,7 @@
           // named root View Transition around that same DOM element can
           // deadlock the browser snapshot lifecycle. The owned WAAPI
           // panel spring handles these in place with no blank frame.
-          // Board/Filmstrip/Fit remain the same internal mode workflow.
+          // Grid Board and Fit remain the same internal mode workflow.
           if(sameRoute||sharedSection){
             motion?.cancel();
             this._openTool(id,mode);
@@ -869,23 +737,19 @@
         switchStillsTab(tabId) {
           const storyTab = document.getElementById("stillsTabStory");
           const videoTab = document.getElementById("stillsTabVideo");
-          const filmstripTab = document.getElementById("stillsTabFilmstrip");
           const storyContent = document.getElementById("stillsTabContentStory");
           const videoContent = document.getElementById("stillsTabContentVideo");
-          const filmstripContent = document.getElementById("stillsTabContentFilmstrip");
           const fitContent = document.getElementById("stillsTabContentFit");
           const videoHeader = document.getElementById("videoHeaderControls");
           const storyHeader = document.getElementById("storyHeaderControls");
-          const filmstripHeader = document.getElementById("filmstripHeaderControls");
           const fitHeader = document.getElementById("fitHeaderControls");
           const subModeToggle = document.getElementById("storySubModeToggle");
           const subModeBtnBoard = document.getElementById("subModeBtnBoard");
-          const subModeBtnFilmstrip = document.getElementById("subModeBtnFilmstrip");
           const subModeBtnFit = document.getElementById("subModeBtnFit");
           const toolIcon = document.getElementById("stillsToolIcon");
           const toolTitle = document.getElementById("stillsToolTitle");
 
-          [storyTab, videoTab, filmstripTab].forEach((t) => {
+          [storyTab, videoTab].forEach((t) => {
             if (t) {
               t.classList.remove("active-mode");
               t.style.background = "transparent";
@@ -894,14 +758,14 @@
               t.setAttribute("tabindex", "-1");
             }
           });
-          [storyContent, videoContent, filmstripContent, fitContent].forEach((c) => {
+          [storyContent, videoContent, fitContent].forEach((c) => {
             if (c) c.style.display = "none";
           });
-          [videoHeader, storyHeader, filmstripHeader, fitHeader].forEach((h) => {
+          [videoHeader, storyHeader, fitHeader].forEach((h) => {
             if (h) h.style.display = "none";
           });
 
-          [subModeBtnBoard, subModeBtnFilmstrip, subModeBtnFit].forEach((b) => {
+          [subModeBtnBoard, subModeBtnFit].forEach((b) => {
             if (b) { b.classList.remove("active-mode"); b.style.background = "transparent"; }
           });
           if (tabId === "story") {
@@ -919,45 +783,9 @@
               subModeBtnBoard.classList.add("active-mode");
               subModeBtnBoard.style.background = "";
             }
-            if (subModeBtnFilmstrip) {
-              subModeBtnFilmstrip.classList.remove("active-mode");
-              subModeBtnFilmstrip.style.background = "transparent";
-            }
             if (toolIcon) toolIcon.textContent = "view_timeline";
             if (toolTitle) toolTitle.textContent = "Storyboard";
             this.updateNav("nav-stills-story");
-          } else if (tabId === "filmstrip") {
-            if (storyTab) {
-              storyTab.classList.add("active-mode");
-              storyTab.style.background = "";
-              storyTab.style.border = "";
-              storyTab.setAttribute("aria-selected", "true");
-              storyTab.removeAttribute("tabindex");
-            }
-            if (filmstripTab) {
-              filmstripTab.classList.add("active-mode");
-              filmstripTab.style.background = "";
-              filmstripTab.style.border = "";
-              filmstripTab.setAttribute("aria-selected", "true");
-              filmstripTab.removeAttribute("tabindex");
-            }
-            if (filmstripContent) filmstripContent.style.display = "block";
-            if (filmstripHeader) filmstripHeader.style.display = "flex";
-            if (subModeToggle) subModeToggle.style.display = "flex";
-            if (subModeBtnFilmstrip) {
-              subModeBtnFilmstrip.classList.add("active-mode");
-              subModeBtnFilmstrip.style.background = "";
-            }
-            if (subModeBtnBoard) {
-              subModeBtnBoard.classList.remove("active-mode");
-              subModeBtnBoard.style.background = "transparent";
-            }
-            if (toolIcon) toolIcon.textContent = "theaters";
-            if (toolTitle) toolTitle.textContent = "Storyboard";
-            this.updateNav("nav-stills-story");
-            if (Tools.Filmstrip && Tools.Filmstrip.draw) {
-              Tools.Filmstrip.draw();
-            }
           } else if (tabId === "fit") {
             if (storyTab) {
               storyTab.classList.add("active-mode");
@@ -992,41 +820,7 @@
           }
         },
         switchStorySubMode(mode) {
-          this.switchStillsTab(mode);
-        },
-        sendStoryToFilmstrip() {
-          if (!Tools.Story.active || !Tools.Story.active.images || !Tools.Story.active.images.length) {
-            UI.toast("No images in current board to send to Filmstrip");
-            return;
-          }
-          const imgs = Tools.Story.active.images.map((item, idx) => ({
-            id: `fs-${Date.now()}-${idx}-${Math.random()}`,
-            name: item.file ? item.file.name : `Frame_${idx + 1}`,
-            img: item.img,
-          }));
-          Tools.Filmstrip.images.push(...imgs);
-          if (Tools.Filmstrip.sortImagesAscending) Tools.Filmstrip.sortImagesAscending();
-          Tools.Filmstrip.updateList();
-          Tools.Filmstrip.draw();
-          this.switchStorySubMode("filmstrip");
-          UI.toast(`Sent ${imgs.length} frame(s) to Filmstrip`);
-        },
-        sendFilmstripToStory() {
-          if (!Tools.Filmstrip.images || !Tools.Filmstrip.images.length) {
-            UI.toast("No stills in Filmstrip to send to Board");
-            return;
-          }
-          if (!Tools.Story.active) Tools.Story.addNewProject();
-          Tools.Filmstrip.images.forEach((item) => {
-            Tools.Story.active.images.push({
-              file: { name: item.name },
-              img: item.img,
-            });
-          });
-          Tools.Story.updateList();
-          Tools.Story.draw();
-          this.switchStorySubMode("story");
-          UI.toast(`Sent ${Tools.Filmstrip.images.length} frame(s) to Storyboard`);
+          this.switchStillsTab(mode === "fit" ? "fit" : "story");
         },
         switchAdlinksTab(tabId) {
           const genTab = document.getElementById("adlinksTabGen");

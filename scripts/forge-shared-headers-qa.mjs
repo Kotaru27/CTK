@@ -148,10 +148,10 @@ try{
         assert.ok(await page.locator('#storyHeaderName').isVisible(),
           'Editing a board name must not hide its original field');
         await input.fill(before);
-        await page.evaluate(()=>UI.switchStorySubMode('filmstrip'));
+        await page.evaluate(()=>UI.switchStorySubMode('fit'));
         await page.waitForTimeout(80);
         assert.ok(!(await page.locator('#storyHeaderName').isVisible()),
-          'Board name must not overlay Filmstrip mode');
+          'Board name must not overlay Fit mode');
         await page.evaluate(()=>UI.switchStorySubMode('story'));
         await page.waitForTimeout(80);
         assert.ok(await page.locator('#storyHeaderName').isVisible(),
@@ -165,7 +165,7 @@ try{
             .filter(svg=>getComputedStyle(svg).display!=='none')
             .map(svg=>svg.classList.contains('forge-storyboard-header-svg')));
         assert.deepEqual(iconState,[true],
-          'Grid Board must show exactly the homepage SVG after returning from Filmstrip');
+          'Grid Board must show exactly the homepage SVG after returning from Fit');
       }
       if(viewport.width===1440){
         await page.locator('#view-app .tool-section.active .forge-tool-home').click();

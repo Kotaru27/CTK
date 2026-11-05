@@ -17,7 +17,6 @@
     "src/js/tools/storyboard.js",
     "src/js/tools/storyboard-fit.js",
     "src/js/tools/video-stills.js",
-    "src/js/tools/storyboard-filmstrip.js",
     "src/js/tools/link-gen.js",
     "src/js/tools/ad-downloader.js"
   ],

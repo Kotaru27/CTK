@@ -50,26 +50,18 @@ test('Asset and project styling remains inside Storyboard workspace, preserves c
  }
 });
 
-test('Filmstrip reuses named, keyboard-accessible rows without changing rendering',()=>{
- const filmstrip=read('src/js/tools/storyboard-filmstrip.js');
- const bundle=read('dist/js/app.js');
- const standalone=read('dist/creative-tools-standalone.html');
- for(const fragment of ['list.replaceChildren()', 'row.className = "story-asset-row"',
-   'name.textContent = filename','button.setAttribute("aria-label", action.name + " " + filename)',
-   'button.disabled = index + action.direction < 0',
-   'button.onclick = () => this.moveImage(index, action.direction)',
-   'button.onclick = () => this.removeImage(index)']){
-   assert.ok(filmstrip.includes(fragment),'Filmstrip row missing '+fragment);
- }
- const start='          updateList() {\n            const list = this.els.list;\n            const countBadge = this.els.countBadge;';
- const end='          draw() {';
- const part=s=>s.slice(s.indexOf(start),s.indexOf(end,s.indexOf(start)));
- assert.ok(part(filmstrip).length>1300);
- assert.equal(part(filmstrip),part(bundle));
- assert.equal(part(filmstrip),part(standalone));
- for(const fragment of [':is(#stillsTabContentStory,#stillsTabContentFilmstrip)',
-   ':is(#storyFileList,#filmstripFileList)', '#stillsTabContentFit .fit-source-status',
-   '#stillsTabContentFit #fitStatement', '#stillsTabContentFit .fit-render-status']){
-   assert.ok(css.includes(fragment),'missing storyboard styling '+fragment);
- }
+test('retired Filmstrip mode is absent while Storyboard and Fit remain',()=>{
+  const html=read('index.html');
+  const pages=read('dist/index.html');
+  const standalone=read('dist/creative-tools-standalone.html');
+  for(const release of [html,pages,standalone]){
+    for(const id of ['subModeBtnFilmstrip','filmstripHeaderControls','stillsTabContentFilmstrip','filmstripDropZone'])
+      assert.ok(!release.includes('id="'+id+'"'),'retired element '+id);
+    for(const id of ['subModeBtnBoard','subModeBtnFit','stillsTabContentStory','stillsTabContentFit'])
+      assert.ok(release.includes('id="'+id+'"'),'missing active mode '+id);
+  }
+  assert.ok(!bundle.includes('Filmstrip: {'));
+  assert.ok(!bundle.includes('renderFilmstrip(images'));
+  assert.ok(!bundle.includes('sendStoryToFilmstrip()'));
+  assert.match(read('src/js/tools/video-stills.js'),/this\.els\.toBoardBtn\.onclick = \(event\) => \{\s*event\.stopPropagation\(\);\s*this\.toggleBoardMenu\(\);/);
 });

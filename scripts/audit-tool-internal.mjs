@@ -62,8 +62,8 @@ try{
   out.push(run('pdf convert->split',()=>UI.switchPdfTab('split')));
   out.push(run('pdf split->convert',()=>UI.switchPdfTab('convert')));
   UI.openTool('section-stills-boards','story');
-  out.push(run('storyboard->filmstrip',()=>UI.switchStillsTab('filmstrip')));
-  out.push(run('filmstrip->storyboard',()=>UI.switchStillsTab('story')));
+  out.push(run('storyboard->fit',()=>UI.switchStillsTab('fit')));
+  out.push(run('fit->storyboard',()=>UI.switchStillsTab('story')));
   UI.openTool('section-adlinks','gen');
   out.push(run('link gen->downloader',()=>UI.switchAdlinksTab('downloader')));
   out.push(run('downloader->link gen',()=>UI.switchAdlinksTab('gen')));
@@ -75,8 +75,8 @@ try{
  const modeCases=[
   ['PDF convert → split','section-pdf','convert','switchPdfTab','split','pdfTabContentSplit'],
   ['PDF split → convert','section-pdf','split','switchPdfTab','convert','pdfTabContentConvert'],
-  ['Storyboard → Filmstrip','section-stills-boards','story','switchStillsTab','filmstrip','stillsTabContentFilmstrip'],
-  ['Filmstrip → Storyboard','section-stills-boards','filmstrip','switchStillsTab','story','stillsTabContentStory'],
+  ['Storyboard → Fit','section-stills-boards','story','switchStillsTab','fit','stillsTabContentFit'],
+  ['Fit → Storyboard','section-stills-boards','fit','switchStillsTab','story','stillsTabContentStory'],
   ['Link Gen → Ad Downloader','section-adlinks','gen','switchAdlinksTab','downloader','adlinksTabContentDownloader'],
   ['Ad Downloader → Link Gen','section-adlinks','downloader','switchAdlinksTab','gen','adlinksTabContentGen']
  ];
@@ -115,7 +115,7 @@ try{
    !document.documentElement.classList.contains('forge-route-running'),null,{timeout:6500});
  await page.waitForTimeout(70);
  const markerResults=[];
- for(const [mode,buttonId] of [['story','subModeBtnBoard'],['filmstrip','subModeBtnFilmstrip'],['fit','subModeBtnFit'],['story','subModeBtnBoard']]){
+ for(const [mode,buttonId] of [['story','subModeBtnBoard'],['fit','subModeBtnFit'],['story','subModeBtnBoard']]){
    const routeBefore=await page.evaluate(()=>window.__internalViewTransitions);
    await page.evaluate(mode=>UI.switchStillsTab(mode),mode);
    await page.waitForTimeout(340);
