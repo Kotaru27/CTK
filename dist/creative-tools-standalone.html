@@ -8396,6 +8396,30 @@ body.light-mode .undo-toast {
   flex:0 0 auto!important;
 }
 
+/* Video Stills: reserve the image area before a frame is decoded.
+   The real thumbnail replaces this; no broken <img src=""> requests. */
+#view-app #stillsTabContentVideo #stillsStacksContainer .pdf-stack-wrapper>.stills-pending-preview{
+  width:90%;
+  min-height:110px;
+  max-height:172px;
+  aspect-ratio:4/3;
+  box-sizing:border-box;
+  margin:8px auto;
+  display:grid;
+  place-items:center;
+  border:1px dashed var(--studio-border,var(--border,#c1cdc1));
+  border-radius:6px;
+  background:var(--studio-field,rgba(95,115,95,.06));
+  color:var(--text-muted,#627265);
+  font-size:11px;
+  letter-spacing:.01em;
+  text-align:center;
+  padding:10px;
+}
+#view-app #stillsTabContentVideo #stillsStacksContainer .pdf-stack-wrapper>.stills-pending-preview[hidden]{
+  display:none!important;
+}
+
 /* THE FORGE / interaction owner.
    One duration and easing for navigation and all ordinary tool actions.
    Tool-specific CSS retains only semantic color states, focus, and selection.
@@ -13332,8 +13356,66 @@ function metrics(f){
   }
   return f.v6Metrics={lap:Math.max(0,lapSq/N-(lapSum/N)**2),white:white/(W*H),black:black/(W*H),mean:sum/(W*H)};
 }
+// Detect mostly empty frames using the actual displayed-content area, not
+// the entire canvas. This handles portrait ads with neutral sidebars as well
+// as landscape title cards. No brand, color, or timestamp special cases.
+function contentDensity(f){
+  if(f.v6Density)return f.v6Density;
+  const rgb=f.detail?.rgb;
+  if(!rgb||rgb.length!==W*H*3)return {sparse:false,occupied:1,dominance:0,activeWidth:1};
+  const column=(x)=>{
+    let r=0,g=0,b=0,sq=0;
+    for(let y=0;y<H;y+=3){
+      const k=(y*W+x)*3,R=rgb[k],G=rgb[k+1],B=rgb[k+2];
+      r+=R;g+=G;b+=B;sq+=R*R+G*G+B*B;
+    }
+    const n=Math.ceil(H/3);
+    r/=n;g/=n;b/=n;
+    return {r,g,b,spread:Math.sqrt(Math.max(0,sq/n-r*r-g*g-b*b)/3)};
+  };
+  const left=column(1),right=column(W-2);
+  const distance=(a,b)=>Math.sqrt(((a.r-b.r)**2+(a.g-b.g)**2+(a.b-b.b)**2)/3);
+  let first=0,last=W-1;
+  if(left.spread<17){
+    for(let x=1;x<W-1;x++){
+      const c=column(x);
+      if(distance(c,left)>24||c.spread>23){first=x;break;}
+    }
+  }
+  if(right.spread<17){
+    for(let x=W-2;x>0;x--){
+      const c=column(x);
+      if(distance(c,right)>24||c.spread>23){last=x;break;}
+    }
+  }
+  if(last-first<Math.ceil(W*.14)){first=0;last=W-1;}
+  const hist=new Uint16Array(512);
+  let dominant=0,count=0,occupied=0,tiles=0;
+  for(let y=0;y<H;y+=9)for(let x=first;x<=last;x+=8){
+    let luminance=0,squared=0,n=0;
+    const stopY=Math.min(H,y+9),stopX=Math.min(last+1,x+8);
+    for(let py=y;py<stopY;py++)for(let px=x;px<stopX;px++){
+      const i=(py*W+px)*3,r=rgb[i],g=rgb[i+1],b=rgb[i+2];
+      const lum=.2126*r+.7152*g+.0722*b;
+      luminance+=lum;squared+=lum*lum;n++;count++;
+      const bin=(r>>5)*64+(g>>5)*8+(b>>5);
+      dominant=Math.max(dominant,++hist[bin]);
+    }
+    if(n>0){
+      const variance=Math.max(0,squared/n-(luminance/n)**2);
+      if(variance>16*16)occupied++;
+      tiles++;
+    }
+  }
+  const coverage=tiles?occupied/tiles:0,majority=count?dominant/count:0;
+  const info={occupied:coverage,dominance:majority,activeWidth:(last-first+1)/W,
+    sparse:(majority>.77&&coverage<.20)||(majority>.65&&coverage<.09)};
+  f.v6Density=info;
+  return info;
+}
 function qualityGate(all,i){
   const f=all[i],m=metrics(f);
+  if(contentDensity(f).sparse)return {drop:false,reason:"sparse-content-review",review:true};
   if(hardTransition(f,all,i))return {drop:true,reason:"transition-wipe"};
   const a=[...all.slice(0,i)].reverse().find(x=>f.t-x.t<2.15);
   const b=all.slice(i+1).find(x=>x.t-f.t<2.15);
@@ -13366,14 +13448,15 @@ function sameV6(a,b){
 function value(f){
   const m=metrics(f),d=f.detail||{};
   return quality(f)+Math.log1p(m.lap)*2.8-Math.max(0,m.white-.10)*34-
-    (m.lap<1100?(1100-m.lap)/1100*4:0)+(d.dominant>.9?-2:0);
+    (m.lap<1100?(1100-m.lap)/1100*4:0)+(d.dominant>.9?-2:0)-
+    (contentDensity(f).sparse?18:0);
 }
 function curate(frames){
   const all=[...frames].sort((a,b)=>a.t-b.t);
   // Preserve the V5 content-boundary safeguard used by the approved V6 selector.
   let legacyGroup=0,legacyPrior=null;
   for(const f of all){
-    f.v6Metrics=null;f.v5=null;f.v6Review=false;f.recommended=false;f.selected=false;
+    f.v6Metrics=null;f.v6Density=null;f.v5=null;f.v6Review=false;f.recommended=false;f.selected=false;
     f.curationGroup=-1;f.curationReason="";f.rejectedBy=null;f.v6LegacyProtected=false;
     if(!legacyPrior){legacyGroup=1;}
     else {const decision=v5SameSequence(legacyPrior,f);
@@ -13391,7 +13474,7 @@ function curate(frames){
       else if(q.reason==="exposure-flash")qualityStats.exposure++;
       else if(q.reason==="transition-wipe")qualityStats.wipes++;
       else qualityStats.nearBlank++;
-    }else{if(q.review){f.v6Review=true;f.v6ReviewReason="soft-frame-check";}valid.push(f);}
+    }else{if(q.review){f.v6Review=true;f.v6ReviewReason=q.reason||"soft-frame-check";}valid.push(f);}
   }
   for(const f of valid){
     const g=groups.at(-1);
@@ -13444,7 +13527,9 @@ function curate(frames){
     quality:qualityStats,reviewFrames:reviews,globalDuplicates:matches.length,
     decisions:all.map(f=>({time:round(f.t),kind:f.kind,decision:f.recommended?(f.v6Review?"review":"recommended"):"excluded",
       reason:f.curationReason,group:f.curationGroup,replacedBy:f.rejectedBy,
-      verifiedTimestamp:!!f.verified,selected:!!f.selected}))
+      verifiedTimestamp:!!f.verified,selected:!!f.selected,
+      contentDensity:Math.round(contentDensity(f).occupied*100)/100,
+      sparseContent:contentDensity(f).sparse}))
   };
 }
 function closest(frames,t){
@@ -13496,7 +13581,7 @@ function pickProbe(probe,baseline,extras,mode="balanced"){
   return {yes:min>=threshold,score:min,threshold};
 }
 
-return {sampleFingerprint,detailFingerprint,frameDifference,probePlan,pickProbe,curate};
+return {sampleFingerprint,detailFingerprint,frameDifference,probePlan,pickProbe,curate,contentDensity};
 })();
 
 /*
@@ -17872,6 +17957,7 @@ const CTKDownloadRenamer = (() => {
               const file = this.queue.shift();
               let sourceUrl;
               let vid;
+              let currentStack=null, currentCollectionId=null;
               try {
                 const baseName=file.name.replace(/\.[^/.]+$/,"").replace(/\s+/g,"_");
                 let name=baseName,suffix=2;
@@ -17889,12 +17975,15 @@ const CTKDownloadRenamer = (() => {
 
                 const id = `vid-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
                 this.collection[id] = { name: name, frames: [] };
+                currentCollectionId=id;
                 // V6 seeks each planned timestamp itself; do not seek to clip end first.
                 if (generation !== (this._generation || 0)) break;
 
                 const stack = document.createElement("div");
                 stack.className = "pdf-stack-wrapper";
-                stack.innerHTML = `<img src=""><div class="stack-meta"><div class="stack-title"></div><div class="stack-count">Processing...</div></div>`;
+                stack.innerHTML = `<div class="stills-pending-preview" role="status">Preparing preview</div><img alt="First captured video frame" style="display:none"><div class="stack-meta"><div class="stack-title"></div><div class="stack-count" aria-live="polite">Processing...</div></div>`;
+                currentStack=stack;
+                stack.setAttribute?.("aria-busy","true");
                 stack.querySelector(".stack-title").textContent = name;
                 stack.querySelector(".stack-title").title = name;
                 stack.title = name;
@@ -17909,7 +17998,9 @@ const CTKDownloadRenamer = (() => {
                     stack.click();
                   }
                 };
-                stack.onclick = () => this.openDetail(id);
+                stack.onclick = () => {
+                  if(this.collection[id]?.frames.length)this.openDetail(id);
+                };
                 this.els.stacks.appendChild(stack);
 
                 // Final V6: retain every successful capture; auto-check only confident picks.
@@ -17921,29 +18012,42 @@ const CTKDownloadRenamer = (() => {
                 canvas.width=vid.videoWidth;canvas.height=vid.videoHeight;
                 const ctx=canvas.getContext("2d",{alpha:false});
                 const baseline=[],extras=[],errors=[];
+                const progress=stack.querySelector(".stack-count");
+                const showProgress=label=>{
+                  if(generation===(this._generation||0)&&progress)progress.innerText=label;
+                };
                 const store=async frame=>{
                   ctx.drawImage(vid,0,0,canvas.width,canvas.height);
                   const blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/jpeg",.9));
                   if(!blob)throw Error("JPEG encoding failed");
                   if(generation!==(this._generation||0))return null;
+                  const detail=CTKV6.detailFingerprint(vid,detailScratch);
                   const url=Core.BlobRegistry.create(blob,"stills");
-                  return {...frame,detail:CTKV6.detailFingerprint(vid,detailScratch),blob,url};
+                  if(!stack.querySelector("img")?.src)this.setStackPreview(stack,url);
+                  return {...frame,detail,blob,url};
                 };
                 const capture=async(time,kind,save=true)=>{
                   const target=await this.seekV6(vid,time,generation);
                   if(generation!==(this._generation||0))return null;
                   const frame={t:target,kind,verified:!!this._lastV6Verified,
                     fp:CTKV6.sampleFingerprint(vid,scratch)};
-                  if(!save){ctx.drawImage(vid,0,0,canvas.width,canvas.height);return frame;}
+                  if(!save){
+                    ctx.drawImage(vid,0,0,canvas.width,canvas.height);
+                    if(!genAllStills&&!stack.querySelector("img")?.src)
+                      this.setStackPreview(stack,canvas.toDataURL("image/jpeg",.5));
+                    return frame;
+                  }
                   return store(frame);
                 };
                 for(let i=0;i<times.length;i++){
                   if(generation!==(this._generation||0))break;
                   try{const frame=await capture(times[i],"base",genAllStills);if(frame)baseline.push(frame);}
                   catch(error){errors.push({time:times[i],reason:String(error.message||error)});}
+                  showProgress(`Extracting frames ${i+1}/${times.length}`);
                   if(i%8===0)await new Promise(resolve=>setTimeout(resolve,0));
                 }
                 if(generation!==(this._generation||0))break;
+                showProgress("Checking scene coverage...");
                 const probes=genAllStills?CTKV6.probePlan(vid.duration,baseline,times,"balanced"):[];
                 for(let i=0;i<probes.length;i++){
                   if(generation!==(this._generation||0))break;
@@ -17958,9 +18062,11 @@ const CTKDownloadRenamer = (() => {
                       if(frame)extras.push(frame);
                     }
                   }catch(error){errors.push({time:probe.t,reason:String(error.message||error)});}
+                  showProgress(`Checking scenes ${i+1}/${probes.length}`);
                   if(i%8===0)await new Promise(resolve=>setTimeout(resolve,0));
                 }
                 if(generation!==(this._generation||0))break;
+                showProgress("Selecting useful stills...");
                 const frames=[...baseline,...extras].sort((a,b)=>a.t-b.t);
                 if(genAllStills){
                   const report=CTKV6.curate(frames);
@@ -17972,17 +18078,22 @@ const CTKDownloadRenamer = (() => {
                     reason:frame.curationReason
                   })));
                   // Release analysis buffers after the curation pass; preserve JPEGs.
-                  for(const f of frames){f.fp=null;f.detail=null;f.v5=null;f.v6Metrics=null;}
+                  for(const f of frames){f.fp=null;f.detail=null;f.v5=null;f.v6Metrics=null;f.v6Density=null;}
                 }
                 this.collection[id].failures=errors;
                 if(frames.length){
                   const preview=frames.find(f=>f.selected)||frames[0];
-                  stack.querySelector("img").src=preview.url||canvas.toDataURL("image/jpeg",.5);
+                  this.setStackPreview(stack,preview.url||canvas.toDataURL("image/jpeg",.5));
                 }else if(!genAllStills&&vid.readyState>=2){
-                  stack.querySelector("img").src=canvas.toDataURL("image/jpeg",.5);
+                  this.setStackPreview(stack,canvas.toDataURL("image/jpeg",.5));
                 }
                 if(errors.length)stack.title=name+" · "+errors.length+" failed capture(s)";
-                if(!frames.length&&genAllStills)UI.showError(name+": no decodable frames were captured");
+                if(!frames.length&&genAllStills){
+                  showProgress("No frames extracted");
+                  const placeholder=stack.querySelector(".stills-pending-preview");
+                  if(placeholder)placeholder.textContent="Preview unavailable";
+                  UI.showError(name+": no decodable frames were captured");
+                }
                 if(generation!==(this._generation||0))break;
                 if (genStory) {
                   const storyInterval = vid.duration / (storyFramesCount + 1);
@@ -18031,17 +18142,29 @@ const CTKDownloadRenamer = (() => {
                     url: compUrl,
                     checked: true,
                   });
-                  if (!previewDataUrl || !genAllStills)
-                    stack.querySelector("img").src = compUrl;
+                  if (!genAllStills || !stack.querySelector("img")?.src)
+                    this.setStackPreview(stack,compUrl);
                 }
 
                 const saved=this.collection[id].frames.filter(f=>f.type==="still");
-                stack.querySelector(".stack-count").innerText =
-                  `${saved.length} captured · ${saved.filter(f=>f.checked).length} selected`;
+                if(saved.length||this.collection[id].frames.length){
+                  showProgress(`${saved.length} captured · ${saved.filter(f=>f.checked).length} selected`);
+                }
+                stack.setAttribute?.("aria-busy","false");
                 this.updateBulkBoardButton();
               } catch (e) {
                 if (generation === (this._generation || 0)) {
                   console.error(e);
+                  if(currentStack){
+                    const stills=this.collection[currentCollectionId]?.frames?.filter(f=>f.type==="still")||[];
+                    const status=currentStack.querySelector(".stack-count");
+                    if(status)status.innerText=stills.length
+                      ?`${stills.length} captured · Processing incomplete`:"Extraction failed";
+                    const placeholder=currentStack.querySelector(".stills-pending-preview");
+                    if(placeholder&&!currentStack.querySelector("img")?.src)
+                      placeholder.textContent="Preview unavailable";
+                    currentStack.setAttribute?.("aria-busy","false");
+                  }
                   UI.showError(`Could not extract video stills: ${e.message}`);
                 }
               } finally {
@@ -18055,6 +18178,16 @@ const CTKDownloadRenamer = (() => {
               this.updateBulkBoardButton();
               if (this.queue.length) this.process();
             }
+          },
+          setStackPreview(stack,url) {
+            if(!stack||!url)return;
+            const image=stack.querySelector("img");
+            if(!image)return;
+            image.src=url;
+            image.hidden=false;
+            if(image.style)image.style.display="block";
+            const placeholder=stack.querySelector(".stills-pending-preview");
+            if(placeholder)placeholder.hidden=true;
           },
           loadMetadata(video, url) {
             return new Promise((resolve, reject) => {

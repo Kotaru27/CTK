@@ -219,6 +219,30 @@
   flex:0 0 auto!important;
 }
 
+/* Video Stills: reserve the image area before a frame is decoded.
+   The real thumbnail replaces this; no broken <img src=""> requests. */
+#view-app #stillsTabContentVideo #stillsStacksContainer .pdf-stack-wrapper>.stills-pending-preview{
+  width:90%;
+  min-height:110px;
+  max-height:172px;
+  aspect-ratio:4/3;
+  box-sizing:border-box;
+  margin:8px auto;
+  display:grid;
+  place-items:center;
+  border:1px dashed var(--studio-border,var(--border,#c1cdc1));
+  border-radius:6px;
+  background:var(--studio-field,rgba(95,115,95,.06));
+  color:var(--text-muted,#627265);
+  font-size:11px;
+  letter-spacing:.01em;
+  text-align:center;
+  padding:10px;
+}
+#view-app #stillsTabContentVideo #stillsStacksContainer .pdf-stack-wrapper>.stills-pending-preview[hidden]{
+  display:none!important;
+}
+
 /* THE FORGE / interaction owner.
    One duration and easing for navigation and all ordinary tool actions.
    Tool-specific CSS retains only semantic color states, focus, and selection.
