@@ -1,0 +1,32 @@
+name: CTK branch-only Link Gen asset verification
+on:
+  push:
+    branches: [feature/ad-link-folder-import]
+permissions:
+  contents: write
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Build CTK release artifacts from source
+        run: npm run build
+      - name: Run new Link Gen regression tests
+        run: node --test tests/ad-link-folder-import.test.mjs
+      - name: Commit only compiled Pages artifacts to feature branch
+        run: |
+          git add -- index.html dist/ favicon.svg manifest.json
+          if git diff --cached --quiet; then
+            echo "No generated files changed"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "build: compile CTK Link Gen folder import Pages artifacts"
+            git push origin HEAD:feature/ad-link-folder-import
+          fi
