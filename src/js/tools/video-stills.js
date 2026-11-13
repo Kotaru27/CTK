@@ -285,6 +285,7 @@ export default {
               const file = this.queue.shift();
               let sourceUrl;
               let vid;
+              let currentStack=null, currentCollectionId=null;
               try {
                 const baseName=file.name.replace(/\.[^/.]+$/,"").replace(/\s+/g,"_");
                 let name=baseName,suffix=2;
@@ -302,12 +303,15 @@ export default {
 
                 const id = `vid-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
                 this.collection[id] = { name: name, frames: [] };
+                currentCollectionId=id;
                 // V6 seeks each planned timestamp itself; do not seek to clip end first.
                 if (generation !== (this._generation || 0)) break;
 
                 const stack = document.createElement("div");
                 stack.className = "pdf-stack-wrapper";
-                stack.innerHTML = `<img src=""><div class="stack-meta"><div class="stack-title"></div><div class="stack-count">Processing...</div></div>`;
+                stack.innerHTML = `<div class="stills-pending-preview" role="status">Preparing preview</div><img alt="First captured video frame" style="display:none"><div class="stack-meta"><div class="stack-title"></div><div class="stack-count" aria-live="polite">Processing...</div></div>`;
+                currentStack=stack;
+                stack.setAttribute?.("aria-busy","true");
                 stack.querySelector(".stack-title").textContent = name;
                 stack.querySelector(".stack-title").title = name;
                 stack.title = name;
@@ -322,7 +326,9 @@ export default {
                     stack.click();
                   }
                 };
-                stack.onclick = () => this.openDetail(id);
+                stack.onclick = () => {
+                  if(this.collection[id]?.frames.length)this.openDetail(id);
+                };
                 this.els.stacks.appendChild(stack);
 
                 // Final V6: retain every successful capture; auto-check only confident picks.
@@ -334,29 +340,42 @@ export default {
                 canvas.width=vid.videoWidth;canvas.height=vid.videoHeight;
                 const ctx=canvas.getContext("2d",{alpha:false});
                 const baseline=[],extras=[],errors=[];
+                const progress=stack.querySelector(".stack-count");
+                const showProgress=label=>{
+                  if(generation===(this._generation||0)&&progress)progress.innerText=label;
+                };
                 const store=async frame=>{
                   ctx.drawImage(vid,0,0,canvas.width,canvas.height);
                   const blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/jpeg",.9));
                   if(!blob)throw Error("JPEG encoding failed");
                   if(generation!==(this._generation||0))return null;
+                  const detail=CTKV6.detailFingerprint(vid,detailScratch);
                   const url=Core.BlobRegistry.create(blob,"stills");
-                  return {...frame,detail:CTKV6.detailFingerprint(vid,detailScratch),blob,url};
+                  if(!stack.querySelector("img")?.src)this.setStackPreview(stack,url);
+                  return {...frame,detail,blob,url};
                 };
                 const capture=async(time,kind,save=true)=>{
                   const target=await this.seekV6(vid,time,generation);
                   if(generation!==(this._generation||0))return null;
                   const frame={t:target,kind,verified:!!this._lastV6Verified,
                     fp:CTKV6.sampleFingerprint(vid,scratch)};
-                  if(!save){ctx.drawImage(vid,0,0,canvas.width,canvas.height);return frame;}
+                  if(!save){
+                    ctx.drawImage(vid,0,0,canvas.width,canvas.height);
+                    if(!genAllStills&&!stack.querySelector("img")?.src)
+                      this.setStackPreview(stack,canvas.toDataURL("image/jpeg",.5));
+                    return frame;
+                  }
                   return store(frame);
                 };
                 for(let i=0;i<times.length;i++){
                   if(generation!==(this._generation||0))break;
                   try{const frame=await capture(times[i],"base",genAllStills);if(frame)baseline.push(frame);}
                   catch(error){errors.push({time:times[i],reason:String(error.message||error)});}
+                  showProgress(`Extracting frames ${i+1}/${times.length}`);
                   if(i%8===0)await new Promise(resolve=>setTimeout(resolve,0));
                 }
                 if(generation!==(this._generation||0))break;
+                showProgress("Checking scene coverage...");
                 const probes=genAllStills?CTKV6.probePlan(vid.duration,baseline,times,"balanced"):[];
                 for(let i=0;i<probes.length;i++){
                   if(generation!==(this._generation||0))break;
@@ -371,9 +390,11 @@ export default {
                       if(frame)extras.push(frame);
                     }
                   }catch(error){errors.push({time:probe.t,reason:String(error.message||error)});}
+                  showProgress(`Checking scenes ${i+1}/${probes.length}`);
                   if(i%8===0)await new Promise(resolve=>setTimeout(resolve,0));
                 }
                 if(generation!==(this._generation||0))break;
+                showProgress("Selecting useful stills...");
                 const frames=[...baseline,...extras].sort((a,b)=>a.t-b.t);
                 if(genAllStills){
                   const report=CTKV6.curate(frames);
@@ -385,17 +406,22 @@ export default {
                     reason:frame.curationReason
                   })));
                   // Release analysis buffers after the curation pass; preserve JPEGs.
-                  for(const f of frames){f.fp=null;f.detail=null;f.v5=null;f.v6Metrics=null;}
+                  for(const f of frames){f.fp=null;f.detail=null;f.v5=null;f.v6Metrics=null;f.v6Density=null;}
                 }
                 this.collection[id].failures=errors;
                 if(frames.length){
                   const preview=frames.find(f=>f.selected)||frames[0];
-                  stack.querySelector("img").src=preview.url||canvas.toDataURL("image/jpeg",.5);
+                  this.setStackPreview(stack,preview.url||canvas.toDataURL("image/jpeg",.5));
                 }else if(!genAllStills&&vid.readyState>=2){
-                  stack.querySelector("img").src=canvas.toDataURL("image/jpeg",.5);
+                  this.setStackPreview(stack,canvas.toDataURL("image/jpeg",.5));
                 }
                 if(errors.length)stack.title=name+" · "+errors.length+" failed capture(s)";
-                if(!frames.length&&genAllStills)UI.showError(name+": no decodable frames were captured");
+                if(!frames.length&&genAllStills){
+                  showProgress("No frames extracted");
+                  const placeholder=stack.querySelector(".stills-pending-preview");
+                  if(placeholder)placeholder.textContent="Preview unavailable";
+                  UI.showError(name+": no decodable frames were captured");
+                }
                 if(generation!==(this._generation||0))break;
                 if (genStory) {
                   const storyInterval = vid.duration / (storyFramesCount + 1);
@@ -444,17 +470,29 @@ export default {
                     url: compUrl,
                     checked: true,
                   });
-                  if (!previewDataUrl || !genAllStills)
-                    stack.querySelector("img").src = compUrl;
+                  if (!genAllStills || !stack.querySelector("img")?.src)
+                    this.setStackPreview(stack,compUrl);
                 }
 
                 const saved=this.collection[id].frames.filter(f=>f.type==="still");
-                stack.querySelector(".stack-count").innerText =
-                  `${saved.length} captured · ${saved.filter(f=>f.checked).length} selected`;
+                if(saved.length||this.collection[id].frames.length){
+                  showProgress(`${saved.length} captured · ${saved.filter(f=>f.checked).length} selected`);
+                }
+                stack.setAttribute?.("aria-busy","false");
                 this.updateBulkBoardButton();
               } catch (e) {
                 if (generation === (this._generation || 0)) {
                   console.error(e);
+                  if(currentStack){
+                    const stills=this.collection[currentCollectionId]?.frames?.filter(f=>f.type==="still")||[];
+                    const status=currentStack.querySelector(".stack-count");
+                    if(status)status.innerText=stills.length
+                      ?`${stills.length} captured · Processing incomplete`:"Extraction failed";
+                    const placeholder=currentStack.querySelector(".stills-pending-preview");
+                    if(placeholder&&!currentStack.querySelector("img")?.src)
+                      placeholder.textContent="Preview unavailable";
+                    currentStack.setAttribute?.("aria-busy","false");
+                  }
                   UI.showError(`Could not extract video stills: ${e.message}`);
                 }
               } finally {
@@ -468,6 +506,16 @@ export default {
               this.updateBulkBoardButton();
               if (this.queue.length) this.process();
             }
+          },
+          setStackPreview(stack,url) {
+            if(!stack||!url)return;
+            const image=stack.querySelector("img");
+            if(!image)return;
+            image.src=url;
+            image.hidden=false;
+            if(image.style)image.style.display="block";
+            const placeholder=stack.querySelector(".stills-pending-preview");
+            if(placeholder)placeholder.hidden=true;
           },
           loadMetadata(video, url) {
             return new Promise((resolve, reject) => {
