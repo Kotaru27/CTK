@@ -29,6 +29,7 @@ if(k!==5)throw Error('Did not replace all inline scripts');
 const visualCss=read('src/css/experience/ad-downloader-v2.css');
 const visualJs=read('src/js/presentation/ad-downloader-v2.js');
 const typeMotionCss=read('src/css/experience/typography-motion-v3.css');
+const adFolderCss=read('src/css/experience/ad-link-folder-import.css');
 
 /* The brand shell is overlaid on the unchanged baseline; never rewrite tool cards. */
 const forgeBrandCss=read('src/css/experience/forge-brand.css');
@@ -170,6 +171,31 @@ function forgeBrand(html,standaloneRelease){
     if(!html.includes(before))throw Error('Link Gen step label missing: '+before);
     html=html.replace(before,after);
   }
+  // Layer the new folder picker into both hosted and standalone Link Gen builds.
+  // Do not alter the preserved HTML baseline or the original outputs.
+  const algEditorAnchor='<textarea class="liquid-input terminal-input" id="alg-input"';
+  if(!html.includes(algEditorAnchor))throw Error('Link Gen filename editor anchor missing');
+  const algFolderUi=[
+    '<section class="alg-folder-panel" aria-label="Import ads folder">',
+    ' <div class="alg-folder-head">',
+    '  <div class="alg-folder-title"><strong>Import ad filenames</strong><small>Choose a local ads folder. Only file names are read; nothing is uploaded.</small></div>',
+    '  <div class="alg-folder-actions">',
+    '   <button type="button" class="liquid-btn alg-folder-browse" onclick="Tools.AdLinkGen.browseFolder()">+ Browse folder</button>',
+    '   <button type="button" class="liquid-btn" onclick="Tools.AdLinkGen.loadSampleFolder()">Try sample</button>',
+    '  </div>',
+    ' </div>',
+    ' <input type="file" class="alg-folder-hidden" id="alg-folder-picker" aria-label="Choose ads folder" webkitdirectory directory multiple onchange="Tools.AdLinkGen.importFolder(event)">',
+    ' <div class="alg-folder-meta"><span id="alg-folder-name">No folder selected</span><span id="alg-folder-count">0 filenames · editable</span></div>',
+    ' <p id="alg-folder-status" role="status" aria-live="polite">JPG, JPEG, PNG, MP4, MP3 · top-level files only</p>',
+    ' <ol class="alg-folder-preview" id="alg-folder-preview" aria-label="Filename order"></ol>',
+    '</section>'
+  ].join('\n');
+  html=html.replace(algEditorAnchor,algFolderUi+'\n'+algEditorAnchor);
+  // The filename textarea remains manually editable; its preview follows edits.
+  const algInputAttribute='id="alg-input" placeholder=';
+  if(!html.includes(algInputAttribute))throw Error('Link Gen input attribute anchor missing');
+  html=html.replace(algInputAttribute,
+    'id="alg-input" oninput="Tools.AdLinkGen.updateFolderPreview()" placeholder=');
   // Two strictly textual naming alignments. Keep card artwork, structure,
   // navigation handlers, tool logic and all eight button routes unchanged.
   for(const [before,after] of [
@@ -245,7 +271,9 @@ function forgeBrand(html,standaloneRelease){
     '<link rel="stylesheet" href="./dist/css/forge-logo-compact.css?v=forge-logo-compact-20261104-v6">\n';
   const sharedHeaderStyle=standaloneRelease?'<style id="forge-shared-headers-styles">'+forgeSharedHeaderCss+'</style>\n':
     '<link rel="stylesheet" href="./dist/css/forge-shared-headers.css?v=forge-eight-header-20261104-v9">\n';
-  html=html.replace('</head>',iconLink+fontLink+brandStyle+routeStyle+adaptiveStyle+workspaceFinishStyle+specimenStyle+unifiedStyle+workflowStyle+compressorStyle+welcomeStyle+workbenchStyle+approvedStyle+logoCompactStyle+sharedHeaderStyle+'</head>');
+  const algFolderStyle=standaloneRelease?'<style id="ctk-alg-folder-style">'+adFolderCss+'</style>\n':
+    '<link rel="stylesheet" href="./dist/css/ad-link-folder-import.css">\n';
+  html=html.replace('</head>',iconLink+fontLink+brandStyle+routeStyle+adaptiveStyle+workspaceFinishStyle+specimenStyle+unifiedStyle+workflowStyle+compressorStyle+welcomeStyle+workbenchStyle+approvedStyle+logoCompactStyle+sharedHeaderStyle+algFolderStyle+'</head>');
   // Light-only presentation: do not read an old dark preference on first paint.
   html=html.replace('<body>','<body class="light-mode">\n'+forgeIntro+'\n'+forgeWhatsNew+'\n');
   const brandScript=standaloneRelease?'<script id="forge-brand-intro-js">'+forgeBrandJs+'</script>':
@@ -277,6 +305,7 @@ save('dist/favicon.svg',forgeFaviconSvg);
 save('manifest.json',forgeManifest);
 save('dist/manifest.json',forgeManifest);
 save('dist/css/typography-motion-v3.css',typeMotionCss);
+save('dist/css/ad-link-folder-import.css',adFolderCss);
 save('dist/css/forge-brand.css',forgeBrandCss);
 save('dist/js/forge-brand.js',forgeBrandJs);
 save('dist/css/forge-approved-swap.css',forgeApprovedCss);
