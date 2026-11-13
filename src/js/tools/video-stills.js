@@ -311,7 +311,8 @@ export default {
                 stack.querySelector(".stack-title").textContent = name;
                 stack.querySelector(".stack-title").title = name;
                 stack.title = name;
-                stack.dataset.stillsId=id;
+                if(stack.dataset)stack.dataset.stillsId=id;
+                else stack.setAttribute?.("data-stills-id",id);
                 stack.tabIndex = 0;
                 stack.setAttribute?.("role", "button");
                 stack.setAttribute?.("aria-label", "Inspect stills from " + name);
