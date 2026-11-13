@@ -23,7 +23,7 @@ test('folder import only accepts supported files from chosen top-level directory
     {name:'bad/name.png',webkitRelativePath:'Ads/bad/name.png'}
   ]), {
     names:['Ad_1.mp4','Ad_2.jpg','Ad_10.PNG','Ad_11.jpeg','voice.mp3'],
-    folderName:'Ads',unsupported:0,nested:3
+    folderName:'Ads',unsupported:1,nested:2
   });
   assert.deepEqual(AD.collectFolderNames([]),{names:[],folderName:'Selected folder',unsupported:0,nested:0});
 });
