@@ -36,41 +36,51 @@ test('V6 adaptive sampling includes opening and ending edges without duplicating
   assert.ok(v6.probePlan(.2,[],[.1]).length>=0);
 });
 
-test('V6 keeps all captures and records smart-selection state independently',()=>{
-  const frames=[makeFrame(.08,3,'edge'),makeFrame(.95,3),makeFrame(2.3,18,'scene'),makeFrame(3.4,45)];
-  const report=v6.curate(frames);
-  assert.equal(report.captured,4);
-  assert.equal(frames.length,4);
-  assert.equal(frames.filter(f=>f.selected).length,report.selected);
-  assert.ok(frames.every(f=>typeof f.recommended==='boolean'&&typeof f.selected==='boolean'));
-  assert.ok(report.decisions.every(x=>x.reason&&Number.isFinite(x.time)));
+test('V6 scene probes skip identical samples but retain distinct candidates',()=>{
+  const base=[makeFrame(.55,3),makeFrame(1.55,5)];
+  const unchanged=makeFrame(1.10,3,'scene');
+  const choice=v6.pickProbe(unchanged,base,[]);
+  assert.equal(choice.yes,false,'a duplicate of a nearby sample should not consume an extra capture');
+  assert.equal(choice.score,0);
+  const newScene=makeFrame(1.10,42,'scene');
+  const novel=v6.pickProbe(newScene,base,[]);
+  assert.equal(novel.yes,novel.score>=novel.threshold,'existing adaptive probe policy is unchanged');
 });
 
-test('Reset to V6 smart picks affects only the open video collection',()=>{
-  const make=(id)=>[{num:1,type:'still',blob:{id},checked:false,smartSelected:true},
-    {num:2,type:'still',blob:{id},checked:true,smartSelected:false}];
-  const a=make('one'),b=make('two'),originalB=b.map(x=>x.checked);
+test('Manual selections are isolated per video; exports use only user-checked stills',()=>{
+  const frames=id=>[
+    {num:1,type:'still',blob:{id,frame:1},checked:false},
+    {num:2,type:'still',blob:{id,frame:2},checked:false}
+  ];
+  const one=frames('one'),two=frames('two');
   const tool=Object.assign(Object.create(Stills),{
     currentId:'video-one',
-    collection:{'video-one':{name:'one',frames:a},'video-two':{name:'two',frames:b}},
-    openDetail(){},
-    updateCollectionStatus(){},
-    updateBulkBoardButton(){}
+    collection:{
+      'video-one':{name:'one',frames:one},
+      'video-two':{name:'two',frames:two}
+    }
   });
-  tool.resetSmartSelection();
-  assert.deepEqual(a.map(f=>f.checked),[true,false]);
-  assert.deepEqual(b.map(f=>f.checked),originalB);
-  assert.deepEqual(tool.selectedGroups().map(x=>x.name),['one','two']);
+  assert.deepEqual(tool.selectedGroups(),[],'new imports must not select stills automatically');
+  one[1].checked=true;
+  assert.deepEqual(tool.selectedGroups().map(g=>({name:g.name,n:g.frames.length})),[{name:'one',n:1}]);
+  tool.currentId='video-two';
+  assert.ok(two.every(f=>!f.checked),'switching videos cannot change another collection');
+  two[0].checked=true;
+  assert.deepEqual(tool.selectedGroups().map(g=>({name:g.name,n:g.frames.length})),
+    [{name:'one',n:1},{name:'two',n:1}]);
+  one[1].checked=false;
+  assert.deepEqual(tool.selectedGroups().map(g=>g.name),['two']);
 });
 
-test('CTK source preserves existing multi-board / selected ZIP workflows and final V6 port',()=>{
+test('CTK source preserves V6 extraction, manual selection and existing multi-video exports',()=>{
   const js=fs.readFileSync(new URL('../src/js/tools/video-stills.js',import.meta.url),'utf8');
   const build=fs.readFileSync(new URL('../scripts/build.mjs',import.meta.url),'utf8');
   assert.match(js,/sendAllSelectedToBoards\(/);
-  assert.match(js,/const smartMode = false/);
-  assert.match(js,/const report=CTKV6\.curate\(frames\)/);
-  assert.match(js,/resetSmartSelection\(\)/);
-  assert.match(js,/smartSelected:!!frame.selected/);
+  assert.match(js,/const probes=genAllStills\?CTKV6\.probePlan/);
+  assert.match(js,/CTKV6\.pickProbe\(/);
+  assert.match(js,/checked:false/);
+  assert.doesNotMatch(js,/CTKV6\.curate\(|resetSmartSelection\(|smartSelected/);
+  assert.equal(typeof v6.curate,'undefined','automatic curation API is removed');
   assert.match(js,/downloadSelected\(\)/);
   assert.match(js,/downloadAll\(\)/);
   assert.match(build,/v6-stills-engine\.js/);

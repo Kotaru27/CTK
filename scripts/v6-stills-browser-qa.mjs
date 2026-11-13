@@ -1,4 +1,4 @@
-/* CTK Final V6 multi-video smoke test: no ad assets, uses a generated 2-second fixture. */
+/* CTK V6 multi-video manual-selection QA: synthetic local fixtures only. */
 import assert from 'node:assert/strict';
 import {mkdtempSync,rmSync,readFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
@@ -54,14 +54,15 @@ try{
     return Object.entries(t.collection).map(([id,v])=>({
       id,name:v.name,total:v.frames.filter(f=>f.type==='still').length,
       checked:v.frames.filter(f=>f.type==='still'&&f.checked).length,
-      matched:v.frames.filter(f=>f.type==='still').every(f=>f.checked===f.smartSelected),
-      errors:v.failures?.length||0,report:v.v6Summary?.version
+      allUnchecked:v.frames.filter(f=>f.type==='still').every(f=>f.checked===false),
+      errors:v.failures?.length||0,hasCurationReport:!!v.v6Summary
     }));
   });
   assert.equal(state.length,2);
   assert.notEqual(state[0].name,state[1].name,'same source filename must create distinct collections');
   assert.ok(state.every(v=>v.total>0),'each video must expose decoded captures');
-  assert.ok(state.every(v=>v.matched&&v.report==='V6'),'smart defaults must match the V6 report');
+  assert.ok(state.every(v=>v.checked===0&&v.allUnchecked&&!v.hasCurationReport),
+    'every captured frame from every video must begin unchecked without smart curation');
   await page.evaluate(id=>Tools.Stills.openDetail(id),state[0].id);
   const count=await page.locator('#stillsOverlayGrid .detail-check').count();
   assert.equal(count,state[0].total,'all stills must remain visible including unchecked ones');
@@ -74,13 +75,20 @@ try{
   await page.evaluate(id=>Tools.Stills.openDetail(id),state[0].id);
   const persisted=await page.evaluate(id=>Tools.Stills.collection[id].frames[0].checked,state[0].id);
   assert.equal(persisted,changed,'manual choice survives switching collections');
-  await page.locator('#stillsResetSmartSelection').evaluate(button=>button.click());
-  const reset=await page.evaluate(id=>{
-    const t=Tools.Stills,own=t.collection[id];
-    return own.frames.filter(f=>f.type==='still').every(f=>f.checked===f.smartSelected);
-  },state[0].id);
-  assert.ok(reset,'reset restores the current video original smart picks');
-  // Force one export choice from each collection, without modifying the smart baseline.
+  assert.equal(await page.locator('#stillsResetSmartSelection').count(),0,
+    'obsolete Smart Selection reset control must be removed');
+  await page.locator('#stillsSelectAll').check();
+  assert.ok(await page.evaluate(id=>
+    Tools.Stills.collection[id].frames.filter(f=>f.type==='still').every(f=>f.checked),state[0].id),
+    'Select all checks every frame in only the current video');
+  assert.ok(await page.evaluate(id=>
+    Tools.Stills.collection[id].frames.filter(f=>f.type==='still').every(f=>!f.checked),state[1].id),
+    'Select all must not modify a different video');
+  await page.locator('#stillsSelectAll').uncheck();
+  assert.ok(await page.evaluate(id=>
+    Tools.Stills.collection[id].frames.filter(f=>f.type==='still').every(f=>!f.checked),state[0].id),
+    'Deselect all restores the unchecked state');
+  // Select one frame in each collection for the existing ZIP export workflow.
   await page.evaluate(()=>{
     for(const entry of Object.values(Tools.Stills.collection))
       if(entry.frames[0])entry.frames[0].checked=true;
@@ -111,11 +119,11 @@ try{
     const item=Object.values(Tools.Stills.collection).find(v=>v.name==='sparse-portrait');
     return {count:item?.frames.filter(f=>f.type==='still').length,
       checked:item?.frames.filter(f=>f.type==='still'&&f.checked).length,
-      sparse:item?.v6Summary?.decisions.filter(v=>v.sparseContent).length};
+      allPresent:item?.frames.filter(f=>f.type==='still').every(f=>!!f.blob)};
   });
   assert.ok(sparse.count>0,'sparse frames remain available for manual selection');
-  assert.equal(sparse.checked,0,'a near-empty portrait frame cannot auto-select');
-  assert.ok(sparse.sparse>0,'the report explains the low-information classification');
+  assert.equal(sparse.checked,0,'portrait captures must start unchecked');
+  assert.equal(sparse.allPresent,true,'portrait captures remain available for manual review');
 
   // Failed seeks must leave a readable status, not a perpetual Processing card.
   await page.evaluate(()=>{

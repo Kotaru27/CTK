@@ -25,9 +25,6 @@ export default {
           },
           init() {
             const controls = document.getElementById("videoHeaderControls");
-            // Launch workflow: deterministic uniform extraction only. The
-            // experimental smart selector is not exposed or used.
-            document.getElementById("stillsSmartMode")?.closest("label")?.remove();
             if(controls && !document.getElementById("stillsSendAllBoardsBtn")) {
               const send=document.createElement("button");
               send.id="stillsSendAllBoardsBtn";
@@ -40,16 +37,6 @@ export default {
               const primary=controls.querySelector("#downloadStillsBtn");
               if(primary) primary.closest("div")?.insertAdjacentElement("beforebegin",send);
               else controls.appendChild(send);
-            }
-            const selectionTools=document.querySelector("#stillsDetailOverlay .vs-detail-tools");
-            if(selectionTools&&!document.getElementById("stillsResetSmartSelection")){
-              const reset=document.createElement("button");
-              reset.id="stillsResetSmartSelection";reset.type="button";reset.className="liquid-btn";
-              reset.textContent="Reset Smart Selection";
-              reset.title="Restore this video's original V6 recommended frames";
-              reset.onclick=()=>this.resetSmartSelection();
-              const next=selectionTools.querySelector("#stillsDownloadSelected");
-              selectionTools.insertBefore(reset,next||selectionTools.firstChild);
             }
             Core.Utils.createDropZone(this.els.drop, (f) =>
               this.handleFiles(f),
@@ -277,7 +264,6 @@ export default {
             UI.toggleEmptyState(this.els.stacks, false);
 
             const genAllStills = this.els.xlBtn ? this.els.xlBtn.checked : true;
-            const smartMode = false; // Standard uniform extraction only.
             const genStory = this.els.storyBtn ? this.els.storyBtn.checked : false;
             const storyFramesCount = this.els.storyGrid ? parseInt(this.els.storyGrid.value, 10) : 4;
 
@@ -331,11 +317,10 @@ export default {
                 };
                 this.els.stacks.appendChild(stack);
 
-                // Final V6: retain every successful capture; auto-check only confident picks.
+                // V6 capture cadence retained; every extracted still starts unchecked.
                 const count=Math.min(Math.floor(vid.duration),240);
                 const times=count?Array.from({length:count},(_,i)=>(i+1)*vid.duration/(count+1)):[vid.duration/2];
                 const scratch=document.createElement("canvas");scratch.width=48;scratch.height=27;
-                const detailScratch=document.createElement("canvas");detailScratch.width=160;detailScratch.height=90;
                 const canvas=document.createElement("canvas");
                 canvas.width=vid.videoWidth;canvas.height=vid.videoHeight;
                 const ctx=canvas.getContext("2d",{alpha:false});
@@ -349,10 +334,9 @@ export default {
                   const blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/jpeg",.9));
                   if(!blob)throw Error("JPEG encoding failed");
                   if(generation!==(this._generation||0))return null;
-                  const detail=CTKV6.detailFingerprint(vid,detailScratch);
                   const url=Core.BlobRegistry.create(blob,"stills");
                   if(!stack.querySelector("img")?.src)this.setStackPreview(stack,url);
-                  return {...frame,detail,blob,url};
+                  return {...frame,blob,url};
                 };
                 const capture=async(time,kind,save=true)=>{
                   const target=await this.seekV6(vid,time,generation);
@@ -394,23 +378,21 @@ export default {
                   if(i%8===0)await new Promise(resolve=>setTimeout(resolve,0));
                 }
                 if(generation!==(this._generation||0))break;
-                showProgress("Selecting useful stills...");
+                showProgress("Finishing extraction...");
                 const frames=[...baseline,...extras].sort((a,b)=>a.t-b.t);
                 if(genAllStills){
-                  const report=CTKV6.curate(frames);
-                  this.collection[id].v6Summary=report;
+                  // Capture data is preserved, but no automatic quality or
+                  // usefulness judgement controls which images are exported.
                   this.collection[id].frames.push(...frames.map((frame,index)=>({
-                    num:index+1,type:"still",blob:frame.blob,url:frame.url,time:frame.t,
-                    checked:!!frame.selected,smartSelected:!!frame.selected,
-                    recommended:!!frame.recommended,review:!!frame.v6Review,
-                    reason:frame.curationReason
+                    num:index+1,type:"still",blob:frame.blob,url:frame.url,
+                    time:frame.t,checked:false
                   })));
-                  // Release analysis buffers after the curation pass; preserve JPEGs.
-                  for(const f of frames){f.fp=null;f.detail=null;f.v5=null;f.v6Metrics=null;f.v6Density=null;}
                 }
+                // Release temporary sampling data after saving all JPEGs.
+                for(const f of frames)f.fp=null;
                 this.collection[id].failures=errors;
                 if(frames.length){
-                  const preview=frames.find(f=>f.selected)||frames[0];
+                  const preview=frames[0];
                   this.setStackPreview(stack,preview.url||canvas.toDataURL("image/jpeg",.5));
                 }else if(!genAllStills&&vid.readyState>=2){
                   this.setStackPreview(stack,canvas.toDataURL("image/jpeg",.5));
@@ -618,14 +600,6 @@ export default {
             const label=stack?.querySelector(".stack-count");
             if(label)label.innerText=stills.length+" captured · "+count+" selected";
             if(this.currentId===id)this.els.count.innerText=stills.length+" captured · "+count+" selected";
-          },
-          resetSmartSelection(){
-            if(!this.currentId||!this.collection[this.currentId])return;
-            for(const frame of this.collection[this.currentId].frames)
-              if(frame.type==="still")frame.checked=!!frame.smartSelected;
-            this.openDetail(this.currentId);
-            this.updateCollectionStatus(this.currentId);
-            this.updateBulkBoardButton();
           },
           openDetail(id) {
             this.closeBoardMenu();
@@ -870,6 +844,10 @@ export default {
             if (!this.currentId) return;
             const data = this.collection[this.currentId];
             const sel = data.frames.filter((f) => f.checked);
+            if (!sel.length) {
+              UI.showError("Select at least one frame before downloading.");
+              return;
+            }
             const zip = new JSZip();
             let imgIdx = 1;
             sel.forEach((f) => {
@@ -887,6 +865,10 @@ export default {
             a.click();
           },
           async downloadAll() {
+            if (!Object.values(this.collection).some(v=>v.frames.some(f=>f.checked))) {
+              UI.showError("Select at least one frame before downloading.");
+              return;
+            }
             this.els.dlBtn.innerText = "Zipping...";
             const zip = new JSZip();
             Object.values(this.collection).forEach((v) => {
