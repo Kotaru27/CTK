@@ -23,12 +23,23 @@ try{
   // CTK initially shows its Home/intro; navigate into the live Link Gen panel.
   await page.evaluate(()=>UI.openTool('section-adlinks','gen'));
   await page.locator('#alg-folder').waitFor({state:'visible'});
+  const row=page.locator('#adlinksTabContentGen .alg-folder-panel');
+  const browse=page.locator('#adlinksTabContentGen .alg-folder-browse');
+  assert.equal((await row.innerText()).replace(/\\s+/g,' ').trim(),'Import ad filenames Browse folder');
+  assert.equal(await row.locator('button').count(),1);
+  assert.equal(await row.locator('strong').count(),1);
+  const geometry=await page.evaluate(()=>{
+    const label=document.querySelector('#adlinksTabContentGen .alg-folder-label').getBoundingClientRect();
+    const button=document.querySelector('#adlinksTabContentGen .alg-folder-browse').getBoundingClientRect();
+    const row=document.querySelector('#adlinksTabContentGen .alg-folder-panel').getBoundingClientRect();
+    return {labelRight:label.right,buttonLeft:button.left,labelMid:(label.top+label.bottom)/2,buttonMid:(button.top+button.bottom)/2,rowHeight:row.height};
+  });
+  assert.ok(geometry.labelRight+4<=geometry.buttonLeft && Math.abs(geometry.labelMid-geometry.buttonMid)<9 && geometry.rowHeight<70,
+    'Import label and Browse button must remain on a single compact row: '+JSON.stringify(geometry));
+  const [chooser]=await Promise.all([page.waitForEvent('filechooser'),browse.click()]);
+  await chooser.setFiles(dir);
   const picker=page.locator('#alg-folder-picker');
-  await picker.setInputFiles(dir);
   assert.equal(await page.locator('#alg-input').inputValue(),'Ad_1.png\nAd_2.jpg\nAd_10.mp4');
-  assert.match(await page.locator('#alg-folder-status').textContent(),/1 unsupported skipped/);
-  assert.match(await page.locator('#alg-folder-status').textContent(),/1 nested excluded/);
-  assert.equal(await page.locator('#alg-folder-preview li').count(),3);
 
   await page.locator('#alg-folder').fill('Campaign/Ads');
   await page.evaluate(()=>{Tools.AdLinkGen.generate();});
@@ -39,8 +50,6 @@ try{
   assert.match(storyboard,/Ad_10\.jpg/);
 
   await page.locator('#alg-input').fill('Manual_9.mp3\nManual_1.jpg');
-  assert.equal(await page.locator('#alg-folder-preview li').count(),2);
-  assert.match(await page.locator('#alg-folder-status').textContent(),/Manual entry/);
   await page.evaluate(()=>{Tools.AdLinkGen.generate();});
   assert.match(await page.locator('#alg-out-ads').inputValue(),/Manual_9\.mp3/);
 
