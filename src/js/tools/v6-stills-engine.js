@@ -156,8 +156,66 @@ function metrics(f){
   }
   return f.v6Metrics={lap:Math.max(0,lapSq/N-(lapSum/N)**2),white:white/(W*H),black:black/(W*H),mean:sum/(W*H)};
 }
+// Detect mostly empty frames using the actual displayed-content area, not
+// the entire canvas. This handles portrait ads with neutral sidebars as well
+// as landscape title cards. No brand, color, or timestamp special cases.
+function contentDensity(f){
+  if(f.v6Density)return f.v6Density;
+  const rgb=f.detail?.rgb;
+  if(!rgb||rgb.length!==W*H*3)return {sparse:false,occupied:1,dominance:0,activeWidth:1};
+  const column=(x)=>{
+    let r=0,g=0,b=0,sq=0;
+    for(let y=0;y<H;y+=3){
+      const k=(y*W+x)*3,R=rgb[k],G=rgb[k+1],B=rgb[k+2];
+      r+=R;g+=G;b+=B;sq+=R*R+G*G+B*B;
+    }
+    const n=Math.ceil(H/3);
+    r/=n;g/=n;b/=n;
+    return {r,g,b,spread:Math.sqrt(Math.max(0,sq/n-r*r-g*g-b*b)/3)};
+  };
+  const left=column(1),right=column(W-2);
+  const distance=(a,b)=>Math.sqrt(((a.r-b.r)**2+(a.g-b.g)**2+(a.b-b.b)**2)/3);
+  let first=0,last=W-1;
+  if(left.spread<17){
+    for(let x=1;x<W-1;x++){
+      const c=column(x);
+      if(distance(c,left)>24||c.spread>23){first=x;break;}
+    }
+  }
+  if(right.spread<17){
+    for(let x=W-2;x>0;x--){
+      const c=column(x);
+      if(distance(c,right)>24||c.spread>23){last=x;break;}
+    }
+  }
+  if(last-first<Math.ceil(W*.14)){first=0;last=W-1;}
+  const hist=new Uint16Array(512);
+  let dominant=0,count=0,occupied=0,tiles=0;
+  for(let y=0;y<H;y+=9)for(let x=first;x<=last;x+=8){
+    let luminance=0,squared=0,n=0;
+    const stopY=Math.min(H,y+9),stopX=Math.min(last+1,x+8);
+    for(let py=y;py<stopY;py++)for(let px=x;px<stopX;px++){
+      const i=(py*W+px)*3,r=rgb[i],g=rgb[i+1],b=rgb[i+2];
+      const lum=.2126*r+.7152*g+.0722*b;
+      luminance+=lum;squared+=lum*lum;n++;count++;
+      const bin=(r>>5)*64+(g>>5)*8+(b>>5);
+      dominant=Math.max(dominant,++hist[bin]);
+    }
+    if(n>0){
+      const variance=Math.max(0,squared/n-(luminance/n)**2);
+      if(variance>16*16)occupied++;
+      tiles++;
+    }
+  }
+  const coverage=tiles?occupied/tiles:0,majority=count?dominant/count:0;
+  const info={occupied:coverage,dominance:majority,activeWidth:(last-first+1)/W,
+    sparse:(majority>.77&&coverage<.20)||(majority>.65&&coverage<.09)};
+  f.v6Density=info;
+  return info;
+}
 function qualityGate(all,i){
   const f=all[i],m=metrics(f);
+  if(contentDensity(f).sparse)return {drop:false,reason:"sparse-content-review",review:true};
   if(hardTransition(f,all,i))return {drop:true,reason:"transition-wipe"};
   const a=[...all.slice(0,i)].reverse().find(x=>f.t-x.t<2.15);
   const b=all.slice(i+1).find(x=>x.t-f.t<2.15);
@@ -190,14 +248,15 @@ function sameV6(a,b){
 function value(f){
   const m=metrics(f),d=f.detail||{};
   return quality(f)+Math.log1p(m.lap)*2.8-Math.max(0,m.white-.10)*34-
-    (m.lap<1100?(1100-m.lap)/1100*4:0)+(d.dominant>.9?-2:0);
+    (m.lap<1100?(1100-m.lap)/1100*4:0)+(d.dominant>.9?-2:0)-
+    (contentDensity(f).sparse?18:0);
 }
 function curate(frames){
   const all=[...frames].sort((a,b)=>a.t-b.t);
   // Preserve the V5 content-boundary safeguard used by the approved V6 selector.
   let legacyGroup=0,legacyPrior=null;
   for(const f of all){
-    f.v6Metrics=null;f.v5=null;f.v6Review=false;f.recommended=false;f.selected=false;
+    f.v6Metrics=null;f.v6Density=null;f.v5=null;f.v6Review=false;f.recommended=false;f.selected=false;
     f.curationGroup=-1;f.curationReason="";f.rejectedBy=null;f.v6LegacyProtected=false;
     if(!legacyPrior){legacyGroup=1;}
     else {const decision=v5SameSequence(legacyPrior,f);
@@ -215,7 +274,7 @@ function curate(frames){
       else if(q.reason==="exposure-flash")qualityStats.exposure++;
       else if(q.reason==="transition-wipe")qualityStats.wipes++;
       else qualityStats.nearBlank++;
-    }else{if(q.review){f.v6Review=true;f.v6ReviewReason="soft-frame-check";}valid.push(f);}
+    }else{if(q.review){f.v6Review=true;f.v6ReviewReason=q.reason||"soft-frame-check";}valid.push(f);}
   }
   for(const f of valid){
     const g=groups.at(-1);
@@ -268,7 +327,9 @@ function curate(frames){
     quality:qualityStats,reviewFrames:reviews,globalDuplicates:matches.length,
     decisions:all.map(f=>({time:round(f.t),kind:f.kind,decision:f.recommended?(f.v6Review?"review":"recommended"):"excluded",
       reason:f.curationReason,group:f.curationGroup,replacedBy:f.rejectedBy,
-      verifiedTimestamp:!!f.verified,selected:!!f.selected}))
+      verifiedTimestamp:!!f.verified,selected:!!f.selected,
+      contentDensity:Math.round(contentDensity(f).occupied*100)/100,
+      sparseContent:contentDensity(f).sparse}))
   };
 }
 function closest(frames,t){
@@ -320,5 +381,5 @@ function pickProbe(probe,baseline,extras,mode="balanced"){
   return {yes:min>=threshold,score:min,threshold};
 }
 
-return {sampleFingerprint,detailFingerprint,frameDifference,probePlan,pickProbe,curate};
+return {sampleFingerprint,detailFingerprint,frameDifference,probePlan,pickProbe,curate,contentDensity};
 })();
