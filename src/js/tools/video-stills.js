@@ -83,6 +83,7 @@ export default {
               const data=this.collection[this.currentId];
               const stills=data.frames.filter(f=>f.type==="still");
               this.els.count.innerText=`${stills.length} captured · ${stills.filter(f=>f.checked).length} selected`;
+              this.updateCollectionStatus(this.currentId);
               this.updateBulkBoardButton();
             };
             this.els.dlSel.onclick = () => this.downloadSelected();
@@ -301,7 +302,7 @@ export default {
 
                 const id = `vid-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
                 this.collection[id] = { name: name, frames: [] };
-                await this.seekVideo(vid, 0.5);
+                // V6 seeks each planned timestamp itself; do not seek to clip end first.
                 if (generation !== (this._generation || 0)) break;
 
                 const stack = document.createElement("div");
@@ -310,6 +311,7 @@ export default {
                 stack.querySelector(".stack-title").textContent = name;
                 stack.querySelector(".stack-title").title = name;
                 stack.title = name;
+                stack.dataset.stillsId=id;
                 stack.tabIndex = 0;
                 stack.setAttribute?.("role", "button");
                 stack.setAttribute?.("aria-label", "Inspect stills from " + name);
@@ -445,7 +447,9 @@ export default {
                     stack.querySelector("img").src = compUrl;
                 }
 
-                stack.querySelector(".stack-count").innerText = `${this.collection[id].frames.length} Items`;
+                const saved=this.collection[id].frames.filter(f=>f.type==="still");
+                stack.querySelector(".stack-count").innerText =
+                  `${saved.length} captured · ${saved.filter(f=>f.checked).length} selected`;
                 this.updateBulkBoardButton();
               } catch (e) {
                 if (generation === (this._generation || 0)) {
@@ -557,11 +561,21 @@ export default {
             }
             throw lastError||Error("Seek failed");
           },
+          updateCollectionStatus(id){
+            const data=this.collection[id];if(!data)return;
+            const stills=data.frames.filter(f=>f.type==="still");
+            const count=stills.filter(f=>f.checked).length;
+            const stack=Array.from(this.els.stacks.children).find(el=>el.dataset?.stillsId===id);
+            const label=stack?.querySelector(".stack-count");
+            if(label)label.innerText=stills.length+" captured · "+count+" selected";
+            if(this.currentId===id)this.els.count.innerText=stills.length+" captured · "+count+" selected";
+          },
           resetSmartSelection(){
             if(!this.currentId||!this.collection[this.currentId])return;
             for(const frame of this.collection[this.currentId].frames)
               if(frame.type==="still")frame.checked=!!frame.smartSelected;
             this.openDetail(this.currentId);
+            this.updateCollectionStatus(this.currentId);
             this.updateBulkBoardButton();
           },
           openDetail(id) {
@@ -614,6 +628,7 @@ export default {
                 const stills=data.frames.filter(item=>item.type==="still");
                 this.els.count.innerText=`${stills.length} captured · ${stills.filter(item=>item.checked).length} selected`;
                 this.els.selectAll.checked=data.frames.every(item=>item.checked);
+                this.updateCollectionStatus(this.currentId);
                 this.updateBulkBoardButton();
               };
               this.els.grid.appendChild(card);
