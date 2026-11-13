@@ -1,6 +1,7 @@
 /* CTK Final V6 port — browser-only extraction analysis, no native decoder or OCR.
  * Pure frame curation is independent of the multi-video UI. All captured JPEGs remain available.
  */
+export default (()=>{
 const W=160,H=90;
 const clamp=(v,min,max)=>Math.min(max,Math.max(min,v));
 const round=t=>Number(t.toFixed(3));
@@ -319,4 +320,5 @@ function pickProbe(probe,baseline,extras,mode="balanced"){
   return {yes:min>=threshold,score:min,threshold};
 }
 
-export default {sampleFingerprint,detailFingerprint,frameDifference,probePlan,pickProbe,curate};
+return {sampleFingerprint,detailFingerprint,frameDifference,probePlan,pickProbe,curate};
+})();
