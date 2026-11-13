@@ -11500,6 +11500,121 @@ body.light-mode #view-app #section-stills-boards.tool-section.active:has(#subMod
   fill:none!important;
 }
 </style>
+<style id="ctk-alg-folder-style">/* CTK Link Gen: local filename import; confined to the existing input workspace. */
+#section-adlinks #adlinksTabContentGen .alg-folder-panel {
+  margin: 10px 0 14px;
+  padding: 14px 15px;
+  border: 1px solid var(--studio-border, var(--border, #646f67));
+  border-radius: 10px;
+  background: var(--studio-field, rgba(125,145,124,.06));
+  color: var(--studio-title, inherit);
+  transition: border-color .22s ease, background-color .22s ease;
+}
+#section-adlinks #adlinksTabContentGen .alg-folder-panel:hover {
+  border-color: var(--studio-accent, #78947b);
+}
+#section-adlinks #adlinksTabContentGen .alg-folder-head {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:16px;
+}
+#section-adlinks #adlinksTabContentGen .alg-folder-title {
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  min-width:0;
+}
+#section-adlinks #adlinksTabContentGen .alg-folder-title strong {
+  font-size: 12px;
+  font-weight: 690;
+  letter-spacing: -.01em;
+}
+#section-adlinks #adlinksTabContentGen .alg-folder-title small {
+  color: var(--studio-muted, var(--text-secondary, #8c978e));
+  font-size: 11px;
+  line-height: 1.4;
+  max-width: 340px;
+}
+#section-adlinks #adlinksTabContentGen .alg-folder-actions {
+  display:flex;
+  gap:7px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+  flex-shrink:0;
+}
+#section-adlinks #adlinksTabContentGen .alg-folder-actions .liquid-btn {
+  min-height:34px;
+  padding:7px 11px;
+  border-radius:7px;
+  font-size:11px;
+  font-weight:660;
+  white-space:nowrap;
+}
+#section-adlinks #adlinksTabContentGen .alg-folder-actions .alg-folder-browse {
+  background:var(--studio-title,#1b2f22);
+  border-color:var(--studio-title,#1b2f22);
+  color:var(--studio-field,#f4f8f0);
+}
+#section-adlinks #adlinksTabContentGen .alg-folder-actions .alg-folder-browse:hover {
+  transform:translateY(-1px);
+}
+#section-adlinks #adlinksTabContentGen .alg-folder-meta {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  margin-top:12px;
+  font:10px/1.45 Consolas,monospace;
+  color:var(--studio-muted,var(--text-secondary,#888));
+}
+#section-adlinks #adlinksTabContentGen #alg-folder-name {
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  max-width:46%;
+}
+#section-adlinks #adlinksTabContentGen #alg-folder-status {
+  margin:7px 0 0;
+  min-height:14px;
+  line-height:1.45;
+  font-size:10px;
+  color:var(--studio-muted,var(--text-secondary,#888));
+}
+#section-adlinks #adlinksTabContentGen .alg-folder-preview {
+  padding:0;
+  margin:9px 0 0;
+  max-height:120px;
+  overflow-y:auto;
+  border-radius:6px;
+  list-style:none;
+}
+#section-adlinks #adlinksTabContentGen .alg-folder-preview:empty { display:none; }
+#section-adlinks #adlinksTabContentGen .alg-folder-preview li {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:5px 9px;
+  border-bottom:1px solid var(--studio-border,var(--border,#8884));
+  font:11px/1.4 Consolas,monospace;
+  min-width:0;
+}
+#section-adlinks #adlinksTabContentGen .alg-folder-preview li:last-child {border-bottom:0;}
+#section-adlinks #adlinksTabContentGen .alg-file-no {opacity:.48;font-size:10px;flex-shrink:0;}
+#section-adlinks #adlinksTabContentGen .alg-file-name {overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+#section-adlinks #adlinksTabContentGen .alg-file-more {opacity:.75;}
+#section-adlinks #adlinksTabContentGen .alg-folder-hidden {
+  position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;
+}
+@media(max-width:770px) {
+  #section-adlinks #adlinksTabContentGen .alg-folder-head {align-items:flex-start;flex-wrap:wrap;}
+  #section-adlinks #adlinksTabContentGen .alg-folder-actions {justify-content:flex-start;}
+}
+@media(prefers-reduced-motion:reduce) {
+  #section-adlinks #adlinksTabContentGen .alg-folder-panel,
+  #section-adlinks #adlinksTabContentGen .alg-folder-actions .alg-folder-browse {transition:none;transform:none;}
+}
+</style>
 </head>
 <body class="light-mode">
 <div class="forge-intro forge-cinematic" id="forgeIntro" role="region" aria-label="The Forge introduction" hidden>
@@ -12338,7 +12453,20 @@ body.light-mode #view-app #section-stills-boards.tool-section.active:has(#subMod
                           gap: 4px;
                           opacity: 0.8;
                           text-transform: none;
-                        "><span style="opacity: 0.8">Old</span><input class="persist-val toggle-switch small" id="alg-mode-toggle" type="checkbox"/><span style="opacity: 0.8">New</span></span></span><textarea class="liquid-input terminal-input" id="alg-input" placeholder="Paste ad filenames, one per line…" style="min-height: 200px"></textarea>
+                        "><span style="opacity: 0.8">Old</span><input class="persist-val toggle-switch small" id="alg-mode-toggle" type="checkbox"/><span style="opacity: 0.8">New</span></span></span><section class="alg-folder-panel" aria-label="Import ads folder">
+ <div class="alg-folder-head">
+  <div class="alg-folder-title"><strong>Import ad filenames</strong><small>Choose a local ads folder. Only file names are read; nothing is uploaded.</small></div>
+  <div class="alg-folder-actions">
+   <button type="button" class="liquid-btn alg-folder-browse" onclick="Tools.AdLinkGen.browseFolder()">+ Browse folder</button>
+   <button type="button" class="liquid-btn" onclick="Tools.AdLinkGen.loadSampleFolder()">Try sample</button>
+  </div>
+ </div>
+ <input type="file" class="alg-folder-hidden" id="alg-folder-picker" aria-label="Choose ads folder" webkitdirectory directory multiple onchange="Tools.AdLinkGen.importFolder(event)">
+ <div class="alg-folder-meta"><span id="alg-folder-name">No folder selected</span><span id="alg-folder-count">0 filenames · editable</span></div>
+ <p id="alg-folder-status" role="status" aria-live="polite">JPG, JPEG, PNG, MP4, MP3 · top-level files only</p>
+ <ol class="alg-folder-preview" id="alg-folder-preview" aria-label="Filename order"></ol>
+</section>
+<textarea class="liquid-input terminal-input" id="alg-input" oninput="Tools.AdLinkGen.updateFolderPreview()" placeholder="Paste ad filenames, one per line…" style="min-height: 200px"></textarea>
 </div>
 <div data-guide="Processes the inputs and outputs fully formatted URLs in the panels.">
 <button class="liquid-btn active-mode" onclick="Tools.AdLinkGen.generate()" style="width: 100%">
@@ -17977,6 +18105,87 @@ const CTKDownloadRenamer = (() => {
           htmlAttr(value) {
             return String(value).replace(/&/g,"&amp;").replace(/"/g,"&quot;")
               .replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/'/g,"&#39;");
+          },
+          // Folder import is filename-only; no file contents or local paths leave the browser.
+          sortNamesAscending(names) {
+            const collator = new Intl.Collator("en", {numeric:true, sensitivity:"base"});
+            return [...names].sort((a,b)=>collator.compare(a,b) || (a < b ? -1 : a > b ? 1 : 0));
+          },
+          collectFolderNames(files) {
+            const names = [];
+            let unsupported = 0, nested = 0;
+            const items = Array.from(files || []);
+            const folderName = (items[0]?.webkitRelativePath || "").split("/")[0] || "Selected folder";
+            for (const file of items) {
+              const parts = String(file.webkitRelativePath || file.name || "").split("/").filter(Boolean);
+              if (parts.length > 2) { nested++; continue; }
+              const parsed = this.validateName(file.name);
+              if (!parsed) { unsupported++; continue; }
+              names.push(parsed.cleaned);
+            }
+            return { names:this.sortNamesAscending(names), folderName, unsupported, nested };
+          },
+          browseFolder() {
+            document.getElementById("alg-folder-picker")?.click();
+          },
+          importFolder(event) {
+            const picker = event?.target;
+            const files = Array.from(picker?.files || []);
+            if (picker) picker.value = ""; // Re-selecting the same folder should always work.
+            if (!files.length) return; // Cancel must not clear the current filenames.
+            const imported = this.collectFolderNames(files);
+            const editor = document.getElementById("alg-input");
+            if (!editor) return;
+            editor.value = imported.names.join("\n");
+            const folder = document.getElementById("alg-folder-name");
+            if (folder) folder.textContent = imported.folderName;
+            const notice = document.getElementById("alg-folder-status");
+            if (notice) notice.textContent = imported.names.length+" supported filename(s) imported"+
+              (imported.unsupported ? " · "+imported.unsupported+" unsupported skipped" : "")+
+              (imported.nested ? " · "+imported.nested+" nested excluded" : "");
+            this.updateFolderPreview("imported");
+          },
+          loadSampleFolder() {
+            const sample = this.sortNamesAscending(["Ad_11.mp4","Ad_3.mp4","Ad_10.jpg","Ad_2.jpg","Ad_1.jpg"]);
+            const editor = document.getElementById("alg-input");
+            if (!editor) return;
+            editor.value = sample.join("\n");
+            const label = document.getElementById("alg-folder-name");
+            if (label) label.textContent = "Sample ads";
+            const notice = document.getElementById("alg-folder-status");
+            if (notice) notice.textContent = sample.length+" sample filenames sorted in ascending order";
+            this.updateFolderPreview("sample");
+          },
+          updateFolderPreview(source = "manual") {
+            const textarea = document.getElementById("alg-input");
+            const counter = document.getElementById("alg-folder-count");
+            const list = document.getElementById("alg-folder-preview");
+            if (!textarea || !list) return;
+            const names = textarea.value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+            if (counter) counter.textContent = names.length+" filename"+(names.length === 1 ? "" : "s")+
+              (source === "imported" || source === "sample" ? " · natural A–Z" : " · editable");
+            list.replaceChildren();
+            for (let i=0; i<Math.min(10,names.length); i++) {
+              const item = document.createElement("li");
+              const number = document.createElement("span");
+              number.className = "alg-file-no";
+              number.textContent = String(i+1).padStart(2,"0");
+              const name = document.createElement("span");
+              name.className = "alg-file-name";
+              name.textContent = names[i]; // Never use a filename as HTML.
+              item.append(number,name);
+              list.append(item);
+            }
+            if (names.length > 10) {
+              const more = document.createElement("li");
+              more.className = "alg-file-more";
+              more.textContent = "+"+(names.length-10)+" more filenames";
+              list.append(more);
+            }
+            if (source === "manual") {
+              const status = document.getElementById("alg-folder-status");
+              if (status) status.textContent = "Manual entry · files are not uploaded";
+            }
           },
           generate() {
             const server = document.getElementById("alg-server").value;

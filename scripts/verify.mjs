@@ -44,7 +44,9 @@ const expectedWithoutFilmstrip=stripFilmstripUI(a);
 const beforeIds=ids(expectedWithoutFilmstrip),afterIds=ids(b).filter(id=>!approvedIds.includes(id)&&!["forgeCineCounter","forgeIntro","forgeHeroName","forgeIntroType","forgeIntroSkip","forgeIntroWordmark","forgeIntroGlyphs",
   "forgeWhatsNew","forgeWhatsNewTitle","forgeWhatsNewDescription","forgeWhatsNewClose","forgeWhatsNewNever","forgeWhatsNewContinue","forgeWhatsNewEnter","forgeWhatsNewTrigger","forge-first-paint-css",
   // Workbench V2 adds search and a read-only preview label; none are tool IDs.
-  "forgeFeaturedLabel","forgeToolSearch","forgeSearchCount"].includes(id));
+  "forgeFeaturedLabel","forgeToolSearch","forgeSearchCount",
+  // Exactly five new Link Gen control/status IDs; original control IDs must remain unchanged.
+  "alg-folder-picker","alg-folder-name","alg-folder-count","alg-folder-status","alg-folder-preview"].includes(id));
 if(JSON.stringify(beforeIds)!==JSON.stringify(afterIds))throw Error('DOM element IDs changed');
 const beforeRoutes=getRoutes(a),afterRoutes=getRoutes(b);
 if(beforeRoutes.length!==8||JSON.stringify(beforeRoutes)!==JSON.stringify(afterRoutes))throw Error('Homepage routes changed');
@@ -58,6 +60,7 @@ const newMain=rd('dist/js/app.js');
 const visualCss=rd('src/css/experience/ad-downloader-v2.css');
 const visualJs=rd('src/js/presentation/ad-downloader-v2.js');
 const typeMotionCss=rd('src/css/experience/typography-motion-v3.css');
+const adFolderCss=rd('src/css/experience/ad-link-folder-import.css');
 const videoRouteCss=rd('src/css/experience/forge-video-route.css');
 const compressorFrameCss=rd('src/css/experience/forge-compressor-frame.css');
 const compressorFitJs=rd('src/js/presentation/forge-compressor-fit.js');
@@ -101,6 +104,7 @@ const withoutVisual=standalone
   .replace('<script id="forge-approved-swap-js">'+approvedJs+'</script>\n','')
   .replace('\n'+approvedHome,'\n')
   .replace('<style id="ctk-type-motion-v3">'+typeMotionCss+'</style>\n','')
+  .replace('<style id="ctk-alg-folder-style">'+adFolderCss+'</style>\n','')
   .replace('<style id="ctk-ad-downloader-v2">'+visualCss+'</style>\n','')
   .replace('<script id="ctk-ad-downloader-v2">'+visualJs+'</script>\n','')
   .replace('<style id="forge-video-route-styles">'+videoRouteCss+'</style>\n','')
@@ -143,9 +147,28 @@ if(!withoutForge.includes(releaseNotesAction))
   throw Error('Release notes header button is missing from standalone');
 withoutForge=withoutForge.replace(releaseNotesAction,'');
 const restored=withoutForge.replace('<script>'+newMain+'</script>','<script>'+originalMain+'</script>');
+// Link Gen is the only intentionally extended workspace. Verify the new panel is
+// identical in the hosted and standalone releases, then remove precisely that
+// panel and its textarea event handler for the strict legacy HTML comparison.
+const folderMarkupPattern=/<section class="alg-folder-panel" aria-label="Import ads folder">[\s\S]*?<\/section>\n(?=<textarea class="liquid-input terminal-input" id="alg-input")/g;
+const hostedFolder=b.match(folderMarkupPattern)||[];
+const standaloneFolder=standalone.match(folderMarkupPattern)||[];
+if(hostedFolder.length!==1 || standaloneFolder.length!==1 || hostedFolder[0]!==standaloneFolder[0] ||
+   !hostedFolder[0].includes('webkitdirectory directory multiple') ||
+   !hostedFolder[0].includes('Tools.AdLinkGen.importFolder(event)') ||
+   !hostedFolder[0].includes('Tools.AdLinkGen.browseFolder()') ||
+   !restored.includes('id="alg-input" oninput="Tools.AdLinkGen.updateFolderPreview()" placeholder='))
+  throw Error('Link Gen folder import markup does not match the approved scoped addition');
+if(rd('dist/css/ad-link-folder-import.css')!==adFolderCss ||
+   !b.includes('./dist/css/ad-link-folder-import.css') ||
+   !standalone.includes('<style id="ctk-alg-folder-style">'+adFolderCss+'</style>'))
+  throw Error('Link Gen folder import source / hosted / standalone style mismatch');
+const restoredWithoutFolder=restored.replace(folderMarkupPattern,'')
+  .replace('id="alg-input" oninput="Tools.AdLinkGen.updateFolderPreview()" placeholder=',
+           'id="alg-input" placeholder=');
 // Only five known, textual naming alignments are allowed outside the hero.
 // Reconstruct the legacy terms before the strict byte-for-byte parity check.
-const restoredNames=restored
+const restoredNames=restoredWithoutFolder
   .replace('title="Video Compressor"','title="Video Downloads"')
   .replace('<span class="nav-item-text">Video Compressor</span>','<span class="nav-item-text">Video Downloads</span>')
   .replace('aria-label="Open Video Compressor"','aria-label="Open Video Downloads"')

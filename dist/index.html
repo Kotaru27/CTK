@@ -98,6 +98,7 @@ html.forge-welcome-pending body::after{
 <link rel="stylesheet" href="./css/forge-approved-swap.css?v=forge-route-isolation-20261104-v3">
 <link rel="stylesheet" href="./css/forge-logo-compact.css?v=forge-logo-compact-20261104-v6">
 <link rel="stylesheet" href="./css/forge-shared-headers.css?v=forge-eight-header-20261104-v9">
+<link rel="stylesheet" href="./css/ad-link-folder-import.css">
 </head>
 <body class="light-mode">
 <div class="forge-intro forge-cinematic" id="forgeIntro" role="region" aria-label="The Forge introduction" hidden>
@@ -936,7 +937,20 @@ html.forge-welcome-pending body::after{
                           gap: 4px;
                           opacity: 0.8;
                           text-transform: none;
-                        "><span style="opacity: 0.8">Old</span><input class="persist-val toggle-switch small" id="alg-mode-toggle" type="checkbox"/><span style="opacity: 0.8">New</span></span></span><textarea class="liquid-input terminal-input" id="alg-input" placeholder="Paste ad filenames, one per line…" style="min-height: 200px"></textarea>
+                        "><span style="opacity: 0.8">Old</span><input class="persist-val toggle-switch small" id="alg-mode-toggle" type="checkbox"/><span style="opacity: 0.8">New</span></span></span><section class="alg-folder-panel" aria-label="Import ads folder">
+ <div class="alg-folder-head">
+  <div class="alg-folder-title"><strong>Import ad filenames</strong><small>Choose a local ads folder. Only file names are read; nothing is uploaded.</small></div>
+  <div class="alg-folder-actions">
+   <button type="button" class="liquid-btn alg-folder-browse" onclick="Tools.AdLinkGen.browseFolder()">+ Browse folder</button>
+   <button type="button" class="liquid-btn" onclick="Tools.AdLinkGen.loadSampleFolder()">Try sample</button>
+  </div>
+ </div>
+ <input type="file" class="alg-folder-hidden" id="alg-folder-picker" aria-label="Choose ads folder" webkitdirectory directory multiple onchange="Tools.AdLinkGen.importFolder(event)">
+ <div class="alg-folder-meta"><span id="alg-folder-name">No folder selected</span><span id="alg-folder-count">0 filenames · editable</span></div>
+ <p id="alg-folder-status" role="status" aria-live="polite">JPG, JPEG, PNG, MP4, MP3 · top-level files only</p>
+ <ol class="alg-folder-preview" id="alg-folder-preview" aria-label="Filename order"></ol>
+</section>
+<textarea class="liquid-input terminal-input" id="alg-input" oninput="Tools.AdLinkGen.updateFolderPreview()" placeholder="Paste ad filenames, one per line…" style="min-height: 200px"></textarea>
 </div>
 <div data-guide="Processes the inputs and outputs fully formatted URLs in the panels.">
 <button class="liquid-btn active-mode" onclick="Tools.AdLinkGen.generate()" style="width: 100%">
