@@ -37,15 +37,32 @@ test('URL ownership: clearing PDF cannot revoke other tools', () => {
 });
 
 const makeEl = () => ({innerHTML:'',textContent:'',innerText:'',src:'',disabled:false,
+  dataset:{},
   style:{},classList:{add(){},remove(){},contains(){return false}},
   appendChild(){}, prepend(){}, querySelector(selector){return selector==='img'?this.img:(selector==='.stack-count'?this.count:this.div)},
   img:{src:''},count:{innerText:''},div:{replaceWith(){}},
   children:[], addEventListener(){}, removeAttribute(){}, load(){},pause(){}});
 let canvasCreations=0,stillEncodes=0,previewEncodes=0,storyEncodes=0;
 class MockCanvas {
-  constructor(){this.width=0;this.height=0;}
-  getContext(){return {drawImage(){}};}
-  toBlob(resolve, type, quality) { stillEncodes++; resolve({type,quality}); }
+  constructor(){this.width=0;this.height=0;this.t=0;}
+  getContext(){
+    const self=this;
+    return {
+      drawImage(video){self.t=video?.currentTime||0;},
+      getImageData(){
+        const n=self.width*self.height;
+        const data=new Uint8ClampedArray(n*4);
+        for(let i=0;i<n;i++){
+          const x=i%self.width,y=Math.floor(i/self.width);
+          const color=(x*13+y*11+Math.floor(self.t*30)*7)%256;
+          data[i*4]=color;data[i*4+1]=(color+45)%256;
+          data[i*4+2]=(color+91)%256;data[i*4+3]=255;
+        }
+        return {data};
+      }
+    };
+  }
+  toBlob(resolve,type,quality){stillEncodes++;resolve({type,quality,size:4000});}
   toDataURL(){previewEncodes++;return 'data:image/jpeg;base64,preview';}
 }
 const dom = {getElementById:()=>makeEl(), createElement(tag){
@@ -59,6 +76,7 @@ globalThis.Core={BlobRegistry:makeRegistry().registry, AdaptiveRenderer:{renderB
 let errors=[];
 globalThis.UI={toggleEmptyState(){},showError:s=>errors.push(s)};
 const {default: stillsModule}=await import('../src/js/tools/video-stills.js');
+globalThis.CTKV6=(await import('../src/js/tools/v6-stills-engine.js')).default;
 const {default: pdfModule}=await import('../src/js/tools/pdf-to-image.js');
 
 function setupStills() {
@@ -68,6 +86,7 @@ function setupStills() {
     els:{stacks:makeEl(),empty:makeEl(),dlBtn:makeEl(),xlBtn:{checked:true},storyBtn:{checked:false},storyGrid:{value:'4'},overlay:{classList:{remove(){}}}},
     async loadMetadata(){await new Promise(r=>setTimeout(r,5));},
     async seekVideo(video,time){video.currentTime=time;},
+    async seekV6(video,time){video.currentTime=time;this._lastV6Verified=true;return time;},
   });
   return obj;
 }
@@ -80,8 +99,15 @@ test('Video Stills drains overlapping queue once and reuses its extraction canva
   engine.handleFiles([{name:'two.mp4',type:'video/mp4'}]);
   await until(()=>!engine._processing && !engine.queue.length);
   assert.equal(Object.keys(engine.collection).length,2);
-  assert.equal(stillEncodes,4,'2 extracted frames per 2.5-second input');
-  assert.equal(canvasCreations,2,'one reusable canvas per video');
+  const groups=Object.values(engine.collection);
+  assert.equal(groups.length,2);
+  assert.ok(groups.every(g=>g.frames.filter(f=>f.type==='still').length>=2),
+    'every video retains all baseline captures even after V6 curation');
+  assert.ok(groups.every(g=>g.frames.filter(f=>f.type==='still').every(f=>
+    typeof f.checked==='boolean'&&typeof f.smartSelected==='boolean')),
+    'each video retains independent smart defaults');
+  assert.ok(stillEncodes>=4,'all four baseline JPEGs were encoded; adaptive extras may increase this');
+  assert.equal(canvasCreations,6,'three reusable canvases per video: sample, detail, JPEG');
   assert.equal(previewEncodes,0,'export preview reuses the encoded first frame');
   assert.equal(engine.els.dlBtn.disabled,false);
   assert.deepEqual(errors,[]);
