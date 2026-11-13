@@ -41,6 +41,16 @@ export default {
               if(primary) primary.closest("div")?.insertAdjacentElement("beforebegin",send);
               else controls.appendChild(send);
             }
+            const selectionTools=document.querySelector("#stillsDetailOverlay .vs-detail-tools");
+            if(selectionTools&&!document.getElementById("stillsResetSmartSelection")){
+              const reset=document.createElement("button");
+              reset.id="stillsResetSmartSelection";reset.type="button";reset.className="liquid-btn";
+              reset.textContent="Reset Smart Selection";
+              reset.title="Restore this video's original V6 recommended frames";
+              reset.onclick=()=>this.resetSmartSelection();
+              const next=selectionTools.querySelector("#stillsDownloadSelected");
+              selectionTools.insertBefore(reset,next||selectionTools.firstChild);
+            }
             Core.Utils.createDropZone(this.els.drop, (f) =>
               this.handleFiles(f),
             );
@@ -70,6 +80,9 @@ export default {
               document
                 .querySelectorAll("#stillsOverlayGrid .detail-check")
                 .forEach((cb) => (cb.checked = e.target.checked));
+              const data=this.collection[this.currentId];
+              const stills=data.frames.filter(f=>f.type==="still");
+              this.els.count.innerText=`${stills.length} captured · ${stills.filter(f=>f.checked).length} selected`;
               this.updateBulkBoardButton();
             };
             this.els.dlSel.onclick = () => this.downloadSelected();
@@ -485,12 +498,80 @@ export default {
               try { video.currentTime = target; } catch (err) { finish(err); }
             });
           },
+          // Bounded, metadata-aware video seek. Only the active queue generation may commit frames.
+          async seekV6(video,time,generation){
+            const max=Math.max(0,video.duration-.02);
+            let lastError;
+            for(let attempt=0;attempt<3;attempt++){
+              if(generation!==(this._generation||0))throw Error("Extraction cancelled");
+              const offset=attempt===0?0:attempt===1?-.035:.035;
+              const target=Math.min(max,Math.max(0,time+offset));
+              try{
+                const result=await new Promise((resolve,reject)=>{
+                  let timeout,frameTimeout,frameHandle=null,closed=false,sought=false,meta=null;
+                  const cleanup=()=>{
+                    clearTimeout(timeout);clearTimeout(frameTimeout);
+                    video.removeEventListener("seeked",onSeek);
+                    video.removeEventListener("error",onError);
+                    if(frameHandle!==null&&typeof video.cancelVideoFrameCallback==="function")
+                      try{video.cancelVideoFrameCallback(frameHandle);}catch{}
+                  };
+                  const finish=(error,value)=>{
+                    if(closed)return;closed=true;cleanup();
+                    if(error)reject(error);else resolve(value);
+                  };
+                  const onError=()=>finish(Error("Video decoder failed while seeking"));
+                  const onFrame=(_,data)=>{
+                    frameHandle=null;
+                    if(Number.isFinite(data?.mediaTime)&&Math.abs(data.mediaTime-target)<=.22){
+                      meta={verified:true,time:data.mediaTime};
+                      if(sought)finish(null,meta);
+                    }
+                  };
+                  const onSeek=()=>{
+                    sought=true;
+                    if(video.readyState<2)return finish(Error("Decoded frame unavailable"));
+                    if(meta)return finish(null,meta);
+                    if(typeof video.requestVideoFrameCallback!=="function")
+                      return finish(null,{verified:false,time:video.currentTime});
+                    frameTimeout=setTimeout(()=>{
+                      if(video.readyState<2||Math.abs(video.currentTime-target)>.24)
+                        finish(Error("Decoded frame was not ready near timestamp"));
+                      else finish(null,{verified:false,time:video.currentTime});
+                    },140);
+                  };
+                  video.addEventListener("seeked",onSeek,{once:true});
+                  video.addEventListener("error",onError,{once:true});
+                  timeout=setTimeout(()=>finish(Error("Video seek timed out")),6500);
+                  if(typeof video.requestVideoFrameCallback==="function")
+                    try{frameHandle=video.requestVideoFrameCallback(onFrame);}catch{}
+                  try{
+                    if(Math.abs(video.currentTime-target)<.0001&&video.readyState>=2)onSeek();
+                    else video.currentTime=target;
+                  }catch(error){finish(error);}
+                });
+                if(generation!==(this._generation||0))throw Error("Extraction cancelled");
+                this._lastV6Verified=!!result.verified;
+                return target;
+              }catch(error){lastError=error;if(generation!==(this._generation||0))throw error;}
+            }
+            throw lastError||Error("Seek failed");
+          },
+          resetSmartSelection(){
+            if(!this.currentId||!this.collection[this.currentId])return;
+            for(const frame of this.collection[this.currentId].frames)
+              if(frame.type==="still")frame.checked=!!frame.smartSelected;
+            this.openDetail(this.currentId);
+            this.updateBulkBoardButton();
+          },
           openDetail(id) {
             this.closeBoardMenu();
             this.currentId = id;
             const data = this.collection[id];
             this.els.title.innerText = data.name;
-            this.els.count.innerText = `${data.frames.length} Items`;
+            const stills=data.frames.filter(f=>f.type==="still");
+            this.els.count.innerText=`${stills.length} captured · ${stills.filter(f=>f.checked).length} selected`;
+            this.els.selectAll.checked=data.frames.length>0&&data.frames.every(f=>f.checked);
             this.els.grid.innerHTML = "";
             const previewArea = document.getElementById("stillsOverlayPreview");
             previewArea.innerHTML =
@@ -530,6 +611,9 @@ export default {
               };
               card.querySelector(".detail-check").onchange = (e) => {
                 f.checked=e.target.checked;
+                const stills=data.frames.filter(item=>item.type==="still");
+                this.els.count.innerText=`${stills.length} captured · ${stills.filter(item=>item.checked).length} selected`;
+                this.els.selectAll.checked=data.frames.every(item=>item.checked);
                 this.updateBulkBoardButton();
               };
               this.els.grid.appendChild(card);
