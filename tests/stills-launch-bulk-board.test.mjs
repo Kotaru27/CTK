@@ -13,7 +13,8 @@ test('Stills has one header bulk transfer and no Smart Frame Selection injection
   const js=readFileSync(new URL('../src/js/tools/video-stills.js',import.meta.url),'utf8');
   const css=readFileSync(new URL('../src/css/experience/forge-workflow-interactions.css',import.meta.url),'utf8');
   assert.match(js,/sendAllSelectedToBoards\(/);
-  assert.match(js,/const smartMode = false/);
+  assert.doesNotMatch(js,/const smartMode|CTKV6\.curate\(|resetSmartSelection\(/);
+  assert.match(js,/checked:false/);
   assert.doesNotMatch(js,/label\.append\(toggle,document\.createTextNode\("Smart frame selection"\)\)/);
   assert.match(css,/\.vs-stage-intro\{\s*display:none!important/);
   assert.match(css,/#stillsTabContentVideo \.vs-empty-cta/);
