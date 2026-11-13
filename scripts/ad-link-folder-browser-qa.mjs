@@ -25,7 +25,7 @@ try{
   await page.locator('#alg-folder').waitFor({state:'visible'});
   const row=page.locator('#adlinksTabContentGen .alg-folder-panel');
   const browse=page.locator('#adlinksTabContentGen .alg-folder-browse');
-  assert.equal((await row.innerText()).replace(/\\s+/g,' ').trim(),'Import ad filenames Browse folder');
+  assert.equal((await row.innerText()).replace(/\s+/g,' ').trim(),'Import ad filenames Browse folder');
   assert.equal(await row.locator('button').count(),1);
   assert.equal(await row.locator('strong').count(),1);
   const geometry=await page.evaluate(()=>{
