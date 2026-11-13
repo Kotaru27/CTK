@@ -171,31 +171,18 @@ function forgeBrand(html,standaloneRelease){
     if(!html.includes(before))throw Error('Link Gen step label missing: '+before);
     html=html.replace(before,after);
   }
-  // Layer the new folder picker into both hosted and standalone Link Gen builds.
-  // Do not alter the preserved HTML baseline or the original outputs.
+  // Add exactly one compact import row to the hosted and standalone Link Gen workspaces.
+  // The original URL path, filenames editor, and link-generation engine remain intact.
   const algEditorAnchor='<textarea class="liquid-input terminal-input" id="alg-input"';
   if(!html.includes(algEditorAnchor))throw Error('Link Gen filename editor anchor missing');
   const algFolderUi=[
     '<section class="alg-folder-panel" aria-label="Import ads folder">',
-    ' <div class="alg-folder-head">',
-    '  <div class="alg-folder-title"><strong>Import ad filenames</strong><small>Choose a local ads folder. Only file names are read; nothing is uploaded.</small></div>',
-    '  <div class="alg-folder-actions">',
-    '   <button type="button" class="liquid-btn alg-folder-browse" onclick="Tools.AdLinkGen.browseFolder()">+ Browse folder</button>',
-    '   <button type="button" class="liquid-btn" onclick="Tools.AdLinkGen.loadSampleFolder()">Try sample</button>',
-    '  </div>',
-    ' </div>',
+    ' <strong class="alg-folder-label">Import ad filenames</strong>',
+    ' <button type="button" class="liquid-btn alg-folder-browse" onclick="Tools.AdLinkGen.browseFolder()">Browse folder</button>',
     ' <input type="file" class="alg-folder-hidden" id="alg-folder-picker" aria-label="Choose ads folder" webkitdirectory directory multiple onchange="Tools.AdLinkGen.importFolder(event)">',
-    ' <div class="alg-folder-meta"><span id="alg-folder-name">No folder selected</span><span id="alg-folder-count">0 filenames · editable</span></div>',
-    ' <p id="alg-folder-status" role="status" aria-live="polite">JPG, JPEG, PNG, MP4, MP3 · top-level files only</p>',
-    ' <ol class="alg-folder-preview" id="alg-folder-preview" aria-label="Filename order"></ol>',
     '</section>'
   ].join('\n');
   html=html.replace(algEditorAnchor,algFolderUi+'\n'+algEditorAnchor);
-  // The filename textarea remains manually editable; its preview follows edits.
-  const algInputAttribute='id="alg-input" placeholder=';
-  if(!html.includes(algInputAttribute))throw Error('Link Gen input attribute anchor missing');
-  html=html.replace(algInputAttribute,
-    'id="alg-input" oninput="Tools.AdLinkGen.updateFolderPreview()" placeholder=');
   // Two strictly textual naming alignments. Keep card artwork, structure,
   // navigation handlers, tool logic and all eight button routes unchanged.
   for(const [before,after] of [
