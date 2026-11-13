@@ -102,12 +102,12 @@ test('Video Stills drains overlapping queue once and reuses its extraction canva
   const groups=Object.values(engine.collection);
   assert.equal(groups.length,2);
   assert.ok(groups.every(g=>g.frames.filter(f=>f.type==='still').length>=2),
-    'every video retains all baseline captures even after V6 curation');
+    'every video retains all baseline captures without automatic curation');
   assert.ok(groups.every(g=>g.frames.filter(f=>f.type==='still').every(f=>
-    typeof f.checked==='boolean'&&typeof f.smartSelected==='boolean')),
-    'each video retains independent smart defaults');
+    f.checked===false&&!('smartSelected' in f))),
+    'every decoded still begins unchecked and has no automatic recommendation');
   assert.ok(stillEncodes>=4,'all four baseline JPEGs were encoded; adaptive extras may increase this');
-  assert.equal(canvasCreations,6,'three reusable canvases per video: sample, detail, JPEG');
+  assert.equal(canvasCreations,4,'two reusable canvases per video: sample and JPEG');
   assert.equal(previewEncodes,0,'export preview reuses the encoded first frame');
   assert.equal(engine.els.dlBtn.disabled,false);
   assert.deepEqual(errors,[]);
