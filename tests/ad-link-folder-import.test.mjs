@@ -28,23 +28,10 @@ test('folder import only accepts supported files from chosen top-level directory
   assert.deepEqual(AD.collectFolderNames([]),{names:[],folderName:'Selected folder',unsupported:0,nested:0});
 });
 
-test('cancel retains existing filenames; import populates editable textarea and status', () => {
-  const nodes={
-    'alg-input':{value:'manual.jpg'},
-    'alg-folder-name':{textContent:''},
-    'alg-folder-count':{textContent:''},
-    'alg-folder-status':{textContent:''},
-    'alg-folder-preview':{
-      entries:[],
-      replaceChildren(){this.entries=[];},
-      append(element){this.entries.push(element);}
-    }
-  };
+test('cancel retains existing filenames and import fills the editable field', () => {
+  const nodes={'alg-input':{value:'manual.jpg'}};
   const before=globalThis.document;
-  globalThis.document={
-    getElementById:id=>nodes[id]||null,
-    createElement:tag=>({tagName:tag,className:'',textContent:'',children:[],append(...children){this.children.push(...children)}})
-  };
+  globalThis.document={getElementById:id=>nodes[id]||null};
   try {
     AD.importFolder({target:{files:[],value:'ignored'}});
     assert.equal(nodes['alg-input'].value,'manual.jpg');
@@ -56,14 +43,8 @@ test('cancel retains existing filenames; import populates editable textarea and 
     AD.importFolder({target});
     assert.equal(target.value,'', 'picker reset enables re-importing the same directory');
     assert.equal(nodes['alg-input'].value,'Ad_2.mp4\nAd_10.jpg');
-    assert.equal(nodes['alg-folder-name'].textContent,'Campaign');
-    assert.match(nodes['alg-folder-status'].textContent,/1 unsupported skipped/);
-    assert.equal(nodes['alg-folder-preview'].entries.length,2);
-    assert.equal(nodes['alg-folder-preview'].entries[0].children[1].textContent,'Ad_2.mp4');
     nodes['alg-input'].value='Manual_9.jpg';
-    AD.updateFolderPreview();
-    assert.match(nodes['alg-folder-count'].textContent,/1 filename/);
-    assert.match(nodes['alg-folder-status'].textContent,/Manual entry/);
+    assert.equal(nodes['alg-input'].value,'Manual_9.jpg', 'the field remains editable');
   } finally {
     globalThis.document=before;
   }
@@ -99,9 +80,18 @@ test('CTK build keeps Link Gen folder import in hosted and standalone releases',
     assert.match(html,/id="alg-folder-picker"/);
     assert.match(html,/webkitdirectory/);
     assert.match(html,/AdLinkGen\.importFolder\(event\)/);
-    assert.match(html,/AdLinkGen\.updateFolderPreview\(\)/);
+
     assert.match(html,/id="alg-input"/);
     assert.match(html,/id="alg-out-ads"/);
+    const blocks=[...html.matchAll(/<section class="alg-folder-panel" aria-label="Import ads folder">[\s\S]*?<\/section>/g)];
+    assert.equal(blocks.length,1,'only one import row should appear');
+    const row=blocks[0][0];
+    assert.match(row,/<strong class="alg-folder-label">Import ad filenames<\/strong>/);
+    assert.match(row,/Browse folder<\/button>/);
+    assert.equal((row.match(/<button\b/g)||[]).length,1);
+    assert.doesNotMatch(row,/Try sample|<small|alg-folder-status|alg-folder-count|alg-folder-name|alg-folder-preview/);
+    assert.doesNotMatch(html,/id="alg-input" oninput=/);
+
   }
   assert.match(hosted,/dist\/css\/ad-link-folder-import\.css/);
   assert.match(standalone,/id="ctk-alg-folder-style"/);
