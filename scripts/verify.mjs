@@ -45,8 +45,8 @@ const beforeIds=ids(expectedWithoutFilmstrip),afterIds=ids(b).filter(id=>!approv
   "forgeWhatsNew","forgeWhatsNewTitle","forgeWhatsNewDescription","forgeWhatsNewClose","forgeWhatsNewNever","forgeWhatsNewContinue","forgeWhatsNewEnter","forgeWhatsNewTrigger","forge-first-paint-css",
   // Workbench V2 adds search and a read-only preview label; none are tool IDs.
   "forgeFeaturedLabel","forgeToolSearch","forgeSearchCount",
-  // Exactly five new Link Gen control/status IDs; original control IDs must remain unchanged.
-  "alg-folder-picker","alg-folder-name","alg-folder-count","alg-folder-status","alg-folder-preview"].includes(id));
+  // The compact Link Gen row adds only its hidden native directory picker.
+  "alg-folder-picker"].includes(id));
 if(JSON.stringify(beforeIds)!==JSON.stringify(afterIds))throw Error('DOM element IDs changed');
 const beforeRoutes=getRoutes(a),afterRoutes=getRoutes(b);
 if(beforeRoutes.length!==8||JSON.stringify(beforeRoutes)!==JSON.stringify(afterRoutes))throw Error('Homepage routes changed');
@@ -147,9 +147,9 @@ if(!withoutForge.includes(releaseNotesAction))
   throw Error('Release notes header button is missing from standalone');
 withoutForge=withoutForge.replace(releaseNotesAction,'');
 const restored=withoutForge.replace('<script>'+newMain+'</script>','<script>'+originalMain+'</script>');
-// Link Gen is the only intentionally extended workspace. Verify the new panel is
-// identical in the hosted and standalone releases, then remove precisely that
-// panel and its textarea event handler for the strict legacy HTML comparison.
+// Link Gen is the only intentionally extended workspace. Verify the minimal
+// row is identical in the hosted and standalone releases, then remove it for
+// the strict legacy HTML comparison.
 const folderMarkupPattern=/<section class="alg-folder-panel" aria-label="Import ads folder">[\s\S]*?<\/section>\n(?=<textarea class="liquid-input terminal-input" id="alg-input")/g;
 const hostedFolder=b.match(folderMarkupPattern)||[];
 const standaloneFolder=standalone.match(folderMarkupPattern)||[];
@@ -157,15 +157,17 @@ if(hostedFolder.length!==1 || standaloneFolder.length!==1 || hostedFolder[0]!==s
    !hostedFolder[0].includes('webkitdirectory directory multiple') ||
    !hostedFolder[0].includes('Tools.AdLinkGen.importFolder(event)') ||
    !hostedFolder[0].includes('Tools.AdLinkGen.browseFolder()') ||
-   !restored.includes('id="alg-input" oninput="Tools.AdLinkGen.updateFolderPreview()" placeholder='))
+   !hostedFolder[0].includes('<strong class="alg-folder-label">Import ad filenames</strong>') ||
+   !hostedFolder[0].includes('Browse folder</button>') ||
+   (hostedFolder[0].match(/<button\b/g)||[]).length!==1 ||
+   /Try sample|alg-folder-status|alg-folder-preview|alg-folder-count|alg-folder-name|<small|<p\b/.test(hostedFolder[0]) ||
+   !restored.includes('id="alg-input" placeholder='))
   throw Error('Link Gen folder import markup does not match the approved scoped addition');
 if(rd('dist/css/ad-link-folder-import.css')!==adFolderCss ||
    !b.includes('./dist/css/ad-link-folder-import.css') ||
    !standalone.includes('<style id="ctk-alg-folder-style">'+adFolderCss+'</style>'))
   throw Error('Link Gen folder import source / hosted / standalone style mismatch');
-const restoredWithoutFolder=restored.replace(folderMarkupPattern,'')
-  .replace('id="alg-input" oninput="Tools.AdLinkGen.updateFolderPreview()" placeholder=',
-           'id="alg-input" placeholder=');
+const restoredWithoutFolder=restored.replace(folderMarkupPattern,'');
 // Only five known, textual naming alignments are allowed outside the hero.
 // Reconstruct the legacy terms before the strict byte-for-byte parity check.
 const restoredNames=restoredWithoutFolder

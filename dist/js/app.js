@@ -4900,55 +4900,6 @@ const CTKDownloadRenamer = (() => {
             const editor = document.getElementById("alg-input");
             if (!editor) return;
             editor.value = imported.names.join("\n");
-            const folder = document.getElementById("alg-folder-name");
-            if (folder) folder.textContent = imported.folderName;
-            const notice = document.getElementById("alg-folder-status");
-            if (notice) notice.textContent = imported.names.length+" supported filename(s) imported"+
-              (imported.unsupported ? " · "+imported.unsupported+" unsupported skipped" : "")+
-              (imported.nested ? " · "+imported.nested+" nested excluded" : "");
-            this.updateFolderPreview("imported");
-          },
-          loadSampleFolder() {
-            const sample = this.sortNamesAscending(["Ad_11.mp4","Ad_3.mp4","Ad_10.jpg","Ad_2.jpg","Ad_1.jpg"]);
-            const editor = document.getElementById("alg-input");
-            if (!editor) return;
-            editor.value = sample.join("\n");
-            const label = document.getElementById("alg-folder-name");
-            if (label) label.textContent = "Sample ads";
-            const notice = document.getElementById("alg-folder-status");
-            if (notice) notice.textContent = sample.length+" sample filenames sorted in ascending order";
-            this.updateFolderPreview("sample");
-          },
-          updateFolderPreview(source = "manual") {
-            const textarea = document.getElementById("alg-input");
-            const counter = document.getElementById("alg-folder-count");
-            const list = document.getElementById("alg-folder-preview");
-            if (!textarea || !list) return;
-            const names = textarea.value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
-            if (counter) counter.textContent = names.length+" filename"+(names.length === 1 ? "" : "s")+
-              (source === "imported" || source === "sample" ? " · natural A–Z" : " · editable");
-            list.replaceChildren();
-            for (let i=0; i<Math.min(10,names.length); i++) {
-              const item = document.createElement("li");
-              const number = document.createElement("span");
-              number.className = "alg-file-no";
-              number.textContent = String(i+1).padStart(2,"0");
-              const name = document.createElement("span");
-              name.className = "alg-file-name";
-              name.textContent = names[i]; // Never use a filename as HTML.
-              item.append(number,name);
-              list.append(item);
-            }
-            if (names.length > 10) {
-              const more = document.createElement("li");
-              more.className = "alg-file-more";
-              more.textContent = "+"+(names.length-10)+" more filenames";
-              list.append(more);
-            }
-            if (source === "manual") {
-              const status = document.getElementById("alg-folder-status");
-              if (status) status.textContent = "Manual entry · files are not uploaded";
-            }
           },
           generate() {
             const server = document.getElementById("alg-server").value;

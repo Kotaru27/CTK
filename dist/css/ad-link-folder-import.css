@@ -1,114 +1,61 @@
-/* CTK Link Gen: local filename import; confined to the existing input workspace. */
+/* CTK Link Gen: compact, single-row local filename import. */
 #section-adlinks #adlinksTabContentGen .alg-folder-panel {
-  margin: 10px 0 14px;
-  padding: 14px 15px;
-  border: 1px solid var(--studio-border, var(--border, #646f67));
-  border-radius: 10px;
-  background: var(--studio-field, rgba(125,145,124,.06));
-  color: var(--studio-title, inherit);
-  transition: border-color .22s ease, background-color .22s ease;
-}
-#section-adlinks #adlinksTabContentGen .alg-folder-panel:hover {
-  border-color: var(--studio-accent, #78947b);
-}
-#section-adlinks #adlinksTabContentGen .alg-folder-head {
   display:flex;
-  justify-content:space-between;
   align-items:center;
-  gap:16px;
+  justify-content:space-between;
+  flex-wrap:nowrap;
+  gap:12px;
+  min-height:52px;
+  margin:10px 0 14px;
+  padding:9px 12px;
+  border:1px solid var(--studio-border,var(--border,#646f67));
+  border-radius:9px;
+  background:var(--studio-field,rgba(125,145,124,.06));
+  color:var(--studio-title,inherit);
 }
-#section-adlinks #adlinksTabContentGen .alg-folder-title {
-  display:flex;
-  flex-direction:column;
-  gap:5px;
+#section-adlinks #adlinksTabContentGen .alg-folder-label {
+  font-size:12px;
+  font-weight:690;
+  line-height:1.4;
+  letter-spacing:-.01em;
+  white-space:nowrap;
   min-width:0;
 }
-#section-adlinks #adlinksTabContentGen .alg-folder-title strong {
-  font-size: 12px;
-  font-weight: 690;
-  letter-spacing: -.01em;
-}
-#section-adlinks #adlinksTabContentGen .alg-folder-title small {
-  color: var(--studio-muted, var(--text-secondary, #8c978e));
-  font-size: 11px;
-  line-height: 1.4;
-  max-width: 340px;
-}
-#section-adlinks #adlinksTabContentGen .alg-folder-actions {
-  display:flex;
-  gap:7px;
-  flex-wrap:wrap;
-  justify-content:flex-end;
-  flex-shrink:0;
-}
-#section-adlinks #adlinksTabContentGen .alg-folder-actions .liquid-btn {
+#section-adlinks #adlinksTabContentGen .alg-folder-browse.liquid-btn {
+  flex:0 0 auto;
   min-height:34px;
   padding:7px 11px;
   border-radius:7px;
   font-size:11px;
   font-weight:660;
   white-space:nowrap;
-}
-#section-adlinks #adlinksTabContentGen .alg-folder-actions .alg-folder-browse {
   background:var(--studio-title,#1b2f22);
   border-color:var(--studio-title,#1b2f22);
   color:var(--studio-field,#f4f8f0);
+  transition:background-color .18s ease,transform .18s ease;
 }
-#section-adlinks #adlinksTabContentGen .alg-folder-actions .alg-folder-browse:hover {
+#section-adlinks #adlinksTabContentGen .alg-folder-browse.liquid-btn:hover {
   transform:translateY(-1px);
 }
-#section-adlinks #adlinksTabContentGen .alg-folder-meta {
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:8px;
-  margin-top:12px;
-  font:10px/1.45 Consolas,monospace;
-  color:var(--studio-muted,var(--text-secondary,#888));
+#section-adlinks #adlinksTabContentGen .alg-folder-browse.liquid-btn:focus-visible {
+  outline:2px solid var(--studio-title,#1b2f22);
+  outline-offset:2px;
 }
-#section-adlinks #adlinksTabContentGen #alg-folder-name {
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-  max-width:46%;
-}
-#section-adlinks #adlinksTabContentGen #alg-folder-status {
-  margin:7px 0 0;
-  min-height:14px;
-  line-height:1.45;
-  font-size:10px;
-  color:var(--studio-muted,var(--text-secondary,#888));
-}
-#section-adlinks #adlinksTabContentGen .alg-folder-preview {
-  padding:0;
-  margin:9px 0 0;
-  max-height:120px;
-  overflow-y:auto;
-  border-radius:6px;
-  list-style:none;
-}
-#section-adlinks #adlinksTabContentGen .alg-folder-preview:empty { display:none; }
-#section-adlinks #adlinksTabContentGen .alg-folder-preview li {
-  display:flex;
-  align-items:center;
-  gap:12px;
-  padding:5px 9px;
-  border-bottom:1px solid var(--studio-border,var(--border,#8884));
-  font:11px/1.4 Consolas,monospace;
-  min-width:0;
-}
-#section-adlinks #adlinksTabContentGen .alg-folder-preview li:last-child {border-bottom:0;}
-#section-adlinks #adlinksTabContentGen .alg-file-no {opacity:.48;font-size:10px;flex-shrink:0;}
-#section-adlinks #adlinksTabContentGen .alg-file-name {overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-#section-adlinks #adlinksTabContentGen .alg-file-more {opacity:.75;}
 #section-adlinks #adlinksTabContentGen .alg-folder-hidden {
-  position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;
+  position:absolute;
+  width:1px;
+  height:1px;
+  opacity:0;
+  pointer-events:none;
 }
-@media(max-width:770px) {
-  #section-adlinks #adlinksTabContentGen .alg-folder-head {align-items:flex-start;flex-wrap:wrap;}
-  #section-adlinks #adlinksTabContentGen .alg-folder-actions {justify-content:flex-start;}
+@media(max-width:440px) {
+  #section-adlinks #adlinksTabContentGen .alg-folder-panel {gap:8px;padding:9px 10px;}
+  #section-adlinks #adlinksTabContentGen .alg-folder-label {font-size:11px;}
+  #section-adlinks #adlinksTabContentGen .alg-folder-browse.liquid-btn {padding:7px 9px;}
 }
 @media(prefers-reduced-motion:reduce) {
-  #section-adlinks #adlinksTabContentGen .alg-folder-panel,
-  #section-adlinks #adlinksTabContentGen .alg-folder-actions .alg-folder-browse {transition:none;transform:none;}
+  #section-adlinks #adlinksTabContentGen .alg-folder-browse.liquid-btn {
+    transition:none;
+    transform:none;
+  }
 }
