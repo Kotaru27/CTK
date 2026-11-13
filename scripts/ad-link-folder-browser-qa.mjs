@@ -20,6 +20,9 @@ try{
   await page.goto('http://127.0.0.1:4173/',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>!!document.getElementById('alg-folder-picker') &&
     typeof Tools!=='undefined' && typeof Tools.AdLinkGen?.importFolder==='function');
+  // CTK initially shows its Home/intro; navigate into the live Link Gen panel.
+  await page.evaluate(()=>UI.openTool('section-adlinks','gen'));
+  await page.locator('#alg-folder').waitFor({state:'visible'});
   const picker=page.locator('#alg-folder-picker');
   await picker.setInputFiles(dir);
   assert.equal(await page.locator('#alg-input').inputValue(),'Ad_1.png\nAd_2.jpg\nAd_10.mp4');
