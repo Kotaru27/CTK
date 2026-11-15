@@ -1,5 +1,7 @@
 # The Forge — Creative Tools
 
+> **Website moved:** The old [CTK address](https://kotaru27.github.io/CTK/) now displays a bookmark-update notice. Please use [The Forge](https://kotaru27.github.io/The-Forge/) instead. The CTK tool source and compiled builds remain here for maintenance and regression tests. Local `npm run build` regenerates the root `index.html` for testing, but the Pages publishing workflow intentionally leaves the notice in place.
+
 Eight-tool creative workspace, built from the original Creative Tools Suite modular source. **The Forge** branding introduces a Kola wordmark, opening reveal, refreshed homepage hero, and light-by-default theme. The eight tool cards, individual tool workspaces, exports, processing, dependencies, and inline handlers are preserved.
 
 ## Brand presentation

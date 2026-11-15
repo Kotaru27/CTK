@@ -35,9 +35,10 @@ jobs:
           git fetch origin main
           git checkout -B main origin/main
           npm test
-      - name: Commit the exact files served by GitHub Pages to main
+      - name: Commit generated tool assets without overwriting the CTK old-link notice
         run: |
-          git add -- index.html dist/ favicon.svg manifest.json
+          # The root index.html is the legacy bookmark notice, not a generated tool artifact.
+          git add -- dist/ favicon.svg manifest.json
           if git diff --cached --quiet; then
             echo "Published assets already match source."
           else

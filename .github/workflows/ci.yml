@@ -17,12 +17,12 @@ jobs:
           node-version: '20'
       - name: Validate bundled release and run tests
         run: npm test
-      - name: Ensure GitHub Pages artifacts match modular source
+      - name: Ensure compiled tool assets match modular source
         if: github.event_name == 'pull_request'
         run: |
-          if ! git diff --quiet -- index.html dist/; then
-            echo '::error::Pages artifacts are stale. Run npm run build and commit index.html and dist/ alongside source changes.'
-            git diff --stat -- index.html dist/
-            git diff -- index.html dist/index.html dist/creative-tools-standalone.html | sed -n '1,140p'
+          if ! git diff --quiet -- dist/; then
+            echo '::error::Compiled assets are stale. Run npm run build and commit dist/ alongside source changes. The root index.html is the legacy CTK bookmark notice.'
+            git diff --stat -- dist/
+            git diff -- dist/index.html dist/creative-tools-standalone.html | sed -n '1,140p'
             exit 1
           fi
